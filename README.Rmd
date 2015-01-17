@@ -7,7 +7,7 @@ Intentionally, “rwrfhydro” can be read as “our wrf hydro”. The purpose o
 The purpose of this README is to lay out the fundamental principles used in the development of the package so that contributors more efficiently fit their contributions into the package. 
 
 ## Installing
-Installing the development package (not on CRAN) is facilitated by the devtools package (on CRAN).
+Installing the development package (not on [CRAN](http://cran.r-project.org/)) is facilitated by the devtools package (on CRAN).
 ``` R
 install.packages("devtools")
 devtools::install_github("mccreigh/rwrfhydro")
