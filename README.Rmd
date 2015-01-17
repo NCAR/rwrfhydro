@@ -1,2 +1,21 @@
 # rwrfhydro
 A community-contributed tool box for managing, analyzing, and visualizing WRF Hydro (and HydroDART) input and output files in R.
+
+## Purpose
+Purpose 
+Intentionally, “rwrfhydro” can be read as “our wrf hydro”. The purpose of this R package is to focus community development of tools for working with and analyzing data related to the WRF Hydro model. These tools are both free and open-source, just like R, which should help make them accessible and popular. For users new to R, several introductory resources are listed below. 
+The purpose of this README is to lay out the fundamental principles used in the development of the package so that contributors more efficiently fit their contributions into the package. 
+
+## General guidelines for contributing to the rwrfhydro R package.
+Several resources describing R package development are given below. Most of the guidlines listed below are adopted from [Hadley Wickham’s book on R Packages](http://r-pkgs.had.co.nz/). And links used later point to the specific sections. 
+
+### R package best practices and code style: ([http://r-pkgs.had.co.nz/r.html](http://r-pkgs.had.co.nz/r.html))
+
+#### Organizing functions: ([http://r-pkgs.had.co.nz/r.html#r-organising](http://r-pkgs.had.co.nz/r.html#r-organising))
+* Do NOT put all functions in a single file, nor each in their own file. Functions should be grouped by files and may occasionally need moved to new or different files as new functions are written.
+* File names end in .R and are all lowercase with _ used to separate words. (All lowercase (except the .R) helps ensure compatibility with Windows developers.)
+
+#### R code style ([http://r-pkgs.had.co.nz/r.html#style](http://r-pkgs.had.co.nz/r.html#style))
+* Generally follow Google’s R style guide with preference for variableName (first-lower camel case) over variable.name (period distinction). Note that functions are first-upper camel case, e.g. FunctionName.  [https://google-styleguide.googlecode.com/svn/trunk/Rguide.xml](https://google-styleguide.googlecode.com/svn/trunk/Rguide.xml)
+* Variables are nouns. Functions are verbs.
+* Lots of other style considerations to learn: indents, braces, line length, assignment, comment style.
