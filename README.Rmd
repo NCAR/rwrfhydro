@@ -1,0 +1,2 @@
+# rwrfhydro
+A community-contributed tool box for managing, analyzing, and visualizing WRF Hydro (and HydroDART) input and output files in R.
