@@ -6,6 +6,12 @@ Purpose
 Intentionally, “rwrfhydro” can be read as “our wrf hydro”. The purpose of this R package is to focus community development of tools for working with and analyzing data related to the WRF Hydro model. These tools are both free and open-source, just like R, which should help make them accessible and popular. For users new to R, several introductory resources are listed below. 
 The purpose of this README is to lay out the fundamental principles used in the development of the package so that contributors more efficiently fit their contributions into the package. 
 
+## Installing
+``` R
+install.packages("devtools")
+devtools::install_github("mccreigh/rwrfhydro")
+```
+
 ## General guidelines for contributing to the rwrfhydro R package.
 Several resources describing R package development are given below. Most of the guidlines listed below are adopted from [Hadley Wickham’s book on R Packages](http://r-pkgs.had.co.nz/). And links used later point to the specific sections. 
 
@@ -44,11 +50,6 @@ We need to resolve if we are going to use base graphics or ggplot or both.
 I’m leaning towards both. Not all plotting routines have to always be available for a given function, but I think that both will probably develop over time. 
 
 Because ggplot has a big learning curve, we can return closures which 1) provide tweakability for basic things to be adjusted in the plot make the plot when called, 2) which return the basic ggplot object which can then also be extended with ggplot commands. I made an example of this in VisualizeDomain.R for ggmap/ggplot objects.
-
-
-
-
-
 
 ### R Package development resources
 * [http://hilaryparker.com/2014/04/29/writing-an-r-package-from-scratch/](http://hilaryparker.com/2014/04/29/writing-an-r-package-from-scratch/)
