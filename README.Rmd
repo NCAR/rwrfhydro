@@ -12,7 +12,7 @@ install.packages("devtools")
 devtools::install_github("mccreigh/rwrfhydro")
 ```
 
-## General guidelines for contributing to the rwrfhydro R package.
+## Developing: Guidelines for contributing to the rwrfhydro R package.
 Several resources describing R package development are given below. Most of the guidlines listed below are adopted from [Hadley Wickham’s book on R Packages](http://r-pkgs.had.co.nz/). And links used later point to the specific sections. 
 
 ### R package best practices and code style: [http://r-pkgs.had.co.nz/r.html](http://r-pkgs.had.co.nz/r.html)
