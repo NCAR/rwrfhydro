@@ -13,7 +13,11 @@ install.packages("devtools")
 devtools::install_github("mccreigh/rwrfhydro")
 ```
 ## Using
-Check out the vignettes.
+To get package metadata and a listing of functions
+``` R 
+library(help=rwrfhydro)
+```
+For specific functionality see function help (e.g. `?VisualizeDomain`) and for and overview heck out the vignettes.
 
 ## Developing: Guidelines for contributing to the rwrfhydro R package.
 Several resources describing R package development are given below. Most of the guidlines listed below are adopted from [Hadley Wickham’s book on R Packages](http://r-pkgs.had.co.nz/). And links used later point to the specific sections. 
