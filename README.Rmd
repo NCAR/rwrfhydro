@@ -9,13 +9,13 @@ The purpose of this README is to lay out the fundamental principles used in the 
 ## General guidelines for contributing to the rwrfhydro R package.
 Several resources describing R package development are given below. Most of the guidlines listed below are adopted from [Hadley Wickham’s book on R Packages](http://r-pkgs.had.co.nz/). And links used later point to the specific sections. 
 
-### R package best practices and code style: ([http://r-pkgs.had.co.nz/r.html](http://r-pkgs.had.co.nz/r.html))
+### R package best practices and code style: [http://r-pkgs.had.co.nz/r.html](http://r-pkgs.had.co.nz/r.html)
 
-#### Organizing functions: ([http://r-pkgs.had.co.nz/r.html#r-organising](http://r-pkgs.had.co.nz/r.html#r-organising))
+#### Organizing functions: [http://r-pkgs.had.co.nz/r.html#r-organising](http://r-pkgs.had.co.nz/r.html#r-organising)
 * Do NOT put all functions in a single file, nor each in their own file. Functions should be grouped by files and may occasionally need moved to new or different files as new functions are written.
 * File names end in .R and are all lowercase with _ used to separate words. (All lowercase (except the .R) helps ensure compatibility with Windows developers.)
 
-#### R code style ([http://r-pkgs.had.co.nz/r.html#style](http://r-pkgs.had.co.nz/r.html#style))
+#### R code style: [http://r-pkgs.had.co.nz/r.html#style](http://r-pkgs.had.co.nz/r.html#style)
 * Generally follow Google’s R style guide with preference for variableName (first-lower camel case) over variable.name (period distinction). Note that functions are first-upper camel case, e.g. FunctionName.  [https://google-styleguide.googlecode.com/svn/trunk/Rguide.xml](https://google-styleguide.googlecode.com/svn/trunk/Rguide.xml)
 * Variables are nouns. Functions are verbs.
 * Lots of other style considerations to learn: indents, braces, line length, assignment, comment style.
@@ -27,7 +27,7 @@ Several resources describing R package development are given below. Most of the 
 * Don’t modify global options() or graphics par(). Put state changing operations in functions that the user can call when they want.
 * Don’t save files to disk with write(), write.csv(), or saveRDS(). Use data/ to cache important data files.
 
-#### Documentation with roxygen [http://r-pkgs.had.co.nz/man.html](http://r-pkgs.had.co.nz/man.html)
+#### Documentation with roxygen: [http://r-pkgs.had.co.nz/man.html](http://r-pkgs.had.co.nz/man.html)
 * Roxygen comments start with #' and come before a function. All the roxygen lines preceding a function are called ablock. Each line should be wrapped in the same way as your code, normally at 80 characters.
 * Blocks are broken up into tags, which look like @tagName details. The content of a tag extends from the end of the tag name to the start of the next tag (or the end of the block). Because @ has a special meaning in roxygen, you need to write @@ if you want to add a literal @ to the documentation (this is mostly important for email addresses and for accessing slots of S4 objects).
 * Each block includes some text before the first tag. This is called the introduction, and is parsed specially:
