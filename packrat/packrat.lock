@@ -45,21 +45,23 @@ Source: CRAN
 Version: 1.0-6
 Hash: 9d92cc5ac60123fdb7b0daa3ae83bf99
 
+Package: caTools
+Source: CRAN
+Version: 1.17.1
+Hash: bb5fdc266f716b8a289a4f92007d53e3
+Requires: bitops
+
 Package: colorspace
 Source: CRAN
 Version: 1.2-4
 Hash: b775bd08a10f968fef582304b7c3ab9c
 
 Package: devtools
-Source: github
-Version: 1.7.0
-Hash: fcfdbf8782293fd9f3e61b617ba76ad733c371bd
-Requires: RCurl, digest, evaluate, httr, jsonlite, memoise, roxygen2,
-    rstudioapi, whisker
-GithubRepo: devtools
-GithubUsername: hadley
-GithubRef: master
-GithubSha1: fcfdbf8782293fd9f3e61b617ba76ad733c371bd
+Source: CRAN
+Version: 1.6.1
+Hash: e3096b832604a7a36ff0a6455e5cdddc
+Requires: RCurl, digest, evaluate, httr, jsonlite, memoise, rstudioapi,
+    whisker
 
 Package: dichromat
 Source: CRAN
@@ -104,6 +106,12 @@ Package: highr
 Source: CRAN
 Version: 0.4
 Hash: 8c77cca8556e1501621b4a5ccb7999bd
+
+Package: htmltools
+Source: CRAN
+Version: 0.2.6
+Hash: 2c87108d130de261ac3c468d3316ae42
+Requires: digest
 
 Package: httr
 Source: CRAN
@@ -204,6 +212,12 @@ Source: CRAN
 Version: 0.2.15
 Hash: f78059fac4af154bfe46bf547ae12be9
 
+Package: rmarkdown
+Source: CRAN
+Version: 0.4.2
+Hash: c0a973db5a50da2b14afece2007984ab
+Requires: caTools, htmltools, knitr, yaml
+
 Package: roxygen2
 Source: CRAN
 Version: 4.1.0
@@ -240,3 +254,8 @@ Package: whisker
 Source: CRAN
 Version: 0.3-2
 Hash: 186ab2937fec1694c8a63009a2389c4e
+
+Package: yaml
+Source: CRAN
+Version: 2.1.13
+Hash: e5d041c001f6d641fd009c1f6ef7d831

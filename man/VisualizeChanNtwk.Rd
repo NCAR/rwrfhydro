@@ -19,11 +19,7 @@ interactive selection to retrieve link coordinates.
 }
 \examples{
 fileCh <- GetPkgDataPath("Fourmile_test_case_AD.201205150100.CHRTOUT_DOMAIN1.0001.nc")
-ch <- visChanNtwk(fileCh)
-ch()
-getChanPoint <- visChanNtwk(filePost)
-dev.new()
-getChanPoint <- visChanNtwk(fileCh)
-getChanPoint()
+GetChanPt <- VisualizeChanNtwk(fileCh)
+GetChanPt()
 }
 
