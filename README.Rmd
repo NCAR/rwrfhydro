@@ -1,0 +1,64 @@
+# rwrfhydro
+A community-contributed tool box for managing, analyzing, and visualizing WRF Hydro (and HydroDART) input and output files in R.
+
+## Purpose
+Intentionally, “rwrfhydro” can be read as “our wrf hydro”. The purpose of this R package is to focus community development of tools for working with and analyzing data related to the WRF Hydro model. These tools are both free and open-source, just like R, which should help make them accessible and popular. For users new to R, several introductory resources are listed below. 
+The purpose of this README is to lay out the fundamental principles used in the development of the package so that contributors more efficiently fit their contributions into the package. 
+
+## Installing
+Installing the development package (not on [CRAN](http://cran.r-project.org/)) is facilitated by the devtools package (on CRAN).
+``` R
+install.packages("devtools")
+devtools::install_github("mccreigh/rwrfhydro")
+```
+
+## Using
+To get package metadata and a listing of functions: `library(help=rwrfhydro)`.
+For specific functionality see function help (e.g. `?VisualizeDomain`) and for an overview check out the vignettes (`browseVignettes("rwrfhydro")`).
+
+## Developing
+Several resources describing R package development are given below. Most of the guidlines listed below are adopted from [Hadley Wickham’s book on R Packages](http://r-pkgs.had.co.nz/), links used later point to the specific sections. The `devtools` package figures prominently in our development process.
+
+### R package best practices and code style: [http://r-pkgs.had.co.nz/r.html](http://r-pkgs.had.co.nz/r.html)
+
+#### Organizing functions: [http://r-pkgs.had.co.nz/r.html#r-organising](http://r-pkgs.had.co.nz/r.html#r-organising)
+* Do NOT put all functions in a single file, nor each in their own file. Functions should be grouped by files and may occasionally need moved to new or different files as new functions are written.
+* File names end in .R and are all lowercase with _ used to separate words. (All lowercase (except the .R) helps ensure compatibility with Windows developers.)
+
+#### R code style: [http://r-pkgs.had.co.nz/r.html#style](http://r-pkgs.had.co.nz/r.html#style)
+* Generally follow Google’s R style guide with preference for variableName (first-lower camel case) over variable.name (period distinction). Note that functions are first-upper camel case, e.g. FunctionName.  [https://google-styleguide.googlecode.com/svn/trunk/Rguide.xml](https://google-styleguide.googlecode.com/svn/trunk/Rguide.xml)
+* Variables are nouns. Functions are verbs.
+* Lots of other style considerations to learn: indents, braces, line length, assignment, comment style.
+
+#### Packages are NOT scripts: [http://r-pkgs.had.co.nz/r.html#r-differences](http://r-pkgs.had.co.nz/r.html#r-differences)
+* Don’t use library() or require(). Use the DESCRIPTION to specify your package’s requirements.
+* Use package::function() to use function from external packages. Make sure the package and version are listed in DESCRIPTION.
+* Never use source() to load code from a file. Rely on devtools::load_all() to automatically source all files in R/.
+* Don’t modify global options() or graphics par(). Put state changing operations in functions that the user can call when they want.
+* Don’t save files to disk with write(), write.csv(), or saveRDS(). Use data/ to cache important data files.
+
+#### Documentation with roxygen: [http://r-pkgs.had.co.nz/man.html](http://r-pkgs.had.co.nz/man.html)
+* Roxygen comments start with #' and come before a function. All the roxygen lines preceding a function are called ablock. Each line should be wrapped in the same way as your code, normally at 80 characters.
+* Blocks are broken up into tags, which look like @tagName details. The content of a tag extends from the end of the tag name to the start of the next tag (or the end of the block). Because @ has a special meaning in roxygen, you need to write @@ if you want to add a literal @ to the documentation (this is mostly important for email addresses and for accessing slots of S4 objects).
+* Each block includes some text before the first tag. This is called the introduction, and is parsed specially:
+* The first sentence becomes the title of the documentation. That’s what you see when you look at help(package = mypackage) and is shown at the top of each help file. It should fit on one line, be written in sentence case, and end in a full stop.
+* The second paragraph is the description: this comes first in the documentation and should briefly describe what the function does.
+* The third and subsequent paragraphs go into the details: this is a (often long) section that is shown after the argument description and should go into detail about how the function works.
+* All objects must have a title and description. Details are optional.
+
+### Objects in rwrfhydro
+We will probably need to develop some s3 classes or reuse some from other packages.
+
+### Graphics
+We need to resolve if we are going to use base graphics or ggplot or both. 
+I’m leaning towards both. Not all plotting routines have to always be available for a given function, but I think that both will probably develop over time. 
+
+Because ggplot has a big learning curve, we can return closures which 1) provide tweakability for basic things to be adjusted in the plot make the plot when called, 2) which return the basic ggplot object which can then also be extended with ggplot commands. I made an example of this in VisualizeDomain.R for ggmap/ggplot objects.
+
+### R Package development resources
+* [http://hilaryparker.com/2014/04/29/writing-an-r-package-from-scratch/](http://hilaryparker.com/2014/04/29/writing-an-r-package-from-scratch/)
+* [http://r-pkgs.had.co.nz/](http://r-pkgs.had.co.nz/)
+* [http://cran.r-project.org/doc/contrib/Leisch-CreatingPackages.pdf](http://cran.r-project.org/doc/contrib/Leisch-CreatingPackages.pdf)
+* [http://portal.stats.ox.ac.uk/userdata/ruth/APTS2012/Rcourse10.pdf](http://portal.stats.ox.ac.uk/userdata/ruth/APTS2012/Rcourse10.pdf)
+
+### Introductory R resources
