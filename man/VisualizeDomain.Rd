@@ -28,7 +28,7 @@ creates a plot when called. The arguments to the function can be changed to tail
 a ggplot object whose data can be accessed.
 }
 \examples{
-file<-'~/WRF_Hydro//DOMAIN_library/Fourmile_test_case_AD/hydro_OrodellBasin_100m_8.nc'
+file<-GetPkgData('Fourmile_test_case_AD/hydro_OrodellBasin_100m_8.nc')
 ggMapFunction <- VisualizeDomain(file, "CHANNELGRID")
 ggMap1 <- ggMapFunction(zoom=11, pointshape=15, pointsize=7,
                         source="google", maptype="terrain")

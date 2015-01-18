@@ -3,22 +3,14 @@
 #' \code{VisualizeChanNtwk} shows the channel network indices and provides 
 #' interactive selection to retrieve link coordinates.
 #' 
-#' A fairly crude represenation of the 
-#' 
 #' @param file A path/name to an output YYYMMDDHHmm.CHRTOUT_DOMAIN* file or a hydroDART Posterior_Diag.nc file.
 #' @return A function which allows the plot to be interactively queried once each time it is run and returns 
 #' the coordinates of the selected location.
 #' @examples
-#' filePost <- "/home/jamesmcc/WRF_Hydro/Fourmile_test_case_v2/DART.noah/Posterior_Diag.nc"
-#' post <- VisualizeChanNtwk(filePost)
-#' fileCh <- "/home/jamesmcc/WRF_Hydro/Fourmile_test_case_v2/DART.noah/RUNS.initialEnsembleWFlow.20120426-20120726.Global/ensemble.0001/201207072200.CHRTOUT_DOMAIN1"
-#' ch <- visChanNtwk(fileCh)
-#' ch()
-#' getChanPoint <- visChanNtwk(filePost)
-#' dev.new()
-#' getChanPoint <- visChanNtwk(fileCh)
-#' getChanPoint()
-# @export
+#' fileCh <- GetPkgDataPath("Fourmile_test_case_AD.201205150100.CHRTOUT_DOMAIN1.0001.nc")
+#' GetChanPt <- VisualizeChanNtwk(fileCh)
+#' GetChanPt()
+#' @export
 VisualizeChanNtwk <- function(file) {
   ncid <- ncdf4::nc_open(file)
   

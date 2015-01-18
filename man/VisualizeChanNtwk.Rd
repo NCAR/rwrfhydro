@@ -17,13 +17,8 @@ the coordinates of the selected location.
 \code{VisualizeChanNtwk} shows the channel network indices and provides
 interactive selection to retrieve link coordinates.
 }
-\details{
-A fairly crude represenation of the
-}
 \examples{
-filePost <- "/home/jamesmcc/WRF_Hydro/Fourmile_test_case_v2/DART.noah/Posterior_Diag.nc"
-post <- VisualizeChanNtwk(filePost)
-fileCh <- "/home/jamesmcc/WRF_Hydro/Fourmile_test_case_v2/DART.noah/RUNS.initialEnsembleWFlow.20120426-20120726.Global/ensemble.0001/201207072200.CHRTOUT_DOMAIN1"
+fileCh <- GetPkgDataPath("Fourmile_test_case_AD.201205150100.CHRTOUT_DOMAIN1.0001.nc")
 ch <- visChanNtwk(fileCh)
 ch()
 getChanPoint <- visChanNtwk(filePost)

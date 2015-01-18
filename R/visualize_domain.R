@@ -14,7 +14,7 @@
 #' @param plot Logical: plot or not?
 #' @return A function which can be called to plot the data and allow adjustment of its arguments, the plotting parameters.
 #' @examples
-#' file<-'~/WRF_Hydro//DOMAIN_library/Fourmile_test_case_AD/hydro_OrodellBasin_100m_8.nc'
+#' file<-GetPkgData('Fourmile_test_case_AD/hydro_OrodellBasin_100m_8.nc')
 #' ggMapFunction <- VisualizeDomain(file, "CHANNELGRID")
 #' ggMap1 <- ggMapFunction(zoom=11, pointshape=15, pointsize=7, 
 #'                         source="google", maptype="terrain")

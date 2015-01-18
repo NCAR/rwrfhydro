@@ -7,7 +7,7 @@ Authors@R: c(
     person("James", "McCreight", email = "jamesmcc@ucar.edu", role = c("aut","cre")),
     person("Aubrey", "Dugger",   email = "adugger@ucar.edu",  role = "aut") )
 Maintainer: James McCreight <jamesmcc@ucar.edu>
-Description: A general-purpose, community-contributed tool box for managing, analyzing, and visualizing WRF Hydro 
+Description: A community-contributed tool box for managing, analyzing, and visualizing WRF Hydro 
   (and HydroDART) input and output files in R.
 License: GPL-3
 Depends: R (>= 3.1.0)
