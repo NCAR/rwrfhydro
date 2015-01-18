@@ -1,7 +1,8 @@
 #' Visualize WRF Hydro channel link indices and get coordinates.
 #'
-#' \code{VisualizeChanNtwk} shows the channel network indices and provides 
-#' interactive selection to retrieve link coordinates.
+#' \code{VisualizeChanNtwk} shows the channel network indices and provides interactive selection to retrieve link coordinates.
+#' 
+#' Read a CHANRTOUT file and display the link indicies. Returns a function which allows interactive querying of individual links for lat and lon.
 #' 
 #' @param file A path/name to an output YYYMMDDHHmm.CHRTOUT_DOMAIN* file or a hydroDART Posterior_Diag.nc file.
 #' @return A function which allows the plot to be interactively queried once each time it is run and returns 

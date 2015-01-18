@@ -14,8 +14,10 @@ A function which allows the plot to be interactively queried once each time it i
 the coordinates of the selected location.
 }
 \description{
-\code{VisualizeChanNtwk} shows the channel network indices and provides
-interactive selection to retrieve link coordinates.
+\code{VisualizeChanNtwk} shows the channel network indices and provides interactive selection to retrieve link coordinates.
+}
+\details{
+Read a CHANRTOUT file and display the link indicies. Returns a function which allows interactive querying of individual links for lat and lon.
 }
 \examples{
 fileCh <- GetPkgDataPath("Fourmile_test_case_AD.201205150100.CHRTOUT_DOMAIN1.0001.nc")
