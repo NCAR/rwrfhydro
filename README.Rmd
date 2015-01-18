@@ -2,7 +2,6 @@
 A community-contributed tool box for managing, analyzing, and visualizing WRF Hydro (and HydroDART) input and output files in R.
 
 ## Purpose
-Purpose 
 Intentionally, “rwrfhydro” can be read as “our wrf hydro”. The purpose of this R package is to focus community development of tools for working with and analyzing data related to the WRF Hydro model. These tools are both free and open-source, just like R, which should help make them accessible and popular. For users new to R, several introductory resources are listed below. 
 The purpose of this README is to lay out the fundamental principles used in the development of the package so that contributors more efficiently fit their contributions into the package. 
 
@@ -17,8 +16,8 @@ devtools::install_github("mccreigh/rwrfhydro")
 To get package metadata and a listing of functions: `library(help=rwrfhydro)`.
 For specific functionality see function help (e.g. `?VisualizeDomain`) and for an overview check out the vignettes (`browseVignettes("rwrfhydro")`).
 
-## Developing: Guidelines for contributing to the rwrfhydro R package.
-Several resources describing R package development are given below. Most of the guidlines listed below are adopted from [Hadley Wickham’s book on R Packages](http://r-pkgs.had.co.nz/). And links used later point to the specific sections. 
+## Developing
+Several resources describing R package development are given below. Most of the guidlines listed below are adopted from [Hadley Wickham’s book on R Packages](http://r-pkgs.had.co.nz/), links used later point to the specific sections. The `devtools` package figures prominently in our development process.
 
 ### R package best practices and code style: [http://r-pkgs.had.co.nz/r.html](http://r-pkgs.had.co.nz/r.html)
 
