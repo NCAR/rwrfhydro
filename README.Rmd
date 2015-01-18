@@ -13,10 +13,7 @@ install.packages("devtools")
 devtools::install_github("mccreigh/rwrfhydro")
 ```
 ## Using
-To get package metadata and a listing of functions
-``` R 
-library(help=rwrfhydro)
-```
+To get package metadata and a listing of functions: `library(help=rwrfhydro)`.
 For specific functionality see function help (e.g. `?VisualizeDomain`) and for and overview heck out the vignettes.
 
 ## Developing: Guidelines for contributing to the rwrfhydro R package.
