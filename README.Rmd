@@ -1,23 +1,24 @@
-# rwrfhydro
+# *rwrfhydro*
 A community-contributed tool box for managing, analyzing, and visualizing WRF Hydro (and HydroDART) input and output files in R.
 
-## Purpose
+# Purpose
 Intentionally, “rwrfhydro” can be read as “our wrf hydro”. The purpose of this R package is to focus community development of tools for working with and analyzing data related to the WRF Hydro model. These tools are both free and open-source, just like R, which should help make them accessible and popular. For users new to R, several introductory resources are listed below. 
 The purpose of this README is to lay out the fundamental principles used in the development of the package so that contributors more efficiently fit their contributions into the package. 
 
-## Installing
+# Installing
 Installing the development package (not on [CRAN](http://cran.r-project.org/)) is facilitated by the devtools package (on CRAN).
 ``` R
 install.packages("devtools")
 devtools::install_github("mccreigh/rwrfhydro")
 ```
 
-## Using
+# Using
 To get package metadata and a listing of functions: `library(help=rwrfhydro)`.
 For specific functionality see function help (e.g. `?VisualizeDomain`) and for an overview check out the vignettes (`browseVignettes("rwrfhydro")`).
 
-## Developing
-There are three main aspects of develop the code base and contributing:
+# Developing
+There are three main aspects of developing the code base and contributing:
+
 * R Packaging: Not very interesting, but critical for creating the extrememly useful nature of R packages. Fortunately, the `devtools` package simplifies life tremendously and so figures prominently in the development process we sketch below.
 
 * Version control for collaboration: Again, not terribly interesting but incredibly useful. For those new to the Git/Github process, it can be a bit daunting. Please contact us for some help, we do want to get your useful code into the main repository!
@@ -26,14 +27,17 @@ There are three main aspects of develop the code base and contributing:
 
 All of these topics (minus some of our specific best practices) are treated by [Hadley Wickham’s book on R Packages](http://r-pkgs.had.co.nz/). Specific sections of this book are linked below. Further resources on R package development are listed below. 
 
-### Forking and cloning.
-Please fork the repository to contribute. A fork is a separate copy of the repository. You then clone 
+## Version control for collaboration: Github
 
-#### Forking on Github. 
-[Forking is trivial in Github](https://help.github.com/articles/fork-a-repo/). But remember to keep your fork sync'd as much as possible. You have to have a free (for open-source repositories) account to fork on github. When you have a piece of code to add to the master, [send a pull request](https://help.github.com/articles/using-pull-requests/). A finer point is that topic branches create more coherent pull requests if these extend over time. When possible, create branches for your development topics.
+### Forking
+Please fork the repository to contribute. A fork is a separate copy of the repository. [Forking is trivial in Github](https://help.github.com/articles/fork-a-repo/). But remember to keep your fork sync'd as much as possible. You have to have a free (for open-source repositories) account to fork on github. When you have a piece of code to add to the master, [send a pull request](https://help.github.com/articles/using-pull-requests/). A finer point is that topic branches create more coherent pull requests if these extend over time. When possible, create branches for your development topics.
 
 #### Not using Github.
 hmm..., expand on this: http://stackoverflow.com/questions/4728432/git-forking-without-github
+
+## R Packaging
+
+## Our best practices
 
 ### R package best practices and code style: [http://r-pkgs.had.co.nz/r.html](http://r-pkgs.had.co.nz/r.html)
 
