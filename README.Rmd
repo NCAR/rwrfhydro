@@ -1,6 +1,28 @@
 # rwrfhydro
 A community-contributed tool box for managing, analyzing, and visualizing WRF Hydro (and HydroDART) input and output files in R.
 
+Table of Contents
+=================
+  
+  * [Purpose](#purpose)
+  * [Installing](#installing)
+  * [Using](#using)
+  * [Developing](#developing)
+    * [Version control for collaboration: Github](#version-control-for-collaboration-github)
+      * [Forking](#forking)
+        * [Not using Github.](#not-using-github)
+    * [R Packaging](#r-packaging)
+    * [Our best practices](#our-best-practices)
+      * [R package best practices and code style](#r-package-best-practices-and-code-style)
+        * [Organizing functions](#organizing-functions)
+        * [R code style](#r-code-style)
+        * [Packages are NOT scripts](#packages-are-not-scripts)
+        * [Documentation with roxygen](#documentation-with-roxygen)
+      * [Objects in rwrfhydro](#objects-in-rwrfhydro)
+      * [Graphics](#graphics)
+  * [R Package development resources](#r-package-development-resources)
+  * [Introductory R resources](#introductory-r-resources)
+
 # Purpose
 Intentionally, “rwrfhydro” can be read as “our wrf hydro”. The purpose of this R package is to focus community development of tools for working with and analyzing data related to the WRF Hydro model. These tools are both free and open-source, just like R, which should help make them accessible and popular. For users new to R, several introductory resources are listed below. 
 The purpose of this README is to lay out the fundamental principles used in the development of the package so that contributors more efficiently fit their contributions into the package. 
