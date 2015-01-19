@@ -41,13 +41,13 @@ Workflow is approximately this:
   
 * fork project
 * development cycles:
-⋅⋅* make a topic branch
-⋅⋅* code (R/, NAMESPACE, src/, data/, inst/)
-⋅⋅* document (man/, vignettes/)
-⋅⋅* test (test/)
-⋅⋅* check
-⋅⋅* commit
-⋅⋅* sync
+  * make a topic branch
+  * code (R/, NAMESPACE, src/, data/, inst/)
+  * document (man/, vignettes/)
+  * test (test/)
+  * check
+  * commit
+  * sync
 * pull request
 
 
