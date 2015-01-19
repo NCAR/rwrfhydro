@@ -19,6 +19,14 @@ For specific functionality see function help (e.g. `?VisualizeDomain`) and for a
 ## Developing
 Several resources describing R package development are given below. Most of the guidlines listed below are adopted from [Hadley Wickham’s book on R Packages](http://r-pkgs.had.co.nz/), links used later point to the specific sections. The `devtools` package figures prominently in our development process.
 
+### Forking
+Please fork the repository to contribute. 
+#### Forking on Github. 
+[Forking is trivial in Github](https://help.github.com/articles/fork-a-repo/). But remember to keep your fork sync'd as much as possible. You have to have a free (for open-source repositories) account to fork on github. When you have a piece of code to add to the master, [send a pull request] (https://help.github.com/articles/using-pull-requests/). A finer point is that topic branches create more coherent pull requests if these extend over time. When possible, create branches for your development topics.
+
+#### Not using Github.
+hmm..., expand on this: http://stackoverflow.com/questions/4728432/git-forking-without-github
+
 ### R package best practices and code style: [http://r-pkgs.had.co.nz/r.html](http://r-pkgs.had.co.nz/r.html)
 
 #### Organizing functions: [http://r-pkgs.had.co.nz/r.html#r-organising](http://r-pkgs.had.co.nz/r.html#r-organising)

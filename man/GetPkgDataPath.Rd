@@ -7,7 +7,7 @@
 GetPkgDataPath(theFile)
 }
 \arguments{
-\item{file}{The external data file to load (this is in dirrefent places before, rwrfhydro/inst/extdata, and after build, rwrfhydro/).}
+\item{theFile}{The external data file to load (this is in dirrefent places before, rwrfhydro/inst/extdata, and after build, rwrfhydro/).}
 }
 \value{
 The full path to the file.
