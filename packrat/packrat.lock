@@ -58,10 +58,10 @@ Hash: b775bd08a10f968fef582304b7c3ab9c
 
 Package: devtools
 Source: CRAN
-Version: 1.6.1
-Hash: e3096b832604a7a36ff0a6455e5cdddc
-Requires: RCurl, digest, evaluate, httr, jsonlite, memoise, rstudioapi,
-    whisker
+Version: 1.7.0
+Hash: 56919e22e0d3f7131e93bda1a869730e
+Requires: RCurl, digest, evaluate, httr, jsonlite, memoise, roxygen2,
+    rstudioapi, whisker
 
 Package: dichromat
 Source: CRAN
