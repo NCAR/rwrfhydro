@@ -107,10 +107,15 @@ Workflow is approximately this:
 
 ### Objects in rwrfhydro
 We will probably need to develop some s3 classes or reuse some from other packages.
+List of possible objects:
+gaugePts object for organizing "frxst points", both locations and data.
 
 ### Graphics
 We need to resolve if we are going to use base graphics or ggplot or both. 
 I’m leaning towards both. Not all plotting routines have to always be available for a given function, but I think that both will probably develop over time. 
+
+
+
 
 Because ggplot has a big learning curve, we can return closures which 1) provide tweakability for basic things to be adjusted in the plot make the plot when called, 2) which return the basic ggplot object which can then also be extended with ggplot commands. I made an example of this in VisualizeDomain.R for ggmap/ggplot objects.
 
