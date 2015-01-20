@@ -4,10 +4,19 @@
 \alias{VisualizeChanNtwk}
 \title{Visualize WRF Hydro channel link indices and get coordinates.}
 \usage{
-VisualizeChanNtwk(file, gaugePts = NULL)
+VisualizeChanNtwk(file, gaugePts = NULL, excludeInds = NULL,
+  gaugeAccuracy = 12, plot = TRUE)
 }
 \arguments{
 \item{file}{A path/name to an output YYYMMDDHHmm.CHRTOUT_DOMAIN* file or a hydroDART Posterior_Diag.nc file.}
+
+\item{gaugePts}{Optional list of gauge points. Nearest stream links are found. See examples.}
+
+\item{excludeInds}{Optional index of channel network to exclude. See examples.}
+
+\item{gaugeAccuracy}{The number of digits printed for the gauge information.}
+
+\item{plot}{Logical to plot or not.}
 }
 \value{
 A function which allows the plot to be interactively queried once each time it is run and returns
@@ -21,18 +30,40 @@ Read a CHANRTOUT file and display the link indicies. Returns a function which al
 }
 \examples{
 fileCh <- GetPkgDataPath("Fourmile_test_case_AD.201205150100.CHRTOUT_DOMAIN1.0001.nc")
-
-GetChanPt <- VisualizeChanNtwk(fileCh)
-GetChanPt()
-
+## The basic function call returns a function which you will use.
+LocLinkFun<-VisualizeChanNtwk(fileCh)
+## You can look at the function arguments with
+args(LocLinkFun)
+## Next, click at the outlet point to see that it has (q=) 0 flow.
+LocLinkFun(click=TRUE)
+## Any set of valid indices can be excluded.
+LocLinkFun<-VisualizeChanNtwk(fileCh, exclude=350)
+## Now clicking at the lowest point reveals that that index is 1.
+LocLinkFun(click=TRUE)
+## Add gauges and find their nearest links' coords
 gaugePts <-
- list(orodell   =data.frame(lon=254.67374999999998408,
-                            lat=40.018666670000001773),
-      loganMill =data.frame(lon=254.63508330000001934,
-                            lat=40.042027779999997961),
-      sunshine  =data.frame(lon=254.65122220000000652,
-                            lat=40.05761110000000258)  )
-
-locLinkFun<-VisualizeChanNtwk(fileCh, gaugePts=gaugePts)
+  list(orodell   =data.frame(lon=254.67374999999998408,
+                             lat=40.018666670000001773),
+       loganMill =data.frame(lon=254.63508330000001934,
+                             lat=40.042027779999997961),
+       sunshine  =data.frame(lon=254.65122220000000652,
+                             lat=40.05761110000000258)  )
+## You can just get the location information.
+VisualizeChanNtwk(fileCh, gaugePts=gaugePts, plot=FALSE)
+## But you'll still want to exclude the lowest point.
+LocLinkFun <- VisualizeChanNtwk(fileCh, gaugePts=gaugePts, exc=350, plot=FALSE)
+## Increase the accuracy of the lon/lat ouput
+LocLinkFun <- VisualizeChanNtwk(fileCh, gaugePts=gaugePts, exc=350, plot=FALSE, gaugeAccuracy=17)
+## Now make the plot that was suppressed in the previous call.
+LocLinkFun()
+## Change the amount of padding around the domain and the shape of the gauge symbols.
+LocLinkFun(pad=.3, gaugeShape=16)
+## Zoom to the orodell gauge.
+LocLinkFun(zoom=14, gaugeShape=16, gaugeZoom='orodell', pad=15)
+## Zoom to logan mill gauge
+LocLinkFun(zoom=15, gaugeShape=16, gaugeZoom='loganMill', pad=15)
+LocLinkFun(zoom=15, gaugeShape=16, gaugeZoom='loganMill', pad=15, click=TRUE)
+## the sunshine location is totally wrong, guess I'll have to tell the GS.
+LocLinkFun(zoom=12, gaugeShape=16, gaugeZoom='sunshine', pad=5, click=TRUE)
 }
 

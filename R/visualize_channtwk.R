@@ -5,25 +5,52 @@
 #' Read a CHANRTOUT file and display the link indicies. Returns a function which allows interactive querying of individual links for lat and lon.
 #' 
 #' @param file A path/name to an output YYYMMDDHHmm.CHRTOUT_DOMAIN* file or a hydroDART Posterior_Diag.nc file.
+#' @param gaugePts Optional list of gauge points. Nearest stream links are found. See examples.
+#' @param excludeInds Optional index of channel network to exclude. See examples.
+#' @param gaugeAccuracy The number of digits printed for the gauge information.
+#' @param plot Logical to plot or not.
 #' @return A function which allows the plot to be interactively queried once each time it is run and returns 
 #' the coordinates of the selected location.
 #' @examples
 #' fileCh <- GetPkgDataPath("Fourmile_test_case_AD.201205150100.CHRTOUT_DOMAIN1.0001.nc")
-#' 
-#' GetChanPt <- VisualizeChanNtwk(fileCh)
-#' GetChanPt()
-#'
+#' ## The basic function call returns a function which you will use. 
+#' LocLinkFun<-VisualizeChanNtwk(fileCh)
+#' ## You can look at the function arguments with
+#' args(LocLinkFun)
+#' ## Next, click at the outlet point to see that it has (q=) 0 flow.
+#' LocLinkFun(click=TRUE)
+#' ## Any set of valid indices can be excluded.
+#' LocLinkFun<-VisualizeChanNtwk(fileCh, exclude=350) 
+#' ## Now clicking at the lowest point reveals that that index is 1.
+#' LocLinkFun(click=TRUE) 
+#' ## Add gauges and find their nearest links' coords
 #' gaugePts <-
-#'  list(orodell   =data.frame(lon=254.67374999999998408,
-#'                             lat=40.018666670000001773),
-#'       loganMill =data.frame(lon=254.63508330000001934,
-#'                             lat=40.042027779999997961),
-#'       sunshine  =data.frame(lon=254.65122220000000652,
-#'                             lat=40.05761110000000258)  )
-#'
-#' locLinkFun<-VisualizeChanNtwk(fileCh, gaugePts=gaugePts)
+#'   list(orodell   =data.frame(lon=254.67374999999998408,
+#'                              lat=40.018666670000001773),
+#'        loganMill =data.frame(lon=254.63508330000001934,
+#'                              lat=40.042027779999997961),
+#'        sunshine  =data.frame(lon=254.65122220000000652,
+#'                              lat=40.05761110000000258)  )
+#' ## You can just get the location information.
+#' VisualizeChanNtwk(fileCh, gaugePts=gaugePts, plot=FALSE)
+#' ## But you'll still want to exclude the lowest point.
+#' LocLinkFun <- VisualizeChanNtwk(fileCh, gaugePts=gaugePts, exc=350, plot=FALSE)
+#' ## Increase the accuracy of the lon/lat ouput 
+#' LocLinkFun <- VisualizeChanNtwk(fileCh, gaugePts=gaugePts, exc=350, plot=FALSE, gaugeAccuracy=17)
+#' ## Now make the plot that was suppressed in the previous call. 
+#' LocLinkFun()
+#' ## Change the amount of padding around the domain and the shape of the gauge symbols.
+#' LocLinkFun(pad=.3, gaugeShape=16)
+#' ## Zoom to the orodell gauge. 
+#' LocLinkFun(zoom=14, gaugeShape=16, gaugeZoom='orodell', pad=15)
+#' ## Zoom to logan mill gauge
+#' LocLinkFun(zoom=15, gaugeShape=16, gaugeZoom='loganMill', pad=15)
+#' LocLinkFun(zoom=15, gaugeShape=16, gaugeZoom='loganMill', pad=15, click=TRUE)
+#' ## the sunshine location is totally wrong, guess I'll have to tell the GS.
+#' LocLinkFun(zoom=12, gaugeShape=16, gaugeZoom='sunshine', pad=5, click=TRUE)
 #' @export
-VisualizeChanNtwk <- function(file, gaugePts=NULL) {
+VisualizeChanNtwk <- function(file, gaugePts=NULL, excludeInds=NULL,
+                              gaugeAccuracy=12, plot=TRUE) {
 
   ## Get the data.
   ncid <- ncdf4::nc_open(file)
@@ -37,7 +64,7 @@ VisualizeChanNtwk <- function(file, gaugePts=NULL) {
     linkDf <- data.frame( ind = 1:length(linkIndX) )
     linkDf$lon <- plyr::laply( linkDf$ind, function(ii) lon[linkIndX[ii],linkIndY[ii]] )
     linkDf$lat <- plyr::laply( linkDf$ind, function(ii) lat[linkIndX[ii],linkIndY[ii]] )
-    rm('linkIndX','linkIndY')
+    rm('lon','lat','linkIndX','linkIndY')
   } 
   
   if(length(grep('CHRTOUT',file))) {
@@ -49,8 +76,11 @@ VisualizeChanNtwk <- function(file, gaugePts=NULL) {
     linkDf$lon <- lon
     linkDf$lat <- lat
     linkDf$q <- q
+    rm('lon','lat')
   }
 
+  if(length(excludeInds)) linkDf <- linkDf[-excludeInds,]
+  
   ## standardize the lon just in case
   linkDf$lon <- StdLon(linkDf$lon)
 
@@ -60,11 +90,11 @@ VisualizeChanNtwk <- function(file, gaugePts=NULL) {
     gaugePtsDf <- plyr::ldply(gaugePts, .id='location')
     
     ## standardize the lon to +-180
-    gaugePtsDf <- 
-      plyr::ddply(gaugePtsDf, plyr::.(location, lon, lat), 
-                  plyr::summarize, 
-                  lon=StdLon(lon))
-
+    gaugePtsDf <- plyr::ddply(gaugePtsDf,
+                              plyr::.(location, lon, lat), 
+                              plyr::summarize,
+                              lon=StdLon(lon))
+     
     ## the euclidean metric in lat/lon works fine.
     FindNn <- function(dd) {
       whMin <- which.min(sqrt( (dd$lon-linkDf$lon)^2 + (dd$lat-linkDf$lat)^2 ))
@@ -72,85 +102,119 @@ VisualizeChanNtwk <- function(file, gaugePts=NULL) {
       dd$lon <- linkDf$lon[whMin]
       dd$lat <- linkDf$lat[whMin]
       dd$modelFile <- file
+      if('q' %in% names(linkDf)) dd$q <- linkDf$q[whMin]
       dd$system <- 'model'
+      
       dd
     }
     gaugePtsModelDf <- plyr::ddply(gaugePtsDf, plyr::.(location), FindNn)
   
     ## combine real world and modeled gauges
     gaugePtsDf$chanInd <- gaugePtsDf$modelFile <- NA
+    if('q' %in% names(linkDf)) gaugePtsDf$q <- NA
     gaugePtsDf$system  <- 'gauge'
     gaugePtsBothDf <- rbind(gaugePtsDf, gaugePtsModelDf)
+
+    gaugeVarsPrint <- c('system','chanInd','q', 'lon','lat') 
+    if(!('q' %in% names(linkDf))) gaugeVarsPrint <- gaugeVarsPrint[-3]
     
     ## print out the gauge information?
     PrintGauge <- function(dd) {
       cat(paste0('** ',dd$location[1],' **********'),sep='\n')
-      print(dd[c('system','chanInd','lon','lat')], row.names=FALSE)
+      print(dd[gaugeVarsPrint], row.names=FALSE, digits=gaugeAccuracy)
       NULL
     }
     invisible(plyr::ddply(gaugePtsBothDf, plyr::.(location), PrintGauge)) 
   
   }
 
-
   ## This function is going to be returned as a closure.
   ## It's env is visChanNtwkm which includes linkDf, and maybe the reference to the
   ## viewport?
-  GetChanPoint <- function(location=c(lon=mean(lon),lat=mean(lat)),
-                           zoom=11, source='google', maptype='hybrid',
-                           gaugeZoom=NULL) {
-## zoom to gauge.
+  GetChanPoint <- function(location=c(lon=mean(range(linkDf$lon)),
+                                      lat=mean(range(linkDf$lat)) ),
+                           zoom=11, source='google', maptype='terrain',
+                           padPlot=.1,
+                           gaugeZoom=NULL, clickSelect=FALSE,
+                           linkShape=5, gaugeShape=4) {
+    
+    if(length(gaugeZoom)) {
+      if(gaugeZoom %in% gaugePtsBothDf$location) {
+        subGaugeDf <- subset(gaugePtsBothDf, location==gaugeZoom)
+        plotLimX <- padRange(range(subGaugeDf$lon),diff=padPlot)
+        plotLimY <- padRange(range(subGaugeDf$lat),diff=padPlot)
+        location <- c(lon=mean(range(subGaugeDf$lon)),
+                      lat=mean(range(subGaugeDf$lat)) )
+      }
+    } else {
+      plotLimX <- padRange(range(linkDf$lon),diff=padPlot)
+      plotLimY <- padRange(range(linkDf$lat),diff=padPlot)
+    }
     
     theMap <- ggmap::get_map(location, zoom = zoom, source = source, maptype=maptype)
+
     library(ggplot2)  ## not called except in the closure 
+
     thePlot <-
       ggmap::ggmap(theMap, extent='normal') +
-      #ggplot2::ggplot()+
-      ggplot2::geom_point( data=linkDf, ggplot2::aes(x=lon, y=lat) )
- 
-    if(length(gaugePtsBothDf)) {
+      ## the following 2 lines are CRITICAL to the click
+      ggplot2::scale_x_continuous(expand=c(0,0), limits=plotLimX) +
+      ggplot2::scale_y_continuous(expand=c(0,0), limits=plotLimY) 
+
+    
+    thePlot <- thePlot +
+      if('q' %in% names(linkDf)) {
+        ggplot2::geom_point( data=linkDf, ggplot2::aes(x=lon, y=lat, size=q),
+                            color='darkblue', shape=linkShape )
+      } else {
+        ggplot2::geom_point( data=linkDf, ggplot2::aes(x=lon, y=lat),
+                            color='darkblue', shape=linkShape )
+      }
+    
+    if(length(gaugePts)) {
       thePlot <- 
         thePlot +
         ggplot2::geom_point(data=gaugePtsBothDf,
-                            ggplot2::aes(x=lon, y=lat, shape=system, color=location)) +
-        ggplot2::scale_shape_manual(values=c(4,16))
+                            ggplot2::aes(x=lon, y=lat, shape=system, color=location),
+                            size=4) +
+        ggplot2::scale_shape_manual(values=c(gaugeShape,linkShape))
     }
-    print(thePlot)
     
-    gridNames <- grid::grid.ls(print=FALSE)[['name']]
-    x <- gridNames[grep("panel.[1-9]-", gridNames)] #locate the panel
-    grid::seekViewport(x)
-    clickPt <-  grid::grid.locator("npc")
-    clickPt <- as.numeric(substring(clickPt, 1, nchar(clickPt)-3))
-    
-    mapMinMax <- attributes(theMap)$bb
-    locX <- as.numeric(mapMinMax['ll.lon'] + 
-              clickPt[1] * diff(as.numeric(mapMinMax[c('ll.lon','ur.lon')])))
-    locY <- as.numeric(mapMinMax['ll.lat'] + 
-              clickPt[2] * diff(as.numeric(mapMinMax[c('ll.lat','ur.lat')])))
-    
-    whClosest <- which.min( sqrt((lon-as.numeric(locX))^2 + (lat-locY)^2))
-    
-    thePlot2 <- 
-      thePlot +
-      ggplot2::geom_point(data=data.frame(lon=lon[whClosest],lat=lat[whClosest]),
-                          ggplot2::aes(x=lon,y=lat), color='cyan') 
-      thePlot2
-    
-      ggplot2::ggplot( linkDf, ggplot2::aes(x=lon, y=lat, fill=ind) ) +
-      ggplot2::geom_raster() +
-      ggplot2::scale_x_continuous(expand=c(0,0)) +
-      ggplot2::scale_y_continuous(expand=c(0,0)) +
-      ggplot2::ggtitle(paste('link index:',thePlot$data$ind[whClosest]))
-    print(thePlot)
-    
-    #thePlot$data$ind[whClosest]
-    closestDf <- thePlot$data[whClosest,]
-    if (closestDf$lon < 0) closestDf$lon <- closestDf$lon + 360
-    format(closestDf, digits=21)
-    
+    if(clickSelect) {
+      print(thePlot + ggplot2::ggtitle('Please click to get info about the channel link'))
+      gridNames <- grid::grid.ls(print=FALSE)[['name']]
+      x <- gridNames[grep("panel.[1-9]-", gridNames)] #locate the panel
+      grid::seekViewport(x)
+      clickPt <-  grid::grid.locator("npc")
+      clickPt <- as.numeric(substring(clickPt, 1, nchar(clickPt)-3))
+      
+      mapMinMax <- attributes(theMap)$bb
+      locX <- as.numeric(mapMinMax['ll.lon'] + 
+                         clickPt[1] * diff(as.numeric(mapMinMax[c('ll.lon','ur.lon')])))
+      locY <- as.numeric(mapMinMax['ll.lat'] + 
+                         clickPt[2] * diff(as.numeric(mapMinMax[c('ll.lat','ur.lat')])))
+      
+      locX <- min(plotLimX) + clickPt[1] * diff(range(plotLimX))
+      locY <- min(plotLimY) + clickPt[2] * diff(range(plotLimY))
+      
+      whClosest <- which.min( sqrt((linkDf$lon-as.numeric(locX))^2 +
+                                   (linkDf$lat-locY)^2))
+      
+      thePlot <- 
+        thePlot +
+        ggplot2::geom_point(data=data.frame(lon=linkDf$lon[whClosest],
+                            lat=linkDf$lat[whClosest]),
+       ggplot2::aes(x=lon,y=lat), color='cyan') +
+       ggplot2::ggtitle('Selected point in cyan, information printed to terminal.')
+      
+      closestDf <- linkDf[whClosest,]
+      cat('Selected point data:',sep='\n')
+      print(closestDf, digits=12, row.names=FALSE)
+      print(thePlot)
+    } else print(thePlot)
+   
   }
   
-  list(linkDf=linkDf, getPt=getChanPointInner)
-  getChanPointInner 
+  if(plot) GetChanPoint() 
+  invisible(GetChanPoint)
 }
