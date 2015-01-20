@@ -11,6 +11,16 @@
 #' fileCh <- GetPkgDataPath("Fourmile_test_case_AD.201205150100.CHRTOUT_DOMAIN1.0001.nc")
 #' GetChanPt <- VisualizeChanNtwk(fileCh)
 #' GetChanPt()
+#'fileCh <- "/home/jamesmcc/WRF_Hydro/Fourmile_test_case_AD/DART.noahMP/OUTPUT.sensSet1.MPE/model_integration.2012051500-2012051501.0001/201205150100.CHRTOUT_DOMAIN1.0001.nc"
+#' gaugePts <-
+#'  list(orodell   =data.frame(lon=254.67374999999998408,
+#'                             lat=40.018666670000001773),
+#'       loganMill =data.frame(lon=254.63508330000001934,
+#'                             lat=40.042027779999997961),
+#'       sunshine  =data.frame(lon=254.65122220000000652,
+#'                             lat=40.05761110000000258)  )
+#'
+#' locLinkFun<-VisualizeChanNtwk(fileCh, gaugePts=gaugePts)
 #' @export
 VisualizeChanNtwk <- function(file, gaugePts=NULL) {
 
