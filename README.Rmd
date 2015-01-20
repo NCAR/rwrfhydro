@@ -30,7 +30,6 @@ Installing the development package (not on [CRAN](http://cran.r-project.org/)) i
 ``` R
 install.packages("devtools")
 devtools::install_github("mccreigh/rwrfhydro")
-library(rwrfhydro)
 ```
 
 # Using
