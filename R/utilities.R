@@ -18,6 +18,7 @@ GetPkgDataPath <- function(theFile) system.file("extdata", theFile, package = "r
 #' @return The standardized object.
 #' @examples
 #' StdLon(0:360)
+#' @export
 StdLon <- function(x) {
   x[which(x>180.)] <- x[which(x>180.)]-360.
   x
