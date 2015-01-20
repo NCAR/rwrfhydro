@@ -20,13 +20,35 @@ VisualizeChanNtwk(file, gaugePts = NULL, excludeInds = NULL,
 }
 \value{
 A function which allows the plot to be interactively queried once each time it is run and returns
-the coordinates of the selected location.
+the coordinates of the selected location. Details provided in details above.
 }
 \description{
 \code{VisualizeChanNtwk} shows the channel network indices and provides interactive selection to retrieve link coordinates.
 }
 \details{
 Read a CHANRTOUT file and display the link indicies. Returns a function which allows interactive querying of individual links for lat and lon.
+
+The arguments of the returned function are:
+\describe{
+  \item{\code{location}}{Most generically, the center of the google (or other) map. More specifically, this is the argument
+  passed to the \pkg{ggmap} for its argument of the same name. (Default\code{=c(lon=mean(range(linkDf$lon)),lat=mean(range(linkDf$lat)))})}
+
+\item{\code{zoom=11}}{The zoom level for the google (or other) map. See \pkg{ggmap} for more details.}
+
+\item{\code{source='google'}}{The source for the underlying map. See \pkg{ggmap} package for details.}
+
+\item{\code{maptype='terrain'}}{The map type for \pkg{ggmap}.}
+
+\item{\code{padPlot=.1}}{The fraction of the range (in both lon and lat) of the channel network to expand the plot by.}
+
+\item{\code{gaugeZoom=NULL}}{The name of the gauge you'd like to zoom in on. This will likely require finessing zoom and padPlot to make it look nice.}
+
+\item{\code{clickSelect=FALSE}}{Do you want to click on the plot to query a specfic point? You only get one click per function call.}
+
+\item{\code{linkShape=5}}{The shape code (ggplot2) for the gridded link elements.}
+
+\item{\code{gaugeShape=4}}{The shape code (ggplot2) for the gauges.}
+}
 }
 \examples{
 fileCh <- GetPkgDataPath("Fourmile_test_case_AD.201205150100.CHRTOUT_DOMAIN1.0001.nc")

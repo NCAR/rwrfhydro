@@ -4,13 +4,35 @@
 #' 
 #' Read a CHANRTOUT file and display the link indicies. Returns a function which allows interactive querying of individual links for lat and lon.
 #' 
+#' The arguments of the returned function are:
+#' \describe{
+#'   \item{\code{location}}{Most generically, the center of the google (or other) map. More specifically, this is the argument 
+#'   passed to the \pkg{ggmap} for its argument of the same name. (Default\code{=c(lon=mean(range(linkDf$lon)),lat=mean(range(linkDf$lat)))})}
+#' 
+#'   \item{\code{zoom=11}}{The zoom level for the google (or other) map. See \pkg{ggmap} for more details.}
+#' 
+#'   \item{\code{source='google'}}{The source for the underlying map. See \pkg{ggmap} package for details.}
+#' 
+#'   \item{\code{maptype='terrain'}}{The map type for \pkg{ggmap}.}
+#' 
+#'   \item{\code{padPlot=.1}}{The fraction of the range (in both lon and lat) of the channel network to expand the plot by.}
+#' 
+#'   \item{\code{gaugeZoom=NULL}}{The name of the gauge you'd like to zoom in on. This will likely require finessing zoom and padPlot to make it look nice.}
+#' 
+#'  \item{\code{clickSelect=FALSE}}{Do you want to click on the plot to query a specfic point? You only get one click per function call.}
+#' 
+#'  \item{\code{linkShape=5}}{The shape code (ggplot2) for the gridded link elements.}
+#' 
+#'  \item{\code{gaugeShape=4}}{The shape code (ggplot2) for the gauges.}
+#' }
 #' @param file A path/name to an output YYYMMDDHHmm.CHRTOUT_DOMAIN* file or a hydroDART Posterior_Diag.nc file.
 #' @param gaugePts Optional list of gauge points. Nearest stream links are found. See examples.
 #' @param excludeInds Optional index of channel network to exclude. See examples.
 #' @param gaugeAccuracy The number of digits printed for the gauge information.
 #' @param plot Logical to plot or not.
 #' @return A function which allows the plot to be interactively queried once each time it is run and returns 
-#' the coordinates of the selected location.
+#' the coordinates of the selected location. Details provided in details above. 
+#' 
 #' @examples
 #' fileCh <- GetPkgDataPath("Fourmile_test_case_AD.201205150100.CHRTOUT_DOMAIN1.0001.nc")
 #' ## The basic function call returns a function which you will use. 
@@ -185,6 +207,7 @@ VisualizeChanNtwk <- function(file, gaugePts=NULL, excludeInds=NULL,
       gridNames <- grid::grid.ls(print=FALSE)[['name']]
       x <- gridNames[grep("panel.[1-9]-", gridNames)] #locate the panel
       grid::seekViewport(x)
+      cat("Please click on plot to select nearest point to your click...",sep='\n')
       clickPt <-  grid::grid.locator("npc")
       clickPt <- as.numeric(substring(clickPt, 1, nchar(clickPt)-3))
       
@@ -208,7 +231,7 @@ VisualizeChanNtwk <- function(file, gaugePts=NULL, excludeInds=NULL,
        ggplot2::ggtitle('Selected point in cyan, information printed to terminal.')
       
       closestDf <- linkDf[whClosest,]
-      cat('Selected point data:',sep='\n')
+      cat('Selected point (in cyan on plot) data:',sep='\n')
       print(closestDf, digits=12, row.names=FALSE)
       print(thePlot)
     } else print(thePlot)
