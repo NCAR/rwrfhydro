@@ -4,7 +4,7 @@
 \alias{VisualizeChanNtwk}
 \title{Visualize WRF Hydro channel link indices and get coordinates.}
 \usage{
-VisualizeChanNtwk(file)
+VisualizeChanNtwk(file, gaugePts = NULL)
 }
 \arguments{
 \item{file}{A path/name to an output YYYMMDDHHmm.CHRTOUT_DOMAIN* file or a hydroDART Posterior_Diag.nc file.}
@@ -21,7 +21,18 @@ Read a CHANRTOUT file and display the link indicies. Returns a function which al
 }
 \examples{
 fileCh <- GetPkgDataPath("Fourmile_test_case_AD.201205150100.CHRTOUT_DOMAIN1.0001.nc")
+
 GetChanPt <- VisualizeChanNtwk(fileCh)
 GetChanPt()
+
+gaugePts <-
+ list(orodell   =data.frame(lon=254.67374999999998408,
+                            lat=40.018666670000001773),
+      loganMill =data.frame(lon=254.63508330000001934,
+                            lat=40.042027779999997961),
+      sunshine  =data.frame(lon=254.65122220000000652,
+                            lat=40.05761110000000258)  )
+
+locLinkFun<-VisualizeChanNtwk(fileCh, gaugePts=gaugePts)
 }
 

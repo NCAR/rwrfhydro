@@ -9,9 +9,10 @@
 #' the coordinates of the selected location.
 #' @examples
 #' fileCh <- GetPkgDataPath("Fourmile_test_case_AD.201205150100.CHRTOUT_DOMAIN1.0001.nc")
+#' 
 #' GetChanPt <- VisualizeChanNtwk(fileCh)
 #' GetChanPt()
-#'fileCh <- "/home/jamesmcc/WRF_Hydro/Fourmile_test_case_AD/DART.noahMP/OUTPUT.sensSet1.MPE/model_integration.2012051500-2012051501.0001/201205150100.CHRTOUT_DOMAIN1.0001.nc"
+#'
 #' gaugePts <-
 #'  list(orodell   =data.frame(lon=254.67374999999998408,
 #'                             lat=40.018666670000001773),
@@ -51,72 +52,70 @@ VisualizeChanNtwk <- function(file, gaugePts=NULL) {
   }
 
   ## standardize the lon just in case
-  stdLon <- function(x) {
-    x[which(x>180.)] <- x[which(x>180.)]-360.
-    x
-  }
-  linkDf$lon <- stdLon(linkDf$lon)
+  linkDf$lon <- StdLon(linkDf$lon)
 
   ## find nearest neighbors if gaugePts was defined.
   if(length(gaugePts)) {
-    ## the euclidean metric in lat/lon works fine.
-    ## first, standardize the lon to +-180
-    gaugePts <- plyr::llply(gaugePts,
-                            function(ll) {ll$lon <- stdLon(ll$lon)
-                                          ll})
-    findNn <- function(ll) {
-      whMin <- which.min(sqrt( (ll$lon-linkDf$lon)^2 + (ll$lat-linkDf$lat)^2 ))
-      ll$chanInd <- whMin
-      ll$modelLon <- linkDf$lon[whMin]
-      ll$modelLat <- linkDf$lat[whMin]
-      ll$modelFile <- file
-      ll
-    }
-    gaugePts <- plyr::llply(gaugePts, findNn)
+    ## This is better way of handling 
+    gaugePtsDf <- plyr::ldply(gaugePts, .id='location')
+    
+    ## standardize the lon to +-180
+    gaugePtsDf <- 
+      plyr::ddply(gaugePtsDf, plyr::.(location, lon, lat), 
+                  plyr::summarize, 
+                  lon=StdLon(lon))
 
-    ## output the
-    printCustom <- function(ll) {
-      cat((names(gaugePts)[ll]),sep='\n')
-      print(t(gaugePts[[ll]]))
+    ## the euclidean metric in lat/lon works fine.
+    FindNn <- function(dd) {
+      whMin <- which.min(sqrt( (dd$lon-linkDf$lon)^2 + (dd$lat-linkDf$lat)^2 ))
+      dd$chanInd <- whMin
+      dd$lon <- linkDf$lon[whMin]
+      dd$lat <- linkDf$lat[whMin]
+      dd$modelFile <- file
+      dd$system <- 'model'
+      dd
     }
-    invisible(plyr::llply(1:length(gaugePts),printCustom))   
-   
+    gaugePtsModelDf <- plyr::ddply(gaugePtsDf, plyr::.(location), FindNn)
+  
+    ## combine real world and modeled gauges
+    gaugePtsDf$chanInd <- gaugePtsDf$modelFile <- NA
+    gaugePtsDf$system  <- 'gauge'
+    gaugePtsBothDf <- rbind(gaugePtsDf, gaugePtsModelDf)
+    
+    ## print out the gauge information?
+    PrintGauge <- function(dd) {
+      cat(paste0('** ',dd$location[1],' **********'),sep='\n')
+      print(dd[c('system','chanInd','lon','lat')], row.names=FALSE)
+      NULL
+    }
+    invisible(plyr::ddply(gaugePtsBothDf, plyr::.(location), PrintGauge)) 
+  
   }
 
 
-stop()  
-  ## create the plot object
-  location <- c(lon=mean(lon),lat=mean(lat))
-  zoom=13
-  source='google'
-  maptype='hybrid'
-
-  theMap <- ggmap::get_map(location, zoom = zoom, source = source, maptype=maptype)
-  library(ggplot2)
-  thePlot <-
-    ggmap::ggmap(theMap, extent='normal') +
-    ggplot2::geom_point( data=linkDf, ggplot2::aes(x=lon, y=lat) )
- 
-    if(length(gaugePts)) {
-
-      gaugeDf <- plyr::ldply(gaugePts)
-
-      thePlot <- thePlot +
-        ggplot2::geom_point(data=plyr::ldply(gaugeDf),
-                            ggplot2::aes(x=lon, y=lat, shape=system, color=location))
-    }
-
-  ##    ggplot2::coord_quickmap() +
-  ##    ggplot2::scale_x_continuous(expand=c(0,0)) +
-  ##    ggplot2::scale_y_continuous(expand=c(0,0)) 
-  ##    ggplot2::scale_fill_gradientn(colours=RColorBrewer::brewer.pal(9,'YlGnBu'))
-  print(thePlot)
-
-  
   ## This function is going to be returned as a closure.
   ## It's env is visChanNtwkm which includes linkDf, and maybe the reference to the
   ## viewport?
-  getChanPointInner <- function() {
+  GetChanPoint <- function(location=c(lon=mean(lon),lat=mean(lat)),
+                           zoom=11, source='google', maptype='hybrid',
+                           gaugeZoom=NULL) {
+## zoom to gauge.
+    
+    theMap <- ggmap::get_map(location, zoom = zoom, source = source, maptype=maptype)
+    library(ggplot2)  ## not called except in the closure 
+    thePlot <-
+      ggmap::ggmap(theMap, extent='normal') +
+      #ggplot2::ggplot()+
+      ggplot2::geom_point( data=linkDf, ggplot2::aes(x=lon, y=lat) )
+ 
+    if(length(gaugePtsBothDf)) {
+      thePlot <- 
+        thePlot +
+        ggplot2::geom_point(data=gaugePtsBothDf,
+                            ggplot2::aes(x=lon, y=lat, shape=system, color=location)) +
+        ggplot2::scale_shape_manual(values=c(4,16))
+    }
+    print(thePlot)
     
     gridNames <- grid::grid.ls(print=FALSE)[['name']]
     x <- gridNames[grep("panel.[1-9]-", gridNames)] #locate the panel
@@ -124,17 +123,22 @@ stop()
     clickPt <-  grid::grid.locator("npc")
     clickPt <- as.numeric(substring(clickPt, 1, nchar(clickPt)-3))
     
-    locX <- min(thePlot$data$lon) + clickPt[1]*diff(range(thePlot$data$lon))
-    locY <- min(thePlot$data$lat) + clickPt[2]*diff(range(thePlot$data$lat))
+    mapMinMax <- attributes(theMap)$bb
+    locX <- as.numeric(mapMinMax['ll.lon'] + 
+              clickPt[1] * diff(as.numeric(mapMinMax[c('ll.lon','ur.lon')])))
+    locY <- as.numeric(mapMinMax['ll.lat'] + 
+              clickPt[2] * diff(as.numeric(mapMinMax[c('ll.lat','ur.lat')])))
     
-    whClosest <- which.min( (thePlot$data$lon-locX)^2 +
-                            (thePlot$data$lat-locY)^2 )
+    whClosest <- which.min( sqrt((lon-as.numeric(locX))^2 + (lat-locY)^2))
     
-    thePlot <- 
+    thePlot2 <- 
+      thePlot +
+      ggplot2::geom_point(data=data.frame(lon=lon[whClosest],lat=lat[whClosest]),
+                          ggplot2::aes(x=lon,y=lat), color='cyan') 
+      thePlot2
+    
       ggplot2::ggplot( linkDf, ggplot2::aes(x=lon, y=lat, fill=ind) ) +
       ggplot2::geom_raster() +
-      ggplot2::geom_point(data=thePlot$data[whClosest,],
-                          ggplot2::aes(x=lon,y=lat), color='red') +
       ggplot2::scale_x_continuous(expand=c(0,0)) +
       ggplot2::scale_y_continuous(expand=c(0,0)) +
       ggplot2::ggtitle(paste('link index:',thePlot$data$ind[whClosest]))

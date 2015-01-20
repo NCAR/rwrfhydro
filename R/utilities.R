@@ -8,3 +8,9 @@
 #' GetPkgDataPath('Fourmile_test_case_AD.hydro_OrodellBasin_100m_8.nc')
 #' #' @export
 GetPkgDataPath <- function(theFile) system.file("extdata", theFile, package = "rwrfhydro")
+
+#
+StdLon <- function(x) {
+  x[which(x>180.)] <- x[which(x>180.)]-360.
+  x
+}
