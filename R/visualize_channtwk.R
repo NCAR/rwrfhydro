@@ -163,14 +163,14 @@ VisualizeChanNtwk <- function(file, gaugePts=NULL, excludeInds=NULL,
     if(length(gaugeZoom)) {
       if(gaugeZoom %in% gaugePtsBothDf$location) {
         subGaugeDf <- subset(gaugePtsBothDf, location==gaugeZoom)
-        plotLimX <- padRange(range(subGaugeDf$lon),diff=padPlot)
-        plotLimY <- padRange(range(subGaugeDf$lat),diff=padPlot)
+        plotLimX <- PadRange(range(subGaugeDf$lon),diff=padPlot)
+        plotLimY <- PadRange(range(subGaugeDf$lat),diff=padPlot)
         location <- c(lon=mean(range(subGaugeDf$lon)),
                       lat=mean(range(subGaugeDf$lat)) )
       }
     } else {
-      plotLimX <- padRange(range(linkDf$lon),diff=padPlot)
-      plotLimY <- padRange(range(linkDf$lat),diff=padPlot)
+      plotLimX <- PadRange(range(linkDf$lon),diff=padPlot)
+      plotLimY <- PadRange(range(linkDf$lat),diff=padPlot)
     }
     
     theMap <- ggmap::get_map(location, zoom = zoom, source = source, maptype=maptype)
