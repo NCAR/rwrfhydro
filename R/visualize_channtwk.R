@@ -115,7 +115,7 @@ VisualizeChanNtwk <- function(file, gaugePts=NULL, excludeInds=NULL,
     gaugePtsDf <- plyr::ddply(gaugePtsDf,
                               plyr::.(location, lon, lat), 
                               plyr::summarize,
-                              lon=StdLon(lon))
+                              lon=rwrfhydro::StdLon(lon))
      
     ## the euclidean metric in lat/lon works fine.
     FindNn <- function(dd) {
