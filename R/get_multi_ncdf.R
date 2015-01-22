@@ -107,7 +107,7 @@ GetFileStat <- function(theFile, variable, index, ...) {
     time <- as.POSIXct(sub('_',' ',time), tz='UTC') ## wrf hydro times are UTC 
   }
 
-  possibleTimeNames <- c('Restart_Time','time_coverage_start')
+  possibleTimeNames <- c('Restart_Time','time_coverage_end')
   whTimeName <- which(possibleTimeNames %in% names(ncdf4::ncatt_get( ncid, 0 )))
   if(length(whTimeName)) {
     time <- ncdf4::ncatt_get( ncid, 0 )[possibleTimeNames[whTimeName]]
