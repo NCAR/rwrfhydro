@@ -1,3 +1,5 @@
+
+
 #' Visualize WRF Hydro channel link indices and get coordinates.
 #'
 #' \code{VisualizeChanNtwk} shows the channel network indices and provides interactive selection to retrieve link coordinates.
