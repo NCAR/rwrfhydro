@@ -7,8 +7,7 @@
 #' @examples
 #' GetPkgDataPath('Fourmile_test_case_AD.hydro_OrodellBasin_100m_8.nc')
 #' @export
-GetPkgDataPath <- function(theFile) system.file("extdata", theFile, package = "rwrfhydro")
-
+GetPkgDataPath <- function(theFile='') system.file("extdata", theFile, package = "rwrfhydro")
 
 #' StdLon
 #' 

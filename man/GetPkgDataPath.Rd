@@ -4,7 +4,7 @@
 \alias{GetPkgDataPath}
 \title{GetPkgDataPath}
 \usage{
-GetPkgDataPath(theFile)
+GetPkgDataPath(theFile = "")
 }
 \arguments{
 \item{theFile}{The external data file to load (this is in dirrefent places before, rwrfhydro/inst/extdata, and after build, rwrfhydro/).}
