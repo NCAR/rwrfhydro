@@ -238,9 +238,7 @@ GetMultiNcdfFile <- function(filesInd, filesList,
 #' @examples
 #' # This example only shows data for 3 dates, because of limitation of package data.
 #' # Find the package data directory on your machine
-#' aFile <- 'Fourmile_test_case_AD.2007060600.LDASOUT_DOMAIN1'
-#' aFilePath <- GetPkgDataPath(aFile)
-#' pkgDataDir <- strtrim(aFilePath,nchar(aFilePath)-nchar(aFile))
+#' pkgDataDir <- GetPkgDataPath()
 #' 
 #' # fileList - These are the groups of files.
 #' lsmFiles <- list.files(path=pkgDataDir, pattern='LDASOUT_DOMAIN', full.names=TRUE)
