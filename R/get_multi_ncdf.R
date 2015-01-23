@@ -233,7 +233,63 @@ GetMultiNcdfFile <- function(filesInd, filesList,
 #' @return A dataframe in an awesome format (, Aubrey!).
 #'
 #' @examples
-#' This is to do.
+#' # This example only shows data for 3 dates, because of limitation of package data.
+#' # Find the package data directory on your machine
+#' aFile <- 'Fourmile_test_case_AD.2007060600.LDASOUT_DOMAIN1'
+#' aFilePath <- GetPkgDataPath(aFile)
+#' pkgDataDir <- strtrim(aFilePath,nchar(aFilePath)-nchar(aFile))
+#' 
+#' # fileList - These are the groups of files.
+#' lsmFiles <- list.files(path=pkgDataDir, pattern='LDASOUT_DOMAIN', full.names=TRUE)
+#' hydroFiles <- list.files(path=pkgDataDir, pattern='HYDRO_RST', full.names=TRUE)
+#' fileList <- list( lsm=lsmFiles, hydro=hydroFiles)
+#' 
+#' # varList - Define which variables are desired for each file group.
+#' lsmVars   <- list(TRAD='TRAD', SWE='SNEQV')
+#' ## smc1-4 will correspond to the vertical layers.
+#' hydroVars <- list(streamflow='qlink1', smc1='sh2ox', smc2='sh2ox', smc3='sh2ox', smc4='sh2ox')
+#' # Note that the outer names collate with fileList.
+#' variableList <- list(lsm=lsmVars, hydro=hydroVars)
+#' 
+#' # indexList - Define what indices/stats are desired for each variable.
+#' # Note that only scalars can be retrieved for each entry.
+#' # Show how to define your own useful stats to use.
+#' # For basin average and max we need the basin mask (this is a non-standard
+#' # field in the fine grid file).
+#' library(ncdf4)
+#' fineGridNc <- nc_open(GetPkgDataPath('Fourmile_test_case_AD.hydro_OrodellBasin_100m_8msk.nc'))
+#' basinMask <- ncvar_get(fineGridNc, 'basn_msk_geogrid')
+#' nc_close(fineGridNc)
+#' basAvg <- function(var) sum(basinMask*var)/sum(basinMask)
+#' basMax <- function(var) max(ceiling(basinMask)*var)
+#' basinKm2 <- sum(basinMask)  ## just asking about the total area of the basin.
+#' 
+#' # Note that the list names at this level collate with the variable names
+#' # in VarList. You are responsible for entering the correct indices. Note
+#' # that these are reverse order from what is shown in "ncdump -h".
+#' lsmInds   <- list(TRAD=list(start=c(1,1,1), end=c(21,7,1), stat='basAvg'),
+#'                   SNEQV=list(start=c(1,1,1), end=c(21,7,1), stat='basMax'))
+#' hydroInds <- list(qlink1=1,
+#'                   smc1=list(start=c(1,1,1), end=c(21,7,1), stat='basAvg'),
+#'                   smc2=list(start=c(1,1,2), end=c(21,7,2), stat='basAvg'),
+#'                   smc3=list(start=c(1,1,3), end=c(21,7,3), stat='basAvg'),
+#'                   smc4=list(start=c(1,1,4), end=c(21,7,4), stat='basAvg') )
+#' indexList <- list( lsm=lsmInds, hydro=hydroInds)
+#' 
+#' library(doMC)   ## Showing parallelization, which is at the file level within
+#' registerDoMC(3) ## each file grous; pointless to be longer than your timeseries.
+#' fileData <- GetMultiNcdf(file=fileList,var=variableList, ind=indexList,
+#'                          parallel=TRUE)
+#' 
+#' # plot
+#' # the lsm and hyro output for this spinup were at different times... 
+#' library(ggplot2)
+#' library(scales)
+#' ggplot( fileData, aes(x=POSIXct, y=value, color=fileGroup)) +
+#'   geom_line() + geom_point() +
+#'   facet_wrap(~variableGroup, scales='free_y', ncol=1) +
+#'   scale_x_datetime(breaks = date_breaks("5 days"))
+#' 
 #' @export
 GetMultiNcdf <- function(filesList, variableList, indexList, parallel=FALSE) {
   ## Only do collated lists. Collation check at the file-variable level. 
