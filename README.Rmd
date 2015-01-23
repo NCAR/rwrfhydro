@@ -34,8 +34,8 @@ library(rwrfhydro)
 ```
 
 # Using
-To get package metadata and a listing of functions: `library(help=rwrfhydro)`.
-For specific functionality see function help (e.g. `?VisualizeDomain`) and for an overview check out the vignettes (`browseVignettes("rwrfhydro")`).
+To get package metadata and a listing of functions:  `ls('package:rwrfhydro')` and, eventually `library(help=rwrfhydro)`.
+For specific functionality see function help (e.g. `?VisualizeDomain`) and, eventually, for an overview check out the vignettes (`browseVignettes("rwrfhydro")`).
 
 # Developing
 There are three main aspects of developing the code base and contributing:
