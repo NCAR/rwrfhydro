@@ -216,13 +216,16 @@ GetMultiNcdfFile <- function(filesInd, filesList,
 #=====================================================================
 
 #=====================================================================
-#' Get WRF Hydro output/restart timeseries spread over multiple files.
+#' Get WRF Hydro output/restart (scalar) timeseries spread over multiple files.
 #'
 #' \code{GetMultiNcdf} is designed to get *all* your output/restart data which
 #' are spread over multiple files. Three collated lists specify
 #' 1) file groups, 2) variables for each file group, and 3) indices or statistics
 #' for each variable in each file group. The names of the lists must match. See 
-#' examples for details. 
+#' examples for details. While the routine can read and summarize raster data at
+#' each time via specificied statistics, it only returns scalar timeseries. (It
+#' may be possible to extend to return both scalar and raster data if there's
+#' demand.)
 #'
 #' @param filesList The list of file groups. Names must match those in the other lists. 
 #' @param variableList The list of variables for each file group. Names must match filesList.
@@ -230,7 +233,7 @@ GetMultiNcdfFile <- function(filesInd, filesList,
 #' @param parallel Logical, this is the .parallel argument of plyr functions.
 #' Parallelization is at the file level (not file group).Typcially we achieve
 #' parallelization using the DoMC package. See examples. 
-#' @return A dataframe in an awesome format (, Aubrey!).
+#' @return A dataframe (in an awesome format).
 #'
 #' @examples
 #' # This example only shows data for 3 dates, because of limitation of package data.
