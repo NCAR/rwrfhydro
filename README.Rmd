@@ -26,18 +26,25 @@ Table of Contents
   * [Introductory R resources](#introductory-r-resources)
 
 # Installing
-Installing the development package (not on [CRAN](http://cran.r-project.org/)) is facilitated by the devtools package (on CRAN).
+Installing the development package (not on [CRAN](http://cran.r-project.org/)) is facilitated by the devtools package (on CRAN),
+so it is installed in this process. The following is done for the initial install or to update (if there are changes to 
+rwrfhydro - we may consider notifying users when the library is loaded if there have been updtes).
 ``` R
 install.packages("devtools")
 devtools::install_github("mccreigh/rwrfhydro")
-library(rwrfhydro)
 ```
 
 # Using
+After the one-time install, simply load the rwrfhydro library in your R session:
+```
+library(rwrfhydro)
+```
+
 To get package metadata and a listing of functions:  `ls('package:rwrfhydro')` and, eventually `library(help=rwrfhydro)`.
 For specific functionality see function help (e.g. `?VisualizeDomain`) and, eventually, for an overview check out the vignettes (`browseVignettes("rwrfhydro")`).
 
 # Developing
+
 There are three main aspects of developing the code base and contributing:
 
 * Version control for collaboration: Again, not terribly interesting but incredibly useful. For those new to the Git/Github process, it can be a bit daunting. Please contact us for some help, we do want to get your useful code into the main repository!
@@ -49,6 +56,9 @@ There are three main aspects of developing the code base and contributing:
 All of these topics (minus some of our specific best practices) are treated by [Hadley Wickham’s book on R Packages](http://r-pkgs.had.co.nz/). Specific sections of this book are linked below. Further resources on R package development are listed below. 
 
 ## Version control for collaboration: Github
+Note that devtools installs rwrfhydro into you default library path (`.libPaths()[1]`) and that the sources code is not 
+included. To edit the source, code you can download from github or you can actually fork and clone the repository to your 
+machine of choice. 
 
 ### Forking
 Please fork the repository to contribute. A fork is a separate copy of the repository. [Forking is trivial in Github](https://help.github.com/articles/fork-a-repo/). But remember to keep your fork sync'd as much as possible. You have to have a free (for open-source repositories) account to fork on github. When you have a piece of code to add to the master, [send a pull request](https://help.github.com/articles/using-pull-requests/). A finer point is that topic branches create more coherent pull requests if these extend over time. When possible, create branches for your development topics.
