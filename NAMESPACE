@@ -2,6 +2,10 @@
 
 export(GetMultiNcdf)
 export(GetPkgDataPath)
+export(MkNcdf)
+export(PutSnodasNcdf)
 export(StdLon)
 export(VisualizeChanNtwk)
 export(VisualizeDomain)
+export(getSnodasDepthSweDate)
+export(readSnodasDepthSweDate)
