@@ -27,18 +27,19 @@ Table of Contents
 
 # Installing
 Installing the development package (not on [CRAN](http://cran.r-project.org/)) is facilitated by the devtools package (on CRAN),
-so it is installed in this process. The following is done for the initial install or to update (if there are changes to 
-rwrfhydro - we may consider notifying users when the library is loaded if there have been updtes).
+so devtools is installed in this process. The following is done for the initial install or to update the rwrfhydro package (
+we are consider notifying users when if there have been updates each time the library is loaded).
 ``` R
 install.packages("devtools")
 devtools::install_github("mccreigh/rwrfhydro")
 ```
 
 # Using
-After the one-time install, simply load the rwrfhydro library in your R session:
+After the one-time install or any subsequent re-installs/updates, simply load the rwrfhydro library in an R session:
 ```
 library(rwrfhydro)
 ```
+and now the package (namespace) is available. 
 
 To get package metadata and a listing of functions:  `ls('package:rwrfhydro')` and, eventually `library(help=rwrfhydro)`.
 For specific functionality see function help (e.g. `?VisualizeDomain`) and, eventually, for an overview check out the vignettes (`browseVignettes("rwrfhydro")`).
@@ -58,7 +59,9 @@ All of these topics (minus some of our specific best practices) are treated by [
 ## Version control for collaboration: Github
 Note that devtools installs rwrfhydro into you default library path (`.libPaths()[1]`) and that the sources code is not 
 included. To edit the source, code you can download from github or you can actually fork and clone the repository to your 
-machine of choice. 
+machine of choice. Note that your git repository is not in your default library path, but somewhere else. Using devtools, however, 
+allows you to load the development package similarly to as if it were a package in your library path. The basic use of devtools
+is outlined below. It greatly stream lines all aspects of developing R packages and is highly recommended. 
 
 ### Forking
 Please fork the repository to contribute. A fork is a separate copy of the repository. [Forking is trivial in Github](https://help.github.com/articles/fork-a-repo/). But remember to keep your fork sync'd as much as possible. You have to have a free (for open-source repositories) account to fork on github. When you have a piece of code to add to the master, [send a pull request](https://help.github.com/articles/using-pull-requests/). A finer point is that topic branches create more coherent pull requests if these extend over time. When possible, create branches for your development topics.
