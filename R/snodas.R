@@ -202,8 +202,8 @@ CalcSnodasCoords <- function() {
   ySeq <- seq(minY+(res/2),maxY-(res/2),length.out=nRow)  
   deltaX <- unique(diff(xSeq))[1] # same to 13 decimal places.
   deltaY <- unique(diff(xSeq))[1] # delta x and y are equal.  
-  xCoords <- t(matrix( xSeq, nrow=nRow, ncol=nCol, byrow=TRUE))
-  yCoords <- t(matrix( rev(ySeq), nrow=nRow, ncol=nCol, byrow=FALSE))
+  xCoords <- RotateCw(matrix( xSeq, nrow=nRow, ncol=nCol, byrow=TRUE))
+  yCoords <- RotateCw(matrix( rev(ySeq), nrow=nRow, ncol=nCol, byrow=FALSE))
   list(Lon=xCoords, Lat=yCoords)
 }
 
