@@ -145,7 +145,7 @@ Because ggplot has a big learning curve, we can return closures which 1) provide
 * [http://portal.stats.ox.ac.uk/userdata/ruth/APTS2012/Rcourse10.pdf](http://portal.stats.ox.ac.uk/userdata/ruth/APTS2012/Rcourse10.pdf)
 
 # Introductory R resources (somewhat random)
-* [My introduction to R: multipler resources but sorry the video link is broken.] (https://nex.nasa.gov/nex/resources/118/) 
+* [My introduction to R: multiple resources but, sorry, the video link is broken.] (https://nex.nasa.gov/nex/resources/118/) 
 * [My R cheat sheet (also availabile in LaTex inthe above link).] (https://nex.nasa.gov/nex/static/media/other/R-refcard_2.pdf)
 * [The popular YouTube serires on R by Roger Peng.] (https://www.youtube.com/user/rdpeng)
 * [https://www.datacamp.com/courses/free-introduction-to-r] (https://www.datacamp.com/courses/free-introduction-to-r)
