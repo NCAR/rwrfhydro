@@ -15,8 +15,8 @@
 #' @export
 GetSnodasDepthSweDate <- function(datePOSIXct, outputDir='.', overwrite=FALSE, quiet=TRUE) {
   # date parameters
-  yy=format(datePOSIXct, c("%Y")); mm=format(datePOSIXct, c("%m"))
-  mon=format(datePOSIXct, c("%h")); dd=format(datePOSIXct, c("%d"))
+  yy <- format(datePOSIXct, c("%Y")); mm <- format(datePOSIXct, c("%m"))
+  mon <- format(datePOSIXct, c("%h")); dd <- format(datePOSIXct, c("%d"))
   
   # depthProdId <- '1036',  sweProdId <- '1034'
   # Can construct the filenames. Calling this "0" incase they dont match the
@@ -78,8 +78,8 @@ GetSnodasDepthSweDate <- function(datePOSIXct, outputDir='.', overwrite=FALSE, q
 #' @export
 ReadSnodasDepthSweDate <- function(datePOSIXct, outputDir='.') {
   # date parameters
-  yy=format(datePOSIXct, c("%Y")); mm=format(datePOSIXct, c("%m"))
-  mon=format(datePOSIXct, c("%h")); dd=format(datePOSIXct, c("%d"))
+  yy <- format(datePOSIXct, c("%Y")); mm <- format(datePOSIXct, c("%m"))
+  mon <- format(datePOSIXct, c("%h")); dd <- format(datePOSIXct, c("%d"))
  
   # depthProdId <- '1036',  sweProdId <- '1034'
   depthFile0<- paste0(outputDir,'/','us_ssmv1',
@@ -88,9 +88,9 @@ ReadSnodasDepthSweDate <- function(datePOSIXct, outputDir='.') {
                       '1034tS__T0001TTNATS',yy,mm,dd,'05HP001.dat.gz')
 
   # SNODAS spatial reference and scaling
-  nCol=6935
-  nRow=3351 #columns and rows number:masked version of contiguous US
-  dataScaleFactor = 1000  #multiply the data this amount, both depth and SWE
+  nCol <- 6935
+  nRow <- 3351 #columns and rows number:masked version of contiguous US
+  dataScaleFactor  <-  1000  #multiply the data this amount, both depth and SWE
 
   depthCon <- gzcon(file(depthFile0, "rb"))
   depthData <- readBin(depthCon, integer(), n=nRow*nCol, size=2,
@@ -111,10 +111,10 @@ ReadSnodasDepthSweDate <- function(datePOSIXct, outputDir='.') {
     system(paste0('rm ',sweFile))
     return(NULL)
   }
-  
+
   list(datePOSIXct=datePOSIXct,
-       depth.mm=matrix(depthData, ncol=nCol, nrow=nRow, byrow=TRUE),
-       swe.mm  =matrix(sweData,   ncol=nCol, nrow=nRow, byrow=TRUE) )
+       depth.mm= RotateCw(matrix(depthData, ncol=nCol, nrow=nRow, byrow=TRUE)),
+       swe.mm  = RotateCw(matrix(sweData,   ncol=nCol, nrow=nRow, byrow=TRUE)) ) 
 }
 
 
@@ -140,11 +140,11 @@ PutSnodasNcdf <- function(snodasList) {
                        missing = min(snodasList$swe.mm),
                        dimensionList =
                        list(
-                            x=list(name='Longitude',values=1:ncol(snodasList$swe.mm),
-                              units='Degrees East', unlimited=FALSE,
-                              create_dimvar=FALSE),
                             y=list(name='Latitude',values=1:nrow(snodasList$swe.mm),
                               units='Degrees North', unlimited=FALSE,
+                              create_dimvar=FALSE),
+                            x=list(name='Longitude',values=1:ncol(snodasList$swe.mm),
+                              units='Degrees East', unlimited=FALSE,
                               create_dimvar=FALSE),
                             t=list(name='Time',values=as.numeric(theDate),
                               units='POSIXct', unlimited=TRUE,
@@ -159,11 +159,11 @@ PutSnodasNcdf <- function(snodasList) {
                        missing = min(snodasList$depth.mm),
                        dimensionList =
                        list(
-                            x=list(name='Longitude',values=1:ncol(snodasList$depth.mm),
-                              units='Degrees East', unlimited=FALSE,
-                              create_dimvar=FALSE),
                             y=list(name='Latitude',values=1:nrow(snodasList$depth.mm),
                               units='Degrees North', unlimited=FALSE,
+                              create_dimvar=FALSE),
+                            x=list(name='Longitude',values=1:ncol(snodasList$depth.mm),
+                              units='Degrees East', unlimited=FALSE,
                               create_dimvar=FALSE),
                             t=list(name='Time',values=as.numeric(theDate),
                               units='POSIXct', unlimited=TRUE,
@@ -224,11 +224,11 @@ PutSnodasCoordsNcdf <- function() {
                        missing = -9999,
                        dimensionList =
                        list(
-                            x=list(name='Longitude',values=1:ncol(snodasCoords$Lon),
-                              units='Degrees East', unlimited=FALSE,
-                              create_dimvar=FALSE),
                             y=list(name='Latitude',values=1:nrow(snodasCoords$Lon),
                               units='Degrees North', unlimited=FALSE,
+                              create_dimvar=FALSE),
+                            x=list(name='Longitude',values=1:ncol(snodasCoords$Lon),
+                              units='Degrees East', unlimited=FALSE,
                               create_dimvar=FALSE)
                             ),
                        data = snodasCoords$Lon ) 
@@ -240,11 +240,11 @@ PutSnodasCoordsNcdf <- function() {
                        missing = -9999,
                        dimensionList =
                        list(
-                            x=list(name='Longitude',values=1:ncol(snodasCoords$Lat),
-                              units='Degrees East', unlimited=FALSE,
-                              create_dimvar=FALSE),
                             y=list(name='Latitude',values=1:nrow(snodasCoords$Lat),
                               units='Degrees North', unlimited=FALSE,
+                              create_dimvar=FALSE),
+                            x=list(name='Longitude',values=1:ncol(snodasCoords$Lat),
+                              units='Degrees East', unlimited=FALSE,
                               create_dimvar=FALSE)
                             ),
                        data = snodasCoords$Lat ) 
