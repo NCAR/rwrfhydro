@@ -117,6 +117,7 @@ readSnodasDepthSweDate <- function(datePOSIXct, outputDir='.') {
        swe.mm  =matrix(sweData,   ncol=nCol, nrow=nRow, byrow=TRUE) )
 }
 
+
 #' PutSnodasNcdf
 #'
 #' \code{PutSnodasNcdf} Put the output of readSnodasDepthSweDate into a netcdf file. 
@@ -177,3 +178,79 @@ PutSnodasNcdf <- function(snodasList) {
   outFile <- paste0('SNODAS_',format(snodasList$datePOSIXct,'%Y%m%d'),'.nc')
   MkNcdf( varList, globalAttList, outFile )
 }  
+
+
+#' CalcSnodasCoords
+#'
+#' \code{CalcSnodasCoords} Get and unpack the SNODAS snow depth and SWE tarball for a given date. 
+#' 
+#' @return A list of lon and lat
+#' @examples
+#' snodasCoords <- CalcSnodasCoords()
+#' @export
+CalcSnodasCoords <- function() {
+  nCol=6935
+  nRow=3351 #columns and rows number:masked version of contiguous US
+  minX= -124.733749999999
+  maxX= -66.9420833333342
+  minY= 24.9495833333335
+  maxY= 52.8745833333323 
+  res <- 0.00833333333333300
+  benchX <- -124.729583333332
+  benchY <- 52.8704166666657  
+  xSeq <- seq(minX+(res/2),maxX-(res/2),length.out=nCol)
+  ySeq <- seq(minY+(res/2),maxY-(res/2),length.out=nRow)  
+  deltaX <- unique(diff(xSeq))[1] # same to 13 decimal places.
+  deltaY <- unique(diff(xSeq))[1] # delta x and y are equal.  
+  xCoords <- t(matrix( xSeq, nrow=nRow, ncol=nCol, byrow=TRUE))
+  yCoords <- t(matrix( rev(ySeq), nrow=nRow, ncol=nCol, byrow=FALSE))
+  list(Lon=xCoords, Lat=yCoords)
+}
+
+#' PutSnodasCoordsNcdf
+#'
+#' \code{PutSnodasCoordsNcdf} Put the output of CalcSnodasCoords into a netcdf file. 
+#' @return Success if the filename (which is SNODAS_Coordinates.nc), otherwise NULL.
+#' @examples
+#' PutSnodasCoordsNcdf()
+#' @export
+PutSnodasCoordsNcdf <- function() {
+  snodasCoords <- CalcSnodasCoords()
+  varList = list()
+  varList[[1]] <- list( name='Lon',
+                       longname='Longitude',
+                       units='Deg East',
+                       precision = 'double',
+                       missing = -9999,
+                       dimensionList =
+                       list(
+                            x=list(name='Longitude',values=1:ncol(snodasCoords$Lon),
+                              units='Degrees East', unlimited=FALSE,
+                              create_dimvar=FALSE),
+                            y=list(name='Latitude',values=1:nrow(snodasCoords$Lon),
+                              units='Degrees North', unlimited=FALSE,
+                              create_dimvar=FALSE)
+                            ),
+                       data = snodasCoords$Lon ) 
+
+  varList[[2]] <- list( name='Lat',
+                       longname='Latitude',
+                       units='Deg North',
+                       precision = 'double',
+                       missing = -9999,
+                       dimensionList =
+                       list(
+                            x=list(name='Longitude',values=1:ncol(snodasCoords$Lat),
+                              units='Degrees East', unlimited=FALSE,
+                              create_dimvar=FALSE),
+                            y=list(name='Latitude',values=1:nrow(snodasCoords$Lat),
+                              units='Degrees North', unlimited=FALSE,
+                              create_dimvar=FALSE)
+                            ),
+                       data = snodasCoords$Lat ) 
+    
+  globalAttList <- list()
+  globalAttList[[1]] <- list(name='Time',value='Timeless', precision="text")
+  
+  MkNcdf( varList, globalAttList, 'SNODAS_Coordinates.nc' )
+}
