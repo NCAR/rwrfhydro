@@ -11,9 +11,9 @@
 #' @param quiet       Passed to curl, to show it's progress (typcially too fast to matter).
 #' @return Success or failure. 
 #' @examples
-#' snodasGot <- getSnodasDepthSweDate(as.POSIXct('2015-02-28'))
+#' snodasGot <- GetSnodasDepthSweDate(as.POSIXct('2015-02-28'))
 #' @export
-getSnodasDepthSweDate <- function(datePOSIXct, outputDir='.', overwrite=FALSE, quiet=TRUE) {
+GetSnodasDepthSweDate <- function(datePOSIXct, outputDir='.', overwrite=FALSE, quiet=TRUE) {
   # date parameters
   yy=format(datePOSIXct, c("%Y")); mm=format(datePOSIXct, c("%m"))
   mon=format(datePOSIXct, c("%h")); dd=format(datePOSIXct, c("%d"))
@@ -65,18 +65,18 @@ getSnodasDepthSweDate <- function(datePOSIXct, outputDir='.', overwrite=FALSE, q
 }
 
 
-#' readSnodasDepthSweDate
+#' ReadSnodasDepthSweDate
 #'
-#' \code{GetSnodasDepthSweDate} Read (from local disk into memory) the SNODAS snow depth and SWE for a given date. 
+#' \code{ReadSnodasDepthSweDate} Read (from local disk into memory) the SNODAS snow depth and SWE for a given date. 
 #' 
 #' @param datePOSIXct The date in POSIXct format for which data is desired. Only whole days matter. 
 #' @param outputDir         The directory where the data are archived.
 #' @return A list with a SWE and a depth matrix. 
 #' @examples
-#' snodasGot <- getSnodasDepthSweDate(as.POSIXct('2015-02-28'))
-#' if(snodasGot) snodasList <- readSnodasDepthSweDate(as.POSIXct('2015-02-28'))
+#' snodasGot <- GetSnodasDepthSweDate(as.POSIXct('2015-02-28'))
+#' if(snodasGot) snodasList <- ReadSnodasDepthSweDate(as.POSIXct('2015-02-28'))
 #' @export
-readSnodasDepthSweDate <- function(datePOSIXct, outputDir='.') {
+ReadSnodasDepthSweDate <- function(datePOSIXct, outputDir='.') {
   # date parameters
   yy=format(datePOSIXct, c("%Y")); mm=format(datePOSIXct, c("%m"))
   mon=format(datePOSIXct, c("%h")); dd=format(datePOSIXct, c("%d"))
@@ -120,13 +120,13 @@ readSnodasDepthSweDate <- function(datePOSIXct, outputDir='.') {
 
 #' PutSnodasNcdf
 #'
-#' \code{PutSnodasNcdf} Put the output of readSnodasDepthSweDate into a netcdf file. 
+#' \code{PutSnodasNcdf} Put the output of ReadSnodasDepthSweDate into a netcdf file. 
 #' 
-#' @param snodasList The output of readSnodasDepthSweDate. 
+#' @param snodasList The output of ReadSnodasDepthSweDate. 
 #' @return Success if the filename which is (SNODAS_YYYYMMDD.nc), otherwise NULL.
 #' @examples
-#' snodasGot <- getSnodasDepthSweDate(as.POSIXct('2015-02-28'))
-#' if(snodasGot) snodasList <- readSnodasDepthSweDate(as.POSIXct('2015-02-28'))
+#' snodasGot <- GetSnodasDepthSweDate(as.POSIXct('2015-02-28'))
+#' if(snodasGot) snodasList <- ReadSnodasDepthSweDate(as.POSIXct('2015-02-28'))
 #' PutSnodasNcdf(snodasList)
 #' @export
 PutSnodasNcdf <- function(snodasList) {

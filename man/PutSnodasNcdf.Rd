@@ -7,17 +7,17 @@
 PutSnodasNcdf(snodasList)
 }
 \arguments{
-\item{snodasList}{The output of readSnodasDepthSweDate.}
+\item{snodasList}{The output of ReadSnodasDepthSweDate.}
 }
 \value{
 Success if the filename which is (SNODAS_YYYYMMDD.nc), otherwise NULL.
 }
 \description{
-\code{PutSnodasNcdf} Put the output of readSnodasDepthSweDate into a netcdf file.
+\code{PutSnodasNcdf} Put the output of ReadSnodasDepthSweDate into a netcdf file.
 }
 \examples{
-snodasGot <- getSnodasDepthSweDate(as.POSIXct('2015-02-28'))
-if(snodasGot) snodasList <- readSnodasDepthSweDate(as.POSIXct('2015-02-28'))
+snodasGot <- GetSnodasDepthSweDate(as.POSIXct('2015-02-28'))
+if(snodasGot) snodasList <- ReadSnodasDepthSweDate(as.POSIXct('2015-02-28'))
 PutSnodasNcdf(snodasList)
 }
 
