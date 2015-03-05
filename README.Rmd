@@ -144,4 +144,11 @@ Because ggplot has a big learning curve, we can return closures which 1) provide
 * [http://cran.r-project.org/doc/contrib/Leisch-CreatingPackages.pdf](http://cran.r-project.org/doc/contrib/Leisch-CreatingPackages.pdf)
 * [http://portal.stats.ox.ac.uk/userdata/ruth/APTS2012/Rcourse10.pdf](http://portal.stats.ox.ac.uk/userdata/ruth/APTS2012/Rcourse10.pdf)
 
-# Introductory R resources
+# Introductory R resources (somewhat random)
+* [My introduction to R: multipler resources but sorry the video link is broken.] (https://nex.nasa.gov/nex/resources/118/) 
+* [My R cheat sheet (also availabile in LaTex inthe above link).] (https://nex.nasa.gov/nex/static/media/other/R-refcard_2.pdf)
+* [The popular YouTube serires on R by Roger Peng.] (https://www.youtube.com/user/rdpeng)
+* [https://www.datacamp.com/courses/free-introduction-to-r] (https://www.datacamp.com/courses/free-introduction-to-r)
+* [http://cran.r-project.org/doc/contrib/Torfs+Brauer-Short-R-Intro.pdf] (http://cran.r-project.org/doc/contrib/Torfs+Brauer-Short-R-Intro.pdf)
+* [http://cran.r-project.org/doc/manuals/R-intro.pdf] (http://cran.r-project.org/doc/manuals/R-intro.pdf)
+
