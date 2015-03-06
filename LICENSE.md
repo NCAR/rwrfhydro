@@ -18,7 +18,7 @@
 8. **Complete Agreement.** This Agreement constitutes the entire agreement between the parties with respect to the use of the Software and supersedes all prior or contemporaneous understandings regarding such subject matter. No amendment to or modification of this Agreement will be binding unless in a writing and signed by UCAR.
 9. **Notices and Additional Terms.** Copyright in Software is held by UCAR. You must include, with each copy of the Software and associated documentation, a copy of this Agreement and the following notice:  
   
-   **"The source of this material is the Research Applications Laboratory at the National Center for Atmospheric Research, a program of the University Corporation for Atmospheric Research (UCAR) pursuant to a Cooperative Agreement with the National Science Foundation; ©2007-2014 University Corporation for Atmospheric Research. All Rights Reserved."**  
+   **"The source of this material is the Research Applications Laboratory at the National Center for Atmospheric Research, a program of the University Corporation for Atmospheric Research (UCAR) pursuant to a Cooperative Agreement with the National Science Foundation; ©2007-2015 University Corporation for Atmospheric Research. All Rights Reserved."**  
   
    The following notice shall be displayed on any scholarly works associated with, related to or derived from the Software:  
 
