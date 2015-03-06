@@ -19,7 +19,7 @@
 
 9. Notices and Additional Terms. Copyright in Software is held by UCAR. You must include, with each copy of the Software and associated documentation, a copy of this Agreement and the following notice: 
 
-**"The source of this material is the Research Applications Laboratory at the National Center for Atmospheric Research, a program of the University Corporation for Atmospheric Research (UCAR) pursuant to a Cooperative Agreement with the National Science Foundation; �2007 University Corporation for Atmospheric Research. All Rights Reserved." **
+***"The source of this material is the Research Applications Laboratory at the National Center for Atmospheric Research, a program of the University Corporation for Atmospheric Research (UCAR) pursuant to a Cooperative Agreement with the National Science Foundation; ©2007-2014 University Corporation for Atmospheric Research. All Rights Reserved." ***
 
 The following notice shall be displayed on any scholarly works associated with, related to or derived from the Software: 
 
