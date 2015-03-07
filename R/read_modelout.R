@@ -1,8 +1,9 @@
-#' Read WRF-Hydro standard-format forecast points output text file
+#' ReadFrxstPts
+#Read WRF-Hydro standard-format forecast points output text file
 #'
-#' \code{ReadFrxstptsOut} reads in WRF-Hydro forecast points output text file.
+#' \code{ReadFrxstPts} reads in WRF-Hydro forecast points output text file.
 #'
-#' \code{ReadFrxstptsOut} reads a standard-format WRF-Hydro forecast points output text
+#' \code{ReadFrxstPts} reads a standard-format WRF-Hydro forecast points output text
 #' file and creates a dataframe with consistent date and data columns for use with other
 #' rwrfhydro tools.
 #' 
@@ -14,10 +15,9 @@
 #' ## Take a forecast point output text file for an hourly model run of Fourmile Creek
 #' ## and return a dataframe.
 #'
-#' modStr1h.mod1.fc <- ReadFrxstptsOut("../OUTPUT/frxst_pts_out.txt")
+#' modStr1h.mod1.fc <- ReadFrxstPts("../OUTPUT/frxst_pts_out.txt")
 #' @export
-
-ReadFrxstptsOut <- function(pathOutfile) {
+ReadFrxstPts <- function(pathOutfile) {
     myobj <- read.table(pathOutfile, header=F, sep=",", colClasses=c("character","character","integer","numeric","numeric","numeric","numeric","numeric"), na.strings=c("********","*********","************"))
     colnames(myobj) <- c("secs","timest","st_id","st_lon","st_lat","q_cms","q_cfs","dpth_m")
     myobj$POSIXct <- as.POSIXct(as.character(myobj$timest), format="%Y-%m-%d %H:%M:%S", tz="UTC")
@@ -25,8 +25,8 @@ ReadFrxstptsOut <- function(pathOutfile) {
 myobj
 }
 
-
-#' Read WRF-Hydro standard-format groundwater output text file
+#' ReadGwOut
+# Read WRF-Hydro standard-format groundwater output text file
 #'
 #' \code{ReadGwOut} reads in WRF-Hydro groundwater output text file.
 #'
@@ -44,7 +44,6 @@ myobj
 #'
 #' modGWout1h.mod1.fc <- ReadGwOut("../OUTPUT/GW_outflow.txt")
 #' @export
-
 ReadGwOut <- function(pathOutfile) {
     myobj <- read.table(pathOutfile,header=F)
     if ( grepl("GW_zlev", pathOutfile) ) {

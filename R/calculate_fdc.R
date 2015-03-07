@@ -18,7 +18,6 @@
 #'
 #' obsStr5min.fc <- CalcFdc(obsStr5min.fc, "q_cms")
 #' @export
-
 CalcFdc <- function(strflowDf, strflowCol="q_cms") {
     tmp <- rank(-strflowDf[,strflowCol],na.last="keep")
     strflowDf[,paste0(strflowCol,".fdc")] <- NA
@@ -52,7 +51,6 @@ CalcFdc <- function(strflowDf, strflowCol="q_cms") {
 #' fdc.obsStr5min.fc(0.2)
 #' > 0.72
 #' @export
-
 CalcFdcSpline <- function(strflowDf, strflowCol="q_cms") {
     strflowSpline <- splinefun(strflowDf[,paste0(strflowCol,".fdc")], strflowDf[,strflowCol], method='natural')
     strflowSpline
@@ -82,7 +80,6 @@ CalcFdcSpline <- function(strflowDf, strflowCol="q_cms") {
 #'
 #' PlotFdc(obsStr5min.fc, fdcProb=0.2)
 #' @export
-
 PlotFdc <- function(strflowDf, strflowCol="q_cms", spline=TRUE, fdcProb=NULL) {
 plot(strflowDf[,paste0(strflowCol,".fdc")], strflowDf[,strflowCol], log='y', xlab="Probability of Exceedance", ylab=c("Flow (log scale)"), main=c(paste("Flow Duration Curve: ", deparse(substitute(strflowDf)), ":", deparse(substitute(strflowCol)), ", n=", sum(!is.na(strflowDf[,strflowCol])))))
 if (spline | !is.null(fdcProb)) {
@@ -135,7 +132,6 @@ if (spline | !is.null(fdcProb)) {
 #'
 #' PlotFdcCompare(obsStr5min.fc, "q_cms", mod1Str5min.fc, "q_cms", strflowDf.mod2=mod2Str5min.fc, strflowCol.mod2="q_cms", labelObs="Observed Fourmile Creek (5-min)", labelMod1="1-D Flow Model", labelMod2="2-D Flow Model")
 #' @export
-
 PlotFdcCompare <- function(strflowDf.obs, strflowCol.obs="q_cms",
                             strflowDf.mod1, strflowCol.mod1="q_cms",
                             strflowDf.mod2=NULL, strflowCol.mod2="q_cms",

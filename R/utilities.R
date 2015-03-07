@@ -42,7 +42,7 @@ PadRange <- function(limits, delta=diffMult*diff(limits), diffMult=.05) {
 #' RotateCw
 #' 
 #' \code{RotateCw} Rotates a matrix clock-wise. 
-#' @param matrix A vector of length 2, an initial range, to be expanded.
+#' @param matrix A matrix.
 #' @examples
 #' x <- matrix(1:9, 3)
 #' x
@@ -53,7 +53,7 @@ RotateCw <- function(matrix) t(apply(matrix, 2, rev))
 #' RotateCcw
 #' 
 #' \code{RotateCcw} Rotates a matrix counter-clock-wise. 
-#' @param matrix 
+#' @param matrix A matrix. 
 #' @examples
 #' x <- matrix(1:9, 3)
 #' x

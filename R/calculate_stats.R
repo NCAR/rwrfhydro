@@ -429,7 +429,7 @@ else {
 #' \code{CalcStrPerf} calculates model performance statistics for streamflow output.
 #'
 #' \code{CalcStrPerf} reads a model forecast point streamflow timeseries (i.e., created using \code{\link{ReadFrxstPts}}) and
-#' a streamflow observation timeseries (i.e., created using \code{\link{ReadUsgsFlow}}) and calculates model performance
+#' a streamflow observation timeseries (i.e., created using \code{\link{ReadUsgsGage}}) and calculates model performance
 #' statistics (Nash-Sutcliffe Efficiency, Rmse, etc.) at various time scales and for low
 #' and high flows. Assumes model output and observation datasets have the same time step
 #' (e.g., both hourly).
@@ -486,7 +486,7 @@ else {
 #' ## Take forecast point model output for Fourmile Creek (modStrh.mod1.fc) and a corresponding
 #' ## USGS gage observation file (obsStrh.fc), both at an hourly time step, and calculate
 #' ## model performance statistics. The model forecast point data was imported using ReadFrxstPts
-#' ## and the gage observation data was imported using ReadUsgsFlow.
+#' ## and the gage observation data was imported using ReadUsgsGage.
 #'
 #' CalcStrPerf(modStrh.mod1.fc, obsStrh.fc)
 #'
@@ -665,7 +665,7 @@ CalcStrPerf <- function (stroutDf, obsDf, strCol="q_cms", obsCol="q_cms") {
 #' \code{CalcFdcPerf} calculates flow duration curve statistics for streamflow output.
 #'
 #' \code{CalcFdcPerf} reads a model forecast point streamflow timeseries (i.e., created using \code{\link{ReadFrxstPts}}) and
-#' a streamflow observation timeseries (i.e., created using \code{\link{ReadUsgsFlow}}) and calculates flow duration curve
+#' a streamflow observation timeseries (i.e., created using \code{\link{ReadUsgsGage}}) and calculates flow duration curve
 #' statistics at various exceedance thresholds (e.g., 10\%, 20\%, etc.).
 #'
 #' Flow Duration Curve Statistics:
@@ -694,7 +694,7 @@ CalcStrPerf <- function (stroutDf, obsDf, strCol="q_cms", obsCol="q_cms") {
 #' ## Take forecast point model output for Fourmile Creek (modStrh.mod1.fc) and a corresponding
 #' ## USGS gage observation file (obsStrh.fc), both at an hourly time step, and calculate
 #' ## flow duration curve statistics. The model forecast point data was imported using ReadFrxstPts
-#' ## and the gage observation data was imported using ReadUsgsFlow.
+#' ## and the gage observation data was imported using ReadUsgsGage.
 #'
 #' CalcFdcPerf(modStrh.mod1.fc, obsStrh.fc)
 #'

@@ -29,7 +29,7 @@ A new dataframe containing the model performance statistics.
 }
 \details{
 \code{CalcStrPerf} reads a model forecast point streamflow timeseries (i.e., created using \code{\link{ReadFrxstPts}}) and
-a streamflow observation timeseries (i.e., created using \code{\link{ReadUsgsFlow}}) and calculates model performance
+a streamflow observation timeseries (i.e., created using \code{\link{ReadUsgsGage}}) and calculates model performance
 statistics (Nash-Sutcliffe Efficiency, Rmse, etc.) at various time scales and for low
 and high flows. Assumes model output and observation datasets have the same time step
 (e.g., both hourly).
@@ -74,7 +74,7 @@ time scales/Flow Types:
 ## Take forecast point model output for Fourmile Creek (modStrh.mod1.fc) and a corresponding
 ## USGS gage observation file (obsStrh.fc), both at an hourly time step, and calculate
 ## model performance statistics. The model forecast point data was imported using ReadFrxstPts
-## and the gage observation data was imported using ReadUsgsFlow.
+## and the gage observation data was imported using ReadUsgsGage.
 
 CalcStrPerf(modStrh.mod1.fc, obsStrh.fc)
 

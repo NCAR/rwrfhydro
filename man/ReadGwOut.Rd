@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_modelout.R
 \name{ReadGwOut}
 \alias{ReadGwOut}
-\title{Read WRF-Hydro standard-format groundwater output text file}
+\title{ReadGwOut}
 \usage{
 ReadGwOut(pathOutfile)
 }

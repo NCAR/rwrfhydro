@@ -1,8 +1,8 @@
 #' Read standard-format text data table downloaded from USGS Water Data
 #'
-#' \code{ReadUsgsFlow} reads USGS data table (streamflow and/or stage) and puts into a dataframe.
+#' \code{ReadUsgsGage} reads USGS data table (streamflow and/or stage) and puts into a dataframe.
 #'
-#' \code{ReadUsgsFlow} reads a streamflow or stage time series data table (standard USGS Water
+#' \code{ReadUsgsGage} reads a streamflow or stage time series data table (standard USGS Water
 #' Data format) and outputs a dataframe with consistent date and data columns for use with other
 #' rwrfhydro tools.
 #' 
@@ -17,10 +17,9 @@
 #' ## Take a text file downloaded from the USGS Water Data website for 5-minute flow at Fourmile Creek
 #' ## and create a dataframe called "obsStr5min.fc".
 #'
-#' obsStr5min.fc <- ReadUsgsFlow("../OBS/STRFLOW/5min_str_06727500_110401_140810.txt", "America/Denver")
+#' obsStr5min.fc <- ReadUsgsGage("../OBS/STRFLOW/5min_str_06727500_110401_140810.txt", "America/Denver")
 #' @export
-
-ReadUsgsFlow <- function(pathGageData, timeZone) {
+ReadUsgsGage <- function(pathGageData, timeZone) {
     outDf <- read.table(pathGageData, sep="\t", na.strings=c("","Rat","Mnt"), stringsAsFactors=F, comment.char="#")
     outDf.head <- outDf[1,]
     outDf <- outDf[3:nrow(outDf),]
