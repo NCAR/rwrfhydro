@@ -4,15 +4,16 @@
 \alias{ReadUsgsGage}
 \title{Read standard-format text data table downloaded from USGS Water Data}
 \usage{
-ReadUsgsGage(pathGageData, timeZone)
+ReadUsgsGage(pathGageData, returnMetric = TRUE, returnEnglish = TRUE)
 }
 \arguments{
 \item{pathGageData}{The full pathname to the streamflow/stage time series text file as
 downloaded from USGS Water Data. The file should include the standard USGS header info and
 the data time series with standard USGS columns.}
 
-\item{timeZone}{The time zone for the USGS gage data. Time zone name must be R-friendly for your
-current OS. See: \url{http://stat.ethz.ch/R-manual/R-devel/library/base/html/timezones.html}}
+\item{returnMetric}{Logical: Return variables in these units (cms and m)?}
+
+\item{returnEnglish}{Logical: Return variables in english units (cfs and ft)?}
 }
 \value{
 A dataframe containing the USGS flow and/or stage data.
@@ -29,6 +30,7 @@ rwrfhydro tools.
 ## Take a text file downloaded from the USGS Water Data website for 5-minute flow at Fourmile Creek
 ## and create a dataframe called "obsStr5min.fc".
 
-obsStr5min.fc <- ReadUsgsGage("../OBS/STRFLOW/5min_str_06727500_110401_140810.txt", "America/Denver")
+obsStr5min.fc <- ReadUsgsGage("../OBS/STRFLOW/5min_str_06727500_110401_140810.txt")
+obsStr5min.fc <- ReadUsgsGage("../OBS/STRFLOW/5min_str_06727500_110401_140810.txt, returnEnglish=FALSE")
 }
 

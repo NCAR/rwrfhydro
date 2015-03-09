@@ -60,3 +60,32 @@ RotateCw <- function(matrix) t(apply(matrix, 2, rev))
 #' RotateCcw(x)
 #' RotateCcw(RotateCcw(x))
 RotateCcw <- function(matrix) apply(matrix, 1, rev)
+
+
+#' CalcWaterYear
+#' 
+#' \code{CalcWaterYear} Returns the water year or the day of water year for a given POSIXct.  
+#' @param POSIXct is a POSIXct variable.
+#' @param dayOf signals if you want to get back the day of the water year instead of the water year.
+#' @examples
+#' CalcWaterYear(as.POSIXct(c("2011-09-30", "2011-10-01"), tz='US/Pacific'))
+#' CalcWaterYear(as.POSIXct(c("2011-09-30", "2011-10-01"), tz='US/Pacific'), dayOf=TRUE)
+#' @export
+CalcWaterYear <- function(POSIXct, dayOf=FALSE) {
+  if (class(POSIXct)[1]!='POSIXct') {
+    warning("Input is not of class POSIXct, returning NAs.")
+    return( POSIXct*NA )
+  }
+  y <- as.numeric(format(POSIXct,'%Y'))
+  m <- as.numeric(format(POSIXct,'%m'))
+  y[which(m>=10)] <- y[which(m>=10)]+1
+  ## if only the water year is required
+  if (!dayOf) return(y)
+  ## if the day of the water year is desired:
+  d <- as.numeric(format(POSIXct,'%d'))
+  first <- as.POSIXct( paste0(y-1,'-10-01'), format='%Y-%m-%d', tz='UTC')
+  POSIXctUTC <- as.numeric(as.POSIXct(format(POSIXct,'%Y-%m-%d')))
+  doyWY <- round((as.numeric(POSIXctUTC)-as.numeric(first))/60/60/24) + 1
+  doyWY
+}
+ 

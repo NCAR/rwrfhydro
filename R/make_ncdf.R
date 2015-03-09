@@ -1,4 +1,4 @@
-#' MkNcdf
+#' List based creation of netcdf files. 
 #'
 #' \code{MkNcdf} List based creation of netCDF files. Works for most cases. 
 #' 
@@ -24,12 +24,12 @@
 #'                       precision = 'double',
 #'                       missing = -9999,
 #'                       dimensionList =
-#'                           list(
-#'                                x=list(name='x',values=c(10,20),
-#'                                        units='lon', unlimited=FALSE,
-#'                                        create_dimvar=TRUE),
+#'                           list(  # n.b. the dimension order: z,y,x,t
 #'                                 y=list(name='y',values=2.5+((0:6)*5),
 #'                                        units='lat', unlimited=FALSE,
+#'                                        create_dimvar=TRUE),
+#'                                 x=list(name='x',values=c(10,20),
+#'                                        units='lon', unlimited=FALSE,
 #'                                        create_dimvar=TRUE)
 #'                                ),
 #'                      data = matrix( 1:7, nrow=7, ncol=2 ) )

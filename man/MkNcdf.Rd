@@ -2,7 +2,7 @@
 % Please edit documentation in R/make_ncdf.R
 \name{MkNcdf}
 \alias{MkNcdf}
-\title{MkNcdf}
+\title{List based creation of netcdf files.}
 \usage{
 MkNcdf(varList, globalAttList, filename)
 }
@@ -37,12 +37,12 @@ varList[[2]] <- list( name='precipMult22',
                       precision = 'double',
                       missing = -9999,
                       dimensionList =
-                          list(
-                               x=list(name='x',values=c(10,20),
-                                       units='lon', unlimited=FALSE,
-                                       create_dimvar=TRUE),
+                          list(  # n.b. the dimension order: z,y,x,t
                                 y=list(name='y',values=2.5+((0:6)*5),
                                        units='lat', unlimited=FALSE,
+                                       create_dimvar=TRUE),
+                                x=list(name='x',values=c(10,20),
+                                       units='lon', unlimited=FALSE,
                                        create_dimvar=TRUE)
                                ),
                      data = matrix( 1:7, nrow=7, ncol=2 ) )
