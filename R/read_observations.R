@@ -61,10 +61,10 @@ ReadUsgsGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE) {
   
   # instantaneous vs daily average values
   usgsTimeFmt <- if (grepl(" ",outDf$datetime[1])) {
-    usgsTimeFmt <- "%Y-%m-%d %H:%M" # instantaneous
+     "%Y-%m-%d %H:%M" # instantaneous
   } else { "%Y-%m-%d" }  # daily avg
 
-  outDf$POSIXct <- as.POSIXct(as.character(outDf$datetime), format="%Y-%m-%d", tz=timeZone)
+  outDf$POSIXct <- as.POSIXct(as.character(outDf$datetime), format=usgsTimeFmt, tz=timeZone)
 
   outDf$wy <- CalcWaterYear(outDf$POSIXct)
   #outDf$wy <- ifelse(as.numeric(format(outDf$POSIXct,"%m"))>=10,
@@ -112,7 +112,7 @@ TransUsgsTz <- function(usgsTz) {
   # This is the full list of remaining US Olson names, given in R by OlsonNames()
   # "US/Aleutian", "US/Arizona", "US/East-Indiana", "US/Indiana-Starke",
   # "US/Michigan", "US/Pacific-New", "US/Samoa"
-  if(is.na(olson)) warning('The supplied USGS code, ', usgsTz,
+  if(any(is.na(olson))) warning('The supplied USGS code, ', usgsTz,
                            ', is not covered by the cases programmed ',
                            'in TransUsgsTz (in read_observations.R). Please notify us or ',
                            'fix, commit, and send a pull request. Thanks!',
@@ -141,6 +141,7 @@ TransUsgsTz <- function(usgsTz) {
 #' ## and returns a dataframe.
 #'
 #' obsFlux30min.usnc2 <- ReadAmerifluxNC("../OBS/FLUX/AMF_USNC2_2005_L2_WG_V003.nc", "America/New_York")
+#' @export
 ReadAmerifluxNC <- function(pathFluxData, timeZone) {
     ncFile <- nc_open(pathFluxData)
     nc <- ncFile$nvars
@@ -184,8 +185,8 @@ ReadAmerifluxNC <- function(pathFluxData, timeZone) {
 #' ## Takes a CSV file downloaded from the ORNL Amerifux website for US-NR1 (Niwot Ridge)
 #' ## and returns a dataframe.
 #'
-#' obsFlux30min.usnr1 <- ReadAmeriflux("../OBS/FLUX/AMF_USNR1_2013_L2_GF_V008.csv", "America/Denver")
-
+#' obsFlux30min.usnr1 <- ReadAmerifluxCSV("../OBS/FLUX/AMF_USNR1_2013_L2_GF_V008.csv", "America/Denver")
+#' @export
 ReadAmerifluxCSV <- function(pathFluxData, timeZone) {
     outDf <- read.table(pathFluxData, sep=",", skip=20, na.strings=c(-6999,-9999), strip.white=T)
     outDf.head <- read.table(pathFluxData, sep=",", skip=17, nrows=1, strip.white=T)

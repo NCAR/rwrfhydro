@@ -4,7 +4,8 @@
 \alias{GetMultiNcdf}
 \title{Get WRF Hydro output/restart (scalar) timeseries spread over multiple files.}
 \usage{
-GetMultiNcdf(filesList, variableList, indexList, parallel = FALSE)
+GetMultiNcdf(filesList, variableList, indexList, env = parent.frame(),
+  parallel = FALSE)
 }
 \arguments{
 \item{filesList}{The list of file groups. Names must match those in the other lists.}
@@ -12,6 +13,8 @@ GetMultiNcdf(filesList, variableList, indexList, parallel = FALSE)
 \item{variableList}{The list of variables for each file group. Names must match filesList.}
 
 \item{indexList}{The list of indices or statistics to be applied to each variable.}
+
+\item{env}{The environment where the stat function lives}
 
 \item{parallel}{Logical, this is the .parallel argument of plyr functions.
 Parallelization is at the file level (not file group).Typcially we achieve

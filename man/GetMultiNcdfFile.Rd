@@ -5,7 +5,7 @@
 \title{The GetMultiNcdf for individual file groups.}
 \usage{
 GetMultiNcdfFile(filesInd, filesList, variableList, indexList,
-  parallel = FALSE)
+  env = parent.frame(), parallel = FALSE)
 }
 \arguments{
 \item{filesInd}{The index of the file groups.}
@@ -15,6 +15,8 @@ GetMultiNcdfFile(filesInd, filesList, variableList, indexList,
 \item{variableList}{The variable list.}
 
 \item{indexList}{The index list.}
+
+\item{env}{The environment where the stat function lives}
 
 \item{parallel}{Logical, this is the .parallel argument of plyr functions.}
 }

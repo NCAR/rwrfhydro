@@ -5,7 +5,7 @@
 \title{Calculate water balance from WRF-Hydro (w/NoahMP) output}
 \usage{
 CalcNoahmpWatBudg(ldasoutDf, rtoutDf = NULL, gwoutDf = NULL,
-  soildeps = c(100, 300, 600, 1000), basarea = NULL)
+  sfcrt = FALSE, soildeps = c(100, 300, 600, 1000), basarea = NULL)
 }
 \arguments{
 \item{ldasoutDf}{The LDASOUT dataframe (required)}
@@ -13,6 +13,10 @@ CalcNoahmpWatBudg(ldasoutDf, rtoutDf = NULL, gwoutDf = NULL,
 \item{rtoutDf}{The RTOUT dataframe, if overland or subsurface routing was turned on (default=NULL)}
 
 \item{gwoutDf}{The GW_OUT dataframe, if groundwater model was turned on (default=NULL)}
+
+\item{sfcrt}{A flag whether surface overland flow routing was active. All other routing
+options are determined based on the input dataframes, as needed (e.g., if gwoutDf is provided,
+it is assumed that the groundwater model was active). (default=FALSE)}
 
 \item{soildeps}{A list of soil layer depths in mm (top to bottom, default=c(100, 300, 600, 1000))}
 
@@ -40,20 +44,22 @@ REQUIRED variables (these terms must be in your input dataframes):
 
 OUTPUT water budget terms (may vary depending on model configuration):
 \itemize{
-   \item PRCP: Total precipitation (mm)
-   \item ECAN: Total canopy evaporation (mm)
-   \item ETRAN: Total transpiration (mm)
-   \item EDIR: Total surface evaporation (mm)
-   \item DEL_SOILM: Change in total soil moisture storage (mm)
-   \item DEL_SWE: Change in snowpack snow water equivalent (mm)
-   \item DEL_CANWAT: Change in canopy water storage (liquid + ice) (mm)
-   \item SFCRNOFF: Surface runoff from LSM \emph{(for an LSM-only run)} (mm)
-   \item UGDRNOFF: Subsurface runoff from LSM \emph{(for an LSM-only run)} (mm)
-   \item QSTRMVOL: Total runoff into channel from land \emph{(routing model only)}  (mm)
-   \item DEL_SFCHEAD: Change in surface storage \emph{(routing model only)} (mm)
-   \item QBDRY: Total flow outside of domain \emph{(routing model only)} (mm)
-   \item GWOUT: Total groundwater outflow \emph{(routing model only)} (mm)
-   \item DEL_GWSTOR: Change in groundwater storage \emph{(routing model only)} (mm)
+   \item LSM_PRCP: Total precipitation (mm)
+   \item LSM_ECAN: Total canopy evaporation (mm)
+   \item LSM_ETRAN: Total transpiration (mm)
+   \item LSM_EDIR: Total surface evaporation (mm)
+   \item LSM_DELSWE: Change in snowpack snow water equivalent (mm)
+   \item LSM_DELCANWAT: Change in canopy water storage (liquid + ice) (mm)
+   \item LSM_SFCRNOFF: Surface runoff from LSM \emph{(for an LSM-only run)} (mm)
+   \item LSM_UGDRNOFF: Subsurface runoff from LSM \emph{(for an LSM-only run)} (mm)
+   \item LSM_DELSOILM: Change in total soil moisture storage (mm)
+   \item HYD_QSTRMVOL: Total runoff into channel from land \emph{(routing model only)}  (mm)
+   \item HYD_DELSFCHEAD: Change in surface storage \emph{(routing model only)} (mm)
+   \item HYD_QBDRY: Total flow outside of domain \emph{(routing model only)} (mm)
+   \item HYD_GWOUT: Total groundwater outflow \emph{(routing model only)} (mm)
+   \item HYD_DELGWSTOR: Change in groundwater storage \emph{(routing model only)} (mm)
+   \item WB_SFCRNOFF: Total surface runoff used in the water budget calculation (\emph{either} LSM_SFCRNOFF or HYD_QSTRMVOL) (mm)
+   \item WB_GWOUT: Total groundwater outflow used in the water budget calculation (\emph{either} LSM_UGDRNOFF or HYD_GWOUT) (mm)
    \item ERROR: Remainder in water budget (mm)
    \item RUN_FRAC: Runoff fraction, runoff/precipitation
    \item EVAP_FRAC: Evaporative fraction, evapotranspiration/precipitation
@@ -70,9 +76,10 @@ wb.mod1.fc
 ## Take NoahMP LDASOUT, HYDRO model RTOUT, and GW_outflow dataframes for a model
 ## run of Fourmile Creek with subsurface, overland, and groundwater routing options
 ## turned on and return a water budget summary. The default soil depths were used
-## and the basin is 63.1 km2.
+## and the basin is 63.1 km2. NOTE: We MUST specify with the sfcrt flag that overland
+## flow routing was turned on. Otherwise the LSM surface runoff term is used.
 
-wb.mod2.fc <- CalcNoahmpWatBudg(modLDASOUT.mod2.fc, modRTOUT.mod2.fc, modGWout.mod2.fc, basarea=63.1)
+wb.mod2.fc <- CalcNoahmpWatBudg(modLDASOUT.mod2.fc, modRTOUT.mod2.fc, modGWout.mod2.fc, sfcrt=TRUE, basarea=63.1)
 wb.mod2.fc
 }
 

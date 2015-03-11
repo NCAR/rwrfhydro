@@ -4,7 +4,7 @@
 \alias{GetFileStat}
 \title{Return data from a netcdf file.}
 \usage{
-GetFileStat(theFile, variable, index, ...)
+GetFileStat(theFile, variable, index, env = parent.frame(), ...)
 }
 \arguments{
 \item{theFile}{The file to open.}
@@ -12,6 +12,8 @@ GetFileStat(theFile, variable, index, ...)
 \item{variable}{TODO}
 
 \item{index}{TODO}
+
+\item{env}{The environment where the stat function lives}
 
 \item{...}{Further arguments to be passsed to a statistic.}
 }

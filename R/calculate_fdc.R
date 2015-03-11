@@ -138,42 +138,58 @@ PlotFdcCompare <- function(strflowDf.obs, strflowCol.obs="q_cms",
                             spline=TRUE, logy=TRUE,
                             labelObs="Observed", labelMod1="Model 1", labelMod2="Model 2") {
 # PREP DATA
+strflowDf.obs$qcomp.obs <- strflowDf.obs[,strflowCol.obs]
+strflowDf.mod1$qcomp.mod1 <- strflowDf.mod1[,strflowCol.mod1]
+if (!is.null(strflowDf.mod2)) {
+    strflowDf.mod2$qcomp.mod2 <- strflowDf.mod2[,strflowCol.mod2]
+}
+stroutDf <- merge(strflowDf.obs[c("POSIXct","qcomp.obs")], strflowDf.mod1[c("POSIXct","qcomp.mod1")], by<-c("POSIXct"))
+stroutDf <- subset(stroutDf, !is.na(stroutDf$qcomp.obs) & !is.na(stroutDf$qcomp.mod1))
+if (!is.null(strflowDf.mod2)) {
+    stroutDf <- merge(stroutDf, strflowDf.mod2[c("POSIXct","qcomp.mod2")], by<-c("POSIXct"))
+    stroutDf <- subset(stroutDf, !is.na(stroutDf$qcomp.mod2))
+    }
+stroutDf <- CalcFdc(stroutDf, "qcomp.obs")
+stroutDf <- CalcFdc(stroutDf, "qcomp.mod1")
+if (!is.null(strflowDf.mod2)) {
+    stroutDf <- CalcFdc(stroutDf, "qcomp.mod2")
+    }
+# Calculate splines if needed
 if (spline) {
-    fdcSplineFun.obs <- splinefun(strflowDf.obs[,paste0(strflowCol.obs,".fdc")], strflowDf.obs[,strflowCol.obs], method='natural')
-    fdcSplineFun.mod1 <- splinefun(strflowDf.mod1[,paste0(strflowCol.mod1,".fdc")], strflowDf.mod1[,strflowCol.mod1], method='natural')
+    fdcSplineFun.obs <- splinefun(stroutDf[,"qcomp.obs.fdc"], stroutDf[,"qcomp.obs"], method='natural')
+    fdcSplineFun.mod1 <- splinefun(stroutDf[,"qcomp.mod1.fdc"], stroutDf[,"qcomp.mod1"], method='natural')
     if (!is.null(strflowDf.mod2)) {
-        fdcSplineFun.mod2 <- splinefun(strflowDf.mod2[,paste0(strflowCol.mod2,".fdc")], strflowDf.mod2[,strflowCol.mod2], method='natural')
+        fdcSplineFun.mod2 <- splinefun(stroutDf[,"qcomp.mod2.fdc"], stroutDf[,"qcomp.mod2"], method='natural')
         }
     }
 if (!is.null(strflowDf.mod2)) {
-	combmin <- max(0.001, min(min(strflowDf.obs[,strflowCol.obs],na.rm=T), min(strflowDf.mod1[,strflowCol.mod1],na.rm=T), min(strflowDf.mod2[,strflowCol.mod2],na.rm=T)))
+	combmin <- max(0.001, min(min(stroutDf[,"qcomp.obs"],na.rm=T), min(stroutDf[,"qcomp.mod1"],na.rm=T), min(stroutDf[,"qcomp.mod2"],na.rm=T)))
 	print(paste("Combined min flow for y-axis (capped at 0.001):",combmin))
-	combmax <- max(max(strflowDf.obs[,strflowCol.obs],na.rm=T), max(strflowDf.mod1[,strflowCol.mod1],na.rm=T), max(strflowDf.mod2[,strflowCol.mod2], na.rm=T))
+	combmax <- max(max(stroutDf[,"qcomp.obs"],na.rm=T), max(stroutDf[,"qcomp.mod1"],na.rm=T), max(stroutDf[,"qcomp.mod2"], na.rm=T))
 	print(paste("Combined max flow for y-axis:",combmax))
 	}
 else {
-	combmin <- max(0.001,min(min(strflowDf.obs[,strflowCol.obs],na.rm=T), min(strflowDf.mod1[,strflowCol.mod1],na.rm=T)))
+	combmin <- max(0.001,min(min(stroutDf[,"qcomp.obs"],na.rm=T), min(stroutDf[,"qcomp.mod1"],na.rm=T)))
 	print(paste("Combined min flow for y-axis (capped at 0.001):",combmin))
-	combmax <- max(max(strflowDf.obs[,strflowCol.obs],na.rm=T), max(strflowDf.mod1[,strflowCol.mod1],na.rm=T))
+	combmax <- max(max(stroutDf[,"qcomp.obs"],na.rm=T), max(stroutDf[,"qcomp.mod1"],na.rm=T))
 	print(paste("Combined max flow for y-axis:",combmax))
 	}
 # PLOT
-dev.new(width=10, height=6)
 if (logy) {
-	plot(strflowDf.obs[,paste0(strflowCol.obs,".fdc")], strflowDf.obs[,strflowCol.obs], log='y', xlab="Probability of Exceedance", ylab=c(paste("Flow", deparse(substitute(strflowCol.obs)), "(log scale)")), main=c(paste("Flow Duration Curve:", labelObs)), ylim=c(combmin,combmax))
+	plot(stroutDf[,"qcomp.obs.fdc"], stroutDf[,"qcomp.obs"], log='y', xlab="Probability of Exceedance", ylab=c(paste("Flow", deparse(substitute(strflowCol.obs)), "(log scale)")), main=c(paste("Flow Duration Curve:", labelObs)), ylim=c(combmin,combmax))
 	}
 else {
-	plot(strflowDf.obs[,paste0(strflowCol.obs,".fdc")], strflowDf.obs[,strflowCol.obs], xlab="Probability of Exceedance", ylab=c(paste("Flow", deparse(substitute(strflowCol.obs)))), main=c(paste("Flow Duration Curve:", labelObs)), ylim=c(combmin,combmax))
+	plot(stroutDf[,"qcomp.obs.fdc"], stroutDf[,"qcomp.obs"], xlab="Probability of Exceedance", ylab=c(paste("Flow", deparse(substitute(strflowCol.obs)))), main=c(paste("Flow Duration Curve:", labelObs)), ylim=c(combmin,combmax))
 	}
 if (spline) {
     curve(fdcSplineFun.obs(x), col='red', lwd=2, lty=1, add=TRUE)
     }
-points(strflowDf.mod1[,paste0(strflowCol.mod1,".fdc")], strflowDf.mod1[,strflowCol.mod1],col='blue')
+points(stroutDf[,"qcomp.mod1.fdc"], stroutDf[,"qcomp.mod1"],col='blue')
 if (spline) {
     curve(fdcSplineFun.mod1(x), col='cyan', lwd=2, lty=1, add=TRUE)
     }
 if (!is.null(strflowDf.mod2)) {
-	points(strflowDf.mod2[,paste0(strflowCol.mod2,".fdc")], strflowDf.mod2[,strflowCol.mod2],col='darkgreen')
+	points(stroutDf[,"qcomp.mod2.fdc"], stroutDf[,"qcomp.mod2"],col='darkgreen')
     if (spline) {
         curve(fdcSplineFun.mod2(x), col='green', lwd=2, lty=1, add=TRUE)
         legend('topright', legend=c(labelObs, paste(labelObs,"- Curve Fit"), labelMod1, paste(labelMod1,"- Curve Fit"), labelMod2, paste(labelMod2,"- Curve Fit")), lty=c(NA,1,NA,1,NA,1), pch=c(1,NA,1,NA,1,NA), lwd=c(NA,1,NA,1,NA,1), col=c("black","red","blue","cyan","darkgreen","green"), bty='n')
@@ -181,7 +197,7 @@ if (!is.null(strflowDf.mod2)) {
     else {
         legend('topright', legend=c(labelObs, labelMod1, labelMod2), pch=c(1,1,1), col=c("black","blue","darkgreen"), bty='n')
             }
-    mtext(c(paste("Obs: ", labelObs, ", ", min(format(strflowDf.obs$POSIXct,"%Y")), "-", max(format(strflowDf.obs$POSIXct,"%Y")), ", n=", sum(!is.na(strflowDf.obs[,strflowCol.obs])), " (", round(sum(is.na(strflowDf.obs[,strflowCol.obs]))/length(strflowDf.obs[,strflowCol.obs])*100,2), "% missing)", "\nModel 1: ", labelMod1, ", ",  min(format(strflowDf.mod1$POSIXct,"%Y")), "-", max(format(strflowDf.mod1$POSIXct,"%Y")), ", n=", sum(!is.na(strflowDf.mod1[,strflowCol.mod1])), "   Model 2: ", labelMod2, ", ",  min(format(strflowDf.mod2$POSIXct,"%Y")), "-", max(format(strflowDf.mod2$POSIXct,"%Y")), ", n=", sum(!is.na(strflowDf.mod2[,strflowCol.mod2])), sep="")), side=3, line=0.0, cex=0.8)
+    mtext(c(paste("Obs: ", labelObs, ", ", min(format(strflowDf.obs$POSIXct,"%Y")), "-", max(format(strflowDf.obs$POSIXct,"%Y")), ", n=", sum(!is.na(stroutDf[,"qcomp.obs"])), " (", round(sum(is.na(stroutDf[,"qcomp.obs"]))/length(stroutDf[,"qcomp.obs"])*100,2), "% missing)", "\nModel 1: ", labelMod1, ", ",  min(format(strflowDf.mod1$POSIXct,"%Y")), "-", max(format(strflowDf.mod1$POSIXct,"%Y")), ", n=", sum(!is.na(stroutDf[,"qcomp.mod1"])), "   Model 2: ", labelMod2, ", ",  min(format(strflowDf.mod2$POSIXct,"%Y")), "-", max(format(strflowDf.mod2$POSIXct,"%Y")), ", n=", sum(!is.na(stroutDf[,"qcomp.mod2"])), sep="")), side=3, line=0.0, cex=0.8)
 	}
 else {
     if (spline) {
@@ -190,7 +206,7 @@ else {
     else {
     	legend('topright', legend=c(labelObs,labelMod1), pch=c(1,1), col=c("black","blue"), bty='n')
         }
-    mtext(c(paste("Obs: ", labelObs, ", ", min(format(strflowDf.obs$POSIXct,"%Y")), "-", max(format(strflowDf.obs$POSIXct,"%Y")), ", n=", sum(!is.na(strflowDf.obs[,strflowCol.obs])), " (", round(sum(is.na(strflowDf.obs[,strflowCol.obs]))/length(strflowDf.obs[,strflowCol.obs])*100,2), "% missing)", "   Model 1: ", labelMod1, ", ",  min(format(strflowDf.mod1$POSIXct,"%Y")), "-", max(format(strflowDf.mod1$POSIXct,"%Y")), ", n=", sum(!is.na(strflowDf.mod1[,strflowCol.mod1])),sep="")),side=3,line=0.2,cex=1.0)
+    mtext(c(paste("Obs: ", labelObs, ", ", min(format(strflowDf.obs$POSIXct,"%Y")), "-", max(format(strflowDf.obs$POSIXct,"%Y")), ", n=", sum(!is.na(stroutDf[,"qcomp.obs"])), " (", round(sum(is.na(stroutDf[,"qcomp.obs"]))/length(stroutDf[,"qcomp.obs"])*100,2), "% missing)", "   Model 1: ", labelMod1, ", ",  min(format(strflowDf.mod1$POSIXct,"%Y")), "-", max(format(strflowDf.mod1$POSIXct,"%Y")), ", n=", sum(!is.na(stroutDf[,"qcomp.mod1"])),sep="")),side=3,line=0.2,cex=1.0)
 	}
 }
 

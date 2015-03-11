@@ -46,20 +46,22 @@ CalcNoahmpFluxes <- function(ldasoutDf) {
 #'
 #' OUTPUT water budget terms (may vary depending on model configuration):
 #' \itemize{
-#'    \item PRCP: Total precipitation (mm)
-#'    \item ECAN: Total canopy evaporation (mm)
-#'    \item ETRAN: Total transpiration (mm)
-#'    \item EDIR: Total surface evaporation (mm)
-#'    \item DEL_SOILM: Change in total soil moisture storage (mm)
-#'    \item DEL_SWE: Change in snowpack snow water equivalent (mm)
-#'    \item DEL_CANWAT: Change in canopy water storage (liquid + ice) (mm)
-#'    \item SFCRNOFF: Surface runoff from LSM \emph{(for an LSM-only run)} (mm)
-#'    \item UGDRNOFF: Subsurface runoff from LSM \emph{(for an LSM-only run)} (mm)
-#'    \item QSTRMVOL: Total runoff into channel from land \emph{(routing model only)}  (mm)
-#'    \item DEL_SFCHEAD: Change in surface storage \emph{(routing model only)} (mm)
-#'    \item QBDRY: Total flow outside of domain \emph{(routing model only)} (mm)
-#'    \item GWOUT: Total groundwater outflow \emph{(routing model only)} (mm)
-#'    \item DEL_GWSTOR: Change in groundwater storage \emph{(routing model only)} (mm)
+#'    \item LSM_PRCP: Total precipitation (mm)
+#'    \item LSM_ECAN: Total canopy evaporation (mm)
+#'    \item LSM_ETRAN: Total transpiration (mm)
+#'    \item LSM_EDIR: Total surface evaporation (mm)
+#'    \item LSM_DELSWE: Change in snowpack snow water equivalent (mm)
+#'    \item LSM_DELCANWAT: Change in canopy water storage (liquid + ice) (mm)
+#'    \item LSM_SFCRNOFF: Surface runoff from LSM \emph{(for an LSM-only run)} (mm)
+#'    \item LSM_UGDRNOFF: Subsurface runoff from LSM \emph{(for an LSM-only run)} (mm)
+#'    \item LSM_DELSOILM: Change in total soil moisture storage (mm)
+#'    \item HYD_QSTRMVOL: Total runoff into channel from land \emph{(routing model only)}  (mm)
+#'    \item HYD_DELSFCHEAD: Change in surface storage \emph{(routing model only)} (mm)
+#'    \item HYD_QBDRY: Total flow outside of domain \emph{(routing model only)} (mm)
+#'    \item HYD_GWOUT: Total groundwater outflow \emph{(routing model only)} (mm)
+#'    \item HYD_DELGWSTOR: Change in groundwater storage \emph{(routing model only)} (mm)
+#'    \item WB_SFCRNOFF: Total surface runoff used in the water budget calculation (\emph{either} LSM_SFCRNOFF or HYD_QSTRMVOL) (mm)
+#'    \item WB_GWOUT: Total groundwater outflow used in the water budget calculation (\emph{either} LSM_UGDRNOFF or HYD_GWOUT) (mm)
 #'    \item ERROR: Remainder in water budget (mm)
 #'    \item RUN_FRAC: Runoff fraction, runoff/precipitation
 #'    \item EVAP_FRAC: Evaporative fraction, evapotranspiration/precipitation
@@ -69,6 +71,9 @@ CalcNoahmpFluxes <- function(ldasoutDf) {
 #' @param ldasoutDf The LDASOUT dataframe (required)
 #' @param rtoutDf The RTOUT dataframe, if overland or subsurface routing was turned on (default=NULL)
 #' @param gwoutDf The GW_OUT dataframe, if groundwater model was turned on (default=NULL)
+#' @param sfcrt A flag whether surface overland flow routing was active. All other routing
+#' options are determined based on the input dataframes, as needed (e.g., if gwoutDf is provided,
+#' it is assumed that the groundwater model was active). (default=FALSE)
 #' @param soildeps A list of soil layer depths in mm (top to bottom, default=c(100, 300, 600, 1000))
 #' @param basarea The basin area in square km (necessary only if gwoutDf is provided)
 #' @return A new dataframe containing the water budget components in mm.
@@ -83,141 +88,86 @@ CalcNoahmpFluxes <- function(ldasoutDf) {
 #' ## Take NoahMP LDASOUT, HYDRO model RTOUT, and GW_outflow dataframes for a model
 #' ## run of Fourmile Creek with subsurface, overland, and groundwater routing options
 #' ## turned on and return a water budget summary. The default soil depths were used
-#' ## and the basin is 63.1 km2.
+#' ## and the basin is 63.1 km2. NOTE: We MUST specify with the sfcrt flag that overland
+#' ## flow routing was turned on. Otherwise the LSM surface runoff term is used.
 #'
-#' wb.mod2.fc <- CalcNoahmpWatBudg(modLDASOUT.mod2.fc, modRTOUT.mod2.fc, modGWout.mod2.fc, basarea=63.1)
+#' wb.mod2.fc <- CalcNoahmpWatBudg(modLDASOUT.mod2.fc, modRTOUT.mod2.fc, modGWout.mod2.fc, sfcrt=TRUE, basarea=63.1)
 #' wb.mod2.fc
 #' @export
 
-CalcNoahmpWatBudg <- function(ldasoutDf, rtoutDf=NULL, gwoutDf=NULL, soildeps=c(100,300,600,1000), basarea=NULL) {
-# NO ROUTING CASE
-if (is.null(rtoutDf) && is.null(gwoutDf)) {
-    wbDf <- as.data.frame(t(as.matrix(rep(0, 13))))
-    colnames(wbDf) <- c("PRCP","ECAN","ETRAN","EDIR",
-                      "SFCRNOFF","UGDRNOFF",
-                      "DEL_SOILM","DEL_SWE","DEL_CANWAT",
-                      "ERROR","RUN_FRAC","EVAP_FRAC","STOR_FRAC")
+CalcNoahmpWatBudg <- function(ldasoutDf, rtoutDf=NULL, gwoutDf=NULL, sfcrt=FALSE, soildeps=c(100,300,600,1000), basarea=NULL) {
+    wbDf <- as.data.frame(t(as.matrix(rep(0, 6))))
+    colnames(wbDf) <- c("LSM_PRCP","LSM_ECAN","LSM_ETRAN","LSM_EDIR","LSM_DELSWE","LSM_DELCANWAT")
+    # LSM water fluxes for all model cases
     wbDf[1,1] <- ldasoutDf$ACCPRCP[nrow(ldasoutDf)]-ldasoutDf$ACCPRCP[1]
     wbDf[1,2] <- ldasoutDf$ACCECAN[nrow(ldasoutDf)]-ldasoutDf$ACCECAN[1]
     wbDf[1,3] <- ldasoutDf$ACCETRAN[nrow(ldasoutDf)]-ldasoutDf$ACCETRAN[1]
     wbDf[1,4] <- ldasoutDf$ACCEDIR[nrow(ldasoutDf)]-ldasoutDf$ACCEDIR[1]
-    wbDf[1,5] <- ldasoutDf$SFCRNOFF[nrow(ldasoutDf)]-ldasoutDf$SFCRNOFF[1]
-    wbDf[1,6] <- ldasoutDf$UGDRNOFF[nrow(ldasoutDf)]-ldasoutDf$UGDRNOFF[1]
+    wbDf[1,5] <- ldasoutDf$SNEQV[nrow(ldasoutDf)]-ldasoutDf$SNEQV[1]
+    wbDf[1,6] <- (ldasoutDf$CANICE[nrow(ldasoutDf)] + ldasoutDf$CANLIQ[nrow(ldasoutDf)]) -
+                        (ldasoutDf$CANICE[1] + ldasoutDf$CANLIQ[1])
+    # LSM overlap water fluxes
+    wbDf[1,"LSM_SFCRNOFF"] <- ldasoutDf$SFCRNOFF[nrow(ldasoutDf)]-ldasoutDf$SFCRNOFF[1]
+    wbDf[1,"LSM_UGDRNOFF"] <- ldasoutDf$UGDRNOFF[nrow(ldasoutDf)]-ldasoutDf$UGDRNOFF[1]
     numsoil <- length(soildeps)
     soilm <- 0.0
     for (i in 1:numsoil) {
         soilm <- soilm + (ldasoutDf[nrow(ldasoutDf),paste0("SOIL_M",i)]-ldasoutDf[1,paste0("SOIL_M",i)])*soildeps[i]
         }
-    wbDf[1,7] <- soilm
-    wbDf[1,8] <- ldasoutDf$SNEQV[nrow(ldasoutDf)]-ldasoutDf$SNEQV[1]
-    wbDf[1,9] <- (ldasoutDf$CANICE[nrow(ldasoutDf)] + ldasoutDf$CANLIQ[nrow(ldasoutDf)]) - 
-                        (ldasoutDf$CANICE[1] + ldasoutDf$CANLIQ[1])
-    wbDf[1,10] <- with(wbDf,PRCP - ECAN - ETRAN - EDIR - SFCRNOFF - UGDRNOFF - 
-                                  DEL_SOILM - DEL_SWE - DEL_CANWAT)
-    wbDf[1,11] <- with(wbDf,(SFCRNOFF+UGDRNOFF)/PRCP)
-    wbDf[1,12] <- with(wbDf,(ECAN+ETRAN+EDIR)/PRCP)
-    wbDf[1,13] <- with(wbDf,(DEL_SOILM+DEL_SWE+DEL_CANWAT)/PRCP)
-    }
-# GW ROUTING ONLY CASE
-else if (is.null(rtoutDf) && !is.null(gwoutDf)) {
-    dt <- as.integer(difftime(gwoutDf$POSIXct[2],gwoutDf$POSIXct[1],units="secs"))
-    wbDf <- as.data.frame(t(as.matrix(rep(0, 14))))
-    colnames(wbDf) <- c("PRCP","ECAN","ETRAN","EDIR",
-                      "SFCRNOFF",
-                      "DEL_SOILM","DEL_SWE","DEL_CANWAT", 
-                      "GWOUT", "DEL_GWSTOR", 
-                      "ERROR","RUN_FRAC","EVAP_FRAC","STOR_FRAC")
-    wbDf[1,1] <- ldasoutDf$ACCPRCP[nrow(ldasoutDf)]-ldasoutDf$ACCPRCP[1]
-    wbDf[1,2] <- ldasoutDf$ACCECAN[nrow(ldasoutDf)]-ldasoutDf$ACCECAN[1]
-    wbDf[1,3] <- ldasoutDf$ACCETRAN[nrow(ldasoutDf)]-ldasoutDf$ACCETRAN[1]
-    wbDf[1,4] <- ldasoutDf$ACCEDIR[nrow(ldasoutDf)]-ldasoutDf$ACCEDIR[1]
-    wbDf[1,5] <- ldasoutDf$SFCRNOFF[nrow(ldasoutDf)]-ldasoutDf$SFCRNOFF[1]
-    numsoil <- length(soildeps)
-    soilm <- 0.0
-    for (i in 1:numsoil) {
-        soilm <- soilm + (ldasoutDf[nrow(ldasoutDf),paste0("SOIL_M",i)]-ldasoutDf[1,paste0("SOIL_M",i)])*soildeps[i]
+    wbDf[1,"LSM_DELSOILM"] <- soilm
+    # HYDRO surface/subsurface water fluxes
+    if (!is.null(rtoutDf)) {
+        wbDf[1,"HYD_QSTRMVOL"] <- rtoutDf$QSTRMVOLRT[nrow(rtoutDf)]-rtoutDf$QSTRMVOLRT[1]
+        wbDf[1,"HYD_DELSFCHEAD"] <- rtoutDf$SFCHEADSUBRT[nrow(rtoutDf)]-rtoutDf$SFCHEADSUBRT[1]
+        wbDf[1,"HYD_QBDRY"] <- -(rtoutDf$QBDRY[nrow(rtoutDf)]-rtoutDf$QBDRY[1])
         }
-    wbDf[1,6] <- soilm
-    wbDf[1,7] <- ldasoutDf$SNEQV[nrow(ldasoutDf)]-ldasoutDf$SNEQV[1]
-    wbDf[1,8] <- (ldasoutDf$CANICE[nrow(ldasoutDf)] + ldasoutDf$CANLIQ[nrow(ldasoutDf)]) - 
-                        (ldasoutDf$CANICE[1] + ldasoutDf$CANLIQ[1])
-    wbDf[1,9] <- sum(gwoutDf$q_cms/(basarea*1000*1000)*1000*dt, na.rm=T)
-    wbDf[1,10] <- ldasoutDf$UGDRNOFF[nrow(ldasoutDf)] - wbDf$GWOUT
-    wbDf[1,11] <- with(wbDf, PRCP - ECAN - ETRAN - EDIR - SFCRNOFF - GWOUT - 
-                                  DEL_SOILM - DEL_SWE - DEL_CANWAT - DEL_GWSTOR)
-    wbDf[1,12] <- with(wbDf,(SFCRNOFF+GWOUT)/PRCP)
-    wbDf[1,13] <- with(wbDf,(ECAN+ETRAN+EDIR)/PRCP)
-    wbDf[1,14] <- with(wbDf,(DEL_SOILM+DEL_SWE+DEL_CANWAT+DEL_GWSTOR)/PRCP)
-    }
-# OVERLAND/SUBSURFACE ROUTING ONLY CASE
-else if (!is.null(rtoutDf) && is.null(gwoutDf)) {
-   wbDf <- as.data.frame(t(as.matrix(rep(0, 16))))
-   colnames(wbDf) <- c("PRCP","ECAN","ETRAN","EDIR","UGDRNOFF",
-                      "DEL_SOILM","DEL_SWE","DEL_CANWAT",
-                      "QSTRMVOL","DEL_SFCHEAD","QBDRY",
-                      "ERROR","RUN_FRAC","EVAP_FRAC","STOR_FRAC","RECH_FRAC")
-   wbDf[1,1] <- ldasoutDf$ACCPRCP[nrow(ldasoutDf)]-ldasoutDf$ACCPRCP[1]
-   wbDf[1,2] <- ldasoutDf$ACCECAN[nrow(ldasoutDf)]-ldasoutDf$ACCECAN[1]
-   wbDf[1,3] <- ldasoutDf$ACCETRAN[nrow(ldasoutDf)]-ldasoutDf$ACCETRAN[1]
-   wbDf[1,4] <- ldasoutDf$ACCEDIR[nrow(ldasoutDf)]-ldasoutDf$ACCEDIR[1]
-   wbDf[1,5] <- ldasoutDf$UGDRNOFF[nrow(ldasoutDf)]-ldasoutDf$UGDRNOFF[1]
-   numsoil <- length(soildeps)
-   soilm <- 0.0
-   for (i in 1:numsoil) {
-        soilm <- soilm + (ldasoutDf[nrow(ldasoutDf),paste0("SOIL_M",i)]-ldasoutDf[1,paste0("SOIL_M",i)])*soildeps[i]
+    else {
+        message('Message: No routing output dataframe (rtoutDf) was provided. Proceeding using LSM surface runoff.')
+        wbDf[1,"HYD_QSTRMVOL"] <- NA
+        wbDf[1,"HYD_DELSFCHEAD"] <- NA
+        wbDf[1,"HYD_QBDRY"] <- NA
         }
-   wbDf[1,6] <- soilm
-   wbDf[1,7] <- ldasoutDf$SNEQV[nrow(ldasoutDf)]-ldasoutDf$SNEQV[1]
-   wbDf[1,8] <- (ldasoutDf$CANICE[nrow(ldasoutDf)] + ldasoutDf$CANLIQ[nrow(ldasoutDf)]) - 
-               (ldasoutDf$CANICE[1] + ldasoutDf$CANLIQ[1])
-   wbDf[1,9] <- rtoutDf$QSTRMVOLRT[nrow(rtoutDf)]-rtoutDf$QSTRMVOLRT[1]
-   wbDf[1,10] <- rtoutDf$SFCHEADSUBRT[nrow(rtoutDf)]-rtoutDf$SFCHEADSUBRT[1]
-   wbDf[1,11] <- -(rtoutDf$QBDRY[nrow(rtoutDf)]-rtoutDf$QBDRY[1])
-   wbDf[1,12] <- with(wbDf, PRCP - ECAN - ETRAN - EDIR - UGDRNOFF -
-                                 QSTRMVOL - QBDRY -
-                                 DEL_SOILM - DEL_SWE - DEL_CANWAT - 
-                                 DEL_SFCHEAD)
-   wbDf[1,13] <- with(wbDf, (QSTRMVOL+QBDRY)/PRCP)
-   wbDf[1,14] <- with(wbDf, (ECAN+ETRAN+EDIR)/PRCP)
-   wbDf[1,15] <- with(wbDf, (DEL_SOILM+DEL_SWE+DEL_CANWAT+DEL_SFCHEAD)/PRCP)
-   wbDf[1,16] <- with(wbDf, UGDRNOFF/PRCP)
-   }
-# ALL ROUTING CASE
-else if (!is.null(rtoutDf) && !is.null(gwoutDf)) {
-   dt <- as.integer(difftime(gwoutDf$POSIXct[2],gwoutDf$POSIXct[1],units="secs"))
-   wbDf <- as.data.frame(t(as.matrix(rep(0, 16))))
-   colnames(wbDf) <- c("PRCP","ECAN","ETRAN","EDIR",
-                      "DEL_SOILM","DEL_SWE","DEL_CANWAT",
-                      "QSTRMVOL","DEL_SFCHEAD","QBDRY","GWOUT","DEL_GWSTOR",
-                      "ERROR","RUN_FRAC","EVAP_FRAC","STOR_FRAC")
-   wbDf[1,1] <- ldasoutDf$ACCPRCP[nrow(ldasoutDf)]-ldasoutDf$ACCPRCP[1]
-   wbDf[1,2] <- ldasoutDf$ACCECAN[nrow(ldasoutDf)]-ldasoutDf$ACCECAN[1]
-   wbDf[1,3] <- ldasoutDf$ACCETRAN[nrow(ldasoutDf)]-ldasoutDf$ACCETRAN[1]
-   wbDf[1,4] <- ldasoutDf$ACCEDIR[nrow(ldasoutDf)]-ldasoutDf$ACCEDIR[1]
-   numsoil <- length(soildeps)
-   soilm <- 0.0
-   for (i in 1:numsoil) {
-        soilm <- soilm + (ldasoutDf[nrow(ldasoutDf),paste0("SOIL_M",i)]-ldasoutDf[1,paste0("SOIL_M",i)])*soildeps[i]
+    # HYDRO groundwater fluxes
+    if (!is.null(gwoutDf)) {
+        if (!is.null(basarea)) {
+            dt <- as.integer(difftime(gwoutDf$POSIXct[2],gwoutDf$POSIXct[1],units="secs"))
+            wbDf[1,"HYD_GWOUT"] <- sum(gwoutDf$q_cms/(basarea*1000*1000)*1000*dt, na.rm=T)
+            wbDf[1,"HYD_DELGWSTOR"] <- (ldasoutDf$UGDRNOFF[nrow(ldasoutDf)]-ldasoutDf$UGDRNOFF[1]) - wbDf$HYD_GWOUT
+            }
+        else { stop('Error: Groundwater outflow dataframe (gwoutDf) provided but no basin area (basarea). Please provide the basin area.') }
         }
-   wbDf[1,5] <- soilm
-   wbDf[1,6] <- ldasoutDf$SNEQV[nrow(ldasoutDf)]-ldasoutDf$SNEQV[1]
-   wbDf[1,7] <- (ldasoutDf$CANICE[nrow(ldasoutDf)] + ldasoutDf$CANLIQ[nrow(ldasoutDf)]) - 
-               (ldasoutDf$CANICE[1] + ldasoutDf$CANLIQ[1])
-   wbDf[1,8] <- rtoutDf$QSTRMVOLRT[nrow(rtoutDf)]-rtoutDf$QSTRMVOLRT[1]
-   wbDf[1,9] <- rtoutDf$SFCHEADSUBRT[nrow(rtoutDf)]-rtoutDf$SFCHEADSUBRT[1]
-   wbDf[1,10] <- -(rtoutDf$QBDRY[nrow(rtoutDf)]-rtoutDf$QBDRY[1])
-   wbDf[1,11] <- sum(gwoutDf$q_cms/(basarea*1000*1000)*1000*dt, na.rm=T)
-   wbDf[1,12] <- ldasoutDf$UGDRNOFF[nrow(ldasoutDf)] - wbDf$GWOUT
-   wbDf[1,13] <- with(wbDf, PRCP - ECAN - ETRAN - EDIR -
-                                 QSTRMVOL - QBDRY - GWOUT -
-                                 DEL_SOILM - DEL_SWE - DEL_CANWAT - 
-                                 DEL_SFCHEAD - DEL_GWSTOR)
-   wbDf[1,14] <- with(wbDf,(QSTRMVOL+QBDRY+GWOUT)/PRCP)
-   wbDf[1,15] <- with(wbDf,(ECAN+ETRAN+EDIR)/PRCP)
-   wbDf[1,16] <- with(wbDf, (DEL_SOILM+DEL_SWE+DEL_CANWAT+DEL_SFCHEAD+DEL_GWSTOR)/PRCP)
-   }
-
-wbDf
+    else {
+        message('Message: No groundwater outflow dataframe (gwoutDf) was provided. Proceeding using LSM underground runoff.')
+        wbDf[1,"HYD_GWOUT"] <- NA
+        wbDf[1,"HYD_DELGWSTOR"] <- NA
+        }
+    # Overland routing check
+    if ( sfcrt & is.null(rtoutDf)) {
+        stop('Error: Surface overland routing (sfcrt) is active (TRUE) but no routing output dataframe (rtoutDf) was specified.')
+        }
+    if ( !sfcrt & !is.null(rtoutDf) ) {
+        message('Message: A routing output file (rtoutDf) was provided but surface overland routing (sfcrt) is inactive (FALSE). Proceeding using LSM surface runoff.')
+        }
+    wbDf[1,"WB_SFCRNOFF"] <- if (sfcrt) { wbDf[1, "HYD_QSTRMVOL"] } else { wbDf[1, "LSM_SFCRNOFF"] }
+    # Groundwater routing check
+    wbDf[1,"WB_GWOUT"] <- if (!is.null(gwoutDf)) { wbDf[1, "HYD_GWOUT"] } else { wbDf[1, "LSM_UGDRNOFF"] }
+    # Water budget error
+    wbDf[1,"ERROR"] <- with( wbDf, LSM_PRCP - LSM_ECAN - LSM_ETRAN - LSM_EDIR -
+                                 WB_SFCRNOFF -
+                                 ifelse(is.na(HYD_QBDRY), 0.0, HYD_QBDRY) -
+                                 WB_GWOUT - LSM_DELSOILM -
+                                 LSM_DELSWE - LSM_DELCANWAT -
+                                 ifelse(is.na(HYD_DELSFCHEAD), 0.0, HYD_DELSFCHEAD) -
+                                 ifelse(is.na(HYD_DELGWSTOR), 0.0, HYD_DELGWSTOR) )
+    # Calculate various fractions
+    wbDf[1,"RUN_FRAC"] <- with( wbDf, (WB_SFCRNOFF + ifelse(is.na(HYD_QBDRY), 0.0, HYD_QBDRY) +
+                                        WB_GWOUT) / LSM_PRCP )
+    wbDf[1,"EVAP_FRAC"] <- with( wbDf, (LSM_ECAN + LSM_ETRAN + LSM_EDIR) / LSM_PRCP )
+    wbDf[1,"STOR_FRAC"] <- with( wbDf, (LSM_DELSOILM + LSM_DELSWE + LSM_DELCANWAT +
+                                        ifelse(is.na(HYD_DELSFCHEAD), 0.0, HYD_DELSFCHEAD) +
+                                        ifelse(is.na(HYD_DELGWSTOR), 0.0, HYD_DELGWSTOR) ) /
+                                        LSM_PRCP )
+    wbDf
 }
 
 
@@ -242,185 +192,65 @@ wbDf
 #' @export
 
 PlotWatBudg <- function(wbDf, plottyp="pie") {
-if ("GWOUT" %in% colnames(wbDf)) {
-    # ALL ROUTING CASE
-    if ("QSTRMVOL" %in% colnames(wbDf)) {
-        lbls <- c("Canopy Evap", "Transpiration", "Surface Evap", "Surface &\nSubsurface Runoff",
-                 "Deep GW Outflow")
-        pcts <- with(wbDf,c(ECAN/PRCP*100, ETRAN/PRCP*100, EDIR/PRCP*100,
-                      (QSTRMVOL+QBDRY)/PRCP*100, GWOUT/PRCP*100))
-        lbls_pcts=c()
-        for (i in 1:length(lbls)) { lbls_pcts[i] <- paste0(lbls[i], "\n", round(pcts[i],1), "%") }
-        if (plottyp == "pie") {
-            if (wbDf$STOR_FRAC > 0) {
-                lbls_pcts[length(lbls_pcts)+1] <- paste0("Change in Storage", "\n",
-                                                    round( with( wbDf, (DEL_SOILM + DEL_SWE + DEL_CANWAT +
-                                                    DEL_SFCHEAD + DEL_GWSTOR) / PRCP*100),1), "%")
-                pie(as.matrix(with(wbDf, c(ECAN, ETRAN, EDIR, QSTRMVOL+QBDRY, GWOUT,
-                                    DEL_SOILM+DEL_SWE+DEL_CANWAT+DEL_SFCHEAD+DEL_GWSTOR))),
-                    col=c("chartreuse3","darkgreen","darkgoldenrod2","cornflowerblue","darkblue","grey30"),
-                    main=c("Water Budget"), labels=lbls_pcts)
-                }
-            else {
-                pie(as.matrix(with(wbDf, c(ECAN, ETRAN, EDIR, QSTRMVOL+QBDRY, GWOUT))),
-                    col=c("chartreuse3","darkgreen","darkgoldenrod2","cornflowerblue","darkblue"),
-                    main=c("Water Budget"), labels=lbls_pcts)
-                text(0,-1, paste0("*Storage Loss: ",
-                            round( with( wbDf, (DEL_SOILM + DEL_SWE + DEL_CANWAT + DEL_SFCHEAD + DEL_GWSTOR) /
-                                        PRCP*100),1),"%"))
-                } #end storage fraction split
-            }
-        else if (plottyp =="bar") {
-            lbls_pcts[length(lbls_pcts)+1] <- paste0("Change in Storage", "\n",
-                                    round( with( wbDf, (DEL_SOILM + DEL_SWE + DEL_CANWAT +
-                                    DEL_SFCHEAD + DEL_GWSTOR) / PRCP*100),1), "%")
-            plotDf <- with(wbDf,c(DEL_SOILM + DEL_SWE + DEL_CANWAT + DEL_SFCHEAD + DEL_GWSTOR, ECAN, ETRAN, EDIR, QSTRMVOL+QBDRY, GWOUT))
-            plotDf1 <- abs(plotDf)
-            ylabs <- round(c(0,cumsum(plotDf1))-((plotDf1[1]-plotDf[1])/2),0)
-            par(mar = c(5.1, 4.1, 5.1, 12.1), xpd = TRUE)
-            barplot(as.matrix(plotDf1), axes=FALSE,
-                col=c("grey70", "chartreuse", "darkgreen", "orange", "cornflowerblue", "darkblue"),
-                main=c("Water Budget"), width=0.2, space=0.2, ylab=c("Total Water (mm)"))
-            axis(2,c(0,cumsum(plotDf1)),labels=ylabs)
-            segments(0.0,cumsum(plotDf1)[1],0.36,cumsum(plotDf1)[1], lty=2)
-            legend("topright", legend=lbls_pcts,fill=c("chartreuse", "darkgreen", "orange", "cornflowerblue", "darkblue","grey70"),
-                inset=c(-0.5, 0), bg=c("white"), yjust=0.5, y.intersp=2)
-            }
-        } #end qstrmvol split
-    # GW ROUTING ONLY CASE
-    else {
-        lbls <- c("Canopy Evap", "Transpiration", "Surface Evap", "Surface Runoff",
-                 "Deep GW Outflow")
-        pcts <- with(wbDf,c(ECAN/PRCP*100, ETRAN/PRCP*100, EDIR/PRCP*100,
-                SFCRNOFF/PRCP*100, GWOUT/PRCP*100))
-        lbls_pcts <- c()
-        for (i in 1:length(lbls)) { lbls_pcts[i] <- paste0(lbls[i], "\n", round(pcts[i],1), "%") }
-        if (plottyp == "pie") {
-            if (wbDf$STOR_FRAC > 0) {
-                lbls_pcts[length(lbls_pcts)+1] <- paste0("Change in Storage", "\n",
-                                                    round( with( wbDf, (DEL_SOILM + DEL_SWE + DEL_CANWAT + DEL_GWSTOR) /
-                                                    PRCP*100),1), "%")
-                pie(as.matrix(with(wbDf, c(ECAN, ETRAN, EDIR, SFCRNOFF, GWOUT,
-                                    DEL_SOILM+DEL_SWE+DEL_CANWAT+DEL_GWSTOR))),
-                    col=c("chartreuse3","darkgreen","darkgoldenrod2","cornflowerblue","darkblue","grey30"),
-                    main=c("Water Budget"), labels=lbls_pcts)
-                }
-            else {
-                pie(as.matrix(with(wbDf, c(ECAN, ETRAN, EDIR, SFCRNOFF, GWOUT))),
-                    col=c("chartreuse3","darkgreen","darkgoldenrod2","cornflowerblue","darkblue"),
-                    main=c("Water Budget"), labels=lbls_pcts)
-                text(0,-1, paste0("*Storage Loss: ",
-                            round( with( wbDf, (DEL_SOILM + DEL_SWE + DEL_CANWAT + DEL_GWSTOR) /
-                                        PRCP*100),1),"%"))
-                } #end storage fraction split
-            }
-        else if (plottyp =="bar") {
-            lbls_pcts[length(lbls_pcts)+1] <- paste0("Change in Storage", "\n",
-                                    round( with( wbDf, (DEL_SOILM + DEL_SWE + DEL_CANWAT +
-                                    DEL_GWSTOR) / PRCP*100),1), "%")
-            plotDf <- with(wbDf,c(DEL_SOILM + DEL_SWE + DEL_CANWAT + DEL_GWSTOR, ECAN, ETRAN, EDIR, SFCRNOFF, GWOUT))
-            plotDf1 <- abs(plotDf)
-            ylabs <- round(c(0,cumsum(plotDf1))-((plotDf1[1]-plotDf[1])/2),0)
-            par(mar = c(5.1, 4.1, 5.1, 12.1), xpd = TRUE)
-            barplot(as.matrix(plotDf1), axes=FALSE,
-                col=c("grey70", "chartreuse", "darkgreen", "orange", "cornflowerblue", "darkblue"),
-                main=c("Water Budget"), width=0.2, space=0.2, ylab=c("Total Water (mm)"))
-            axis(2,c(0,cumsum(plotDf1)),labels=ylabs)
-            segments(0.0,cumsum(plotDf1)[1],0.36,cumsum(plotDf1)[1], lty=2)
-            legend("topright", legend=lbls_pcts,fill=c("chartreuse", "darkgreen", "orange", "cornflowerblue", "darkblue", "grey70"),
-                inset=c(-0.5, 0), bg=c("white"), yjust=0.5, y.intersp=2)
-            }
-        } #end qstrmvol split
-    } #end gwout split
 
-# OVERLAND/SUBSURFACE ROUTING ONLY CASE
-else if ("QSTRMVOL" %in% colnames(wbDf)) {
-    lbls <- c("Canopy Evap", "Transpiration", "Surface Evap", "Surface & Subsurface Runoff",
-             "Deep GW Recharge")
-    pcts <- with(wbDf,c(ECAN/PRCP*100, ETRAN/PRCP*100, EDIR/PRCP*100,
-                  (QSTRMVOL+QBDRY)/PRCP*100, UGDRNOFF/PRCP*100))
-    lbls_pcts=c()
-    for (i in 1:length(lbls)) { lbls_pcts[i] <- paste0(lbls[i], "\n", round(pcts[i],1), "%") }
-    if (plottyp == "pie") {
-        if (wbDf$STOR_FRAC > 0) {
-            lbls_pcts[length(lbls_pcts)+1] <- paste0("Change in Storage", "\n",
-                                                round( with( wbDf, (DEL_SOILM + DEL_SWE + DEL_CANWAT +
-                                                DEL_SFCHEAD) / PRCP*100),1), "%")
-            pie(as.matrix(with(wbDf, c(ECAN, ETRAN, EDIR, QSTRMVOL+QBDRY, UGDRNOFF,
-                                DEL_SOILM+DEL_SWE+DEL_CANWAT+DEL_SFCHEAD))),
-                col=c("chartreuse3","darkgreen","darkgoldenrod2","cornflowerblue","darkblue","grey30"),
-                main=c("Water Budget"), labels=lbls_pcts)
-            }
-        else {
-            pie(as.matrix(with(wbDf, c(ECAN, ETRAN, EDIR, QSTRMVOL+QBDRY, UGDRNOFF))),
-                col=c("chartreuse3","darkgreen","darkgoldenrod2","cornflowerblue","darkblue"),
-                main=c("Water Budget"), labels=lbls_pcts)
-            text(0,-1, paste0("*Storage Loss: ",
-                        round( with( wbDf, (DEL_SOILM + DEL_SWE + DEL_CANWAT + DEL_SFCHEAD) /
-                                    PRCP*100),1),"%"))
-            } #end storage fraction split
-        }
-    else if (plottyp =="bar") {
-        lbls_pcts[length(lbls_pcts)+1] <- paste0("Change in Storage", "\n",
-                                round( with( wbDf, (DEL_SOILM + DEL_SWE + DEL_CANWAT +
-                                DEL_SFCHEAD) / PRCP*100),1), "%")
-        plotDf <- with(wbDf,c(DEL_SOILM + DEL_SWE + DEL_CANWAT + DEL_SFCHEAD, ECAN, ETRAN, EDIR, QSTRMVOL+QBDRY, UGDRNOFF))
-        plotDf1 <- abs(plotDf)
-        ylabs <- round(c(0,cumsum(plotDf1))-((plotDf1[1]-plotDf[1])/2),0)
-        par(mar = c(5.1, 4.1, 5.1, 12.1), xpd = TRUE)
-        barplot(as.matrix(plotDf1), axes=FALSE,
-            col=c("grey70", "chartreuse", "darkgreen", "orange", "cornflowerblue", "darkblue"),
-            main=c("Water Budget"), width=0.2, space=0.2, ylab=c("Total Water (mm)"))
-        axis(2,c(0,cumsum(plotDf1)),labels=ylabs)
-        segments(0.0,cumsum(plotDf1)[1],0.36,cumsum(plotDf1)[1], lty=2)
-        legend("topright", legend=lbls_pcts,fill=c("chartreuse", "darkgreen", "orange", "cornflowerblue", "darkblue", "grey70"),
-            inset=c(-0.5, 0), bg=c("white"), yjust=0.5, y.intersp=2)
-        }
-    } #end qstrmvol split
-# NO ROUTING CASE
-else {
     lbls <- c("Canopy Evap", "Transpiration", "Surface Evap", "Surface Runoff",
-            "Subsurface Runoff")
-    pcts <- with(wbDf,c(ECAN/PRCP*100, ETRAN/PRCP*100, EDIR/PRCP*100,
-            SFCRNOFF/PRCP*100, UGDRNOFF/PRCP*100))
+             "Groundwater Outflow")
+    pcts <- with(wbDf,c(LSM_ECAN/LSM_PRCP*100, LSM_ETRAN/LSM_PRCP*100, LSM_EDIR/LSM_PRCP*100,
+                  (WB_SFCRNOFF + ifelse(is.na(HYD_QBDRY), 0.0, HYD_QBDRY)) / LSM_PRCP * 100,
+                  WB_GWOUT/LSM_PRCP*100))
     lbls_pcts=c()
     for (i in 1:length(lbls)) { lbls_pcts[i] <- paste0(lbls[i], "\n", round(pcts[i],1), "%") }
     if (plottyp == "pie") {
         if (wbDf$STOR_FRAC > 0) {
-            lbls_pcts[length(lbls_pcts)+1] <- paste0("Change in Storage", "\n",
-                                                round( with( wbDf, (DEL_SOILM + DEL_SWE + DEL_CANWAT) /
-                                                PRCP*100),1), "%")
-            pie(as.matrix(with(wbDf,c(ECAN, ETRAN, EDIR, SFCRNOFF, UGDRNOFF,
-                                DEL_SOILM+DEL_SWE+DEL_CANWAT))),
+            lbls_pcts[length(lbls_pcts)+1] <- paste0("Change in\nStorage", "\n",
+                                                round( with( wbDf, (LSM_DELSOILM + LSM_DELSWE + LSM_DELCANWAT +
+                                                ifelse(is.na(HYD_DELSFCHEAD), 0.0, HYD_DELSFCHEAD) +
+                                                ifelse(is.na(HYD_DELGWSTOR), 0.0, HYD_DELGWSTOR)) / LSM_PRCP * 100), 1), "%")
+            pie(as.matrix(with(wbDf, c(LSM_ECAN, LSM_ETRAN, LSM_EDIR,
+                                        (WB_SFCRNOFF + ifelse(is.na(HYD_QBDRY), 0.0, HYD_QBDRY)),
+                                        WB_GWOUT, LSM_DELSOILM + LSM_DELSWE + LSM_DELCANWAT +
+                                        ifelse(is.na(HYD_DELSFCHEAD), 0.0, HYD_DELSFCHEAD) +
+                                        ifelse(is.na(HYD_DELGWSTOR), 0.0, HYD_DELGWSTOR)))),
                 col=c("chartreuse3","darkgreen","darkgoldenrod2","cornflowerblue","darkblue","grey30"),
                 main=c("Water Budget"), labels=lbls_pcts)
             }
         else {
-            pie(as.matrix(with(wbDf,c(ECAN, ETRAN, EDIR, SFCRNOFF, UGDRNOFF))),
+            pie(as.matrix(with(wbDf, c(LSM_ECAN, LSM_ETRAN, LSM_EDIR,
+                                        (WB_SFCRNOFF + ifelse(is.na(HYD_QBDRY), 0.0, HYD_QBDRY)),
+                                        WB_GWOUT))),
                 col=c("chartreuse3","darkgreen","darkgoldenrod2","cornflowerblue","darkblue"),
                 main=c("Water Budget"), labels=lbls_pcts)
             text(0,-1, paste0("*Storage Loss: ",
-                        round( with( wbDf, (DEL_SOILM + DEL_SWE + DEL_CANWAT) /
-                                    PRCP*100),1),"%"))
-            } #end storage fraction split
-        }
+                        round( with( wbDf, (LSM_DELSOILM + LSM_DELSWE + LSM_DELCANWAT +
+                                        ifelse(is.na(HYD_DELSFCHEAD), 0.0, HYD_DELSFCHEAD) +
+                                        ifelse(is.na(HYD_DELGWSTOR), 0.0, HYD_DELGWSTOR)) /
+                                        LSM_PRCP * 100), 1),"%"))
+            } # end storage fraction split
+        } # end pie
     else if (plottyp =="bar") {
         lbls_pcts[length(lbls_pcts)+1] <- paste0("Change in Storage", "\n",
-                                round( with( wbDf, (DEL_SOILM + DEL_SWE + DEL_CANWAT) / PRCP*100),1), "%")
-        plotDf <- with(wbDf,c(DEL_SOILM + DEL_SWE + DEL_CANWAT, ECAN, ETRAN, EDIR, SFCRNOFF, UGDRNOFF))
+                                round( with( wbDf, (LSM_DELSOILM + LSM_DELSWE + LSM_DELCANWAT +
+                                        ifelse(is.na(HYD_DELSFCHEAD), 0.0, HYD_DELSFCHEAD) +
+                                        ifelse(is.na(HYD_DELGWSTOR), 0.0, HYD_DELGWSTOR)) /
+                                        LSM_PRCP * 100), 1), "%")
+        plotDf <- with(wbDf,c(LSM_DELSOILM + LSM_DELSWE + LSM_DELCANWAT +
+                                        ifelse(is.na(HYD_DELSFCHEAD), 0.0, HYD_DELSFCHEAD) +
+                                        ifelse(is.na(HYD_DELGWSTOR), 0.0, HYD_DELGWSTOR),
+                                        LSM_ECAN, LSM_ETRAN, LSM_EDIR,
+                                        (WB_SFCRNOFF + ifelse(is.na(HYD_QBDRY), 0.0, HYD_QBDRY)),
+                                        WB_GWOUT))
         plotDf1 <- abs(plotDf)
         ylabs <- round(c(0,cumsum(plotDf1))-((plotDf1[1]-plotDf[1])/2),0)
         par(mar = c(5.1, 4.1, 5.1, 12.1), xpd = TRUE)
         barplot(as.matrix(plotDf1), axes=FALSE,
             col=c("grey70", "chartreuse", "darkgreen", "orange", "cornflowerblue", "darkblue"),
-            main=c("Water Budget"), width=0.2, space=0.2, ylab=c("Total Water (mm)"))
+            main=c("Water Budget"), xlim=c(0,1), width=0.6, space=0.2, ylab=c("Total Water (mm)"))
         axis(2,c(0,cumsum(plotDf1)),labels=ylabs)
-        segments(0.0,cumsum(plotDf1)[1],0.36,cumsum(plotDf1)[1], lty=2)
-        legend("topright", legend=lbls_pcts,fill=c("chartreuse", "darkgreen", "orange", "cornflowerblue", "darkblue", "grey70"),
+        if (plotDf[1]>=0) { segments(0.0, 0.0, 1.0, 0.0, lty=2) } else { segments(0.0, cumsum(plotDf1)[1], 1.0, cumsum(plotDf1)[1], lty=2) }
+        legend("topright", legend=lbls_pcts,fill=c("chartreuse", "darkgreen", "orange", "cornflowerblue", "darkblue","grey70"),
             inset=c(-0.5, 0), bg=c("white"), yjust=0.5, y.intersp=2)
-        }
-    } #end main split
-} #end function def
+        } # end bar
+}
 
 
 
@@ -709,7 +539,7 @@ CalcStrPerf <- function (stroutDf, obsDf, strCol="q_cms", obsCol="q_cms") {
 #'  0.7         0.14    0.25
 #'  0.8         0.11    0.19
 #'  0.9         0.08    0.16
-
+#' @export
 
 CalcFdcPerf <- function (stroutDf, obsDf, strCol="q_cms", obsCol="q_cms") {
     # START UTILS
