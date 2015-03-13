@@ -108,15 +108,6 @@ ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, a
     if (ncores > 1) {
         doMC::registerDoMC(ncores)
         }
-    # Function to "flatten" output dataframes for use in water budget tool
-    reshape_MultiNcdf <- function(inDF) {
-        newDF <- subset(inDF[,c("POSIXct","stat")], inDF$variableGroup==unique(inDF$variableGroup)[1])
-        for (i in unique(inDF$variableGroup)) {
-                        newDF[,i] <- subset(inDF$value, inDF$variableGroup==i)
-                            }   
-        newDF$wy <- ifelse(as.numeric(format(newDF$POSIXct,"%m"))>=10,as.numeric(format(newDF$POSIXct,"%Y"))+1,as.numeric(format(newDF$POSIXct,"%Y")))
-        newDF
-        }
     # Setup mask
     msk <- ncdf4::nc_open(pathDomfile)
     mskvar <- ncdf4::ncvar_get(msk,mskvar)
@@ -159,7 +150,7 @@ ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, a
     else {
         ldasoutDF <- GetMultiNcdf(ind=ldasoutIndexList, var=ldasoutVariableList, files=ldasoutFilesList, parallel=F )
         }
-    outDf <- reshape_MultiNcdf(ldasoutDF)
+    outDf <- ReshapeMultiNcdf(ldasoutDF)
     outDf
 }
 
@@ -201,15 +192,6 @@ ReadRtout <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, ncore
     if (ncores > 1) {
         doMC::registerDoMC(ncores)
         }
-    # Function to "flatten" output dataframes for use in water budget tool
-    reshape_MultiNcdf <- function(inDF) {
-        newDF <- subset(inDF[,c("POSIXct","stat")], inDF$variableGroup==unique(inDF$variableGroup)[1])
-        for (i in unique(inDF$variableGroup)) {
-                        newDF[,i] <- subset(inDF$value, inDF$variableGroup==i)
-                            }   
-        newDF$wy <- ifelse(as.numeric(format(newDF$POSIXct,"%m"))>=10,as.numeric(format(newDF$POSIXct,"%Y"))+1,as.numeric(format(newDF$POSIXct,"%Y")))
-        newDF
-        }
     # Setup mask
     msk <- ncdf4::nc_open(pathDomfile)
     mskvar <- ncdf4::ncvar_get(msk,mskvar)
@@ -242,7 +224,7 @@ ReadRtout <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, ncore
     else {
         chrtoutDF <- GetMultiNcdf(ind=chrtoutIndexList, var=chrtoutVariableList, files=chrtoutFilesList, parallel=F )
         }
-    outDf <- reshape_MultiNcdf(chrtoutDF)
+    outDf <- ReshapeMultiNcdf(chrtoutDF)
     outDf
 }
 

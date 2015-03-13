@@ -70,8 +70,8 @@ OUTPUT water budget terms (may vary depending on model configuration):
 ## Take a NoahMP LDASOUT dataframe for a model run of Fourmile Creek with no routing
 ## options turned on and return a water budget summary.
 
-wb.mod1.fc <- CalcNoahmpWatBudg(modLDASOUT.mod1.fc)
-wb.mod1.fc
+wb.nort.fc <- CalcNoahmpWatBudg(modLDASOUT1d.nort.fc)
+wb.nort.fc
 ##
 ## Take NoahMP LDASOUT, HYDRO model RTOUT, and GW_outflow dataframes for a model
 ## run of Fourmile Creek with subsurface, overland, and groundwater routing options
@@ -79,7 +79,7 @@ wb.mod1.fc
 ## and the basin is 63.1 km2. NOTE: We MUST specify with the sfcrt flag that overland
 ## flow routing was turned on. Otherwise the LSM surface runoff term is used.
 
-wb.mod2.fc <- CalcNoahmpWatBudg(modLDASOUT.mod2.fc, modRTOUT.mod2.fc, modGWout.mod2.fc, sfcrt=TRUE, basarea=63.1)
-wb.mod2.fc
+wb.allrt.fc <- CalcNoahmpWatBudg(modLDASOUT1d.allrt.fc, modRTOUT1h.allrt.fc, modGWOUT1h.allrt.fc, sfcrt=TRUE, basarea=63.1)
+wb.allrt.fc
 }
 

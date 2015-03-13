@@ -18,11 +18,12 @@ The input dataframe with new water flux columns added.
 \details{
 Read a dataframe derived from NoahMP LDASOUT output (i.e., using \code{\link{GetMultiNcdf}}) and
 calculate water budget component fluxes from accumulated water variables.
+NOTE: Currently only works for runs using NoahMP as the LSM.
 }
 \examples{
 ## Take a NoahMP LDASOUT dataframe for a model run of Fourmile Creek
 ## and generate a dataframe with water fluxes added.
 
-modLDASOUT.mod1.fc <- CalcNoahmpFluxes(modLDASOUT.mod1.fc)
+modLDASOUT1d.nort.fc <- CalcNoahmpFluxes(modLDASOUT1d.nort.fc)
 }
 

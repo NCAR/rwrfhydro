@@ -4,14 +4,14 @@
 \alias{PlotFdc}
 \title{Plot a flow duration curve for a single streamflow time series}
 \usage{
-PlotFdc(strflowDf, strflowCol = "q_cms", spline = TRUE, fdcProb = NULL)
+PlotFdc(strDf, strCol = "q_cms", spline = TRUE, fdcProb = NULL)
 }
 \arguments{
-\item{strflowDf}{The streamflow time series dataframe (e.g., output from \code{\link{ReadFrxstPts}} or \code{\link{ReadUsgsGage}})
+\item{strDf}{The streamflow time series dataframe (e.g., output from \code{\link{ReadFrxstPts}} or \code{\link{ReadUsgsGage}})
 already processed through \code{\link{CalcFdc}}. The data frame must contain a column of streamflow values and a
-corresponding column (named "<strflowCol>.fdc") of flow exceedance probabilities.}
+corresponding column (named "<strCol>.fdc") of flow exceedance probabilities.}
 
-\item{strflowCol}{The name of the column containing the streamflow values (DEFAULT="q_cms").}
+\item{strCol}{The name of the column containing the streamflow values (DEFAULT="q_cms").}
 
 \item{spline}{(TRUE or FALSE) Option to add spline-fit curves to the plot (DEFAULT=TRUE).}
 

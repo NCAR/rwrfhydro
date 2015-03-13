@@ -4,16 +4,16 @@
 \alias{CalcFdc}
 \title{Calculate flow duration curve statistics}
 \usage{
-CalcFdc(strflowDf, strflowCol = "q_cms")
+CalcFdc(strDf, strCol = "q_cms")
 }
 \arguments{
-\item{strflowDf}{The streamflow time series dataframe (e.g., output from \code{\link{ReadFrxstPts}} or \code{\link{ReadUsgsGage}}).
+\item{strDf}{The streamflow time series dataframe (e.g., output from \code{\link{ReadFrxstPts}} or \code{\link{ReadUsgsGage}}).
 The data frame must contain a column of streamflow values.}
 
-\item{strflowCol}{The name of the column containing the streamflow values (DEFAULT="q_cms").}
+\item{strCol}{The name of the column containing the streamflow values (DEFAULT="q_cms").}
 }
 \value{
-A dataframe containing the original input data with a new column added called "<strflowCol>.fdc"
+A dataframe containing the original input data with a new column added called "<strCol>.fdc"
 containing the flow exceedance probabilities.
 }
 \description{
