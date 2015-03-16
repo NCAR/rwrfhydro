@@ -31,12 +31,14 @@ Table of Contents
 
 # Installing
 Installing the development package (not on [CRAN](http://cran.r-project.org/)) is facilitated by the devtools package (on CRAN),
-so devtools is installed in this process. The following is done for the initial install or to update the rwrfhydro package (
-we are consider notifying users when if there have been updates each time the library is loaded).
+so devtools is installed in this process. The following is done for the initial install or to update the rwrfhydro package 
+(we are consider trying to notifying users if there have been repository updates each time the library is loaded).
 ``` R
 install.packages("devtools")
 devtools::install_github("mccreigh/rwrfhydro")
 ```
+The very first time this is run, it can take a while to install all the package dependencies listed as "Imports" in the
+[DESCRIPTION](https://github.com/mccreigh/rwrfhydro/blob/master/DESCRIPTION) file. 
 
 # Using
 After the one-time install or any subsequent re-installs/updates, simply load the rwrfhydro library in an R session:
@@ -61,14 +63,21 @@ There are three main aspects of developing the code base and contributing:
 All of these topics (minus some of our specific best practices) are treated by [Hadley Wickham’s book on R Packages](http://r-pkgs.had.co.nz/). Specific sections of this book are linked below. Further resources on R package development are listed below. 
 
 ## Version control for collaboration: Github
-Note that devtools installs rwrfhydro into you default library path (`.libPaths()[1]`) and that the sources code is not 
-included. To edit the source, code you can download from github or you can actually fork and clone the repository to your 
+Note that devtools::install_github() installs rwrfhydro into you default library path (`.libPaths()[1]`) and that the sources code 
+is not included. To edit the source, code you can download from github or you can actually fork and clone the repository to your 
 machine of choice. Note that your git repository is not in your default library path, but somewhere else. Using devtools, however, 
-allows you to load the development package similarly to as if it were a package in your library path. The basic use of devtools
-is outlined below. It greatly stream lines all aspects of developing R packages and is highly recommended. 
+allows you to load the development package similarly to as if it were a package in your library path (with some slight differences). 
+This means that after you add some code locally, you can load rwrfhydro with those changes appearing packaged. The basic use of 
+devtools is outlined below. It greatly stream lines all aspects of developing R packages and is highly recommended. Note we 
+recommend that you install rwrfhydro using devtools::install_github() first, because this streamlines the installation of package 
+dependencies. 
 
 ### Forking
 Please fork the repository to contribute. A fork is a separate copy of the repository. [Forking is trivial in Github](https://help.github.com/articles/fork-a-repo/). But remember to keep your fork sync'd as much as possible. You have to have a free (for open-source repositories) account to fork on github. When you have a piece of code to add to the master, [send a pull request](https://help.github.com/articles/using-pull-requests/). A finer point is that topic branches create more coherent pull requests if these extend over time. When possible, create branches for your development topics.
+
+### devBranch and pull requests. 
+We ask that you send pull requests for the devBranch branch in the repository (and NOT the master). How you get your code
+into the devBranch is your choice. The easiest way is to `git checkout devBranch` before you do anything.
 
 ### Not using Github.
 hmm..., expand on this: http://stackoverflow.com/questions/4728432/git-forking-without-github
@@ -79,13 +88,14 @@ Workflow is approximately this:
   
 * Fork project
 * Development cycles:
-  * Make a topic branch in git (e.g. `git checkout newBranch`)
+  * Checkout the devBranch (`git checkout devBranch`)
+  * Optional: Make a topic branch of bevBranch in git (e.g. `git checkout newBranch`)
   * Write code (in these dirs: R/, NAMESPACE, src/, data/, inst/).
   * Write documentation (in these dirs: man/, vignettes/).
   * Write tests (in this dir: test/).
   * Check with devtools: `devtools::document(); devtools::check_doc(); devtools::check()`
   * Commit to your branch with git. 
-  * Merge your master with the central repository (minimize merge pains).
+  * Merge your master with the central repository to minimize merge pains.
   * Merge your branch with your master.
   * Submit a pull request on github.
 
