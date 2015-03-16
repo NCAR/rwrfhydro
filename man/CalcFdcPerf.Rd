@@ -4,22 +4,30 @@
 \alias{CalcFdcPerf}
 \title{Computes flow duration curve statistics for WRF-Hydro streamflow output}
 \usage{
-CalcFdcPerf(stroutDf, obsDf, strCol = "q_cms", obsCol = "q_cms")
+CalcFdcPerf(strDf.mod, strDf.obs, strCol.mod = "q_cms",
+  strCol.obs = "q_cms", stdate = NULL, enddate = NULL)
 }
 \arguments{
-\item{stroutDf}{The forecast point output dataframe (required). Assumes only one forecast
+\item{strDf.mod}{The forecast point output dataframe (required). Assumes only one forecast
 point per file, so if you have multiple forecast points in your output dataframe, use
-subset to isolate a single forecast point's data. Also assumes model output time step and
-observation time step match, and both contain POSIXct fields (called "POSIXct").}
+subset to isolate a single forecast point's data. Also assumes model output and observation
+both contain POSIXct fields (called "POSIXct").}
 
-\item{obsDf}{The observed streamflow dataframe. Assumes only one gage per file, so if
-you have multiple forecast points in your output dataframe, use subset to isolate
-a single gage's data. Also assumes model output time step and observation time step match,
-and both contain POSIXct fields (called "POSIXct").}
+\item{strDf.obs}{The observed streamflow dataframe. Assumes only one gage per file, so if
+you have multiple gages in your dataframe, use subset to isolate a single gage's data.
+Also assumes model output and observation both contain POSIXct fields (called "POSIXct").}
 
-\item{strCol}{The column name for the streamflow time series for the MODEL data (default="q_cms")}
+\item{strCol.mod}{The column name for the streamflow time series for the MODEL data (default="q_cms")}
 
-\item{obsCol}{The column name for the streamflow time series for the OBSERVED data (default="q_cms")}
+\item{strCol.obs}{The column name for the streamflow time series for the OBSERVED data (default="q_cms")}
+
+\item{stdate}{Start date for plot/statistics (DEFAULT=NULL, all records will be used).
+Date MUST be specified in POSIXct format with appropriate timezone
+(e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))}
+
+\item{enddate}{End date for plot/statistics (DEFAULT=NULL, all records will be used).
+Date MUST be specified in POSIXct format with appropriate timezone
+(e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))}
 }
 \value{
 A new dataframe containing the flow duration curve statistics.
@@ -30,7 +38,9 @@ A new dataframe containing the flow duration curve statistics.
 \details{
 \code{CalcFdcPerf} reads a model forecast point streamflow timeseries (i.e., created using \code{\link{ReadFrxstPts}}) and
 a streamflow observation timeseries (i.e., created using \code{\link{ReadUsgsGage}}) and calculates flow duration curve
-statistics at various exceedance thresholds (e.g., 10\%, 20\%, etc.).
+statistics at various exceedance thresholds (e.g., 10\%, 20\%, etc.). The tool will subset data to matching time periods
+(e.g., if the observed data is at 5-min increments and modelled data is at 1-hr increments, the tool
+will subset the observed data to select only observations on the matching hour break).
 
 Flow Duration Curve Statistics:
 \cr (mod = model output, obs = observations)
@@ -48,7 +58,7 @@ Flow Duration Curve Statistics:
 ## flow duration curve statistics. The model forecast point data was imported using ReadFrxstPts
 ## and the gage observation data was imported using ReadUsgsGage.
 
-CalcFdcPerf(modStrh.mod1.fc, obsStrh.fc)
+CalcFdcPerf(modStr1h.allrt.fc, obsStr5min.fc)
 
 Output:
  p.exceed    q.mod   q.obs

@@ -4,14 +4,14 @@
 \alias{CalcFdcSpline}
 \title{Generate a spline-fit funtion for a flow duration curve}
 \usage{
-CalcFdcSpline(strflowDf, strflowCol = "q_cms")
+CalcFdcSpline(strDf, strCol = "q_cms")
 }
 \arguments{
-\item{strflowDf}{The streamflow time series dataframe (e.g., output from \code{\link{ReadFrxstPts}} or \code{\link{ReadUsgsGage}})
+\item{strDf}{The streamflow time series dataframe (e.g., output from \code{\link{ReadFrxstPts}} or \code{\link{ReadUsgsGage}})
 already processed through \code{\link{CalcFdc}}. The data frame must contain a column of streamflow values and a
-corresponding column (named "<strflowCol>.fdc") of flow exceedance probabilities.}
+corresponding column (named "<strCol>.fdc") of flow exceedance probabilities.}
 
-\item{strflowCol}{The name of the column containing the streamflow values (DEFAULT="q_cms").}
+\item{strCol}{The name of the column containing the streamflow values (DEFAULT="q_cms").}
 }
 \value{
 A spline function fitted to flow (y) vs. flow exceedance probabilities (x).

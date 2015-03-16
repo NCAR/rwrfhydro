@@ -80,12 +80,13 @@ ParseIndexArg <- function( index, dimSize ) {
 #' @param theFile The file to open. 
 #' @param variable TODO
 #' @param index TODO 
+#' @param env The environment where the stat function lives
 #' @param ... Further arguments to be passsed to a statistic. 
 #' @return A dataframe with columns TODO
 
 #' @examples
 #' This is to do.
-GetFileStat <- function(theFile, variable, index, ...) {
+GetFileStat <- function(theFile, variable, index, env=parent.frame(), ...) {
 
   if(!file.exists(theFile)) {
     warning('No such file: ',theFile)
@@ -142,7 +143,7 @@ GetFileStat <- function(theFile, variable, index, ...) {
   ncdf4::nc_close(ncid)
 
   outDf <- if(!is.null(statFunc))
-              data.frame( do.call(statFunc, list(data, ...)) ) else data.frame(data)
+              data.frame( do.call(statFunc, list(data, ...), envir=env) ) else data.frame(data)
   
   names(outDf) <- c(variable)
   outDf$POSIXct <- time
@@ -165,15 +166,16 @@ GetFileStat <- function(theFile, variable, index, ...) {
 #' @param indexList The variable list. 
 #' @param variableList The variable list. 
 #' @param files The files vector.
+#' @param env The environment where the stat function lives
 #' @param parallel Logical, this is the .parallel argument of plyr functions.
 #' @return A dataframe
 #'
 
 GetMultiNcdfVariable <- function(varInd, indexList,
-                                 variableList, files, parallel=FALSE) {
+                                 variableList, files, env=parent.frame(), parallel=FALSE) {
   outDf <- plyr::ldply(files, GetFileStat,
                        variableList[[varInd]], indexList[[varInd]],
-                       .parallel=parallel) 
+                       env=env, .parallel=parallel) 
   outDf <- reshape2::melt(outDf, c('POSIXct','inds','stat') )
   outDf$variableGroup <- names(variableList)[varInd]
   outDf
@@ -192,11 +194,12 @@ GetMultiNcdfVariable <- function(varInd, indexList,
 #' @param filesList The list of the file groups.
 #' @param variableList The variable list.
 #' @param indexList The index list.
+#' @param env The environment where the stat function lives
 #' @param parallel Logical, this is the .parallel argument of plyr functions.
 #' @return A dataframe
 
 GetMultiNcdfFile <- function(filesInd, filesList,
-                             variableList, indexList, parallel=FALSE) {
+                             variableList, indexList, env=parent.frame(), parallel=FALSE) {
   ## Enforce collation at the variable-index level: (for this file) each variable
   ## has to have a collated index.
   if (length(variableList) != length(indexList) ) 
@@ -209,7 +212,7 @@ GetMultiNcdfFile <- function(filesInd, filesList,
   outDf <- plyr::ldply(varInd, GetMultiNcdfVariable,
                        variableList=variableList[[filesInd]],
                        indexList=indexList[[filesInd]],
-                       files=filesList[[filesInd]], parallel=parallel)
+                       files=filesList[[filesInd]], env=env, parallel=parallel)
   outDf$fileGroup <- names(filesList)[filesInd]
   outDf
 }
@@ -230,6 +233,7 @@ GetMultiNcdfFile <- function(filesInd, filesList,
 #' @param filesList The list of file groups. Names must match those in the other lists. 
 #' @param variableList The list of variables for each file group. Names must match filesList.
 #' @param indexList The list of indices or statistics to be applied to each variable.
+#' @param env The environment where the stat function lives
 #' @param parallel Logical, this is the .parallel argument of plyr functions.
 #' Parallelization is at the file level (not file group).Typcially we achieve
 #' parallelization using the DoMC package. See examples. 
@@ -292,7 +296,7 @@ GetMultiNcdfFile <- function(filesInd, filesList,
 #'   scale_x_datetime(breaks = date_breaks("5 days"))
 #' 
 #' @export
-GetMultiNcdf <- function(filesList, variableList, indexList, parallel=FALSE) {
+GetMultiNcdf <- function(filesList, variableList, indexList, env=parent.frame(), parallel=FALSE) {
   ## Only do collated lists. Collation check at the file-variable level. 
   if (length(variableList) != length(indexList) |
       length(variableList) != length(filesList) ) 
@@ -307,7 +311,7 @@ GetMultiNcdf <- function(filesList, variableList, indexList, parallel=FALSE) {
                        variableList=variableList,
                        indexList=indexList,
                        filesList=filesList,
-                       parallel=parallel)
+                       env=env, parallel=parallel)
   outDf
 }
 #=====================================================================

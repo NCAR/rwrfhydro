@@ -4,7 +4,8 @@
 \alias{GetMultiNcdfVariable}
 \title{The GetMultiNcdf for getting variables out of individual files.}
 \usage{
-GetMultiNcdfVariable(varInd, indexList, variableList, files, parallel = FALSE)
+GetMultiNcdfVariable(varInd, indexList, variableList, files,
+  env = parent.frame(), parallel = FALSE)
 }
 \arguments{
 \item{varInd}{The variable index.}
@@ -14,6 +15,8 @@ GetMultiNcdfVariable(varInd, indexList, variableList, files, parallel = FALSE)
 \item{variableList}{The variable list.}
 
 \item{files}{The files vector.}
+
+\item{env}{The environment where the stat function lives}
 
 \item{parallel}{Logical, this is the .parallel argument of plyr functions.}
 }

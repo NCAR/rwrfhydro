@@ -4,6 +4,7 @@
 #'
 #' Read a dataframe derived from NoahMP LDASOUT output (i.e., using \code{\link{GetMultiNcdf}}) and
 #' calculate water budget component fluxes from accumulated water variables.
+#' NOTE: Currently only works for runs using NoahMP as the LSM.
 #' 
 #' @param ldasoutDf The LDASOUT dataframe
 #' @return The input dataframe with new water flux columns added.
@@ -12,16 +13,16 @@
 #' ## Take a NoahMP LDASOUT dataframe for a model run of Fourmile Creek
 #' ## and generate a dataframe with water fluxes added.
 #'
-#' modLDASOUT.mod1.fc <- CalcNoahmpFluxes(modLDASOUT.mod1.fc)
+#' modLDASOUT1d.nort.fc <- CalcNoahmpFluxes(modLDASOUT1d.nort.fc)
 #' @export
 
 CalcNoahmpFluxes <- function(ldasoutDf) {
-    ldasoutDf$DEL_ACCPRCP[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACCPRCP)
-    ldasoutDf$DEL_ACCECAN[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACCECAN)
-    ldasoutDf$DEL_ACCETRAN[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACCETRAN)
-    ldasoutDf$DEL_ACCEDIR[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACCEDIR)
-    ldasoutDf$DEL_UGDRNOFF[2:nrow(ldasoutDf)] <- diff(ldasoutDf$UGDRNOFF)
-    ldasoutDf$DEL_SFCRNOFF[2:nrow(ldasoutDf)] <- diff(ldasoutDf$SFCRNOFF)
+    if ("ACCPRCP" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_ACCPRCP[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACCPRCP) }
+    if ("ACCECAN" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_ACCECAN[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACCECAN) }
+    if ("ACCETRAN" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_ACCETRAN[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACCETRAN) }
+    if ("ACCEDIR" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_ACCEDIR[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACCEDIR) }
+    if ("UGDRNOFF" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_UGDRNOFF[2:nrow(ldasoutDf)] <- diff(ldasoutDf$UGDRNOFF) }
+    if ("SFCRNOFF" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_SFCRNOFF[2:nrow(ldasoutDf)] <- diff(ldasoutDf$SFCRNOFF) }
     ldasoutDf
 }
 
@@ -46,20 +47,22 @@ CalcNoahmpFluxes <- function(ldasoutDf) {
 #'
 #' OUTPUT water budget terms (may vary depending on model configuration):
 #' \itemize{
-#'    \item PRCP: Total precipitation (mm)
-#'    \item ECAN: Total canopy evaporation (mm)
-#'    \item ETRAN: Total transpiration (mm)
-#'    \item EDIR: Total surface evaporation (mm)
-#'    \item DEL_SOILM: Change in total soil moisture storage (mm)
-#'    \item DEL_SWE: Change in snowpack snow water equivalent (mm)
-#'    \item DEL_CANWAT: Change in canopy water storage (liquid + ice) (mm)
-#'    \item SFCRNOFF: Surface runoff from LSM \emph{(for an LSM-only run)} (mm)
-#'    \item UGDRNOFF: Subsurface runoff from LSM \emph{(for an LSM-only run)} (mm)
-#'    \item QSTRMVOL: Total runoff into channel from land \emph{(routing model only)}  (mm)
-#'    \item DEL_SFCHEAD: Change in surface storage \emph{(routing model only)} (mm)
-#'    \item QBDRY: Total flow outside of domain \emph{(routing model only)} (mm)
-#'    \item GWOUT: Total groundwater outflow \emph{(routing model only)} (mm)
-#'    \item DEL_GWSTOR: Change in groundwater storage \emph{(routing model only)} (mm)
+#'    \item LSM_PRCP: Total precipitation (mm)
+#'    \item LSM_ECAN: Total canopy evaporation (mm)
+#'    \item LSM_ETRAN: Total transpiration (mm)
+#'    \item LSM_EDIR: Total surface evaporation (mm)
+#'    \item LSM_DELSWE: Change in snowpack snow water equivalent (mm)
+#'    \item LSM_DELCANWAT: Change in canopy water storage (liquid + ice) (mm)
+#'    \item LSM_SFCRNOFF: Surface runoff from LSM \emph{(for an LSM-only run)} (mm)
+#'    \item LSM_UGDRNOFF: Subsurface runoff from LSM \emph{(for an LSM-only run)} (mm)
+#'    \item LSM_DELSOILM: Change in total soil moisture storage (mm)
+#'    \item HYD_QSTRMVOL: Total runoff into channel from land \emph{(routing model only)}  (mm)
+#'    \item HYD_DELSFCHEAD: Change in surface storage \emph{(routing model only)} (mm)
+#'    \item HYD_QBDRY: Total flow outside of domain \emph{(routing model only)} (mm)
+#'    \item HYD_GWOUT: Total groundwater outflow \emph{(routing model only)} (mm)
+#'    \item HYD_DELGWSTOR: Change in groundwater storage \emph{(routing model only)} (mm)
+#'    \item WB_SFCRNOFF: Total surface runoff used in the water budget calculation (\emph{either} LSM_SFCRNOFF or HYD_QSTRMVOL) (mm)
+#'    \item WB_GWOUT: Total groundwater outflow used in the water budget calculation (\emph{either} LSM_UGDRNOFF or HYD_GWOUT) (mm)
 #'    \item ERROR: Remainder in water budget (mm)
 #'    \item RUN_FRAC: Runoff fraction, runoff/precipitation
 #'    \item EVAP_FRAC: Evaporative fraction, evapotranspiration/precipitation
@@ -69,6 +72,9 @@ CalcNoahmpFluxes <- function(ldasoutDf) {
 #' @param ldasoutDf The LDASOUT dataframe (required)
 #' @param rtoutDf The RTOUT dataframe, if overland or subsurface routing was turned on (default=NULL)
 #' @param gwoutDf The GW_OUT dataframe, if groundwater model was turned on (default=NULL)
+#' @param sfcrt A flag whether surface overland flow routing was active. All other routing
+#' options are determined based on the input dataframes, as needed (e.g., if gwoutDf is provided,
+#' it is assumed that the groundwater model was active). (default=FALSE)
 #' @param soildeps A list of soil layer depths in mm (top to bottom, default=c(100, 300, 600, 1000))
 #' @param basarea The basin area in square km (necessary only if gwoutDf is provided)
 #' @return A new dataframe containing the water budget components in mm.
@@ -77,362 +83,106 @@ CalcNoahmpFluxes <- function(ldasoutDf) {
 #' ## Take a NoahMP LDASOUT dataframe for a model run of Fourmile Creek with no routing
 #' ## options turned on and return a water budget summary.
 #'
-#' wb.mod1.fc <- CalcNoahmpWatBudg(modLDASOUT.mod1.fc)
-#' wb.mod1.fc
+#' wb.nort.fc <- CalcNoahmpWatBudg(modLDASOUT1d.nort.fc)
+#' wb.nort.fc
 #' ##
 #' ## Take NoahMP LDASOUT, HYDRO model RTOUT, and GW_outflow dataframes for a model
 #' ## run of Fourmile Creek with subsurface, overland, and groundwater routing options
 #' ## turned on and return a water budget summary. The default soil depths were used
-#' ## and the basin is 63.1 km2.
+#' ## and the basin is 63.1 km2. NOTE: We MUST specify with the sfcrt flag that overland
+#' ## flow routing was turned on. Otherwise the LSM surface runoff term is used.
 #'
-#' wb.mod2.fc <- CalcNoahmpWatBudg(modLDASOUT.mod2.fc, modRTOUT.mod2.fc, modGWout.mod2.fc, basarea=63.1)
-#' wb.mod2.fc
+#' wb.allrt.fc <- CalcNoahmpWatBudg(modLDASOUT1d.allrt.fc, modRTOUT1h.allrt.fc, modGWOUT1h.allrt.fc, sfcrt=TRUE, basarea=63.1)
+#' wb.allrt.fc
 #' @export
 
-CalcNoahmpWatBudg <- function(ldasoutDf, rtoutDf=NULL, gwoutDf=NULL, soildeps=c(100,300,600,1000), basarea=NULL) {
-# NO ROUTING CASE
-if (is.null(rtoutDf) && is.null(gwoutDf)) {
-    wbDf <- as.data.frame(t(as.matrix(rep(0, 13))))
-    colnames(wbDf) <- c("PRCP","ECAN","ETRAN","EDIR",
-                      "SFCRNOFF","UGDRNOFF",
-                      "DEL_SOILM","DEL_SWE","DEL_CANWAT",
-                      "ERROR","RUN_FRAC","EVAP_FRAC","STOR_FRAC")
+CalcNoahmpWatBudg <- function(ldasoutDf, rtoutDf=NULL, gwoutDf=NULL, sfcrt=FALSE, soildeps=c(100,300,600,1000), basarea=NULL) {
+    wbDf <- as.data.frame(t(as.matrix(rep(0, 6))))
+    colnames(wbDf) <- c("LSM_PRCP","LSM_ECAN","LSM_ETRAN","LSM_EDIR","LSM_DELSWE","LSM_DELCANWAT")
+    # LSM water fluxes for all model cases
     wbDf[1,1] <- ldasoutDf$ACCPRCP[nrow(ldasoutDf)]-ldasoutDf$ACCPRCP[1]
     wbDf[1,2] <- ldasoutDf$ACCECAN[nrow(ldasoutDf)]-ldasoutDf$ACCECAN[1]
     wbDf[1,3] <- ldasoutDf$ACCETRAN[nrow(ldasoutDf)]-ldasoutDf$ACCETRAN[1]
     wbDf[1,4] <- ldasoutDf$ACCEDIR[nrow(ldasoutDf)]-ldasoutDf$ACCEDIR[1]
-    wbDf[1,5] <- ldasoutDf$SFCRNOFF[nrow(ldasoutDf)]-ldasoutDf$SFCRNOFF[1]
-    wbDf[1,6] <- ldasoutDf$UGDRNOFF[nrow(ldasoutDf)]-ldasoutDf$UGDRNOFF[1]
+    wbDf[1,5] <- ldasoutDf$SNEQV[nrow(ldasoutDf)]-ldasoutDf$SNEQV[1]
+    wbDf[1,6] <- (ldasoutDf$CANICE[nrow(ldasoutDf)] + ldasoutDf$CANLIQ[nrow(ldasoutDf)]) -
+                        (ldasoutDf$CANICE[1] + ldasoutDf$CANLIQ[1])
+    # LSM overlap water fluxes
+    wbDf[1,"LSM_SFCRNOFF"] <- ldasoutDf$SFCRNOFF[nrow(ldasoutDf)]-ldasoutDf$SFCRNOFF[1]
+    wbDf[1,"LSM_UGDRNOFF"] <- ldasoutDf$UGDRNOFF[nrow(ldasoutDf)]-ldasoutDf$UGDRNOFF[1]
     numsoil <- length(soildeps)
     soilm <- 0.0
     for (i in 1:numsoil) {
         soilm <- soilm + (ldasoutDf[nrow(ldasoutDf),paste0("SOIL_M",i)]-ldasoutDf[1,paste0("SOIL_M",i)])*soildeps[i]
         }
-    wbDf[1,7] <- soilm
-    wbDf[1,8] <- ldasoutDf$SNEQV[nrow(ldasoutDf)]-ldasoutDf$SNEQV[1]
-    wbDf[1,9] <- (ldasoutDf$CANICE[nrow(ldasoutDf)] + ldasoutDf$CANLIQ[nrow(ldasoutDf)]) - 
-                        (ldasoutDf$CANICE[1] + ldasoutDf$CANLIQ[1])
-    wbDf[1,10] <- with(wbDf,PRCP - ECAN - ETRAN - EDIR - SFCRNOFF - UGDRNOFF - 
-                                  DEL_SOILM - DEL_SWE - DEL_CANWAT)
-    wbDf[1,11] <- with(wbDf,(SFCRNOFF+UGDRNOFF)/PRCP)
-    wbDf[1,12] <- with(wbDf,(ECAN+ETRAN+EDIR)/PRCP)
-    wbDf[1,13] <- with(wbDf,(DEL_SOILM+DEL_SWE+DEL_CANWAT)/PRCP)
-    }
-# GW ROUTING ONLY CASE
-else if (is.null(rtoutDf) && !is.null(gwoutDf)) {
-    dt <- as.integer(difftime(gwoutDf$POSIXct[2],gwoutDf$POSIXct[1],units="secs"))
-    wbDf <- as.data.frame(t(as.matrix(rep(0, 14))))
-    colnames(wbDf) <- c("PRCP","ECAN","ETRAN","EDIR",
-                      "SFCRNOFF",
-                      "DEL_SOILM","DEL_SWE","DEL_CANWAT", 
-                      "GWOUT", "DEL_GWSTOR", 
-                      "ERROR","RUN_FRAC","EVAP_FRAC","STOR_FRAC")
-    wbDf[1,1] <- ldasoutDf$ACCPRCP[nrow(ldasoutDf)]-ldasoutDf$ACCPRCP[1]
-    wbDf[1,2] <- ldasoutDf$ACCECAN[nrow(ldasoutDf)]-ldasoutDf$ACCECAN[1]
-    wbDf[1,3] <- ldasoutDf$ACCETRAN[nrow(ldasoutDf)]-ldasoutDf$ACCETRAN[1]
-    wbDf[1,4] <- ldasoutDf$ACCEDIR[nrow(ldasoutDf)]-ldasoutDf$ACCEDIR[1]
-    wbDf[1,5] <- ldasoutDf$SFCRNOFF[nrow(ldasoutDf)]-ldasoutDf$SFCRNOFF[1]
-    numsoil <- length(soildeps)
-    soilm <- 0.0
-    for (i in 1:numsoil) {
-        soilm <- soilm + (ldasoutDf[nrow(ldasoutDf),paste0("SOIL_M",i)]-ldasoutDf[1,paste0("SOIL_M",i)])*soildeps[i]
+    wbDf[1,"LSM_DELSOILM"] <- soilm
+    # HYDRO surface/subsurface water fluxes
+    if (!is.null(rtoutDf)) {
+        wbDf[1,"HYD_QSTRMVOL"] <- rtoutDf$QSTRMVOLRT[nrow(rtoutDf)]-rtoutDf$QSTRMVOLRT[1]
+        wbDf[1,"HYD_DELSFCHEAD"] <- rtoutDf$SFCHEADSUBRT[nrow(rtoutDf)]-rtoutDf$SFCHEADSUBRT[1]
+        wbDf[1,"HYD_QBDRY"] <- -(rtoutDf$QBDRY[nrow(rtoutDf)]-rtoutDf$QBDRY[1])
         }
-    wbDf[1,6] <- soilm
-    wbDf[1,7] <- ldasoutDf$SNEQV[nrow(ldasoutDf)]-ldasoutDf$SNEQV[1]
-    wbDf[1,8] <- (ldasoutDf$CANICE[nrow(ldasoutDf)] + ldasoutDf$CANLIQ[nrow(ldasoutDf)]) - 
-                        (ldasoutDf$CANICE[1] + ldasoutDf$CANLIQ[1])
-    wbDf[1,9] <- sum(gwoutDf$q_cms/(basarea*1000*1000)*1000*dt, na.rm=T)
-    wbDf[1,10] <- ldasoutDf$UGDRNOFF[nrow(ldasoutDf)] - wbDf$GWOUT
-    wbDf[1,11] <- with(wbDf, PRCP - ECAN - ETRAN - EDIR - SFCRNOFF - GWOUT - 
-                                  DEL_SOILM - DEL_SWE - DEL_CANWAT - DEL_GWSTOR)
-    wbDf[1,12] <- with(wbDf,(SFCRNOFF+GWOUT)/PRCP)
-    wbDf[1,13] <- with(wbDf,(ECAN+ETRAN+EDIR)/PRCP)
-    wbDf[1,14] <- with(wbDf,(DEL_SOILM+DEL_SWE+DEL_CANWAT+DEL_GWSTOR)/PRCP)
-    }
-# OVERLAND/SUBSURFACE ROUTING ONLY CASE
-else if (!is.null(rtoutDf) && is.null(gwoutDf)) {
-   wbDf <- as.data.frame(t(as.matrix(rep(0, 16))))
-   colnames(wbDf) <- c("PRCP","ECAN","ETRAN","EDIR","UGDRNOFF",
-                      "DEL_SOILM","DEL_SWE","DEL_CANWAT",
-                      "QSTRMVOL","DEL_SFCHEAD","QBDRY",
-                      "ERROR","RUN_FRAC","EVAP_FRAC","STOR_FRAC","RECH_FRAC")
-   wbDf[1,1] <- ldasoutDf$ACCPRCP[nrow(ldasoutDf)]-ldasoutDf$ACCPRCP[1]
-   wbDf[1,2] <- ldasoutDf$ACCECAN[nrow(ldasoutDf)]-ldasoutDf$ACCECAN[1]
-   wbDf[1,3] <- ldasoutDf$ACCETRAN[nrow(ldasoutDf)]-ldasoutDf$ACCETRAN[1]
-   wbDf[1,4] <- ldasoutDf$ACCEDIR[nrow(ldasoutDf)]-ldasoutDf$ACCEDIR[1]
-   wbDf[1,5] <- ldasoutDf$UGDRNOFF[nrow(ldasoutDf)]-ldasoutDf$UGDRNOFF[1]
-   numsoil <- length(soildeps)
-   soilm <- 0.0
-   for (i in 1:numsoil) {
-        soilm <- soilm + (ldasoutDf[nrow(ldasoutDf),paste0("SOIL_M",i)]-ldasoutDf[1,paste0("SOIL_M",i)])*soildeps[i]
+    else {
+        message('Message: No routing output dataframe (rtoutDf) was provided. Proceeding using LSM surface runoff.')
+        wbDf[1,"HYD_QSTRMVOL"] <- NA
+        wbDf[1,"HYD_DELSFCHEAD"] <- NA
+        wbDf[1,"HYD_QBDRY"] <- NA
         }
-   wbDf[1,6] <- soilm
-   wbDf[1,7] <- ldasoutDf$SNEQV[nrow(ldasoutDf)]-ldasoutDf$SNEQV[1]
-   wbDf[1,8] <- (ldasoutDf$CANICE[nrow(ldasoutDf)] + ldasoutDf$CANLIQ[nrow(ldasoutDf)]) - 
-               (ldasoutDf$CANICE[1] + ldasoutDf$CANLIQ[1])
-   wbDf[1,9] <- rtoutDf$QSTRMVOLRT[nrow(rtoutDf)]-rtoutDf$QSTRMVOLRT[1]
-   wbDf[1,10] <- rtoutDf$SFCHEADSUBRT[nrow(rtoutDf)]-rtoutDf$SFCHEADSUBRT[1]
-   wbDf[1,11] <- -(rtoutDf$QBDRY[nrow(rtoutDf)]-rtoutDf$QBDRY[1])
-   wbDf[1,12] <- with(wbDf, PRCP - ECAN - ETRAN - EDIR - UGDRNOFF -
-                                 QSTRMVOL - QBDRY -
-                                 DEL_SOILM - DEL_SWE - DEL_CANWAT - 
-                                 DEL_SFCHEAD)
-   wbDf[1,13] <- with(wbDf, (QSTRMVOL+QBDRY)/PRCP)
-   wbDf[1,14] <- with(wbDf, (ECAN+ETRAN+EDIR)/PRCP)
-   wbDf[1,15] <- with(wbDf, (DEL_SOILM+DEL_SWE+DEL_CANWAT+DEL_SFCHEAD)/PRCP)
-   wbDf[1,16] <- with(wbDf, UGDRNOFF/PRCP)
-   }
-# ALL ROUTING CASE
-else if (!is.null(rtoutDf) && !is.null(gwoutDf)) {
-   dt <- as.integer(difftime(gwoutDf$POSIXct[2],gwoutDf$POSIXct[1],units="secs"))
-   wbDf <- as.data.frame(t(as.matrix(rep(0, 16))))
-   colnames(wbDf) <- c("PRCP","ECAN","ETRAN","EDIR",
-                      "DEL_SOILM","DEL_SWE","DEL_CANWAT",
-                      "QSTRMVOL","DEL_SFCHEAD","QBDRY","GWOUT","DEL_GWSTOR",
-                      "ERROR","RUN_FRAC","EVAP_FRAC","STOR_FRAC")
-   wbDf[1,1] <- ldasoutDf$ACCPRCP[nrow(ldasoutDf)]-ldasoutDf$ACCPRCP[1]
-   wbDf[1,2] <- ldasoutDf$ACCECAN[nrow(ldasoutDf)]-ldasoutDf$ACCECAN[1]
-   wbDf[1,3] <- ldasoutDf$ACCETRAN[nrow(ldasoutDf)]-ldasoutDf$ACCETRAN[1]
-   wbDf[1,4] <- ldasoutDf$ACCEDIR[nrow(ldasoutDf)]-ldasoutDf$ACCEDIR[1]
-   numsoil <- length(soildeps)
-   soilm <- 0.0
-   for (i in 1:numsoil) {
-        soilm <- soilm + (ldasoutDf[nrow(ldasoutDf),paste0("SOIL_M",i)]-ldasoutDf[1,paste0("SOIL_M",i)])*soildeps[i]
+    # HYDRO groundwater fluxes
+    if (!is.null(gwoutDf)) {
+        if (!is.null(basarea)) {
+            dt <- as.integer(difftime(gwoutDf$POSIXct[2],gwoutDf$POSIXct[1],units="secs"))
+            wbDf[1,"HYD_GWOUT"] <- sum(gwoutDf$q_cms/(basarea*1000*1000)*1000*dt, na.rm=T)
+            wbDf[1,"HYD_DELGWSTOR"] <- (ldasoutDf$UGDRNOFF[nrow(ldasoutDf)]-ldasoutDf$UGDRNOFF[1]) - wbDf$HYD_GWOUT
+            }
+        else { stop('Error: Groundwater outflow dataframe (gwoutDf) provided but no basin area (basarea). Please provide the basin area.') }
         }
-   wbDf[1,5] <- soilm
-   wbDf[1,6] <- ldasoutDf$SNEQV[nrow(ldasoutDf)]-ldasoutDf$SNEQV[1]
-   wbDf[1,7] <- (ldasoutDf$CANICE[nrow(ldasoutDf)] + ldasoutDf$CANLIQ[nrow(ldasoutDf)]) - 
-               (ldasoutDf$CANICE[1] + ldasoutDf$CANLIQ[1])
-   wbDf[1,8] <- rtoutDf$QSTRMVOLRT[nrow(rtoutDf)]-rtoutDf$QSTRMVOLRT[1]
-   wbDf[1,9] <- rtoutDf$SFCHEADSUBRT[nrow(rtoutDf)]-rtoutDf$SFCHEADSUBRT[1]
-   wbDf[1,10] <- -(rtoutDf$QBDRY[nrow(rtoutDf)]-rtoutDf$QBDRY[1])
-   wbDf[1,11] <- sum(gwoutDf$q_cms/(basarea*1000*1000)*1000*dt, na.rm=T)
-   wbDf[1,12] <- ldasoutDf$UGDRNOFF[nrow(ldasoutDf)] - wbDf$GWOUT
-   wbDf[1,13] <- with(wbDf, PRCP - ECAN - ETRAN - EDIR -
-                                 QSTRMVOL - QBDRY - GWOUT -
-                                 DEL_SOILM - DEL_SWE - DEL_CANWAT - 
-                                 DEL_SFCHEAD - DEL_GWSTOR)
-   wbDf[1,14] <- with(wbDf,(QSTRMVOL+QBDRY+GWOUT)/PRCP)
-   wbDf[1,15] <- with(wbDf,(ECAN+ETRAN+EDIR)/PRCP)
-   wbDf[1,16] <- with(wbDf, (DEL_SOILM+DEL_SWE+DEL_CANWAT+DEL_SFCHEAD+DEL_GWSTOR)/PRCP)
-   }
-
-wbDf
+    else {
+        message('Message: No groundwater outflow dataframe (gwoutDf) was provided. Proceeding using LSM underground runoff.')
+        wbDf[1,"HYD_GWOUT"] <- NA
+        wbDf[1,"HYD_DELGWSTOR"] <- NA
+        }
+    # Overland routing check
+    if ( sfcrt & is.null(rtoutDf)) {
+        stop('Error: Surface overland routing (sfcrt) is active (TRUE) but no routing output dataframe (rtoutDf) was specified.')
+        }
+    if ( !sfcrt & !is.null(rtoutDf) ) {
+        message('Message: A routing output file (rtoutDf) was provided but surface overland routing (sfcrt) is inactive (FALSE). Proceeding using LSM surface runoff.')
+        }
+    wbDf[1,"WB_SFCRNOFF"] <- if (sfcrt) { wbDf[1, "HYD_QSTRMVOL"] } else { wbDf[1, "LSM_SFCRNOFF"] }
+    # Groundwater routing check
+    wbDf[1,"WB_GWOUT"] <- if (!is.null(gwoutDf)) { wbDf[1, "HYD_GWOUT"] } else { wbDf[1, "LSM_UGDRNOFF"] }
+    # Water budget error
+    wbDf[1,"ERROR"] <- with( wbDf, LSM_PRCP - LSM_ECAN - LSM_ETRAN - LSM_EDIR -
+                                 WB_SFCRNOFF -
+                                 ifelse(is.na(HYD_QBDRY), 0.0, HYD_QBDRY) -
+                                 WB_GWOUT - LSM_DELSOILM -
+                                 LSM_DELSWE - LSM_DELCANWAT -
+                                 ifelse(is.na(HYD_DELSFCHEAD), 0.0, HYD_DELSFCHEAD) -
+                                 ifelse(is.na(HYD_DELGWSTOR), 0.0, HYD_DELGWSTOR) )
+    # Calculate various fractions
+    wbDf[1,"RUN_FRAC"] <- with( wbDf, (WB_SFCRNOFF + ifelse(is.na(HYD_QBDRY), 0.0, HYD_QBDRY) +
+                                        WB_GWOUT) / LSM_PRCP )
+    wbDf[1,"EVAP_FRAC"] <- with( wbDf, (LSM_ECAN + LSM_ETRAN + LSM_EDIR) / LSM_PRCP )
+    wbDf[1,"STOR_FRAC"] <- with( wbDf, (LSM_DELSOILM + LSM_DELSWE + LSM_DELCANWAT +
+                                        ifelse(is.na(HYD_DELSFCHEAD), 0.0, HYD_DELSFCHEAD) +
+                                        ifelse(is.na(HYD_DELGWSTOR), 0.0, HYD_DELGWSTOR) ) /
+                                        LSM_PRCP )
+    wbDf
 }
 
 
 
-#' Plot water balance from WRF-Hydro (w/NoahMP) output
+#' Computes model performance statistics for WRF-Hydro flux output
 #'
-#' \code{PlotWatBudg} plot water budget components from WRF-Hydro (w/NoahMP) model output.
+#' \code{CalcModPerf} calculates model performance statistics for flux output.
 #'
-#' Read water budget dataframe (as generated from \code{\link{CalcNoahmpWatBudg}}) and plot water budget
-#' components as a piechart or barchart.
-#' NOTE: Currently only works for runs using NoahMP as the LSM.
-#'
-#' @param wbDf The water budget dataframe (required)
-#' @param plottyp The plot type (pie or bar) (default=pie)
-#' @return A plot of the water budget components in mm.
-#'
-#' @examples
-#' ## Plot the water budget components from a water budget dataframe generated using
-#' ## CalcNoahmpWatBudg. Plot as a piechart.
-#'
-#' PlotWatBudg(wb.mod1.fc)
-#' @export
-
-PlotWatBudg <- function(wbDf, plottyp="pie") {
-if ("GWOUT" %in% colnames(wbDf)) {
-    # ALL ROUTING CASE
-    if ("QSTRMVOL" %in% colnames(wbDf)) {
-        lbls <- c("Canopy Evap", "Transpiration", "Surface Evap", "Surface &\nSubsurface Runoff",
-                 "Deep GW Outflow")
-        pcts <- with(wbDf,c(ECAN/PRCP*100, ETRAN/PRCP*100, EDIR/PRCP*100,
-                      (QSTRMVOL+QBDRY)/PRCP*100, GWOUT/PRCP*100))
-        lbls_pcts=c()
-        for (i in 1:length(lbls)) { lbls_pcts[i] <- paste0(lbls[i], "\n", round(pcts[i],1), "%") }
-        if (plottyp == "pie") {
-            if (wbDf$STOR_FRAC > 0) {
-                lbls_pcts[length(lbls_pcts)+1] <- paste0("Change in Storage", "\n",
-                                                    round( with( wbDf, (DEL_SOILM + DEL_SWE + DEL_CANWAT +
-                                                    DEL_SFCHEAD + DEL_GWSTOR) / PRCP*100),1), "%")
-                pie(as.matrix(with(wbDf, c(ECAN, ETRAN, EDIR, QSTRMVOL+QBDRY, GWOUT,
-                                    DEL_SOILM+DEL_SWE+DEL_CANWAT+DEL_SFCHEAD+DEL_GWSTOR))),
-                    col=c("chartreuse3","darkgreen","darkgoldenrod2","cornflowerblue","darkblue","grey30"),
-                    main=c("Water Budget"), labels=lbls_pcts)
-                }
-            else {
-                pie(as.matrix(with(wbDf, c(ECAN, ETRAN, EDIR, QSTRMVOL+QBDRY, GWOUT))),
-                    col=c("chartreuse3","darkgreen","darkgoldenrod2","cornflowerblue","darkblue"),
-                    main=c("Water Budget"), labels=lbls_pcts)
-                text(0,-1, paste0("*Storage Loss: ",
-                            round( with( wbDf, (DEL_SOILM + DEL_SWE + DEL_CANWAT + DEL_SFCHEAD + DEL_GWSTOR) /
-                                        PRCP*100),1),"%"))
-                } #end storage fraction split
-            }
-        else if (plottyp =="bar") {
-            lbls_pcts[length(lbls_pcts)+1] <- paste0("Change in Storage", "\n",
-                                    round( with( wbDf, (DEL_SOILM + DEL_SWE + DEL_CANWAT +
-                                    DEL_SFCHEAD + DEL_GWSTOR) / PRCP*100),1), "%")
-            plotDf <- with(wbDf,c(DEL_SOILM + DEL_SWE + DEL_CANWAT + DEL_SFCHEAD + DEL_GWSTOR, ECAN, ETRAN, EDIR, QSTRMVOL+QBDRY, GWOUT))
-            plotDf1 <- abs(plotDf)
-            ylabs <- round(c(0,cumsum(plotDf1))-((plotDf1[1]-plotDf[1])/2),0)
-            par(mar = c(5.1, 4.1, 5.1, 12.1), xpd = TRUE)
-            barplot(as.matrix(plotDf1), axes=FALSE,
-                col=c("grey70", "chartreuse", "darkgreen", "orange", "cornflowerblue", "darkblue"),
-                main=c("Water Budget"), width=0.2, space=0.2, ylab=c("Total Water (mm)"))
-            axis(2,c(0,cumsum(plotDf1)),labels=ylabs)
-            segments(0.0,cumsum(plotDf1)[1],0.36,cumsum(plotDf1)[1], lty=2)
-            legend("topright", legend=lbls_pcts,fill=c("chartreuse", "darkgreen", "orange", "cornflowerblue", "darkblue","grey70"),
-                inset=c(-0.5, 0), bg=c("white"), yjust=0.5, y.intersp=2)
-            }
-        } #end qstrmvol split
-    # GW ROUTING ONLY CASE
-    else {
-        lbls <- c("Canopy Evap", "Transpiration", "Surface Evap", "Surface Runoff",
-                 "Deep GW Outflow")
-        pcts <- with(wbDf,c(ECAN/PRCP*100, ETRAN/PRCP*100, EDIR/PRCP*100,
-                SFCRNOFF/PRCP*100, GWOUT/PRCP*100))
-        lbls_pcts <- c()
-        for (i in 1:length(lbls)) { lbls_pcts[i] <- paste0(lbls[i], "\n", round(pcts[i],1), "%") }
-        if (plottyp == "pie") {
-            if (wbDf$STOR_FRAC > 0) {
-                lbls_pcts[length(lbls_pcts)+1] <- paste0("Change in Storage", "\n",
-                                                    round( with( wbDf, (DEL_SOILM + DEL_SWE + DEL_CANWAT + DEL_GWSTOR) /
-                                                    PRCP*100),1), "%")
-                pie(as.matrix(with(wbDf, c(ECAN, ETRAN, EDIR, SFCRNOFF, GWOUT,
-                                    DEL_SOILM+DEL_SWE+DEL_CANWAT+DEL_GWSTOR))),
-                    col=c("chartreuse3","darkgreen","darkgoldenrod2","cornflowerblue","darkblue","grey30"),
-                    main=c("Water Budget"), labels=lbls_pcts)
-                }
-            else {
-                pie(as.matrix(with(wbDf, c(ECAN, ETRAN, EDIR, SFCRNOFF, GWOUT))),
-                    col=c("chartreuse3","darkgreen","darkgoldenrod2","cornflowerblue","darkblue"),
-                    main=c("Water Budget"), labels=lbls_pcts)
-                text(0,-1, paste0("*Storage Loss: ",
-                            round( with( wbDf, (DEL_SOILM + DEL_SWE + DEL_CANWAT + DEL_GWSTOR) /
-                                        PRCP*100),1),"%"))
-                } #end storage fraction split
-            }
-        else if (plottyp =="bar") {
-            lbls_pcts[length(lbls_pcts)+1] <- paste0("Change in Storage", "\n",
-                                    round( with( wbDf, (DEL_SOILM + DEL_SWE + DEL_CANWAT +
-                                    DEL_GWSTOR) / PRCP*100),1), "%")
-            plotDf <- with(wbDf,c(DEL_SOILM + DEL_SWE + DEL_CANWAT + DEL_GWSTOR, ECAN, ETRAN, EDIR, SFCRNOFF, GWOUT))
-            plotDf1 <- abs(plotDf)
-            ylabs <- round(c(0,cumsum(plotDf1))-((plotDf1[1]-plotDf[1])/2),0)
-            par(mar = c(5.1, 4.1, 5.1, 12.1), xpd = TRUE)
-            barplot(as.matrix(plotDf1), axes=FALSE,
-                col=c("grey70", "chartreuse", "darkgreen", "orange", "cornflowerblue", "darkblue"),
-                main=c("Water Budget"), width=0.2, space=0.2, ylab=c("Total Water (mm)"))
-            axis(2,c(0,cumsum(plotDf1)),labels=ylabs)
-            segments(0.0,cumsum(plotDf1)[1],0.36,cumsum(plotDf1)[1], lty=2)
-            legend("topright", legend=lbls_pcts,fill=c("chartreuse", "darkgreen", "orange", "cornflowerblue", "darkblue", "grey70"),
-                inset=c(-0.5, 0), bg=c("white"), yjust=0.5, y.intersp=2)
-            }
-        } #end qstrmvol split
-    } #end gwout split
-
-# OVERLAND/SUBSURFACE ROUTING ONLY CASE
-else if ("QSTRMVOL" %in% colnames(wbDf)) {
-    lbls <- c("Canopy Evap", "Transpiration", "Surface Evap", "Surface & Subsurface Runoff",
-             "Deep GW Recharge")
-    pcts <- with(wbDf,c(ECAN/PRCP*100, ETRAN/PRCP*100, EDIR/PRCP*100,
-                  (QSTRMVOL+QBDRY)/PRCP*100, UGDRNOFF/PRCP*100))
-    lbls_pcts=c()
-    for (i in 1:length(lbls)) { lbls_pcts[i] <- paste0(lbls[i], "\n", round(pcts[i],1), "%") }
-    if (plottyp == "pie") {
-        if (wbDf$STOR_FRAC > 0) {
-            lbls_pcts[length(lbls_pcts)+1] <- paste0("Change in Storage", "\n",
-                                                round( with( wbDf, (DEL_SOILM + DEL_SWE + DEL_CANWAT +
-                                                DEL_SFCHEAD) / PRCP*100),1), "%")
-            pie(as.matrix(with(wbDf, c(ECAN, ETRAN, EDIR, QSTRMVOL+QBDRY, UGDRNOFF,
-                                DEL_SOILM+DEL_SWE+DEL_CANWAT+DEL_SFCHEAD))),
-                col=c("chartreuse3","darkgreen","darkgoldenrod2","cornflowerblue","darkblue","grey30"),
-                main=c("Water Budget"), labels=lbls_pcts)
-            }
-        else {
-            pie(as.matrix(with(wbDf, c(ECAN, ETRAN, EDIR, QSTRMVOL+QBDRY, UGDRNOFF))),
-                col=c("chartreuse3","darkgreen","darkgoldenrod2","cornflowerblue","darkblue"),
-                main=c("Water Budget"), labels=lbls_pcts)
-            text(0,-1, paste0("*Storage Loss: ",
-                        round( with( wbDf, (DEL_SOILM + DEL_SWE + DEL_CANWAT + DEL_SFCHEAD) /
-                                    PRCP*100),1),"%"))
-            } #end storage fraction split
-        }
-    else if (plottyp =="bar") {
-        lbls_pcts[length(lbls_pcts)+1] <- paste0("Change in Storage", "\n",
-                                round( with( wbDf, (DEL_SOILM + DEL_SWE + DEL_CANWAT +
-                                DEL_SFCHEAD) / PRCP*100),1), "%")
-        plotDf <- with(wbDf,c(DEL_SOILM + DEL_SWE + DEL_CANWAT + DEL_SFCHEAD, ECAN, ETRAN, EDIR, QSTRMVOL+QBDRY, UGDRNOFF))
-        plotDf1 <- abs(plotDf)
-        ylabs <- round(c(0,cumsum(plotDf1))-((plotDf1[1]-plotDf[1])/2),0)
-        par(mar = c(5.1, 4.1, 5.1, 12.1), xpd = TRUE)
-        barplot(as.matrix(plotDf1), axes=FALSE,
-            col=c("grey70", "chartreuse", "darkgreen", "orange", "cornflowerblue", "darkblue"),
-            main=c("Water Budget"), width=0.2, space=0.2, ylab=c("Total Water (mm)"))
-        axis(2,c(0,cumsum(plotDf1)),labels=ylabs)
-        segments(0.0,cumsum(plotDf1)[1],0.36,cumsum(plotDf1)[1], lty=2)
-        legend("topright", legend=lbls_pcts,fill=c("chartreuse", "darkgreen", "orange", "cornflowerblue", "darkblue", "grey70"),
-            inset=c(-0.5, 0), bg=c("white"), yjust=0.5, y.intersp=2)
-        }
-    } #end qstrmvol split
-# NO ROUTING CASE
-else {
-    lbls <- c("Canopy Evap", "Transpiration", "Surface Evap", "Surface Runoff",
-            "Subsurface Runoff")
-    pcts <- with(wbDf,c(ECAN/PRCP*100, ETRAN/PRCP*100, EDIR/PRCP*100,
-            SFCRNOFF/PRCP*100, UGDRNOFF/PRCP*100))
-    lbls_pcts=c()
-    for (i in 1:length(lbls)) { lbls_pcts[i] <- paste0(lbls[i], "\n", round(pcts[i],1), "%") }
-    if (plottyp == "pie") {
-        if (wbDf$STOR_FRAC > 0) {
-            lbls_pcts[length(lbls_pcts)+1] <- paste0("Change in Storage", "\n",
-                                                round( with( wbDf, (DEL_SOILM + DEL_SWE + DEL_CANWAT) /
-                                                PRCP*100),1), "%")
-            pie(as.matrix(with(wbDf,c(ECAN, ETRAN, EDIR, SFCRNOFF, UGDRNOFF,
-                                DEL_SOILM+DEL_SWE+DEL_CANWAT))),
-                col=c("chartreuse3","darkgreen","darkgoldenrod2","cornflowerblue","darkblue","grey30"),
-                main=c("Water Budget"), labels=lbls_pcts)
-            }
-        else {
-            pie(as.matrix(with(wbDf,c(ECAN, ETRAN, EDIR, SFCRNOFF, UGDRNOFF))),
-                col=c("chartreuse3","darkgreen","darkgoldenrod2","cornflowerblue","darkblue"),
-                main=c("Water Budget"), labels=lbls_pcts)
-            text(0,-1, paste0("*Storage Loss: ",
-                        round( with( wbDf, (DEL_SOILM + DEL_SWE + DEL_CANWAT) /
-                                    PRCP*100),1),"%"))
-            } #end storage fraction split
-        }
-    else if (plottyp =="bar") {
-        lbls_pcts[length(lbls_pcts)+1] <- paste0("Change in Storage", "\n",
-                                round( with( wbDf, (DEL_SOILM + DEL_SWE + DEL_CANWAT) / PRCP*100),1), "%")
-        plotDf <- with(wbDf,c(DEL_SOILM + DEL_SWE + DEL_CANWAT, ECAN, ETRAN, EDIR, SFCRNOFF, UGDRNOFF))
-        plotDf1 <- abs(plotDf)
-        ylabs <- round(c(0,cumsum(plotDf1))-((plotDf1[1]-plotDf[1])/2),0)
-        par(mar = c(5.1, 4.1, 5.1, 12.1), xpd = TRUE)
-        barplot(as.matrix(plotDf1), axes=FALSE,
-            col=c("grey70", "chartreuse", "darkgreen", "orange", "cornflowerblue", "darkblue"),
-            main=c("Water Budget"), width=0.2, space=0.2, ylab=c("Total Water (mm)"))
-        axis(2,c(0,cumsum(plotDf1)),labels=ylabs)
-        segments(0.0,cumsum(plotDf1)[1],0.36,cumsum(plotDf1)[1], lty=2)
-        legend("topright", legend=lbls_pcts,fill=c("chartreuse", "darkgreen", "orange", "cornflowerblue", "darkblue", "grey70"),
-            inset=c(-0.5, 0), bg=c("white"), yjust=0.5, y.intersp=2)
-        }
-    } #end main split
-} #end function def
-
-
-
-#' Computes model performance statistics for WRF-Hydro streamflow output
-#'
-#' \code{CalcStrPerf} calculates model performance statistics for streamflow output.
-#'
-#' \code{CalcStrPerf} reads a model forecast point streamflow timeseries (i.e., created using \code{\link{ReadFrxstPts}}) and
-#' a streamflow observation timeseries (i.e., created using \code{\link{ReadUsgsGage}}) and calculates model performance
+#' \code{CalcModPerf} reads a model flux time series (i.e., created using \code{\link{ReadFrxstPts}}) and
+#' an observation time series (i.e., created using \code{\link{ReadUsgsGage}}) and calculates model performance
 #' statistics (Nash-Sutcliffe Efficiency, Rmse, etc.) at various time scales and for low
-#' and high flows. Assumes model output and observation datasets have the same time step
-#' (e.g., both hourly).
+#' and high fluxes. The tool will subset data to matching time periods (e.g., if the
+#' observed data is at 5-min increments and modelled data is at 1-hr increments, the tool
+#' will subset the observed data to select only observations on the matching hour break).
 #'
 #' Performance Statistics:
 #' \cr (mod = model output, obs = observations, n = sample size)
@@ -451,35 +201,40 @@ else {
 #' \deqn{bias = sum(mod - obs) / sum(obs) * 100 }
 #' \item mae: mean absolute error
 #' \deqn{mae = mean(abs(mod - obs)) }
-#' \item errcom: error in the center-of-mass of streamflow, where center-of-mass is the
-#' hour/day when 50\% of daily/monthly/water-year streamflow has occurred. Reported as number of hours for
+#' \item errcom: error in the center-of-mass of the flux, where center-of-mass is the
+#' hour/day when 50\% of daily/monthly/water-year flux has occurred. Reported as number of hours for
 #' daily time scale and number of days for monthly and yearly time scales.
-#' \item errmaxt: Error in the time of maximum streamflow. Reported as number of hours for daily time scale
+#' \item errmaxt: Error in the time of maximum flux. Reported as number of hours for daily time scale
 #' and number of days for monthly and yearly time scales).
 #' \item errfdc: Error in the integrated flow duration curve between 0.05 and 0.95 exceedance thresholds
 #' (in native flow units).
 #' }
 #'
-#' time scales/Flow Types:
+#' Time scales/Flux types:
 #' \itemize{
 #' \item ts = native model/observation time step (e.g., hourly)
 #' \item daily = daily time step
 #' \item monthly = monthly time step
 #' \item yearly = water-year time step
-#' \item max10 = high flows; restricted to the portion of the time series where the observed streamflow is in the highest 10%
-#' \item min10 = low flows; restricted to the portion of the time series where the observed streamflow is in the lowest 10%
+#' \item max10 = high flows; restricted to the portion of the time series where the observed flux is in the highest 10\%
+#' \item min10 = low flows; restricted to the portion of the time series where the observed flux is in the lowest 10\%
 #' }
 #'
-#' @param stroutDf The forecast point output dataframe (required). Assumes only one forecast
+#' @param flxDf.mod The flux output dataframe (required). Assumes only one forecast
 #' point per file, so if you have multiple forecast points in your output dataframe, use
-#' subset to isolate a single forecast point's data. Also assumes model output time step and
-#' observation time step match, and both contain POSIXct fields (called "POSIXct").
-#' @param obsDf The observed streamflow dataframe. Assumes only one gage per file, so if
-#' you have multiple forecast points in your output dataframe, use subset to isolate
-#' a single gage's data. Also assumes model output time step and observation time step match,
-#' and both contain POSIXct fields (called "POSIXct").
-#' @param strCol The column name for the streamflow time series for the MODEL data (default="q_cms")
-#' @param obsCol The column name for the streamflow time series for the OBSERVED data (default="q_cms")
+#' subset to isolate a single forecast point's data. Also assumes model output and observation
+#' both contain POSIXct fields (called "POSIXct").
+#' @param flxDf.obs The observed flux dataframe. Assumes only one observation point per file, so if
+#' you have multiple observation points in your dataframe, use subset to isolate a single point's data.
+#' Also assumes model output and observation both contain POSIXct fields (called "POSIXct").
+#' @param flxCol.mod The column name for the flux time series for the MODEL data (default="q_cms")
+#' @param flxCol.obs The column name for the flux time series for the OBSERVED data (default="q_cms")
+#' @param stdate Start date for plot/statistics (DEFAULT=NULL, all records will be used).
+#' Date MUST be specified in POSIXct format with appropriate timezone
+#' (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))
+#' @param enddate End date for plot/statistics (DEFAULT=NULL, all records will be used).
+#' Date MUST be specified in POSIXct format with appropriate timezone
+#' (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))
 #' @return A new dataframe containing the model performance statistics.
 #'
 #' @examples
@@ -488,7 +243,7 @@ else {
 #' ## model performance statistics. The model forecast point data was imported using ReadFrxstPts
 #' ## and the gage observation data was imported using ReadUsgsGage.
 #'
-#' CalcStrPerf(modStrh.mod1.fc, obsStrh.fc)
+#' CalcModPerf(modStr1h.allrt.fc, obsStr5min.fc)
 #'
 #' > Output:
 #'           nse nselog  cor rmse rmsenorm  bias  mae errcom errmaxt errfdc
@@ -500,163 +255,104 @@ else {
 #' min10   -2.84  -1.83 0.10 0.05    33.36 -23.7   NA     NA      NA     NA
 #' @export
 
-CalcStrPerf <- function (stroutDf, obsDf, strCol="q_cms", obsCol="q_cms") {
-    # START UTILS
-    CalcMeanNarm <- function(myvar) {
-        mean(myvar, na.rm=TRUE)
-        }
-    CalcWyd <- function (x) {
-        tmp <- aggregate(x$yd, by = list(x$year), max)
-        colnames(tmp) <- c("year", "n")
-        tmp$year <- as.integer(as.character(tmp$year))
-        x$wyd <- 0
-        tmp2 <- subset(tmp, tmp$n == 365)
-        new <- ifelse((x$year %in% tmp2$year), ifelse(x$yd >= 274,
-            x$yd - 273, x$yd + 92), ifelse(x$yd >= 275, x$yd - 274, 
-            x$yd + 92))
-        new
-    }
-    CalcDates <- function (x) {
-        x$day <- as.integer(format(x$POSIXct,"%d"))
-        x$month <- as.integer(format(x$POSIXct,"%m"))
-        x$year <- as.integer(format(x$POSIXct,"%Y"))
-        x$wy <- ifelse(x$month >= 10, x$year + 1, x$year)
-        x$yd <- as.integer(format(x$POSIXct,"%j"))
-        x$wyd <- CalcWyd(x)
-        x
-    }
-    Nse <- function (m, o) {
-        err1 <- sum((m - o)^2, na.rm=T)
-        err2 <- sum((o - mean(o, na.rm=T))^2, na.rm=T)
-        ns <- 1 - (err1/err2)
-        ns
-    }
-    NseLog <- function (m, o) {
-        m <- log(m + 1e-04)
-        o <- log(o + 1e-04)
-        err1 <- sum((m - o)^2, na.rm=T)
-        err2 <- sum((o - mean(o, na.rm=T))^2, na.rm=T)
-        ns <- 1 - (err1/err2)
-        ns
-    }
-    Rmse <- function (m, o) {
-        err <- sum((m - o)^2, na.rm=T)/(min(sum(!is.na(m)),sum(!is.na(o))))
-        rmserr <- sqrt(err)
-        rmserr
-    }
-    RmseNorm <- function (m, o) {
-        err <- sum((m - o)^2, na.rm=T)/(min(sum(!is.na(m)),sum(!is.na(o))))
-        rmserr <- sqrt(err) / ( max(o, na.rm=T) - min(o, na.rm=T) ) * 100
-        rmserr
-    }
-    CumsumNa <- function(x) {
-        x[which(is.na(x))] <- 0
-        return(cumsum(x))
-    } 
-    CalcCOM <- function (str) {
-        cuml.str <- as.data.frame(CumsumNa(str)/sum(str, na.rm=T))
-        colnames(cuml.str) <- c("x")
-        cuml.str$ts <- seq(from = 1, to = length(cuml.str$x))
-        tmp2 <- subset(cuml.str, cuml.str$x > 0.5)
-        ts <- tmp2$ts[1]
-        ts
-    }
-    # END UTILS
-
+CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q_cms", stdate=NULL, enddate=NULL) {
     # Prepare data
-    stroutDf <- CalcDates(stroutDf)
-    stroutDf$qcomp <- stroutDf[,strCol]
-    obsDf$qcomp <- obsDf[,obsCol]
-    if (as.integer(obsDf$POSIXct[2])-as.integer(obsDf$POSIXct[1]) >= 86400) {obsDf$POSIXct=as.POSIXct(round(obsDf$POSIXct,"days"), tz="UTC")}
-    stroutDf <- merge(stroutDf, obsDf[c("POSIXct","qcomp")], by<-c("POSIXct"), suffixes=c(".mod",".obs"))
-    stroutDf <- subset(stroutDf, !is.na(stroutDf$qcomp.mod) & !is.na(stroutDf$qcomp.obs))
-    stroutDf$date <- as.POSIXct(round(stroutDf$POSIXct, "days"))
+    if (!is.null(stdate) && !is.null(enddate)) {
+        flxDf.obs <- subset(flxDf.obs, POSIXct>=stdate & POSIXct<=enddate)
+        flxDf.mod <- subset(flxDf.mod, POSIXct>=stdate & POSIXct<=enddate)
+        }
+    flxDf.mod <- CalcDates(flxDf.mod)
+    flxDf.mod$qcomp <- flxDf.mod[,flxCol.mod]
+    flxDf.obs$qcomp <- flxDf.obs[,flxCol.obs]
+    if (as.integer(flxDf.obs$POSIXct[2])-as.integer(flxDf.obs$POSIXct[1]) >= 86400) {flxDf.obs$POSIXct=as.POSIXct(round(flxDf.obs$POSIXct,"days"), tz="UTC")}
+    flxDf.mod <- merge(flxDf.mod, flxDf.obs[c("POSIXct","qcomp")], by<-c("POSIXct"), suffixes=c(".mod",".obs"))
+    #flxDf.mod <- subset(flxDf.mod, !is.na(flxDf.mod$qcomp.mod) & !is.na(flxDf.mod$qcomp.obs))
+    flxDf.mod$date <- as.POSIXct(round(flxDf.mod$POSIXct, "days"))
     results <- as.data.frame(matrix(nrow = 6, ncol = 10))
     colnames(results) = c("nse", "nselog", "cor", "rmse", "rmsenorm", "bias", "mae", "errcom", "errmaxt", "errfdc")
     rownames(results) = c("ts", "daily", "monthly", "yearly", "max10", "min10")
-    exclvars <- names(stroutDf) %in% c("POSIXct", "secs", "timest", "date")
-    stroutDf.d <- aggregate(stroutDf[!exclvars], by = list(stroutDf$date), CalcMeanNarm)
-    stroutDf.mwy <- aggregate(stroutDf[c("qcomp.mod","qcomp.obs")], by = list(stroutDf$month, stroutDf$wy), CalcMeanNarm)
-    stroutDf.wy <- aggregate(stroutDf[c("qcomp.mod","qcomp.obs")], by = list(stroutDf$wy), CalcMeanNarm)
-    stroutDf.dcom <- aggregate(stroutDf[c("qcomp.mod","qcomp.obs")], by = list(stroutDf$date), CalcCOM)
-    stroutDf.mwycom <- aggregate(stroutDf.d[c("qcomp.mod","qcomp.obs")], by = list(stroutDf.d$month, stroutDf.d$wy), CalcCOM)
-    stroutDf.wycom <- aggregate(stroutDf.d[c("qcomp.mod","qcomp.obs")], by = list(stroutDf.d$wy), CalcCOM)
-    stroutDf.dmax <- aggregate(stroutDf[c("qcomp.mod","qcomp.obs")], by = list(stroutDf$date), which.max)
-    stroutDf.mwymax <- aggregate(stroutDf.d[c("qcomp.mod","qcomp.obs")], by = list(stroutDf.d$month, stroutDf.d$wy), which.max)
-    stroutDf.wymax <- aggregate(stroutDf.d[c("qcomp.mod","qcomp.obs")], by = list(stroutDf.d$wy), which.max)
-    stroutDf.max10 <- subset(stroutDf, stroutDf$qcomp.obs>=quantile(stroutDf$qcomp.obs, 0.90, na.rm=TRUE))
-    stroutDf.min10 <- subset(stroutDf, stroutDf$qcomp.obs<=quantile(stroutDf$qcomp.obs, 0.10, na.rm=TRUE))
-    stroutDf <- CalcFdc(stroutDf, "qcomp.mod")
-    stroutDf <- CalcFdc(stroutDf, "qcomp.obs")
-    stroutDf.d <- CalcFdc(stroutDf.d, "qcomp.mod")
-    stroutDf.d <- CalcFdc(stroutDf.d, "qcomp.obs")
+    exclvars <- names(flxDf.mod) %in% c("POSIXct", "secs", "timest", "date")
+    flxDf.mod.d <- aggregate(flxDf.mod[!exclvars], by = list(flxDf.mod$date), CalcMeanNarm)
+    flxDf.mod.mwy <- aggregate(flxDf.mod[c("qcomp.mod","qcomp.obs")], by = list(flxDf.mod$month, flxDf.mod$wy), CalcMeanNarm)
+    flxDf.mod.wy <- aggregate(flxDf.mod[c("qcomp.mod","qcomp.obs")], by = list(flxDf.mod$wy), CalcMeanNarm)
+    flxDf.mod.dcom <- aggregate(flxDf.mod[c("qcomp.mod","qcomp.obs")], by = list(flxDf.mod$date), CalcCOM)
+    flxDf.mod.mwycom <- aggregate(flxDf.mod.d[c("qcomp.mod","qcomp.obs")], by = list(flxDf.mod.d$month, flxDf.mod.d$wy), CalcCOM)
+    flxDf.mod.wycom <- aggregate(flxDf.mod.d[c("qcomp.mod","qcomp.obs")], by = list(flxDf.mod.d$wy), CalcCOM)
+    flxDf.mod.dmax <- aggregate(flxDf.mod[c("qcomp.mod","qcomp.obs")], by = list(flxDf.mod$date), which.max)
+    flxDf.mod.mwymax <- aggregate(flxDf.mod.d[c("qcomp.mod","qcomp.obs")], by = list(flxDf.mod.d$month, flxDf.mod.d$wy), which.max)
+    flxDf.mod.wymax <- aggregate(flxDf.mod.d[c("qcomp.mod","qcomp.obs")], by = list(flxDf.mod.d$wy), which.max)
+    flxDf.mod.max10 <- subset(flxDf.mod, flxDf.mod$qcomp.obs>=quantile(flxDf.mod$qcomp.obs, 0.90, na.rm=TRUE))
+    flxDf.mod.min10 <- subset(flxDf.mod, flxDf.mod$qcomp.obs<=quantile(flxDf.mod$qcomp.obs, 0.10, na.rm=TRUE))
+    flxDf.mod <- CalcFdc(flxDf.mod, "qcomp.mod")
+    flxDf.mod <- CalcFdc(flxDf.mod, "qcomp.obs")
+    flxDf.mod.d <- CalcFdc(flxDf.mod.d, "qcomp.mod")
+    flxDf.mod.d <- CalcFdc(flxDf.mod.d, "qcomp.obs")
 
     # Compile summary statistics
-    results["ts", "nse"] <- round(Nse(stroutDf$qcomp.mod, stroutDf$qcomp.obs), 2)
-    results["ts", "nselog"] <- round(NseLog(stroutDf$qcomp.mod, stroutDf$qcomp.obs), 2)
-    results["ts", "cor"] <- round(cor(stroutDf$qcomp.mod, stroutDf$qcomp.obs, use="na.or.complete"), 2)
-    results["ts", "rmse"] <- round(Rmse(stroutDf$qcomp.mod, stroutDf$qcomp.obs), 2)
-    results["ts", "rmsenorm"] <- round(RmseNorm(stroutDf$qcomp.mod, stroutDf$qcomp.obs), 2)
-    results["ts", "bias"] <- round(sum(stroutDf$qcomp.mod-stroutDf$qcomp.obs, na.rm=T)/sum(stroutDf$qcomp.obs, na.rm=TRUE) * 100, 1)
-    results["ts", "mae"] <- round(mean(abs(stroutDf$qcomp.mod-stroutDf$qcomp.obs), na.rm=T), 2)
+    results["ts", "nse"] <- round(Nse(flxDf.mod$qcomp.mod, flxDf.mod$qcomp.obs), 2)
+    results["ts", "nselog"] <- round(NseLog(flxDf.mod$qcomp.mod, flxDf.mod$qcomp.obs), 2)
+    results["ts", "cor"] <- round(cor(flxDf.mod$qcomp.mod, flxDf.mod$qcomp.obs, use="na.or.complete"), 2)
+    results["ts", "rmse"] <- round(Rmse(flxDf.mod$qcomp.mod, flxDf.mod$qcomp.obs), 2)
+    results["ts", "rmsenorm"] <- round(RmseNorm(flxDf.mod$qcomp.mod, flxDf.mod$qcomp.obs), 2)
+    results["ts", "bias"] <- round(sum(flxDf.mod$qcomp.mod-flxDf.mod$qcomp.obs, na.rm=T)/sum(flxDf.mod$qcomp.obs, na.rm=TRUE) * 100, 1)
+    results["ts", "mae"] <- round(mean(abs(flxDf.mod$qcomp.mod-flxDf.mod$qcomp.obs), na.rm=T), 2)
     results["ts", "errcom"] <- NA
     results["ts", "errmaxt"] <- NA
-    results["ts", "errfdc"] <- round(integrate(splinefun(stroutDf[,"qcomp.mod.fdc"], stroutDf[,"qcomp.mod"], method='natural'), 0.05, 0.95, subdivisions=1000)$value -
-                                integrate(splinefun(stroutDf[,"qcomp.obs.fdc"], stroutDf[,"qcomp.obs"], method='natural'), 0.05, 0.95, subdivisions=1000)$value, 2 )
-    results["daily", "nse"] <- round(Nse(stroutDf.d$qcomp.mod, stroutDf.d$qcomp.obs), 2)
-    results["daily", "nselog"] <- round(NseLog(stroutDf.d$qcomp.mod, stroutDf.d$qcomp.obs), 2)
-    results["daily", "cor"] <- round(cor(stroutDf.d$qcomp.mod, stroutDf.d$qcomp.obs, use="na.or.complete"), 2)
-    results["daily", "rmse"] <- round(Rmse(stroutDf.d$qcomp.mod, stroutDf.d$qcomp.obs), 2)
-    results["daily", "rmsenorm"] <- round(RmseNorm(stroutDf.d$qcomp.mod, stroutDf.d$qcomp.obs), 2)
-    results["daily", "bias"] <- round(sum(stroutDf.d$qcomp.mod-stroutDf.d$qcomp.obs, na.rm=T)/sum(stroutDf.d$qcomp.obs, na.rm=TRUE) * 100, 1)
-    results["daily", "mae"] <- round(mean(abs(stroutDf.d$qcomp.mod-stroutDf.d$qcomp.obs), na.rm=T), 2)
-    results["daily", "errcom"] <- round(mean(stroutDf.dcom$qcomp.mod-stroutDf.dcom$qcomp.obs, na.rm=T), 2)
-    results["daily", "errmaxt"] <- round(mean(stroutDf.dmax$qcomp.mod-stroutDf.dmax$qcomp.obs, na.rm=T), 2)
-    results["daily", "errfdc"] <- round(integrate(splinefun(stroutDf.d[,"qcomp.mod.fdc"], stroutDf.d[,"qcomp.mod"], method='natural'), 0.05, 0.95, subdivisions=1000)$value -
-                                    integrate(splinefun(stroutDf.d[,"qcomp.obs.fdc"], stroutDf.d[,"qcomp.obs"], method='natural'), 0.05, 0.95, subdivisions=1000)$value, 2 )
-    results["monthly", "nse"] <- round(Nse(stroutDf.mwy$qcomp.mod, stroutDf.mwy$qcomp.obs), 2)
-    results["monthly", "nselog"] <- round(NseLog(stroutDf.mwy$qcomp.mod, stroutDf.mwy$qcomp.obs), 2)
-    results["monthly", "cor"] <- round(cor(stroutDf.mwy$qcomp.mod, stroutDf.mwy$qcomp.obs, use="na.or.complete"), 2)
-    results["monthly", "rmse"] <- round(Rmse(stroutDf.mwy$qcomp.mod, stroutDf.mwy$qcomp.obs), 2)
-    results["monthly", "rmsenorm"] <- round(RmseNorm(stroutDf.mwy$qcomp.mod, stroutDf.mwy$qcomp.obs), 2)
-    results["monthly", "bias"] <- round(sum(stroutDf.mwy$qcomp.mod-stroutDf.mwy$qcomp.obs, na.rm=T)/sum(stroutDf.mwy$qcomp.obs, na.rm=TRUE) * 100, 1)
-    results["monthly", "mae"] <- round(mean(abs(stroutDf.mwy$qcomp.mod-stroutDf.mwy$qcomp.obs), na.rm=T), 2)
-    results["monthly", "errcom"] <- round(mean(stroutDf.mwycom$qcomp.mod-stroutDf.mwycom$qcomp.obs, na.rm=T), 2)
-    results["monthly", "errmaxt"] <- round(mean(stroutDf.mwymax$qcomp.mod-stroutDf.mwymax$qcomp.obs, na.rm=T), 2)
+    results["ts", "errfdc"] <- round(integrate(splinefun(flxDf.mod[,"qcomp.mod.fdc"], flxDf.mod[,"qcomp.mod"], method='natural'), 0.05, 0.95, subdivisions=1000)$value -
+                                integrate(splinefun(flxDf.mod[,"qcomp.obs.fdc"], flxDf.mod[,"qcomp.obs"], method='natural'), 0.05, 0.95, subdivisions=1000)$value, 2 )
+    results["daily", "nse"] <- round(Nse(flxDf.mod.d$qcomp.mod, flxDf.mod.d$qcomp.obs), 2)
+    results["daily", "nselog"] <- round(NseLog(flxDf.mod.d$qcomp.mod, flxDf.mod.d$qcomp.obs), 2)
+    results["daily", "cor"] <- round(cor(flxDf.mod.d$qcomp.mod, flxDf.mod.d$qcomp.obs, use="na.or.complete"), 2)
+    results["daily", "rmse"] <- round(Rmse(flxDf.mod.d$qcomp.mod, flxDf.mod.d$qcomp.obs), 2)
+    results["daily", "rmsenorm"] <- round(RmseNorm(flxDf.mod.d$qcomp.mod, flxDf.mod.d$qcomp.obs), 2)
+    results["daily", "bias"] <- round(sum(flxDf.mod.d$qcomp.mod-flxDf.mod.d$qcomp.obs, na.rm=T)/sum(flxDf.mod.d$qcomp.obs, na.rm=TRUE) * 100, 1)
+    results["daily", "mae"] <- round(mean(abs(flxDf.mod.d$qcomp.mod-flxDf.mod.d$qcomp.obs), na.rm=T), 2)
+    results["daily", "errcom"] <- round(mean(flxDf.mod.dcom$qcomp.mod-flxDf.mod.dcom$qcomp.obs, na.rm=T), 2)
+    results["daily", "errmaxt"] <- round(mean(flxDf.mod.dmax$qcomp.mod-flxDf.mod.dmax$qcomp.obs, na.rm=T), 2)
+    results["daily", "errfdc"] <- round(integrate(splinefun(flxDf.mod.d[,"qcomp.mod.fdc"], flxDf.mod.d[,"qcomp.mod"], method='natural'), 0.05, 0.95, subdivisions=1000)$value -
+                                    integrate(splinefun(flxDf.mod.d[,"qcomp.obs.fdc"], flxDf.mod.d[,"qcomp.obs"], method='natural'), 0.05, 0.95, subdivisions=1000)$value, 2 )
+    results["monthly", "nse"] <- round(Nse(flxDf.mod.mwy$qcomp.mod, flxDf.mod.mwy$qcomp.obs), 2)
+    results["monthly", "nselog"] <- round(NseLog(flxDf.mod.mwy$qcomp.mod, flxDf.mod.mwy$qcomp.obs), 2)
+    results["monthly", "cor"] <- round(cor(flxDf.mod.mwy$qcomp.mod, flxDf.mod.mwy$qcomp.obs, use="na.or.complete"), 2)
+    results["monthly", "rmse"] <- round(Rmse(flxDf.mod.mwy$qcomp.mod, flxDf.mod.mwy$qcomp.obs), 2)
+    results["monthly", "rmsenorm"] <- round(RmseNorm(flxDf.mod.mwy$qcomp.mod, flxDf.mod.mwy$qcomp.obs), 2)
+    results["monthly", "bias"] <- round(sum(flxDf.mod.mwy$qcomp.mod-flxDf.mod.mwy$qcomp.obs, na.rm=T)/sum(flxDf.mod.mwy$qcomp.obs, na.rm=TRUE) * 100, 1)
+    results["monthly", "mae"] <- round(mean(abs(flxDf.mod.mwy$qcomp.mod-flxDf.mod.mwy$qcomp.obs), na.rm=T), 2)
+    results["monthly", "errcom"] <- round(mean(flxDf.mod.mwycom$qcomp.mod-flxDf.mod.mwycom$qcomp.obs, na.rm=T), 2)
+    results["monthly", "errmaxt"] <- round(mean(flxDf.mod.mwymax$qcomp.mod-flxDf.mod.mwymax$qcomp.obs, na.rm=T), 2)
     results["monthly", "errfdc"] <- NA
-    results["yearly", "nse"] <- round(Nse(stroutDf.wy$qcomp.mod, stroutDf.wy$qcomp.obs), 2)
-    results["yearly", "nselog"] <- round(NseLog(stroutDf.wy$qcomp.mod, stroutDf.wy$qcomp.obs), 2)
-    results["yearly", "cor"] <- round(cor(stroutDf.wy$qcomp.mod, stroutDf.wy$qcomp.obs, use="na.or.complete"), 2)
-    results["yearly", "rmse"] <- round(Rmse(stroutDf.wy$qcomp.mod, stroutDf.wy$qcomp.obs), 2)
-    results["yearly", "rmsenorm"] <- round(RmseNorm(stroutDf.wy$qcomp.mod, stroutDf.wy$qcomp.obs), 2)
-    results["yearly", "bias"] <- round(sum(stroutDf.wy$qcomp.mod-stroutDf.wy$qcomp.obs, na.rm=T)/sum(stroutDf.wy$qcomp.obs, na.rm=TRUE) * 100, 1)
-    results["yearly", "mae"] <- round(mean(abs(stroutDf.wy$qcomp.mod-stroutDf.wy$qcomp.obs), na.rm=T), 2)
-    results["yearly", "errcom"] <- round(mean(stroutDf.wycom$qcomp.mod-stroutDf.wycom$qcomp.obs, na.rm=T), 2)
-    results["yearly", "errmaxt"] <- round(mean(stroutDf.wymax$qcomp.mod-stroutDf.wymax$qcomp.obs, na.rm=T), 2)
+    results["yearly", "nse"] <- round(Nse(flxDf.mod.wy$qcomp.mod, flxDf.mod.wy$qcomp.obs), 2)
+    results["yearly", "nselog"] <- round(NseLog(flxDf.mod.wy$qcomp.mod, flxDf.mod.wy$qcomp.obs), 2)
+    results["yearly", "cor"] <- round(cor(flxDf.mod.wy$qcomp.mod, flxDf.mod.wy$qcomp.obs, use="na.or.complete"), 2)
+    results["yearly", "rmse"] <- round(Rmse(flxDf.mod.wy$qcomp.mod, flxDf.mod.wy$qcomp.obs), 2)
+    results["yearly", "rmsenorm"] <- round(RmseNorm(flxDf.mod.wy$qcomp.mod, flxDf.mod.wy$qcomp.obs), 2)
+    results["yearly", "bias"] <- round(sum(flxDf.mod.wy$qcomp.mod-flxDf.mod.wy$qcomp.obs, na.rm=T)/sum(flxDf.mod.wy$qcomp.obs, na.rm=TRUE) * 100, 1)
+    results["yearly", "mae"] <- round(mean(abs(flxDf.mod.wy$qcomp.mod-flxDf.mod.wy$qcomp.obs), na.rm=T), 2)
+    results["yearly", "errcom"] <- round(mean(flxDf.mod.wycom$qcomp.mod-flxDf.mod.wycom$qcomp.obs, na.rm=T), 2)
+    results["yearly", "errmaxt"] <- round(mean(flxDf.mod.wymax$qcomp.mod-flxDf.mod.wymax$qcomp.obs, na.rm=T), 2)
     results["yearly", "errfdc"] <- NA
-    results["max10", "nse"] <- round(Nse(stroutDf.max10$qcomp.mod, stroutDf.max10$qcomp.obs), 2)
-    results["max10", "nselog"] <- round(NseLog(stroutDf.max10$qcomp.mod, stroutDf.max10$qcomp.obs), 2)
-    results["max10", "cor"] <- round(cor(stroutDf.max10$qcomp.mod, stroutDf.max10$qcomp.obs, use="na.or.complete"), 2)
-    results["max10", "rmse"] <- round(Rmse(stroutDf.max10$qcomp.mod, stroutDf.max10$qcomp.obs), 2)
-    results["max10", "rmsenorm"] <- round(RmseNorm(stroutDf.max10$qcomp.mod, stroutDf.max10$qcomp.obs), 2)
-    results["max10", "bias"] <- round(sum(stroutDf.max10$qcomp.mod-stroutDf.max10$qcomp.obs, na.rm=T)/sum(stroutDf.max10$qcomp.obs, na.rm=TRUE) * 100, 1)
-    results["max10", "mae"] <- round(mean(abs(stroutDf.max10$qcomp.mod-stroutDf.max10$qcomp.obs), na.rm=T), 2)
+    results["max10", "nse"] <- round(Nse(flxDf.mod.max10$qcomp.mod, flxDf.mod.max10$qcomp.obs), 2)
+    results["max10", "nselog"] <- round(NseLog(flxDf.mod.max10$qcomp.mod, flxDf.mod.max10$qcomp.obs), 2)
+    results["max10", "cor"] <- round(cor(flxDf.mod.max10$qcomp.mod, flxDf.mod.max10$qcomp.obs, use="na.or.complete"), 2)
+    results["max10", "rmse"] <- round(Rmse(flxDf.mod.max10$qcomp.mod, flxDf.mod.max10$qcomp.obs), 2)
+    results["max10", "rmsenorm"] <- round(RmseNorm(flxDf.mod.max10$qcomp.mod, flxDf.mod.max10$qcomp.obs), 2)
+    results["max10", "bias"] <- round(sum(flxDf.mod.max10$qcomp.mod-flxDf.mod.max10$qcomp.obs, na.rm=T)/sum(flxDf.mod.max10$qcomp.obs, na.rm=TRUE) * 100, 1)
+    results["max10", "mae"] <- round(mean(abs(flxDf.mod.max10$qcomp.mod-flxDf.mod.max10$qcomp.obs), na.rm=T), 2)
     results["max10", "errcom"] <- NA
     results["max10", "errmaxt"] <- NA
     results["max10", "errfdc"] <- NA
-    results["min10", "nse"] <- round(Nse(stroutDf.min10$qcomp.mod, stroutDf.min10$qcomp.obs), 2)
-    results["min10", "nselog"] <- round(NseLog(stroutDf.min10$qcomp.mod, stroutDf.min10$qcomp.obs), 2)
-    results["min10", "cor"] <- round(cor(stroutDf.min10$qcomp.mod, stroutDf.min10$qcomp.obs, use="na.or.complete"), 2)
-    results["min10", "rmse"] <- round(Rmse(stroutDf.min10$qcomp.mod, stroutDf.min10$qcomp.obs), 2)
-    results["min10", "rmsenorm"] <- round(RmseNorm(stroutDf.min10$qcomp.mod, stroutDf.min10$qcomp.obs), 2)
-    results["min10", "bias"] <- round(sum(stroutDf.min10$qcomp.mod-stroutDf.min10$qcomp.obs, na.rm=T)/sum(stroutDf.min10$qcomp.obs, na.rm=TRUE) * 100, 1)
-    results["max10", "mae"] <- round(mean(abs(stroutDf.min10$qcomp.mod-stroutDf.min10$qcomp.obs), na.rm=T), 2)
+    results["min10", "nse"] <- round(Nse(flxDf.mod.min10$qcomp.mod, flxDf.mod.min10$qcomp.obs), 2)
+    results["min10", "nselog"] <- round(NseLog(flxDf.mod.min10$qcomp.mod, flxDf.mod.min10$qcomp.obs), 2)
+    results["min10", "cor"] <- round(cor(flxDf.mod.min10$qcomp.mod, flxDf.mod.min10$qcomp.obs, use="na.or.complete"), 2)
+    results["min10", "rmse"] <- round(Rmse(flxDf.mod.min10$qcomp.mod, flxDf.mod.min10$qcomp.obs), 2)
+    results["min10", "rmsenorm"] <- round(RmseNorm(flxDf.mod.min10$qcomp.mod, flxDf.mod.min10$qcomp.obs), 2)
+    results["min10", "bias"] <- round(sum(flxDf.mod.min10$qcomp.mod-flxDf.mod.min10$qcomp.obs, na.rm=T)/sum(flxDf.mod.min10$qcomp.obs, na.rm=TRUE) * 100, 1)
+    results["max10", "mae"] <- round(mean(abs(flxDf.mod.min10$qcomp.mod-flxDf.mod.min10$qcomp.obs), na.rm=T), 2)
     results["min10", "errcom"] <- NA
     results["min10", "errmaxt"] <- NA
     results["min10", "errfdc"] <- NA
     results
  }
-
 
 
 
@@ -666,7 +362,9 @@ CalcStrPerf <- function (stroutDf, obsDf, strCol="q_cms", obsCol="q_cms") {
 #'
 #' \code{CalcFdcPerf} reads a model forecast point streamflow timeseries (i.e., created using \code{\link{ReadFrxstPts}}) and
 #' a streamflow observation timeseries (i.e., created using \code{\link{ReadUsgsGage}}) and calculates flow duration curve
-#' statistics at various exceedance thresholds (e.g., 10\%, 20\%, etc.).
+#' statistics at various exceedance thresholds (e.g., 10\%, 20\%, etc.). The tool will subset data to matching time periods
+#' (e.g., if the observed data is at 5-min increments and modelled data is at 1-hr increments, the tool
+#' will subset the observed data to select only observations on the matching hour break).
 #'
 #' Flow Duration Curve Statistics:
 #' \cr (mod = model output, obs = observations)
@@ -678,16 +376,21 @@ CalcStrPerf <- function (stroutDf, obsDf, strCol="q_cms", obsCol="q_cms") {
 #' \item q.perr: percent error in model flow [(mod-obs)/obs]
 #' }
 #'
-#' @param stroutDf The forecast point output dataframe (required). Assumes only one forecast
+#' @param strDf.mod The forecast point output dataframe (required). Assumes only one forecast
 #' point per file, so if you have multiple forecast points in your output dataframe, use
-#' subset to isolate a single forecast point's data. Also assumes model output time step and
-#' observation time step match, and both contain POSIXct fields (called "POSIXct").
-#' @param obsDf The observed streamflow dataframe. Assumes only one gage per file, so if
-#' you have multiple forecast points in your output dataframe, use subset to isolate
-#' a single gage's data. Also assumes model output time step and observation time step match,
-#' and both contain POSIXct fields (called "POSIXct").
-#' @param strCol The column name for the streamflow time series for the MODEL data (default="q_cms")
-#' @param obsCol The column name for the streamflow time series for the OBSERVED data (default="q_cms")
+#' subset to isolate a single forecast point's data. Also assumes model output and observation
+#' both contain POSIXct fields (called "POSIXct").
+#' @param strDf.obs The observed streamflow dataframe. Assumes only one gage per file, so if
+#' you have multiple gages in your dataframe, use subset to isolate a single gage's data.
+#' Also assumes model output and observation both contain POSIXct fields (called "POSIXct").
+#' @param strCol.mod The column name for the streamflow time series for the MODEL data (default="q_cms")
+#' @param strCol.obs The column name for the streamflow time series for the OBSERVED data (default="q_cms")
+#' @param stdate Start date for plot/statistics (DEFAULT=NULL, all records will be used).
+#' Date MUST be specified in POSIXct format with appropriate timezone
+#' (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))
+#' @param enddate End date for plot/statistics (DEFAULT=NULL, all records will be used).
+#' Date MUST be specified in POSIXct format with appropriate timezone
+#' (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))
 #' @return A new dataframe containing the flow duration curve statistics.
 #'
 #' @examples
@@ -696,7 +399,7 @@ CalcStrPerf <- function (stroutDf, obsDf, strCol="q_cms", obsCol="q_cms") {
 #' ## flow duration curve statistics. The model forecast point data was imported using ReadFrxstPts
 #' ## and the gage observation data was imported using ReadUsgsGage.
 #'
-#' CalcFdcPerf(modStrh.mod1.fc, obsStrh.fc)
+#' CalcFdcPerf(modStr1h.allrt.fc, obsStr5min.fc)
 #'
 #' Output:
 #'  p.exceed    q.mod   q.obs
@@ -709,43 +412,24 @@ CalcStrPerf <- function (stroutDf, obsDf, strCol="q_cms", obsCol="q_cms") {
 #'  0.7         0.14    0.25
 #'  0.8         0.11    0.19
 #'  0.9         0.08    0.16
+#' @export
 
-
-CalcFdcPerf <- function (stroutDf, obsDf, strCol="q_cms", obsCol="q_cms") {
-    # START UTILS
-    CalcWyd <- function (x) {
-        tmp <- aggregate(x$yd, by = list(x$year), max)
-        colnames(tmp) <- c("year", "n")
-        tmp$year <- as.integer(as.character(tmp$year))
-        x$wyd <- 0
-        tmp2 <- subset(tmp, tmp$n == 365)
-        new <- ifelse((x$year %in% tmp2$year), ifelse(x$yd >= 274,
-            x$yd - 273, x$yd + 92), ifelse(x$yd >= 275, x$yd - 274, 
-            x$yd + 92))
-        new
-    }
-    CalcDates <- function (x) {
-        x$day <- as.integer(format(x$POSIXct,"%d"))
-        x$month <- as.integer(format(x$POSIXct,"%m"))
-        x$year <- as.integer(format(x$POSIXct,"%Y"))
-        x$wy <- ifelse(x$month >= 10, x$year + 1, x$year)
-        x$yd <- as.integer(format(x$POSIXct,"%j"))
-        x$wyd <- CalcWyd(x)
-        x
-    }
-    # END UTILS
-
+CalcFdcPerf <- function (strDf.mod, strDf.obs, strCol.mod="q_cms", strCol.obs="q_cms", stdate=NULL, enddate=NULL) {
     # Prepare data
-    stroutDf <- CalcDates(stroutDf)
-    stroutDf$qcomp <- stroutDf[,strCol]
-    obsDf$qcomp <- obsDf[,obsCol]
-    if (as.integer(obsDf$POSIXct[2])-as.integer(obsDf$POSIXct[1]) >= 86400) {obsDf$POSIXct=as.POSIXct(round(obsDf$POSIXct,"days"), tz="UTC")}
-    stroutDf <- merge(stroutDf, obsDf[c("POSIXct","qcomp")], by<-c("POSIXct"), suffixes=c(".mod",".obs"))
-    stroutDf <- subset(stroutDf, !is.na(stroutDf$qcomp.mod) & !is.na(stroutDf$qcomp.obs))
-    stroutDf <- CalcFdc(stroutDf, "qcomp.mod")
-    stroutDf <- CalcFdc(stroutDf, "qcomp.obs")
-    fdc.mod <- splinefun(stroutDf[,"qcomp.mod.fdc"], stroutDf[,"qcomp.mod"], method='natural')
-    fdc.obs <- splinefun(stroutDf[,"qcomp.obs.fdc"], stroutDf[,"qcomp.obs"], method='natural')
+    if (!is.null(stdate) && !is.null(enddate)) {
+        strDf.obs <- subset(strDf.obs, POSIXct>=stdate & POSIXct<=enddate)
+        strDf.mod <- subset(strDf.mod, POSIXct>=stdate & POSIXct<=enddate)
+        }
+    strDf.mod <- CalcDates(strDf.mod)
+    strDf.mod$qcomp <- strDf.mod[,strCol.mod]
+    strDf.obs$qcomp <- strDf.obs[,strCol.obs]
+    if (as.integer(strDf.obs$POSIXct[2])-as.integer(strDf.obs$POSIXct[1]) >= 86400) {strDf.obs$POSIXct=as.POSIXct(round(strDf.obs$POSIXct,"days"), tz="UTC")}
+    strDf.mod <- merge(strDf.mod, strDf.obs[c("POSIXct","qcomp")], by<-c("POSIXct"), suffixes=c(".mod",".obs"))
+    #strDf.mod <- subset(strDf.mod, !is.na(strDf$qcomp.mod) & !is.na(strDf$qcomp.obs))
+    strDf.mod <- CalcFdc(strDf.mod, "qcomp.mod")
+    strDf.mod <- CalcFdc(strDf.mod, "qcomp.obs")
+    fdc.mod <- splinefun(strDf.mod[,"qcomp.mod.fdc"], strDf.mod[,"qcomp.mod"], method='natural')
+    fdc.obs <- splinefun(strDf.mod[,"qcomp.obs.fdc"], strDf.mod[,"qcomp.obs"], method='natural')
 
     # Compile summary statistics
     results <- as.data.frame(matrix(nrow = 9, ncol = 5))
@@ -759,3 +443,5 @@ CalcFdcPerf <- function (stroutDf, obsDf, strCol="q_cms", obsCol="q_cms") {
         }
     results
  }
+
+
