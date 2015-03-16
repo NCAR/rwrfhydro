@@ -1,0 +1,167 @@
+---
+title: "Evaluate streamflow simulation with rwrfhydro"
+author: "Aubrey Dugger and James McCreight"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format:
+
+- Never uses retina figures
+- Has a smaller default figure size
+- Uses a custom CSS stylesheet instead of the default Twitter Bootstrap style
+
+## Vignette Info
+
+Note the various macros within the `vignette` setion of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
+
+## Styles
+
+The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:
+
+    output: 
+      rmarkdown::html_vignette:
+        css: mystyles.css
+
+## Figures
+
+The figure sizes have been customised so that you can easily put two images side-by-side. 
+
+```{r, fig.show='hold'}
+plot(1:10)
+plot(10:1)
+```
+
+You can enable figure captions by `fig_caption: yes` in YAML:
+
+    output:
+      rmarkdown::html_vignette:
+        fig_caption: yes
+
+Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
+
+## More Examples
+
+You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
+
+```{r, echo=FALSE, results='asis'}
+knitr::kable(head(mtcars, 10))
+```
+
+Also a quote using `>`:
+
+> "He who gives up [code] safety for [code] speed deserves neither."
+([via](https://twitter.com/hadleywickham/status/504368538874703872))
+
+
+
+# Background: 
+ßWe are using WRF-Hydro to predict streamflow for Fourmile Creek at the Orodell USGS 
+
+gage for the 2013 water year (excluding the September 2013 flood event). We ran WRF-Hydro with 
+
+NoahMP as the LSM for a 3-year spinup period and then did an hourly run for 11 months starting October 
+
+1, 2012. We want to evaluate model performance in estimating streamflow with and without overland, 
+
+subsurface, and groundwater routing active.
+
+############################################
+
+## Import modelled and observed datasets
+
+# Model 1: Only channel routing turned on (hourly model run)
+
+modStrh.chrt.fc <- ReadFrxstPts("OUTPUT_FOURMILE_CHRT/frxst_pts_out.txt")
+
+# Model 2: All WRF-Hydro routing options turned on (hourly model run)
+
+modStrh.allrt.fc <- ReadFrxstPts("OUTPUT_FOURMILE_ALLRT/frxst_pts_out.txt")
+
+# USGS gage observed data @ 5-minute intervals
+
+obsStr5min.fc <- ReadUsgsGage("OBS/5min_str_06727500_110401_140810.txt")
+
+############################################
+
+## Plot & compare hydrographs for the full model run
+
+PlotFluxCompare(obsStr5min.fc, "q_cms", modStrh.chrt.fc, "q_cms", strDf.mod2=modStrh.allrt.fc, 
+
+strCol.mod2="q_cms", labelObs="Observed Fourmile Creek at Orodell", labelMod1="Channel 
+
+Routing Only", labelMod2="All Routing", title="Streamflow: Fourmile Creek")
+
+# Now limit the plot to the May through June snowmelt period. Note that the reported stats are also 
+
+updated to the new time period.
+
+PlotFluxCompare(obsStr5min.fc, "q_cms", modStrh.chrt.fc, "q_cms", strDf.mod2=modStrh.allrt.fc, 
+
+strCol.mod2="q_cms", labelObs="Observed Fourmile Creek at Orodell", labelMod1="Channel 
+
+Routing Only", labelMod2="All Routing", title="Streamflow: Fourmile Creek", 
+
+stdate=as.POSIXct("2013-05-01 00:00:00", format="%Y-%m-%d %H:%M:%S", tz="UTC"), 
+
+enddate=as.POSIXct("2013-06-30 00:00:00", format="%Y-%m-%d %H:%M:%S", tz="UTC"))
+
+############################################
+
+## Review flow duration curves
+
+# Calculate percent exceedances for flow duration curves
+
+obsStr5min.fc <- CalcFdc(obsStr5min.fc)
+
+modStrh.chrt.fc <- CalcFdc(modStrh.chrt.fc)
+
+modStrh.allrt.fc <- CalcFdc(modStrh.allrt.fc)
+
+# Compare how the models are doing predicting flow values that will be exceeded 20% of the time
+
+# First, calculate the fitted spline functions
+
+fdc.obsStr5min.fc <- CalcFdcSpline(obsStr5min.fc)
+
+fdc.modStrh.chrt.fc <- CalcFdcSpline(modStrh.chrt.fc)
+
+fdc.modStrh.allrt.fc <- CalcFdcSpline(modStrh.allrt.fc)
+
+# Then, evaluate at the 20% exceedance percentage (high flows)
+
+fdc.obsStr5min.fc(0.2)
+
+fdc.modStrh.chrt.fc(0.2)
+
+fdc.modStrh.allrt.fc(0.2)
+
+# Now try the 80% exceedance percentage (low flows)
+
+fdc.obsStr5min.fc(0.8)
+
+fdc.modStrh.chrt.fc(0.8)
+
+fdc.modStrh.allrt.fc(0.8)
+
+# Plot flow duration curves for a more complete picture
+
+PlotFdcCompare(obsStr5min.fc, "q_cms", modStrh.chrt.fc, "q_cms", strDf.mod2=modStrh.allrt.fc, 
+
+strCol.mod2="q_cms", labelObs="Observed Fourmile Creek", labelMod1="Channel Routing 
+
+Only", labelMod2="All Routing")
+
+############################################
+
+## Review model performance statistics
+
+# Calculate model performance stats
+
+CalcModPerf(modStrh.allrt.fc, obsStr5min.fc)
+
+CalcModPerf(modStrh.chrt.fc, obsStr5min.fc)
