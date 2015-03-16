@@ -9,7 +9,7 @@ Authors@R: c(
 Maintainer: James McCreight <jamesmcc@ucar.edu>
 Description: A community-contributed tool box for managing, analyzing, and visualizing WRF Hydro 
   (and HydroDART) input and output files in R.
-License: GPL-3
+License: https://github.com/mccreigh/rwrfhydro/blob/master/LICENSE.md
 Depends: R (>= 3.1.0)
 Imports: 
     plyr (>= 1.8.1),
