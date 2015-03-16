@@ -18,7 +18,7 @@ Table of Contents
       * [Forking](#forking-and-cloning)
       * [devBranch and pull requests](#devbranch-and-pull-requests)  
       * [Not using Github](#not-using-github)
-    * [Workflow: git, R packaging, and you](#git, R Packaging, and you)
+    * [Workflow: git, R packaging, and you](#workflow-git-r-packaging-and-you)
     * [Our best practices](#our-best-practices)
       * [R package best practices and code style](#r-package-best-practices-and-code-style)
         * [Organizing functions](#organizing-functions)
@@ -90,7 +90,7 @@ We ask that you send pull requests for the devBranch branch in the repository (a
 into the devBranch is your choice. The easiest way is to `git checkout devBranch` before you do anything.
 
 When you have a piece of code to add to the master, [send a pull request](https://help.github.com/articles/using-pull-requests/). 
-We give more details on using git in the workflow overview below.
+We give more details on using git in the [workflow](#workflow-git-r-packaging-and-you) overview below.
 
 ### Not using Github.
 hmm..., expand on this: http://stackoverflow.com/questions/4728432/git-forking-without-github
