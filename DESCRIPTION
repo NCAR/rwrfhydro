@@ -24,4 +24,6 @@ Imports:
     scales (>= 0.2.4), 
     curl (>= 0.5)
 LazyData: true
-Suggests: testthat
+Suggests: testthat,
+    knitr
+VignetteBuilder: knitr

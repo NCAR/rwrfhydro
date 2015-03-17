@@ -62,6 +62,35 @@ RotateCw <- function(matrix) t(apply(matrix, 2, rev))
 RotateCcw <- function(matrix) apply(matrix, 1, rev)
 
 
+#' TransTz
+#' Translate formatted timezones codes to the so-called "Olson names" used by POSIXct.
+#' \code{TransTz} translates the formatted timezone codes (incl those from USGS) to Olson Names.
+#' @param tz The timezone to be translated.
+#' @examples
+#' as.POSIXct('2012-01-01')
+#' as.POSIXct('2012-01-01', tz='US/Pacific')
+#' format(as.POSIXct('2012-01-01', tz='US/Pacific'),'%Z')
+#' TransTz(format(as.POSIXct('2012-01-01', tz='US/Pacific'),'%Z'))
+#' lubridate::with_tz(as.POSIXct('2012-01-01'),TransTz(format(as.POSIXct('2012-01-01', tz='US/Pacific'),'%Z')))
+#' @export
+TransTz <- function(tz) {
+  olson <- c(EDT ="US/Eastern",  EST ="US/Eastern",
+             MDT ="US/Mountain", MST ="US/Mountain",
+             PDT ="US/Pacific",  PST ="US/Pacific",
+             CDT ="US/Central",  CST ="US/Central",
+             AKDT="US/Alaska",   AKST="US/Alaska",
+             HADT="US/Hawaii",   HAST="US/Hawaii" )[tz]
+  # This is the full list of remaining US Olson names, given in R by OlsonNames()
+  # "US/Aleutian", "US/Arizona", "US/East-Indiana", "US/Indiana-Starke",
+  # "US/Michigan", "US/Pacific-New", "US/Samoa"
+  if(any(is.na(olson))) warning('The supplied timezone code, ', tz,
+                                ', is not covered by the cases programmed ',
+                                'in TransTz (in read_observations.R). Please notify us or ',
+                                'fix, commit, and send a pull request. Thanks!',
+                                immediate.=TRUE)
+  olson
+}  
+
 #' CalcWaterYear
 #' 
 #' \code{CalcWaterYear} Returns the water year or the day of water year for a given POSIXct.  
