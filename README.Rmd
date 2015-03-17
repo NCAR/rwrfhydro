@@ -15,9 +15,10 @@ Table of Contents
   * [Using](#using)
   * [Developing](#developing)
     * [Version control for collaboration: Github](#version-control-for-collaboration-github)
-      * [Forking](#forking)
-      * [Not using Github.](#not-using-github)
-    * [R Packaging](#r-packaging)
+      * [Forking](#forking-and-cloning)
+      * [devBranch and pull requests](#devbranch-and-pull-requests)  
+      * [Not using Github](#not-using-github)
+    * [Workflow: git, R packaging, and you](#workflow-git-r-packaging-and-you)
     * [Our best practices](#our-best-practices)
       * [R package best practices and code style](#r-package-best-practices-and-code-style)
         * [Organizing functions](#organizing-functions)
@@ -72,17 +73,29 @@ devtools is outlined below. It greatly stream lines all aspects of developing R 
 recommend that you install rwrfhydro using devtools::install_github() first, because this streamlines the installation of package 
 dependencies. 
 
-### Forking
-Please fork the repository to contribute. A fork is a separate copy of the repository. [Forking is trivial in Github](https://help.github.com/articles/fork-a-repo/). But remember to keep your fork sync'd as much as possible. You have to have a free (for open-source repositories) account to fork on github. When you have a piece of code to add to the master, [send a pull request](https://help.github.com/articles/using-pull-requests/). A finer point is that topic branches create more coherent pull requests if these extend over time. When possible, create branches for your development topics.
+### Forking and cloning
+Please fork the repository to contribute. A fork is a separate copy of the main repository. 
+[Forking is trivial in Github](https://help.github.com/articles/fork-a-repo/).
+You have to have a free (for open-source repositories) account to fork on github.
 
-### devBranch and pull requests. 
+Then you'll clone the fork to a local computer and you'll have to interact between the github version, 
+which is used to send pull requests to the main repository, and your local version. We give some tips below. 
+Keep your fork sync'd as much as possible to avoid painful merges.  
+
+### devBranch and pull requests
+We maintain two branches: master and devBranch. devBranch is where pull requests go. Changes go to master, theoretically, after
+they've been tested on devBranch. And that's done by "mccreigh".
+
 We ask that you send pull requests for the devBranch branch in the repository (and NOT the master). How you get your code
 into the devBranch is your choice. The easiest way is to `git checkout devBranch` before you do anything.
+
+When you have a piece of code to add to the master, [send a pull request](https://help.github.com/articles/using-pull-requests/). 
+We give more details on using git in the [workflow](#workflow-git-r-packaging-and-you) overview below.
 
 ### Not using Github.
 hmm..., expand on this: http://stackoverflow.com/questions/4728432/git-forking-without-github
 
-## R Packaging
+## Workflow: git, R Packaging, and you
 
 Workflow is approximately this:
   
@@ -94,10 +107,12 @@ Workflow is approximately this:
   * Write documentation (in these dirs: man/, vignettes/).
   * Write tests (in this dir: test/).
   * Check with devtools: `devtools::document(); devtools::check_doc(); devtools::check()`
-  * Commit to your branch with git. 
-  * Merge your master with the central repository to minimize merge pains.
-  * Merge your branch with your master.
-  * Submit a pull request on github.
+  * Commit to your branch with git. (`git commit -am'Some cool features were needed.`)
+  * Merge your master with the upstream repository to minimize merge pains. 
+  ([See here.](https://help.github.com/articles/syncing-a-fork/) Note pushing back to github at the very bottom.)
+  * Merge your devBranch with your master. (`git check out devBranch; git merge master`)
+  * Push your devBranch to github. (`git push origin devBranch`)
+  * Submit a [pull request on github](https://help.github.com/articles/using-pull-requests/) on devBranch. 
 
 
 ## Our best practices

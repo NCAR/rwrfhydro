@@ -236,8 +236,8 @@ Hash: f78059fac4af154bfe46bf547ae12be9
 
 Package: rmarkdown
 Source: CRAN
-Version: 0.4.2
-Hash: c0a973db5a50da2b14afece2007984ab
+Version: 0.5.1
+Hash: 2d87f70c12c5558c50c4b3587fc6f499
 Requires: caTools, htmltools, knitr, yaml
 
 Package: roxygen2

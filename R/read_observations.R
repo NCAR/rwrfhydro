@@ -52,7 +52,7 @@ ReadUsgsGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE) {
     }
   }
 
-  timeZone <- TransUsgsTz(outDf$tz_cd)
+  timeZone <- TransTz(outDf$tz_cd)
   # Since a gauge shouldnt move, there should only be one time zone
   if(!all(timeZone == timeZone[1]))
     warning(paste0("There should only be one timezone for a given gauge, ",
@@ -95,31 +95,6 @@ ReadUsgsGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE) {
   
   outDf
 }
-
-
-
-#' Translate USGS timezone codes to the so-called "Olson names" used by POSIXct.
-#' \code{TransUsgsTz} translates the USGS time codes to Olson Names.
-#' @param usgsTz
-#' \code{TransUsgsTz}
-TransUsgsTz <- function(usgsTz) {
-  olson <- c(EDT ="US/Eastern",  EST ="US/Eastern",
-             MDT ="US/Mountain", MST ="US/Mountain",
-             PDT ="US/Pacific",  PST ="US/Pacific",
-             CDT ="US/Central",  CST ="US/Central",
-             AKDT="US/Alaska",   AKST="US/Alaska",
-             HADT="US/Hawaii",   HAST="US/Hawaii" )[usgsTz]
-  # This is the full list of remaining US Olson names, given in R by OlsonNames()
-  # "US/Aleutian", "US/Arizona", "US/East-Indiana", "US/Indiana-Starke",
-  # "US/Michigan", "US/Pacific-New", "US/Samoa"
-  if(any(is.na(olson))) warning('The supplied USGS code, ', usgsTz,
-                           ', is not covered by the cases programmed ',
-                           'in TransUsgsTz (in read_observations.R). Please notify us or ',
-                           'fix, commit, and send a pull request. Thanks!',
-                           immediate.=TRUE)
-  olson
-}  
-  
 
 
 #' Read standard-format NetCDF data downloaded from Ameriflux
