@@ -110,7 +110,7 @@ Workflow is approximately this:
   * Commit to your branch with git. (`git commit -am 'Some cool features were needed.'`)
   * Merge your master with the upstream repository to minimize merge pains. 
   ([See here.](https://help.github.com/articles/syncing-a-fork/) Note pushing back to github at the very bottom.)
-  * Merge your devBranch with your master. (`git check out devBranch; git merge master`)
+  * Merge your devBranch with your master. (`git checkout devBranch; git merge master`)
   * Push your devBranch to github. (`git push origin devBranch`)
   * Submit a [pull request on github](https://help.github.com/articles/using-pull-requests/) on devBranch. 
 
