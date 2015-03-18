@@ -354,7 +354,242 @@ fdc.modStrh.allrt.fc &lt;-<span class="st"> </span><span class="kw">CalcFdcSplin
 <p>Help on CalcModPerf gives details on the individual statistics returned.</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">help</span>(CalcModPerf)</code></pre>
 <div style="border:1px solid; border-radius: 25px; padding: 12px 25px;">
+<div class="r-help-page">
+<table width="100%" summary="page for CalcModPerf">
+<tr>
+<td>
+CalcModPerf
+</td>
+<td align="right">
+R Documentation
+</td>
+</tr>
+</table>
+<h2>
+Computes model performance statistics for WRF-Hydro flux output
+</h2>
+<h3>
+Description
+</h3>
+<p>
+<code>CalcModPerf</code> calculates model performance statistics for flux output.
+</p>
+<h3>
+Usage
+</h3>
+<pre class="r">
+CalcModPerf(flxDf.mod, flxDf.obs, flxCol.mod = &quot;q_cms&quot;,
+  flxCol.obs = &quot;q_cms&quot;, stdate = NULL, enddate = NULL)
+</pre>
+<h3>
+Arguments
+</h3>
+<table summary="R argblock">
+<tr valign="top">
+<td>
+<code>flxDf.mod</code>
+</td>
+<td>
+<p>
+The flux output dataframe (required). Assumes only one forecast point per file, so if you have multiple forecast points in your output dataframe, use subset to isolate a single forecast point’s data. Also assumes model output and observation both contain POSIXct fields (called “POSIXct”).
+</p>
+</td>
+</tr>
+<tr valign="top">
+<td>
+<code>flxDf.obs</code>
+</td>
+<td>
+<p>
+The observed flux dataframe. Assumes only one observation point per file, so if you have multiple observation points in your dataframe, use subset to isolate a single point’s data. Also assumes model output and observation both contain POSIXct fields (called “POSIXct”).
+</p>
+</td>
+</tr>
+<tr valign="top">
+<td>
+<code>flxCol.mod</code>
+</td>
+<td>
+<p>
+The column name for the flux time series for the MODEL data (default=“q_cms”)
+</p>
+</td>
+</tr>
+<tr valign="top">
+<td>
+<code>flxCol.obs</code>
+</td>
+<td>
+<p>
+The column name for the flux time series for the OBSERVED data (default=“q_cms”)
+</p>
+</td>
+</tr>
+<tr valign="top">
+<td>
+<code>stdate</code>
+</td>
+<td>
+<p>
+Start date for plot/statistics (DEFAULT=NULL, all records will be used). Date MUST be specified in POSIXct format with appropriate timezone (e.g., as.POSIXct(“2013-05-01 00:00:00”, format=“%Y-%m-%d %H:%M:%S”, tz=“UTC”))
+</p>
+</td>
+</tr>
+<tr valign="top">
+<td>
+<code>enddate</code>
+</td>
+<td>
+<p>
+End date for plot/statistics (DEFAULT=NULL, all records will be used). Date MUST be specified in POSIXct format with appropriate timezone (e.g., as.POSIXct(“2013-05-01 00:00:00”, format=“%Y-%m-%d %H:%M:%S”, tz=“UTC”))
+</p>
+</td>
+</tr>
+</table>
+<h3>
+Details
+</h3>
+<p>
+<code>CalcModPerf</code> reads a model flux time series (i.e., created using <code>ReadFrxstPts</code>) and an observation time series (i.e., created using <code>ReadUsgsGage</code>) and calculates model performance statistics (Nash-Sutcliffe Efficiency, Rmse, etc.) at various time scales and for low and high fluxes. The tool will subset data to matching time periods (e.g., if the observed data is at 5-min increments and modelled data is at 1-hr increments, the tool will subset the observed data to select only observations on the matching hour break).
+</p>
+<p>
+Performance Statistics: <br> (mod = model output, obs = observations, n = sample size)
+</p>
+<ul>
+<li>
+<p>
+nse: Nash-Sutcliffe Efficiency
+</p>
+<p align="center">
+<i>nse = 1 - ( sum((obs - mod)^2) / sum((obs - mean(obs))^2) ) </i>
+</p>
+</li>
+<li>
+<p>
+nselog: log-transformed Nash-Sutcliffe Efficiency
+</p>
+<p align="center">
+<i>nselog = 1 - ( sum((log(obs) - log(mod))^2) / sum((log(obs) - mean(log(obs)))^2) ) </i>
+</p>
+</li>
+<li>
+<p>
+cor: correlation coefficient
+</p>
+<p align="center">
+<i>cor = cor(mod, obs) </i>
+</p>
+</li>
+<li>
+<p>
+rmse: root mean squared error
+</p>
+<p align="center">
+<i>rmse = sqrt( sum((mod - obs)^2) / n ) </i>
+</p>
+</li>
+<li>
+<p>
+rmsenorm: normalized root mean squared error
+</p>
+<p align="center">
+<i>rmsenorm = rmse / (max(obs) - min(obs)) </i>
+</p>
+</li>
+<li>
+<p>
+bias: percent bias
+</p>
+<p align="center">
+<i>bias = sum(mod - obs) / sum(obs) * 100 </i>
+</p>
+</li>
+<li>
+<p>
+mae: mean absolute error
+</p>
+<p align="center">
+<i>mae = mean(abs(mod - obs)) </i>
+</p>
+</li>
+<li>
+<p>
+errcom: error in the center-of-mass of the flux, where center-of-mass is the hour/day when 50% of daily/monthly/water-year flux has occurred. Reported as number of hours for daily time scale and number of days for monthly and yearly time scales.
+</p>
+</li>
+<li>
+<p>
+errmaxt: Error in the time of maximum flux. Reported as number of hours for daily time scale and number of days for monthly and yearly time scales).
+</p>
+</li>
+<li>
+<p>
+errfdc: Error in the integrated flow duration curve between 0.05 and 0.95 exceedance thresholds (in native flow units).
+</p>
+</li>
+</ul>
+<p>
+Time scales/Flux types:
+</p>
+<ul>
+<li>
+<p>
+ts = native model/observation time step (e.g., hourly)
+</p>
+</li>
+<li>
+<p>
+daily = daily time step
+</p>
+</li>
+<li>
+<p>
+monthly = monthly time step
+</p>
+</li>
+<li>
+<p>
+yearly = water-year time step
+</p>
+</li>
+<li>
+<p>
+max10 = high flows; restricted to the portion of the time series where the observed flux is in the highest 10%
+</p>
+</li>
+<li>
+<p>
+min10 = low flows; restricted to the portion of the time series where the observed flux is in the lowest 10%
+</p>
+</li>
+</ul>
+<h3>
+Value
+</h3>
+<p>
+A new dataframe containing the model performance statistics.
+</p>
+<h3>
+Examples
+</h3>
+<pre class="r">
+## Take forecast point model output for Fourmile Creek (modStrh.mod1.fc) and a corresponding
+## USGS gage observation file (obsStrh.fc), both at an hourly time step, and calculate
+## model performance statistics. The model forecast point data was imported using ReadFrxstPts
+## and the gage observation data was imported using ReadUsgsGage.
 
+CalcModPerf(modStr1h.allrt.fc, obsStr5min.fc)
+
+&gt; Output:
+          nse nselog  cor rmse rmsenorm  bias  mae errcom errmaxt errfdc
+ts       0.57   0.61 0.79 1.43     9.48 -28.0 0.70     NA      NA  -0.42
+daily    0.71   0.64 0.87 1.17     9.86 -28.1 0.61   0.19   -2.25  -0.37
+monthly  0.80   0.70 0.93 0.89    12.73 -26.6 0.53  -0.18   -0.96     NA
+yearly   0.05   0.37 0.36 0.55    41.50  -6.5 0.45  -1.50   -3.38     NA
+max10   -7.50 -15.94 0.19 3.82    38.89 -24.5 0.04     NA      NA     NA
+min10   -2.84  -1.83 0.10 0.05    33.36 -23.7   NA     NA      NA     NA
+</pre>
+</div>
 </div>
 <p>Calculate flow duration curve performance statistics.</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">CalcFdcPerf</span>(modStrh.allrt.fc, obsStr5min.fc)</code></pre>
@@ -444,7 +679,164 @@ fdc.modStrh.allrt.fc &lt;-<span class="st"> </span><span class="kw">CalcFdcSplin
 <p>Again, help on CalcFdcPerf gives details on the individual statistics returned.</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">help</span>(CalcFdcPerf)</code></pre>
 <div style="border:1px solid; border-radius: 25px; padding: 12px 25px;">
+<div class="r-help-page">
+<table width="100%" summary="page for CalcFdcPerf">
+<tr>
+<td>
+CalcFdcPerf
+</td>
+<td align="right">
+R Documentation
+</td>
+</tr>
+</table>
+<h2>
+Computes flow duration curve statistics for WRF-Hydro streamflow output
+</h2>
+<h3>
+Description
+</h3>
+<p>
+<code>CalcFdcPerf</code> calculates flow duration curve statistics for streamflow output.
+</p>
+<h3>
+Usage
+</h3>
+<pre class="r">
+CalcFdcPerf(strDf.mod, strDf.obs, strCol.mod = &quot;q_cms&quot;,
+  strCol.obs = &quot;q_cms&quot;, stdate = NULL, enddate = NULL)
+</pre>
+<h3>
+Arguments
+</h3>
+<table summary="R argblock">
+<tr valign="top">
+<td>
+<code>strDf.mod</code>
+</td>
+<td>
+<p>
+The forecast point output dataframe (required). Assumes only one forecast point per file, so if you have multiple forecast points in your output dataframe, use subset to isolate a single forecast point’s data. Also assumes model output and observation both contain POSIXct fields (called “POSIXct”).
+</p>
+</td>
+</tr>
+<tr valign="top">
+<td>
+<code>strDf.obs</code>
+</td>
+<td>
+<p>
+The observed streamflow dataframe. Assumes only one gage per file, so if you have multiple gages in your dataframe, use subset to isolate a single gage’s data. Also assumes model output and observation both contain POSIXct fields (called “POSIXct”).
+</p>
+</td>
+</tr>
+<tr valign="top">
+<td>
+<code>strCol.mod</code>
+</td>
+<td>
+<p>
+The column name for the streamflow time series for the MODEL data (default=“q_cms”)
+</p>
+</td>
+</tr>
+<tr valign="top">
+<td>
+<code>strCol.obs</code>
+</td>
+<td>
+<p>
+The column name for the streamflow time series for the OBSERVED data (default=“q_cms”)
+</p>
+</td>
+</tr>
+<tr valign="top">
+<td>
+<code>stdate</code>
+</td>
+<td>
+<p>
+Start date for plot/statistics (DEFAULT=NULL, all records will be used). Date MUST be specified in POSIXct format with appropriate timezone (e.g., as.POSIXct(“2013-05-01 00:00:00”, format=“%Y-%m-%d %H:%M:%S”, tz=“UTC”))
+</p>
+</td>
+</tr>
+<tr valign="top">
+<td>
+<code>enddate</code>
+</td>
+<td>
+<p>
+End date for plot/statistics (DEFAULT=NULL, all records will be used). Date MUST be specified in POSIXct format with appropriate timezone (e.g., as.POSIXct(“2013-05-01 00:00:00”, format=“%Y-%m-%d %H:%M:%S”, tz=“UTC”))
+</p>
+</td>
+</tr>
+</table>
+<h3>
+Details
+</h3>
+<p>
+<code>CalcFdcPerf</code> reads a model forecast point streamflow timeseries (i.e., created using <code>ReadFrxstPts</code>) and a streamflow observation timeseries (i.e., created using <code>ReadUsgsGage</code>) and calculates flow duration curve statistics at various exceedance thresholds (e.g., 10%, 20%, etc.). The tool will subset data to matching time periods (e.g., if the observed data is at 5-min increments and modelled data is at 1-hr increments, the tool will subset the observed data to select only observations on the matching hour break).
+</p>
+<p>
+Flow Duration Curve Statistics: <br> (mod = model output, obs = observations)
+</p>
+<ul>
+<li>
+<p>
+p.exceed: exceedance threshold (e.g., 0.2 means a flow value that is exceeded 20% of the time)
+</p>
+</li>
+<li>
+<p>
+q.mod: MODEL flow value at specified exceedance threshold (in native flow units)
+</p>
+</li>
+<li>
+<p>
+q.obs: OBSERVED flow value at specified exceedance threshold (in native flow units)
+</p>
+</li>
+<li>
+<p>
+q.err: difference between model and observed flow values [mod-obs] (in native flow units)
+</p>
+</li>
+<li>
+<p>
+q.perr: percent error in model flow [(mod-obs)/obs]
+</p>
+</li>
+</ul>
+<h3>
+Value
+</h3>
+<p>
+A new dataframe containing the flow duration curve statistics.
+</p>
+<h3>
+Examples
+</h3>
+<pre class="r">
+## Take forecast point model output for Fourmile Creek (modStrh.mod1.fc) and a corresponding
+## USGS gage observation file (obsStrh.fc), both at an hourly time step, and calculate
+## flow duration curve statistics. The model forecast point data was imported using ReadFrxstPts
+## and the gage observation data was imported using ReadUsgsGage.
 
+CalcFdcPerf(modStr1h.allrt.fc, obsStr5min.fc)
+
+Output:
+ p.exceed    q.mod   q.obs
+ 0.1         3.07    5.25
+ 0.2         1.35    2.31
+ 0.3         0.82    1.06
+ 0.4         0.48    0.65
+ 0.5         0.29    0.45
+ 0.6         0.18    0.34
+ 0.7         0.14    0.25
+ 0.8         0.11    0.19
+ 0.9         0.08    0.16
+</pre>
+</div>
 </div>
 </div>
 
