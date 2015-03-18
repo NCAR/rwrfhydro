@@ -23,7 +23,7 @@ library("rwrfhydro")
 
 Set the path to your test data.
 ```{r}
-dataPath <- '/Users/james/ncar/WRF_Hydro/rwrfHydroTestCases' 
+dataPath <- '/Users/jamesmcc/WRF_Hydro/rwrfHydroTestCases' 
 ```
 
 
@@ -112,6 +112,7 @@ CalcModPerf(modStrh.allrt.fc, obsStr5min.fc)
 ```
 
 ```{r, , results = "asis", echo=FALSE}
+library(pander)
 pander::pandoc.table(CalcModPerf(modStrh.allrt.fc, obsStr5min.fc),split.table=Inf)
 ```
 

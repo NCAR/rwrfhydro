@@ -48,7 +48,7 @@ library(rwrfhydro)
 ```
 and now the package (namespace) is available. 
 
-For thematic and in-depth overviews into rwrfhydro functionality, check out the [online vignettes](https://github.com/mccreigh/rwrfhydro/blob/master/vignettes/vignettes.Rmd) (or in R `browseVignettes("rwrfhydro")`).
+For thematic and in-depth overviews into rwrfhydro functionality, check out the [online vignettes](https://github.com/mccreigh/rwrfhydro/blob/mastervignettes.Rmd) (or in R `browseVignettes("rwrfhydro")`).
 
 To get package metadata and a listing of functions:  `library(help=rwrfhydro)`. Just the functions: `ls('package:rwrfhydro')`.
 For specific functionality see function help (e.g. `?VisualizeDomain` or `help(VisualizeDomain)`). 
