@@ -1,32 +1,8 @@
-#install_github('mccreigh/rwrfhydro')
-#Error in install_github("mccreigh/rwrfhydro") : 
-#Enter a frame number, or 0 to exit   
-#1: install_github("mccreigh/rwrfhydro")
-#Selection: 1
-#Called from: top level 
-#Browse[1]> remote <- remotes[[1]]
-#Browse[1]> quiet=FALSE
-#Browse[1]> remote_metadata(remote, bundle, source)
-#Error during wrapup: object 'bundle' not found
-#Browse[1]>  remote_metadata(remote, NULL, source)
-
-
-remote <- structure(list(host = "api.github.com", repo = "rwrfhydro", subdir = NULL, 
-    username = "mccreigh", ref = "master", sha = NULL, auth_token = NULL), .Names = c("host", 
-"repo", "subdir", "username", "ref", "sha", "auth_token"), class = c("github_remote", 
-"remote"))
-
-remote_metadata(remote, NULL, source)
-
-
-
+## This code borrowed almost entirely from devtools. Thanks, Hadley.
 
 #' Retrieve Github personal access token.
-#'
 #' Looks in env var \code{GITHUB_PAT}.
-#'
 #' @keywords internal
-#' @export
 github_pat <- function() {
   pat <- Sys.getenv('GITHUB_PAT')
   if (identical(pat, "")) return(NULL)
@@ -35,7 +11,7 @@ github_pat <- function() {
   pat
 }
 
-
+##
 github_GET <- function(path, ..., pat = github_pat()) {
   if (!is.null(pat)) {
     auth <- httr::authenticate(pat, "x-oauth-basic", "basic")
@@ -56,11 +32,12 @@ github_GET <- function(path, ..., pat = github_pat()) {
   parsed
 }
 
+##
 github_commit <- function(username, repo, ref = "master") {
   github_GET(file.path("repos", username, repo, "commits", ref))
 }
 
-
+##
 remote_metadata.github_remote <- function(x, bundle = NULL, source = NULL) {
   # Determine sha as efficiently as possible
   if (!is.null(x$sha)) {
@@ -91,5 +68,41 @@ remote_metadata.github_remote <- function(x, bundle = NULL, source = NULL) {
   )
 }
 
-
+##
 remote_metadata <- function(x, bundle = NULL, source = NULL) UseMethod("remote_metadata")
+
+
+checkMasterSha <- function() {
+  ## Static remote variable for rwrfhydro repo master.
+  remote <-
+    structure(list(host = "api.github.com", repo = "rwrfhydro", subdir = NULL, 
+                   username = "mccreigh", ref = "master", sha = NULL,
+                   auth_token = NULL),
+              .Names = c("host", "repo", "subdir",
+                         "username", "ref", "sha", "auth_token"),
+              class = c("github_remote", "remote"))
+
+  remoteSha <- remote_metadata(remote, NULL, source)$RemoteSha
+  localSha  <- packageDescription('rwrfhydro')$RemoteSha
+  if(is.null(localSha)) return(invisible('devtools'))
+  
+  print(remoteSha)
+  print(localSha)
+  if( remoteSha != localSha )
+    cat("",
+        "*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*",
+        "^*                                                                     *^",
+        "*^   A  **NEW** update of rwrfhydro has been made (to master branch).  ^*",
+        "^*                                                                     *^",
+        "*^   devtools::install_github('mccreigh/rwrfhydro')                    ^*",
+        "^*   (for developers: 'git pull origin master', then merg              *^",
+        "*^                                                                     ^*",
+        "^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^" ,
+        sep='\n      ')
+  #devtools::install_github('mccreigh/rwrfhydro')
+  invisible( remoteSha == localSha )
+}
+  
+.onLoad <- function(libname, pkgname) {
+  checkMasterSha()
+}
