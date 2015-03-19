@@ -86,20 +86,20 @@ checkMasterSha <- function() {
   localSha  <- packageDescription('rwrfhydro')$RemoteSha
   if(is.null(localSha)) return(invisible('devtools'))
   
-  print(remoteSha)
-  print(localSha)
-  if( remoteSha != localSha )
+  if( remoteSha != localSha ) {
     cat("",
         "*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*",
-        "^*                                                                     *^",
-        "*^   A  **NEW** update of rwrfhydro has been made (to master branch).  ^*",
-        "^*                                                                     *^",
-        "*^   devtools::install_github('mccreigh/rwrfhydro')                    ^*",
-        "^*   (for developers: 'git pull origin master', then merg              *^",
         "*^                                                                     ^*",
-        "^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^" ,
+        "*^   A  **NEW** update of rwrfhydro has been made (to master branch).  ^*",
+        "*^                                                                     ^*",
+        "*^   devtools::install_github('mccreigh/rwrfhydro')                    ^*",
+        "*^   (for developers: 'git pull origin master', then merge.)           ^*",
+        "*^                                                                     ^*",
+        "*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*" ,
         sep='\n      ')
-  devtools::install_github('mccreigh/rwrfhydro')
+    devtools::install_github('mccreigh/rwrfhydro')
+  }
+  
   invisible( remoteSha == localSha )
 }
   
