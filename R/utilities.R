@@ -1,4 +1,4 @@
-#' GetPkgDataPath
+#' Simplifed loading of rwrfhydro data included with the package.
 #' 
 #' \code{GetPkgData} is a simplified wrapper (for system.file) for loading external rwrfhydro data included with the package.
 #' 
@@ -9,7 +9,7 @@
 #' @export
 GetPkgDataPath <- function(theFile='') system.file("extdata", theFile, package = "rwrfhydro")
 
-#' StdLon
+#' Standardize lon to (-180,180].
 #' 
 #' \code{StdLon} Standardizes longitude to (-180,180]
 #' 
@@ -23,7 +23,7 @@ StdLon <- function(x) {
   x
 }
 
-#' PadRange
+#' Expand limits by some amount or proportionally to their difference.
 #' 
 #' \code{PadRange} Takes limits and expands them by some amount or proportionally to their difference.
 #' @param limits A vector of length 2, an initial range, to be expanded.
@@ -39,7 +39,7 @@ PadRange <- function(limits, delta=diffMult*diff(limits), diffMult=.05) {
 }
 
 
-#' RotateCw
+#' Rotate a matrix clock-wise.
 #' 
 #' \code{RotateCw} Rotates a matrix clock-wise. 
 #' @param matrix A matrix.
@@ -50,7 +50,7 @@ PadRange <- function(limits, delta=diffMult*diff(limits), diffMult=.05) {
 #' RotateCw(RotateCw(x))
 RotateCw <- function(matrix) t(apply(matrix, 2, rev))
 
-#' RotateCcw
+#' Rotate a matrix counter-clock-wise.
 #' 
 #' \code{RotateCcw} Rotates a matrix counter-clock-wise. 
 #' @param matrix A matrix. 
@@ -62,7 +62,7 @@ RotateCw <- function(matrix) t(apply(matrix, 2, rev))
 RotateCcw <- function(matrix) apply(matrix, 1, rev)
 
 
-#' TransTz
+#' Translate (i.e. invert) timezones to the so calle Olson names used by POSIXct. 
 #' Translate formatted timezones codes to the so-called "Olson names" used by POSIXct.
 #' \code{TransTz} translates the formatted timezone codes (incl those from USGS) to Olson Names.
 #' @param tz The timezone to be translated.
@@ -91,7 +91,7 @@ TransTz <- function(tz) {
   olson
 }  
 
-#' CalcWaterYear
+#' Returns the water year or the day of water year for a given POSIXct.
 #' 
 #' \code{CalcWaterYear} Returns the water year or the day of water year for a given POSIXct.  
 #' @param POSIXct is a POSIXct variable.
@@ -118,6 +118,7 @@ CalcWaterYear <- function(POSIXct, dayOf=FALSE) {
   doyWY
 }
 
+
 #' Calculate standard date breaks.
 #' \code{CalcDates} calculates standard date breaks.
 #' Calculate standard date breaks.
@@ -132,6 +133,7 @@ CalcDates <- function (x) {
     x$wyd <- CalcWaterYear(x$POSIXct, dayOf=TRUE)
     x
 }
+
 
 #' Calculate mean with forced NA removal.
 #' \code{CalcMeanNarm} calculates a mean with forced NA removal.

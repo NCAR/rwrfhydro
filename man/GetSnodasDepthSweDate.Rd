@@ -2,7 +2,7 @@
 % Please edit documentation in R/snodas.R
 \name{GetSnodasDepthSweDate}
 \alias{GetSnodasDepthSweDate}
-\title{GetSnodasDepthSweDate}
+\title{Get and unpack the SNODAS snow depth and SWE tarball for a given date.}
 \usage{
 GetSnodasDepthSweDate(datePOSIXct, outputDir = ".", overwrite = FALSE,
   quiet = TRUE)

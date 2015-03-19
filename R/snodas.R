@@ -1,4 +1,4 @@
-#' GetSnodasDepthSweDate
+#' Get and unpack the SNODAS snow depth and SWE tarball for a given date.
 #'
 #' \code{GetSnodasDepthSweDate} Get and unpack the SNODAS snow depth and SWE tarball for a given date. 
 #' 
@@ -65,7 +65,7 @@ GetSnodasDepthSweDate <- function(datePOSIXct, outputDir='.', overwrite=FALSE, q
 }
 
 
-#' ReadSnodasDepthSweDate
+#' Read snodas snow depth and SWE into memory for a given date.
 #'
 #' \code{ReadSnodasDepthSweDate} Read (from local disk into memory) the SNODAS snow depth and SWE for a given date. 
 #' 
@@ -118,7 +118,7 @@ ReadSnodasDepthSweDate <- function(datePOSIXct, outputDir='.') {
 }
 
 
-#' PutSnodasNcdf
+#' Write output of ReadSnodasDepthSweDate to netcdf.
 #'
 #' \code{PutSnodasNcdf} Put the output of ReadSnodasDepthSweDate into a netcdf file. 
 #' 
@@ -180,9 +180,9 @@ PutSnodasNcdf <- function(snodasList) {
 }  
 
 
-#' CalcSnodasCoords
+#' Calculate the SNODAS coordinates.
 #'
-#' \code{CalcSnodasCoords} Get and unpack the SNODAS snow depth and SWE tarball for a given date. 
+#' \code{CalcSnodasCoords} Calculate the SNODAS coordinates. 
 #' 
 #' @return A list of lon and lat
 #' @examples
@@ -207,7 +207,7 @@ CalcSnodasCoords <- function() {
   list(Lon=xCoords, Lat=yCoords)
 }
 
-#' PutSnodasCoordsNcdf
+#' Put the SNODAS coordinates into a netcdf file.
 #'
 #' \code{PutSnodasCoordsNcdf} Put the output of CalcSnodasCoords into a netcdf file. 
 #' @return Success if the filename (which is SNODAS_Coordinates.nc), otherwise NULL.

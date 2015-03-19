@@ -2,7 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{RotateCcw}
 \alias{RotateCcw}
-\title{RotateCcw}
+\title{Rotate a matrix counter-clock-wise.}
 \usage{
 RotateCcw(matrix)
 }

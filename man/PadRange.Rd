@@ -2,7 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{PadRange}
 \alias{PadRange}
-\title{PadRange}
+\title{Expand limits by some amount or proportionally to their difference.}
 \usage{
 PadRange(limits, delta = diffMult * diff(limits), diffMult = 0.05)
 }
