@@ -2,7 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{StdLon}
 \alias{StdLon}
-\title{StdLon}
+\title{Standardize lon to (-180,180].}
 \usage{
 StdLon(x)
 }

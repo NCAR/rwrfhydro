@@ -2,7 +2,7 @@
 % Please edit documentation in R/snodas.R
 \name{PutSnodasCoordsNcdf}
 \alias{PutSnodasCoordsNcdf}
-\title{PutSnodasCoordsNcdf}
+\title{Put the SNODAS coordinates into a netcdf file.}
 \usage{
 PutSnodasCoordsNcdf()
 }

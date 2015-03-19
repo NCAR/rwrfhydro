@@ -2,7 +2,7 @@
 % Please edit documentation in R/snodas.R
 \name{PutSnodasNcdf}
 \alias{PutSnodasNcdf}
-\title{PutSnodasNcdf}
+\title{Write output of ReadSnodasDepthSweDate to netcdf.}
 \usage{
 PutSnodasNcdf(snodasList)
 }

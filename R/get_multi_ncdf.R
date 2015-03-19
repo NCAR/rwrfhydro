@@ -72,7 +72,7 @@ ParseIndexArg <- function( index, dimSize ) {
 
 
 ##=====================================================================
-#' Return data from a netcdf file.
+#' Open a netcdf file, extract specified indices for a variable, optionally apply a specified statistic.
 #'
 #' \code{GetFileStat} opens a netcdf file, extracts specified indices for
 #' a variable, and may apply a specified statistic. 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/snodas.R
 \name{CalcSnodasCoords}
 \alias{CalcSnodasCoords}
-\title{CalcSnodasCoords}
+\title{Calculate the SNODAS coordinates.}
 \usage{
 CalcSnodasCoords()
 }
@@ -10,7 +10,7 @@ CalcSnodasCoords()
 A list of lon and lat
 }
 \description{
-\code{CalcSnodasCoords} Get and unpack the SNODAS snow depth and SWE tarball for a given date.
+\code{CalcSnodasCoords} Calculate the SNODAS coordinates.
 }
 \examples{
 snodasCoords <- CalcSnodasCoords()

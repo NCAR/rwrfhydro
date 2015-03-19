@@ -2,8 +2,7 @@
 % Please edit documentation in R/read_modelout.R
 \name{ReadRtout}
 \alias{ReadRtout}
-\title{ReadRtout
-Read WRF-Hydro RTOUT data files and generate basin-wide mean water fluxes}
+\title{Read WRF-Hydro RTOUT data files and generate basin-wide mean water fluxes.}
 \usage{
 ReadRtout(pathOutdir, pathDomfile, mskvar = "basn_msk", basid = 1,
   ncores = 1)

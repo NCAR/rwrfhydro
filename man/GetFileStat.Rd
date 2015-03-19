@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_multi_ncdf.R
 \name{GetFileStat}
 \alias{GetFileStat}
-\title{Return data from a netcdf file.}
+\title{Open a netcdf file, extract specified indices for a variable, optionally apply a specified statistic.}
 \usage{
 GetFileStat(theFile, variable, index, env = parent.frame(), ...)
 }
