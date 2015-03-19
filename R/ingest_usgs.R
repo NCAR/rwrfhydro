@@ -62,7 +62,9 @@ GetUsgsStn <- function( usgsStns,  pCode=c('00060'), startDate='', endDate='', t
 
   ## get the data.
   data <- dataRetrieval::readNWISuv(usgsStns$MonitoringLocationIdentifier,
-                                    parameterCd=as.character(pCode) )
+                                    parameterCd=pCode )
+
+  data <- dataRetrieval::readNWISuv('06727500', parameterCd=pCode )
 
 }
 
