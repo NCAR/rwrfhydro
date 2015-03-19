@@ -99,7 +99,7 @@ checkMasterSha <- function() {
         "*^                                                                     ^*",
         "^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^" ,
         sep='\n      ')
-  #devtools::install_github('mccreigh/rwrfhydro')
+  devtools::install_github('mccreigh/rwrfhydro')
   invisible( remoteSha == localSha )
 }
   
