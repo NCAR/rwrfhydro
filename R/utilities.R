@@ -251,3 +251,15 @@ ReshapeMultiNcdf <- function(myDf) {
     newDF$wy <- ifelse(as.numeric(format(newDF$POSIXct,"%m"))>=10,as.numeric(format(newDF$POSIXct,"%Y"))+1,as.numeric(format(newDF$POSIXct,"%Y")))
     newDF
 }
+
+#' Create and or name a list with its entries.
+#' \code{NamedList} creates a list with names equal to its entries. 
+#' @param theNames
+#' @return List with names equal to entries.
+#' @examples 
+#' NamedList(1:5)
+NamedList <- function(theNames) {
+  theList <- as.list(theNames)
+  names(theList)<- theNames
+  theList
+}
