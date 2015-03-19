@@ -30,30 +30,39 @@ FindUsgsStn <- function(stnLon=NULL, stnLat=NULL, within=NULL,
   # huc
   if (!is.null(huc)) argList$huc <- as.character(huc)
   
-  whatSites <- do.call( dataRetrieval::whatWQPsites, argList)
+  theSites <- do.call( dataRetrieval::whatWQPsites, argList)
   if(onlyUsgs)
-    whatSites <- whatSites[grep('USGS-',whatSites$MonitoringLocationIdentifier),]
-  whatSites
+    theSites <- theSites[grep('USGS-',theSites$MonitoringLocationIdentifier),]
+  theSites
 }
 
+##===============================================================================
+
+stnLon <- 254.67374999999998408
+stnLat <- 40.018666670000001773
+within <- .10
+huc8 <- 10190005
+
 ## test 1 - pull al 
-b <- FindUsgsStn(huc=huc8)
+b <- FindUsgsStn(huc=huc8, onlyUsgs=FALSE)
 ## Issues:
 ## * there is repeat information here.
 ## * there are "stations" from non-usgs entities, are those available.
 ## * there USGS station codes of different lengths. 
 ## seems that it's difficult to figure out what might be available/useful.
+## restricting this using keywork onlyUsgs returns unique locations.
 
 ## test 2
 bb <- FindUsgsStn(stnLon=stnLon, stnLat=stnLat, within=within)
 ## this nails it because the search radius is so localized. 
 ## if you know what you want, it seems you can get it. 
 
-GetUsgsStn <- function( usgsStns, pCode=c(00060), startDate='', endDate='', tz='')
+GetUsgsStn <- function( usgsStns,  pCode=c('00060'), startDate='', endDate='', tz='')
 
-  ## parse the sation ids out
-  grep('', bb$MonitoringLocationIdentifier,)
 
-## get the data.
-readNWISuv(
-         }
+  ## get the data.
+  data <- dataRetrieval::readNWISuv(usgsStns$MonitoringLocationIdentifier,
+                                    parameterCd=as.character(pCode) )
+
+}
+
