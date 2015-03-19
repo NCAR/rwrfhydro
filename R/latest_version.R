@@ -102,7 +102,7 @@ checkMasterSha <- function() {
   
   invisible( remoteSha == localSha )
 }
-  
+ 
 .onLoad <- function(libname, pkgname) {
   checkMasterSha()
 }
