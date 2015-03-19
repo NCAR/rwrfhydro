@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_modelout.R
 \name{ReadFrxstPts}
 \alias{ReadFrxstPts}
-\title{ReadFrxstPts}
+\title{Read WRF-Hydro standard-format forecast points output text file.}
 \usage{
 ReadFrxstPts(pathOutfile)
 }

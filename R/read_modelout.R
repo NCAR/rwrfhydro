@@ -1,5 +1,4 @@
-#' ReadFrxstPts
-#Read WRF-Hydro standard-format forecast points output text file
+#' Read WRF-Hydro standard-format forecast points output text file.
 #'
 #' \code{ReadFrxstPts} reads in WRF-Hydro forecast points output text file.
 #'
@@ -25,8 +24,8 @@ ReadFrxstPts <- function(pathOutfile) {
 myobj
 }
 
-#' ReadGwOut
-# Read WRF-Hydro standard-format groundwater output text file
+
+#' Read WRF-Hydro standard-format groundwater output text file.
 #'
 #' \code{ReadGwOut} reads in WRF-Hydro groundwater output text file.
 #'
@@ -59,8 +58,7 @@ ReadGwOut <- function(pathOutfile) {
 }
 
 
-#' ReadLdasoutWb
-#' Read WRF-Hydro (w/NoahMP) LDASOUT data files and generate basin-wide mean water budget variables
+#' Read WRF-Hydro (w/NoahMP) LDASOUT data files and generate basin-wide mean water budget variables.
 #'
 #' \code{ReadLdasoutWb} reads in WRF-Hydro (w/NoahMP) LDASOUT files and outputs a time series of
 #' basin-wide mean variables for water budget calculations.
@@ -155,8 +153,7 @@ ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, a
 }
 
 
-#' ReadRtout
-#' Read WRF-Hydro RTOUT data files and generate basin-wide mean water fluxes
+#' Read WRF-Hydro RTOUT data files and generate basin-wide mean water fluxes.
 #'
 #' \code{ReadRtout} reads in WRF-Hydro RTOUT files and outputs a time series of
 #' basin-wide mean water fluxes for water budget.

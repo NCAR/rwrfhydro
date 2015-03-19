@@ -2,7 +2,7 @@
 % Please edit documentation in R/snodas.R
 \name{ReadSnodasDepthSweDate}
 \alias{ReadSnodasDepthSweDate}
-\title{ReadSnodasDepthSweDate}
+\title{Read snodas snow depth and SWE into memory for a given date.}
 \usage{
 ReadSnodasDepthSweDate(datePOSIXct, outputDir = ".")
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{CalcWaterYear}
 \alias{CalcWaterYear}
-\title{CalcWaterYear}
+\title{Returns the water year or the day of water year for a given POSIXct.}
 \usage{
 CalcWaterYear(POSIXct, dayOf = FALSE)
 }

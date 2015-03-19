@@ -2,7 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{GetPkgDataPath}
 \alias{GetPkgDataPath}
-\title{GetPkgDataPath}
+\title{Simplifed loading of rwrfhydro data included with the package.}
 \usage{
 GetPkgDataPath(theFile = "")
 }
