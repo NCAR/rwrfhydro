@@ -2,8 +2,7 @@
 % Please edit documentation in R/read_modelout.R
 \name{ReadLdasoutWb}
 \alias{ReadLdasoutWb}
-\title{ReadLdasoutWb
-Read WRF-Hydro (w/NoahMP) LDASOUT data files and generate basin-wide mean water budget variables}
+\title{Read WRF-Hydro (w/NoahMP) LDASOUT data files and generate basin-wide mean water budget variables.}
 \usage{
 ReadLdasoutWb(pathOutdir, pathDomfile, mskvar = "basn_msk", basid = 1,
   aggfact = 10, ncores = 1)
