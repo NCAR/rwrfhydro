@@ -92,8 +92,9 @@ checkMasterSha <- function() {
         "*^                                                                     ^*",
         "*^   A  **NEW** update of rwrfhydro has been made (to master branch).  ^*",
         "*^                                                                     ^*",
-        "*^   devtools::install_github('mccreigh/rwrfhydro')                    ^*",
-        "*^   (for developers: 'git pull origin master', then merge.)           ^*",
+        "*^   Automatically updating from github.......                         ^*",
+        "*^   Developers take note to update:                                   ^*",
+        "*^             'git pull origin master', then merge devBranch)         ^*",
         "*^                                                                     ^*",
         "*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*" ,
         sep='\n      ')
