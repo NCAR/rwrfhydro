@@ -107,3 +107,4 @@ checkMasterSha <- function() {
 .onLoad <- function(libname, pkgname) {
   checkMasterSha()
 }
+ 

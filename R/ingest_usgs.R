@@ -24,7 +24,7 @@
 #' stnDf <- FindUsgsStns(huc='10190005')
 #' @export
 FindUsgsStns <- function(stnLon=NULL, stnLat=NULL, within=NULL,
-                         huc=NULL, 
+                         huc8=NULL, 
                          siteType='ST', hasDataTypeCd='iv',
                          siteOutput='expanded') {
   argList <- list()
@@ -39,7 +39,7 @@ FindUsgsStns <- function(stnLon=NULL, stnLat=NULL, within=NULL,
     argList$within <- as.character(within) 
   }
   # huc
-  if (!is.null(huc)) argList$huc <- as.character(huc)
+  if (!is.null(huc8)) argList$huc <- as.character(huc8)
   #print(argList)
   do.call( dataRetrieval::whatNWISsites, argList)
 }
@@ -69,31 +69,41 @@ GetUsgsHucData <- function(huc8, outPath=NULL) {
       meta$startDate <- plyr::ddply(meta, plyr::.(parm_cd), 
                                     function(df) meta)
       meta$endDate   <- 
-    } else if (metaFilePath == "" & dataFilePath == "") {  ## Neither exists: creating    
+    } else if (metaFilePath == "" & dataFilePath == "") {## Neither exists: creating    
       meta$startDate <- meta$endDate <- ''    
-    } else {                                               ## One / two files exists: error.
-      theExister    <- if(metaFilePath == "") metaFilePath else paste0(outpath,'/',dataFileName)
-      theNonExister <- if(metaFilePath != "") paste0(metaFileName,'/',metaFileName) else dataFilePath
+    } else {                                             ## One / two files exists: error.
+      theExister    <- 
+        if(metaFilePath == "") metaFilePath else paste0(outpath,'/',dataFileName)
+      theNonExister <- 
+        if(metaFilePath != "") paste0(metaFileName,'/',metaFileName) else dataFilePath
       warning( paste(theExister,    'does not exist while \n',
                      theNonExister, 'does. Please investigate.'), immediate.=TRUE )
     }
     
     ## if station NOT present: startDate='', endDate='', tz=''
  
-  } else {
+  } else {  ## is.null(outPath)
     meta$startDate <- meta$endDate <- ''    
   }
   
   meta$tz <- ''
   
   #' Simply a wrapper for a plyr::dlply call to this . 
-  GetUsgsStn <- function( pCodeDf, startDate='', endDate='', tz='') {
+  GetUsgsStn <- function( pCodeDf ) {
       dataRetrieval::readNWISuv(pCodeDf$site_no, pCodeDf$parm_cd, 
-                                startDate=startDate,  endDate=endDate, tz=tz)
+                                startDate=pCodeDf$startDate,  
+                                endDate=pCodeDf$endDate, 
+                                tz=pCodeDf$tz)
   }
 
   ## this some times fails for various reasons. should I wrap these various retrievals in try()?
-  out <- plyr::dlply(meta, plyr::.(parm_cd), GetUsgsStn) 
+  allSame <- function(x) all(x==x[1])
+  out <- if(allSame(meta$startDate) && allSame(meta$endDate)) {
+foo0<-    plyr::dlply(meta, plyr::.(parm_cd), GetUsgsStn) 
+  } else {
+foo<-    plyr::dlply(meta, plyr::.(parm_cd), 
+                    function(df) plyr::ddply(df, plyr::.(site_no), GetUsgsStn)) 
+    
   
   if(!is.null(outPath)) SaveHuc(out,path=outPath)
   
