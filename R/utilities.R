@@ -263,3 +263,14 @@ NamedList <- function(theNames) {
   names(theList)<- theNames
   theList
 }
+
+#' Are all vector entries the same/identical.
+#' \code{AllSame} check if all vector entries are same/identical.
+#' @param x A vector.
+#' @param na.rm=FALSE
+#' @return Logical
+#' @examples 
+#' AllSame( 1:5 )
+#' AllSame( 0*(1:5) )
+AllSame <- function(x, na.rm=FALSE) all(x==x[which(!is.na(x))[1]], na.rm=na.rm)
+

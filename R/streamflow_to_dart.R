@@ -4,7 +4,14 @@
 # they show an example of doing this interactively, but can also cat a file to
 # create_obs_sequence.
 
-streamflow$POSIXct <- lubridate::with_tz(streamflow$POSIXct, tz='UTC')
+## get usgs data
+## convert units
+## error model
+## review/plot
+## write to obs_seq_out
+
+
+#streamflow$POSIXct <- lubridate::with_tz(streamflow$POSIXct, tz='UTC')
 
 
 ## create_obs_sequence wants tuples of: (??)
@@ -165,5 +172,6 @@ MkGaugeObsSeq <- function(data, outPath, stationName ) {
   close(outCon)
 }
 
-mkGaugeObsSeq( loganData, '~/boulderCreek/', 'loganMill' )
-mkGaugeObsSeq( sunshineData, '~/boulderCreek/', 'sunshine' ) 
+#mkGaugeObsSeq( loganData, '~/boulderCreek/', 'loganMill' )
+#mkGaugeObsSeq( sunshineData, '~/boulderCreek/', 'sunshine' ) 
+2
