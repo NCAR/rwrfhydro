@@ -91,9 +91,9 @@ GetUsgsHucData <- function(huc8, outPath=NULL) {
   #' Simply a wrapper for a plyr::dlply call to this . 
   GetUsgsStn <- function( pCodeDf ) {
       dataRetrieval::readNWISuv(pCodeDf$site_no, pCodeDf$parm_cd, 
-                                startDate=pCodeDf$startDate,  
-                                endDate=pCodeDf$endDate, 
-                                tz=pCodeDf$tz)
+                                startDate=pCodeDf$startDate[1],  
+                                endDate=pCodeDf$endDate[1], 
+                                tz=pCodeDf$tz[1])
   }
 
   ## this some times fails for various reasons. should I wrap these various retrievals in try()?
@@ -103,7 +103,7 @@ foo0<-    plyr::dlply(meta, plyr::.(parm_cd), GetUsgsStn)
   } else {
 foo<-    plyr::dlply(meta, plyr::.(parm_cd), 
                     function(df) plyr::ddply(df, plyr::.(site_no), GetUsgsStn)) 
-    
+    hmpf: these loose their metadata
   
   if(!is.null(outPath)) SaveHuc(out,path=outPath)
   
