@@ -264,6 +264,7 @@ NamedList <- function(theNames) {
   theList
 }
 
+
 #' Are all vector entries the same/identical.
 #' \code{AllSame} check if all vector entries are same/identical.
 #' @param x A vector.
@@ -274,3 +275,7 @@ NamedList <- function(theNames) {
 #' AllSame( 0*(1:5) )
 AllSame <- function(x, na.rm=FALSE) all(x==x[which(!is.na(x))[1]], na.rm=na.rm)
 
+
+#' coversion constants
+cfs2cms <- 0.0283168466  
+feet2meters <- 0.30480

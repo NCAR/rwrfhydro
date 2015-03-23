@@ -10,16 +10,55 @@
 ## review/plot
 ## write to obs_seq_out
 
-
-#streamflow$POSIXct <- lubridate::with_tz(streamflow$POSIXct, tz='UTC')
-
-
 ## create_obs_sequence wants tuples of: (??)
 ## [[[ type, location, time, expected error, and optionally a data value and/or a quality control indicator]]]
 
-MkGaugeObsSeq <- function(data, outPath, stationName ) {
 
-  typeQ=290 ## DART/lanai/obs_kind/DEFAULT_obs_kind_mod.F90
+MkDischarageErrors <- function(data) {
+  
+  ## divide by 3 to give 1 sd and then square to get variance
+  dataHourly$error <-  (dataHourly$error/3)^2  ## variance
+  
+}
+
+
+ModelErrors1 <- function(data) {
+  ## Error (99.5% of all errors) doesnt exceed the fifth quantile plus 10% of the observed flow
+#  beta = quantile(data$????Q.cms,.005)
+  eta = .1
+  data$error <-  beta + (eta * dataHourly$Q.cms)
+  fileSeqId='10PctErrPlus5PctlIncpt'
+}
+
+#=============================================================================================
+#'
+#' Error (99.5% of all errors) background is always, fith quantile
+#' flow dependent error saturates at 10% of the observed flow as one moves away from
+#' median flow (assumed to be be flows at which rating curve is most accurate). 
+ModelErrorsClimTaper <- function(data) {
+  
+beta = quantile(dataHourly$Q.cms,.05)
+eta = .15
+dataHourly$error <-  beta + pmin(eta*dataHourly$Q.cms,
+                                 eta*abs(dataHourly$Q.cms-quantile(dataHourly$Q.cms,.5)) )
+}
+
+#fileSeqId='max15PctErrMedianTaperTo0Plus5PctlIncpt'
+
+
+
+
+
+#dataHourly$POSIXct <-
+  #as.POSIXct(with(dataHourly, paste0(year,'/',month,'/',day,'_',hour)),format='%Y/%m/%d_%H')
+
+
+
+MkDischargeObsSeq <- function(data, outPath, stationName ) {
+
+  ## Discharge obs type currently in pre-release DART
+  ## DART/obs_kind/DEFAULT_obs_kind_mod.F90
+  typeQ=290
   
   ## remove missing observations
   whNa <- which(is.na(data$`discharge (cfs)`))
@@ -48,26 +87,6 @@ MkGaugeObsSeq <- function(data, outPath, stationName ) {
   ## Heteroskedastic, e.g. Clark et al 2008, Noh et al 2011
   ## Specify the error as the 99.5% or the 3rd standard deviation
   
-  ## Error (99.5% of all errors) doesnt exceed the fifth quantile plus 10% of the observed flow
-  beta = quantile(dataHourly$Q.cms,.005)
-  eta = .1
-  dataHourly$error <-  beta + (eta * dataHourly$Q.cms)
-  fileSeqId='10PctErrPlus5PctlIncpt'
-  
-  ## Error (99.5% of all errors) background is always, fith quantile
-  ## flow dependent error saturates at 10% of the observed flow as one moves away from
-  ## median flow (assumed to be be flows at which rating curve is most accurate). 
-  beta = quantile(dataHourly$Q.cms,.05)
-  eta = .15
-  dataHourly$error <-  beta + pmin(eta*dataHourly$Q.cms,
-                                   eta*abs(dataHourly$Q.cms-quantile(dataHourly$Q.cms,.5)) )
-  fileSeqId='max15PctErrMedianTaperTo0Plus5PctlIncpt'
-  
-  ## divide by 3 to give 1 sd and then square to get variance
-  dataHourly$error <-  (dataHourly$error/3)^2  ## variance
-  
-  dataHourly$POSIXct <-
-    as.POSIXct(with(dataHourly, paste0(year,'/',month,'/',day,'_',hour)),format='%Y/%m/%d_%H')
   
   #   ggplot( subset(dataHourly, POSIXct>=as.POSIXct('2013-05-01') & POSIXct<=as.POSIXct('2013-06-01')),
   #         aes(x=POSIXct, y=Q.cms, ymax=Q.cms+2*sqrt(error), ymin=Q.cms-2*sqrt(error))) +

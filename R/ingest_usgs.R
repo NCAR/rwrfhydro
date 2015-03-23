@@ -11,6 +11,10 @@
 ## 7. update metadata using files in same directory?
 ## 8. how to query the DB? lat lon, station code, huc? have a first layer which queries NWIS?
 
+## notes:
+## 1. might be better to set global variables for DB path and metaDBFileName than to set as options in nearly every
+##    function.
+
 #==============================================================================================
 #' Discover USGS stations using huc8 code or lat/lon/radius.
 #' \code{FindUsgsStns} wraps dataRetrieval::whatNWISsites with common options for finding USGS gauges. 
@@ -24,6 +28,7 @@
 #' @param siteOutput how much detail to return 
 #' @examples
 #' stnDf <- FindUsgsStns(huc='10190005')
+#' stnDf <- FindUsgsStns(stnLon=254.67374999999998408,stnLat=40.018666670000001773,within=.001)
 #' @export
 FindUsgsStns <- function(stnLon=NULL, stnLat=NULL, within=NULL,
                          huc8=NULL, 
@@ -36,14 +41,15 @@ FindUsgsStns <- function(stnLon=NULL, stnLat=NULL, within=NULL,
   # lat/lon
   if( !is.null(stnLon) && !is.null(stnLat) && !is.null(within) ) {
     if(stnLon>180.) stnLon <- stnLon-360
-    argList$long   <- as.character(stnLon)
-    argList$lat    <- as.character(stnLat)
-    argList$within <- as.character(within) 
+    argList$bBox <- as.character(paste(as.character(format(stnLon-within,nsmall=7)),
+                                       as.character(format(stnLat-within,nsmall=7)),
+                                       as.character(format(stnLon+within,nsmall=7)),
+                                       as.character(format(stnLat+within,nsmall=7)), sep=',' ))
   }
   # huc
   if (!is.null(huc8)) argList$huc <- as.character(huc8)
   #print(argList)
-  do.call( dataRetrieval::whatNWISsites, argList)
+  do.call(dataRetrieval::whatNWISsites, argList)
 }
 
 
@@ -82,7 +88,7 @@ GetUsgsHucData <- function(huc8, outPath=NULL,
   ## Both files exist: identify existing data at each station and only get data past those dates
   if(metaFilePath != "" & dataFilePath != "") {        
     warning('this case has not been fully programmed yet', immediate.=TRUE)
-    load(metaFilePath)
+    LoadMetaDB(path=metaFilePath, metaDBFileName=metaDBFileName)
     ## if so, what are the stations and what are their end dates?
     ## if station present: startDate=oldEndDate+1second, endDate=today, tz=''  
     #a general purpose query function is needed here.
@@ -166,11 +172,11 @@ SaveHucData <- function(out, outPath,
   assign(dataVar, out)
   outHucMetaDB <- out
   for (name in names(outHucMetaDB)) outHucMetaDB[[name]]$data <- NULL
-  str(outHucMetaDB)
+  #str(outHucMetaDB)
   
   if(length(metaFilePath)) {
     # loads metaDB
-    load(paste0(outPath,'/',metaDBFileName))
+    LoadMetaDB(path=outPath, metaDBFileName=metaDBFileName)
     ## have to append to existing metadata
     if(huc %in% names(metaDB) & !overwriteHucDataFile) {
       ## getHucData
@@ -229,7 +235,6 @@ ExtractHucMeta <- function(hucProdDf) {
 #' subet to an individual product code.
 #' @return list(data=,meta=) 
 GetUsgsIvProduct <- function( prodDf ) {  
-  #pCodeDf <- subset(meta, parm_cd == '00065') ## testing
   prodData <- dataRetrieval::readNWISuv(prodDf$site_no, prodDf$parm_cd, 
                                         startDate=prodDf$startDate[1],  
                                         endDate=prodDf$endDate[1], 
@@ -245,8 +250,10 @@ GetUsgsIvProduct <- function( prodDf ) {
 #' \code{GetSiteHuc} returns a HUC8 given a USGS site name. 
 #' @param site Character USGS site number.
 #' @return character HUC8
+#' @examples
+#' GetSiteHuc(FindUsgsStns(stnLon=254.67374999999998408,stnLat=40.018666670000001773,within=.001)$site_no)
 #' @export
-GetSiteHuc <- function(site) readNWISsite(as.character(site))$huc
+GetSiteHuc <- function(site) dataRetrieval::readNWISsite(as.character(site))$huc
 
 
 #==============================================================================================
@@ -261,8 +268,8 @@ GetSiteHuc <- function(site) readNWISsite(as.character(site))$huc
 QuerySiteProd <- function(site, path='.', 
                           metaDBFileName='usgsDataRetrieval.metaDatabase.RData') {
   ## loads metaDB
-  load(paste0(path,'/',metaDBFileName))  
-  subset(QuerySiteInfo('site_no'), site_no == site)$product
+  LoadMetaDB(path=path, metaDBFileName=metaDBFileName)
+  subset(QuerySiteInfo('site_no', path, metaDBFileName), site_no %in% site)$product
 }
 
 #==============================================================================================
@@ -270,8 +277,9 @@ QuerySiteProd <- function(site, path='.',
 #' \code{QuerySiteName} returns the name (site id) for a given site ID (name) in the local database.
 #' @param site Character USGS site number or name.
 #' @param path Character The path to the database.
-#' @retSiteId Logical return ID (name if FALSE) This is only exposed in case there are issues, should work by default.
+#' @param retSiteId Logical return ID (name if FALSE) This is only exposed in case there are issues, should work by default.
 #' @param metaDBFileName Character The name of the metadata file.
+#' @return Character Site name or number.
 #' @examples
 #' QuerySiteName('06730500', '~/streamflow/OBS/')
 #' QuerySiteName('BOULDER CREEK AT MOUTH NEAR LONGMONT, CO', '~/streamflow/OBS/')
@@ -280,11 +288,11 @@ QuerySiteName <- function(site, path='.',
                           retSiteId=is.na(try(as.numeric(site),silent=TRUE)), 
                           metaDBFileName='usgsDataRetrieval.metaDatabase.RData') {
   ## loads metaDB
-  load(paste0(path,'/',metaDBFileName))  
+  LoadMetaDB(path=path, metaDBFileName=metaDBFileName)
   if(retSiteId) {
-    subset(QuerySiteInfo(c('site_no','station_nm')), station_nm == site)[1,'site_no']
+    subset(QuerySiteInfo(c('site_no','station_nm'),path,metaDBFileName), station_nm %in% site)[1,'site_no']
   } else {
-    subset(QuerySiteInfo(c('site_no','station_nm')), site_no == site)[1,'station_nm']
+    subset(QuerySiteInfo(c('site_no','station_nm'),path,metaDBFileName), site_no %in% site)[1,'station_nm']
   }
 }
 
@@ -293,9 +301,12 @@ QuerySiteName <- function(site, path='.',
 #' Returns the desired information from the database file.
 #' \code{QuerySiteInfo} gets the specified info from the local database.
 #' @param info Character vector, information fields in HUC$prod$meta$SiteInfo$info
+#' @return dataframe of requested info with all available HUC and product codes.
 #' @examples 
-#' QuerySiteInfo(c('station_nm','site_no'))
-QuerySiteInfo <- function(info) {
+#' QuerySiteInfo(c('station_nm','site_no'), path='~/streamflow/OBS/')
+#' @export
+QuerySiteInfo <- function(info, path='.', metaDBFileName='usgsDataRetrieval.metaDatabase.RData') {
+  LoadMetaDB(path=path, metaDBFileName=metaDBFileName)
   out <- reshape2::melt(plyr::llply(metaDB, function(huc) 
                                     plyr::llply(huc, function(prod) prod$meta$siteInfo[info])), id=info)
   names(out) <- c(info, 'product', 'HUC8')
@@ -304,27 +315,32 @@ QuerySiteInfo <- function(info) {
 
 
 #==============================================================================================
-#' Returns the data for a given site from local database.
+#' Returns the data for given sites from local database.
 #' \code{QuerySiteData} gets the specified data from the local database.
 #' @param site Character USGS site number.
 #' @param product Character USGS product code number.
 #' @param path Character path to the database.
+#' @return dataframe of data with pertinent attributes.
 #' @examples 
 #' p='~/streamflow/OBS/'
 #' dataOrodell <- QuerySiteData(QuerySiteName("FOURMILE CREEK AT ORODELL, CO", p), '00060', p)
-QuerySiteData <- function(site, product, path='.'){
-  if(!any(QuerySiteProd(site, path) == product)) {
+#' siteInfo<-QuerySiteInfo(c('station_nm','site_no','stateCd'), path=p)
+#' dataCO <- QuerySiteData(subset(siteInfo, stateCd=='08' & product=='00060')$site_no, '00060', p)
+QuerySiteData <- function(site, product, path='.',
+                          metaDBFileName='usgsDataRetrieval.metaDatabase.RData'){
+  if(!any(QuerySiteProd(site, path=path, metaDB=metaDBFileName) == product)) {
     warning(paste("No product",product,"at site",site,"."))
     return(NULL)
   }
-  huc <- subset(QuerySiteInfo(c('site_no')), product == product & site_no == site)$HUC8[1]
+  huc <- subset(QuerySiteInfo(c('site_no'), path=path, metaDBFileName=metaDBFileName), 
+                product == product & site_no %in% site)$HUC8[1]
   load(paste0(path,'/',huc,'.data.RData'))
   productData <- get(paste0('data.',huc))[[product]]
   rm(list=paste0('data.',huc))
-  ret <- subset(productData$data, site_no == site )
-  ret <- within(ret, {site_no <- NULL; agency_cd <- NULL})
-  attr(ret, 'siteInfo') <- subset(productData$meta$siteInfo, site_no == site)
-  attr(ret, 'variableInfo') <- productData$meta$variableInfo
+  ret <- subset(productData$data, site_no %in% site )
+  ret <- within(ret, {agency_cd <- NULL})  ## this may or may not be desirable in the long run.
+  attr(ret, 'siteInfo')      <- subset(productData$meta$siteInfo, site_no %in% site)
+  attr(ret, 'variableInfo')  <- productData$meta$variableInfo
   attr(ret, 'statisticInfo') <- productData$meta$statisticInfo
   ret
 }
@@ -336,9 +352,148 @@ QuerySiteData <- function(site, product, path='.'){
 #' @param data Dataframe from QuerySiteData
 #' @param metric Logical
 #' @param metricOnly Logical
+#' @return dataframe similar to input with improved names and/or metric variables.
 #' @examples 
 #' p='~/streamflow/OBS/'
-#' dataOrodell <- QuerySiteData(QuerySiteName("FOURMILE CREEK AT ORODELL, CO", p), '00060', p)
-PrettySiteData <- function(data, metric=metricOnly, metricOnly=FALSE) {
- 1 
+#' dataOrodell <- PrettySiteData(QuerySiteData(QuerySiteName("FOURMILE CREEK AT ORODELL, CO", p), 
+#'                                             '00060', p), metricOnly=TRUE)
+#' @export
+PrettySiteData <- function(data, tz='UTC', metric=metricOnly, metricOnly=FALSE) {
+  whNames <- TransUsgsProdStat(names(data),whichIn=TRUE)
+  prettyNames <- TransUsgsProdStat(names(data)[whNames])
+  names(data)[whNames] <- prettyNames
+  attr(data,'variableInfo') <- attr(data,'statisticInfo') <- NULL
+  
+  if(tz != 'UTC') data$dateTime <- lubridate::with_tz(data$dateTime, tz=tz)
+  data$tz_cd <- NULL
+  
+  if('Discharge (cfs)' %in% prettyNames) {
+    attr(data,'variables') <- c('Discharge (cfs)')
+    attr(data,'codes') <- c('Discharge code')
+  }
+  if('Stage (ft)'      %in% prettyNames) {
+    attr(data,'variables') <- c('Stage (feet)')
+    attr(data,'codes') <- c('Stage code')
+  }
+  
+  if(metric) {
+    if('Discharge (cfs)' %in% prettyNames) {
+      data$`Discharge (cms)` <- data$`Discharge (cfs)`*cfs2cms
+      if(metricOnly) {
+        data$`Discharge (cfs)` <- NULL
+        attr(data,'variables') <- c('Discharge (cms)')
+      } else attr(data,'variables') <- c('Discharge (cfs)','Discharge (cms)')
+    }
+    
+    if('Stage (ft)' %in% prettyNames) {
+      data$`Stage (m)` <- data$`Stage (ft)`*feet2meters
+      if(metricOnly) {
+        data$`Stage (ft)` <- NULL
+        attr(data,'variables') <- c('Stage (meters)')
+      } else attr(data,'variables') <- c('Stage (feet)','Stage (meters)')
+    }
+  }
+  
+  data
 }
+
+
+##============================================================================================
+#' Load the metadata for the USGS streamflow database.
+#' \code{LoadMetaDB} Load the metadata for the USGS streamflow database.
+#' @param path Character path to the meta DB. 
+#' @param metaDBFileName Character name of the meta DB. 
+#' @param envir Envrionment where it is to be loaded. 
+#' @return Character the name of the variables loaded with the file (invisible).
+LoadMetaDB <- function(path='.', 
+                       metaDBFileName='usgsDataRetrieval.metaDatabase.RData', 
+                       envir=globalenv()) {
+  load(paste0(path,'/',metaDBFileName), envir=envir)  
+}
+
+
+##============================================================================================
+#' Translate USGS product/stat codes to something readable (and vice versa).
+#' \code{TransUsgsProdStat} Translate USGS product/stat codes to something readable (and vice versa) 
+#' using a lookup table. 
+#' @param prod_stat Character product_stat codes separated with an underscore. 
+#' @param whichIn Logical
+#' @return if whichIn==FALSE : Character of the translation.
+#'         if whichIn==TRUE  : Integer index which passed names are in the table. 
+TransUsgsProdStat <- function(names, whichIn=FALSE) {
+  prodStatLookup <- c( X_00060_00011    ='Discharge (cfs)',   ##instantaneous is 00011 but not worth saying IMO
+                       X_00060_00011_cd ='Discharge code',
+                       X_00065_00011    ='Stage (ft)',
+                       X_00065_00011_cd ='Stage code' )
+  code2Name <- any(names %in% names(prodStatLookup))
+  name2code <- any(names %in% prodStatLookup)
+  ## mixed
+  if (code2Name && name2code)
+    warning('Names argument to TransUsgsProdStat contains both names and codes', 
+            immediate.=TRUE)
+  
+  ## could be all missing but not mixed.
+  if(whichIn) {
+    if(code2Name) theMatch <- match(names,names(prodStatLookup))
+    if(name2code) theMatch <- match(names,prodStatLookup)
+    return(which(!is.na(theMatch)))
+  } 
+  
+  ## all missing
+  if (!code2Name && !name2code) 
+    warning('Names argument to TransUsgsProdStat contains neither names nor codes', 
+            immediate.=TRUE)
+  
+  ## some missing
+  if(!all(names %in% names(prodStatLookup)) | !all(names %in% names(prodStatLookup)))
+      warning(paste('There are codes or names passed to TransUsgsProdStat which are not in the lookup table.',
+                    'You can use the argument whichIn to determine which passed character as in the lookup table.',
+                    'If there are entries you would like to add to the lookup tabble,',
+                    'please do so and contribute your additions.'),
+              immediate.=TRUE)
+  
+  if(code2Name) return( prodStatLookup[names])
+  if(name2code) return( prodStatLookup[match(names,prodStatLookup)] )
+}
+
+
+##============================================================================================
+#' Plot USGS site data which has been prettied with PrettySiteData.
+#' \code{PlotPrettyData} plots USGS site data which has been prettied with PrettySiteData.
+#' @param data dataframe returned from PrettySiteData
+#' @return A function(closure) with arguments controlling the look of its graphical output. It's actual
+#'         return value is a list of ggplot2 object which can be custom manipulated. 
+#' @examples
+#' 
+#' @export
+PlotPrettyData <- function(data, plot=TRUE) {
+  str(data)
+  variables <- attr(data,'variables')
+  codes <- attr(data,'codes')
+  print(variables)
+  print(codes)
+  plotData <- reshape2::melt(data, id=c("dateTime","site_no",codes))
+  str(plotData)
+  timePlot <- ggplot2::ggplot(plotData, ggplot2::aes(x=dateTime, y=value)) +
+                ggplot2::geom_point() + ggplot2::theme_bw()
+
+  multiSite <- if(length(unique(plotData$site_no))>1) TRUE else FALSE
+  multiVar  <- if(length(variables)>1)                TRUE else FALSE
+  if( multiSite &  multiVar) 
+    timePlot <- timePlot + ggplot2::facet_grid(site_no~variable, scale='free_xy')
+  if( multiSite & !multiVar) 
+    timePlot <- timePlot + ggplot2::facet_wrap(site_no~variable, scale='fixed', ncol=1)
+  if(!multiSite &  multiVar) 
+    timePlot <- timePlot + ggplot2::facet_wrap(site_no~variable, scale='free_y', ncol=length(variables))
+  
+  ## more stuff to be added here.
+  OutFunc <- function(plot=TRUE, yLog=FALSE) {
+    if(yLog) timePlot <- timePlot + ggplot2::scale_y_log10()
+    if(plot) print(timePlot)
+    invisible(timePlot)
+  }
+    
+  if(plot) OutFunc()
+  invisible(OutFunc)
+}
+

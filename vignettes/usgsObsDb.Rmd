@@ -1,0 +1,101 @@
+---
+title: "Collect USGS stream observations and build a local database."
+author: "James McCreight and Aubrey Dugger"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Collect USGS stream observations and build a local database}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+# Background
+USGS streamflow observations are the primary source for of hydrologic information for 
+validation and calibration of hydrlogic models. Recently web services have been developed 
+at NWIS and the \code{dataRetrieval} R package have emerged to make getting USGS data into 
+R relatively easy. 
+
+This vignette demonstrates a set of tools to collect, store, and manipulate USGS data. These
+are built ontop of the \code{dataRetrieval} package. As with the rest of the \code{rwrfhydro} package, 
+development is on-going. Currently, these tools focus on instantaneous stream data observations from NWIS.
+The tools build a local database which has not yet been developed to allow appending (i.e. only grabbing and 
+adding) observations beyond those existing locally. But there is enough existing functionality to make its 
+exposition worthwhile. Check for updates to this vignette. 
+
+The fundamental layout of the local database is simply a directory containing:
+* Metadata data base (metaDB): Organized hierarchically by HUC8 -> product id -> siteInfo, variableInfo, statisticInfo where the last three are information fields returned by dataRetrieval::readNWISuv. The information in this file is simply the aggregation of the metadata from all the data files also contained in the same directory.
+* Individual data files collected by HUC8: These contain both the meta data for the HUC8 (aggregated in the metadata DB) and all the previously retrieved data for the HUC8. 
+
+Generally, there are two basic kinds of functions: "Get" and "Query". Get functions use dataRetrieval functions to actually go out to NWIS and "get" data and metadata. Query functions query the local database. There are exceptions to this.
+
+
+Load the rwrfhydro package. 
+```{r}
+library("rwrfhydro")
+```
+
+Say you wanted to find 
+```{r}
+ dbPath <- '/Users/jamesmcc/usgsDb' 
+```
+
+
+# Discover gage locations, get the data, and save to local database.
+
+Perhaps you know the lat/lon of a gage (e.g. from frxst_pts_out.txt) and you need the HUC8. The `within` argument is 
+taken to be in decimal degrees. 
+```{r}
+stnDf <- FindUsgsStns(stnLon=254.67374999999998408,stnLat=40.018666670000001773,within=.001)
+str(stnDf)
+```
+
+Now you have the site_no or station ID number. You could have also used `FindUsgsStns()` to reveal the gages in the HUC8. This function is a wrapper on dataRetrieval::whatNWISsites which is very flexible. Our wrapper has been written to focus on instantaneous values. Note the flexibility and generality of the underlying function. 
+```{r}
+huc8 <- GetSiteHuc(stnDf$site_no)
+str(FindUsgsStns(huc=huc8))
+```
+
+Pull the data for this HUC. Curerntly, this grabs all available products for the HUC. Note that the HUC data are organized by product then by data and metadata in the returned list. (Also note that this command sometimes fails on the remote end and may need to be rerun. We may code a while on a try() to avoid this, though that could take some time.)
+```{r}
+coData <- GetUsgsHucData(huc=huc8)
+str(coData)
+```
+
+Now save this data to the local database. 
+```{r}
+coFiles <- SaveHucData(coData, outPath=dbPath)
+coFiles
+```
+
+For a little more variety of HUCs in the database, let's also grab the following HUC. 
+```{r}
+filesAL <- SaveHucData(GetUsgsHucData(huc='03160203'), outPath=dbPath) ## Satilpa, AL
+```
+
+
+# Query the local data
+For each HUC8 and product, any of the siteInfo metadata can be retrieved from the local DB. 
+```{r}
+QuerySiteInfo(c('station_nm','site_no','dec_lat_va','dec_lon_va'), path=dbPath)
+```
+
+Say you just want Orodell and you want your code to be readable, translage the name to the code with QuerySiteName (which translates both ways).
+```{r}
+dataOrodell <- QuerySiteData(QuerySiteName("FOURMILE CREEK AT ORODELL, CO", path=dbPath), product='00060', path=dbPath)
+str(dataOrodell)
+```
+
+Now make it pretty and plot.
+```{r}
+prettyOrodell <- PrettySiteData(dataOrodell, metric=TRUE)
+oroPlot <- PlotPrettyData(prettyOrodell)
+```
+
+
+```{r}
+siteInfo<-QuerySiteInfo(c('station_nm','site_no','stateCd'), path=dbPath)
+dataCO <- PrettySiteData(QuerySiteData(subset(siteInfo, stateCd=='08' & product=='00060')$site_no, 
+                                       product='00060', path=dbPath))
+coPlot <- PlotPrettyData(subset(dataCO, site_no %in% unique(dataCO$site_no)[1:3]), plot=FALSE) ## 1:3 just to make the plot legible
+```
+
