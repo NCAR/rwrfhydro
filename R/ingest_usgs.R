@@ -18,11 +18,11 @@
 #==============================================================================================
 #' Discover USGS stations using huc8 code or lat/lon/radius.
 #' 
-#' \code{FindUsgsStns} wraps dataRetrieval::whatNWISsites with common options for finding USGS gauges. 
+#' \code{FindUsgsStns} wraps \code{dataRetrieval::whatNWISsites} with common options for finding USGS gauges. 
 #' See the dataRetrieval package for more deails on what else could be passed or how this could be modified. 
 #' @param stnLon optional
 #' @param stnLat optional
-#' @param within optional, goes with stnLon and stnLat and specifies a search radius in decimal miles.
+#' @param within optional, goes with stnLon and stnLat and specifies a search radius in decimal degrees.
 #' @param huc8 optional EIGHT digit HUC code. 
 #' @param siteType the type of USGS site to look for. 
 #' @param hasDataTypeCd the kind of data of interest (iv=instantaneous, dv=daily, etc.)
@@ -146,7 +146,7 @@ GetUsgsHucData <- function(huc8, outPath=NULL,
 #==============================================================================================
 #' Save the output of GetUsgsHucData to an archive.
 #' 
-#' \code{SaveHucData} take a list returned by GetUsgsHucData, create or append to an existing archive, and update
+#' \code{SaveHucData} take a list returned by \code{GetUsgsHucData}, create or append to an existing archive, and update
 #' metadata file. Input list is grouped by HUC codes where each HUC has data and meta lists. The output files 
 #' are written to outPath with the following format HHHHHHHH.data.RData where HHHHHHHH is the HUC8 code. The 
 #' name of the metadata file is configurable. The metadata file contains metadata for all files in the outPath. 
@@ -220,7 +220,7 @@ SaveHucData <- function(hucData, outPath,
 #' For an indivudal product, grab the HUC metadata to be stored in the database. 
 #' 
 #' \code{ExtractHucMeta} extracts the metadata to stash in a usgsDataRetrieval database for an individual product.
-#' It gathers the attributes returned by dataRetrieval::readNWISuv , supplements siteInfo with
+#' It gathers the attributes returned by \code{dataRetrieval::readNWISuv} , supplements siteInfo with
 #' startTime and endTime for each station in UTC to assist appending the records. 
 #' @param hucProdDf dataframe from dataRetrieval::readNWISuv
 #' @return list of metadata for a 
@@ -242,9 +242,9 @@ ExtractHucMeta <- function(hucProdDf) {
 #' For a single product, get instantaneous USGS data and separate data and metadata/attributes into a list.
 #' 
 #' \code{GetUsgsIvProduct} gets instantaneous USGS data for a single product code
-#' and separates the returned dataframe with attributes from dataRetrieval::readNWISuv into a list with 
+#' and separates the returned dataframe with attributes from \code{dataRetrieval::readNWISuv} into a list with 
 #' separate data and metadata/attributes. The meta data are updated with startTime and endTime information.
-#' @param prodDf is a dataframe returned by dataRetrieval::whatNWISdata(stns$site_no, service = "uv")
+#' @param prodDf is a dataframe returned by \code{dataRetrieval::whatNWISdata(stns$site_no, service = "uv")}
 #' subet to an individual product code.
 #' @return list(data=,meta=) 
 GetUsgsIvProduct <- function( prodDf ) {  
@@ -293,7 +293,8 @@ QuerySiteProd <- function(site, path='.',
 #' \code{QuerySiteName} returns the name (site id) for a given site ID (name) in the local database.
 #' @param site Character USGS site number or name.
 #' @param path Character The path to the database.
-#' @param retSiteId Logical return ID (name if FALSE) This is only exposed in case there are issues, should work by default.
+#' @param retSiteId Logical return ID (name if FALSE) This is only exposed in case there are issues, 
+#'        should work by default.
 #' @param metaDBFileName Character The name of the metadata file.
 #' @return Character Site name or number.
 #' @examples
@@ -321,7 +322,7 @@ QuerySiteName <- function(site, path='.',
 #' Returns the desired information from the database file.
 #' 
 #' \code{QuerySiteInfo} gets the specified info from the local database.
-#' @param info Character vector, information fields in HUC$prod$meta$SiteInfo$info.
+#' @param info Character vector, information fields in \code{HUC$prod$meta$SiteInfo$info}.
 #' @param path Character The path to the database directory.
 #' @param metaDBFileName Character The name of the metadata file.
 #' @return dataframe of requested info with all available HUC and product codes.
@@ -351,6 +352,7 @@ QuerySiteInfo <- function(info, path='.', metaDBFileName='usgsDataRetrieval.meta
 #' dataOrodell <- QuerySiteData(QuerySiteName("FOURMILE CREEK AT ORODELL, CO", p), '00060', p)
 #' siteInfo<-QuerySiteInfo(c('station_nm','site_no','stateCd'), path=p)
 #' dataCO <- QuerySiteData(subset(siteInfo, stateCd=='08' & product=='00060')$site_no, '00060', p)
+#' @export
 QuerySiteData <- function(site, product, path='.',
                           metaDBFileName='usgsDataRetrieval.metaDatabase.RData'){
   if(!any(QuerySiteProd(site, path=path, metaDB=metaDBFileName) == product)) {
@@ -494,7 +496,7 @@ TransUsgsProdStat <- function(names, whichIn=FALSE) {
 ##============================================================================================
 #' Plot USGS site data which has been prettied with PrettySiteData.
 #' 
-#' \code{PlotPrettyData} plots USGS site data which has been prettied with PrettySiteData.
+#' \code{PlotPrettyData} plots USGS site data which has been prettied with \code{PrettySiteData}.
 #' @param prettyUsgs dataframe returned from PrettySiteData
 #' @param plot Logical to plot before returning or not.
 #' @return A function(closure) with arguments controlling the look of its graphical output. It's actual
@@ -535,7 +537,7 @@ PlotPrettyData <- function(prettyUsgs, plot=TRUE) {
 #' Subset prettyUsgs objects.
 #' 
 #' \code{subset.prettyUsgs} subsets prettyUsgs objects and retains their attributes.
-#' @param prettyUsgs A dataframe of class c("prettyUsgs", "data.frame") returned from PrettySiteData
+#' @param prettyUsgs A dataframe of class \code{c("prettyUsgs", "data.frame")} returned from \code{PrettySiteData}
 #' @param ... additional arguments to subset.data.frame
 #' @return A dataframe of class c("prettyUsgs", "data.frame")
 #' # See vignette "Collect USGS stream observations and build a local database" for examples.

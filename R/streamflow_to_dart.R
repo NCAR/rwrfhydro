@@ -15,7 +15,7 @@
 
 
 MkDischarageErrors <- function(data, errorFunc) {
-  ## data cna only have a single variable?
+  ## data can only have a single variable?
   
   data$error
   ## divide by 3 to give 1 sd and then square to get variance
@@ -23,28 +23,37 @@ MkDischarageErrors <- function(data, errorFunc) {
   
 }
 
-
-## Error (99.5% of all errors) doesnt exceed the fifth quantile plus 10% of the observed flow
-## 10PctErrPlus5PctlIncpt
-#ModelErrors1 <- function(data, beta=quantile(data, eta) {
-  #beta = quantile(data$????Q.cms,.005)
-#  eta = .1
-#  data$error <-  beta + (eta * data$Q.cms)
-  
-#}
+#=============================================================================================
+#' Errors specified as percent of observed plus some quantile of historical flows.
+#' 
+#' \code{ModelErrPctErrPlusQntlIncpt} models errors (same units as input) as percent 
+#' of observed plus some quantile of historical record. 
+#' @param data, Numeric the values for which errors are to be modeled.
+#' @param qntlIncpt Numeric the quantile of historical observations to be used as minimum error.
+#' @param pctErr Numeric the percent error associated with the observations.
+#' @export
+ModelErrPctErrPlusQntlIncpt <- function(data, qntlIncpt=.005, pctErr=.1) {
+  # may consider giving warning about length of timeseries? but how to do without time information.
+  quantile(data, qntlIncpt) + (pctErr * data$Q.cms)
+}
 
 #=============================================================================================
+#' Errors specified as percent of observed plus some quantile of historical flows.
+#' 
+#' \code{ModelErrPctErrPlusQntlIncpt} models errors (same units as input) as percent 
+#' of observed plus some quantile of historical record. 
+#' @param data, Numeric the values for which errors are to be modeled.
+#' @param qntlIncpt Numeric the quantile of historical observations to be used as minimum error.
+#' @param pctErr Numeric the percent error associated with the observations.
+#' @export
 #'
 #' Error (99.5% of all errors) background is always, fith quantile
 #' flow dependent error saturates at 10% of the observed flow as one moves away from
 #' median flow (assumed to be be flows at which rating curve is most accurate). 
-#ModelErrorsClimTaper <- function(data) {
-  
-#beta = quantile(dataHourly$Q.cms,.05)
-#eta = .15
-#dataHourly$error <-  beta + pmin(eta*dataHourly$Q.cms,
-                                 #eta*abs(dataHourly$Q.cms-quantile(dataHourly$Q.cms,.5)) )
-#}
+ModelErrorsClimTaper <- function(data, qntlClim=.5, pctErr=.15) {
+  climObs = quantile(data, qntlClim)
+  climObs + pmin( pctErr*data, pctErr*abs(data-climObs) )
+}
 
 #fileSeqId='max15PctErrMedianTaperTo0Plus5PctlIncpt'
 
