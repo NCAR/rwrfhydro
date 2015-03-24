@@ -2,8 +2,7 @@
 % Please edit documentation in R/ingest_usgs.R
 \name{subset.prettyUsgs}
 \alias{subset.prettyUsgs}
-\title{subset prettyUsgs objects.
-\code{subset.prettyUsgs} subsets prettyUsgs objects and retains their attributes.}
+\title{Subset prettyUsgs objects.}
 \usage{
 \method{subset}{prettyUsgs}(prettyUsgs, ...)
 }
@@ -17,7 +16,6 @@ A dataframe of class c("prettyUsgs", "data.frame")
 # See vignette "Collect USGS stream observations and build a local database" for examples.
 }
 \description{
-subset prettyUsgs objects.
 \code{subset.prettyUsgs} subsets prettyUsgs objects and retains their attributes.
 }
 

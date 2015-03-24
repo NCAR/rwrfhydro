@@ -1,13 +1,15 @@
 #' Simplifed loading of rwrfhydro data included with the package.
 #' 
-#' \code{GetPkgData} is a simplified wrapper (for system.file) for loading external rwrfhydro data included with the package.
-#' 
-#' @param theFile The external data file to load (this is in dirrefent places before, rwrfhydro/inst/extdata, and after build, rwrfhydro/). 
+#' \code{GetPkgData} is a simplified wrapper (for system.file) for loading external 
+#' rwrfhydro data included with the package.
+#' @param theFile The external data file to load (this is in dirrefent places before, 
+#'        rwrfhydro/inst/extdata, and after build, rwrfhydro/). 
 #' @return The full path to the file.
 #' @examples
 #' GetPkgDataPath('Fourmile_test_case_AD.hydro_OrodellBasin_100m_8.nc')
 #' @export
 GetPkgDataPath <- function(theFile='') system.file("extdata", theFile, package = "rwrfhydro")
+
 
 #' Standardize lon to (-180,180].
 #' 
@@ -63,6 +65,7 @@ RotateCcw <- function(matrix) apply(matrix, 1, rev)
 
 
 #' Translate (i.e. invert) timezones to the so calle Olson names used by POSIXct. 
+#' 
 #' Translate formatted timezones codes to the so-called "Olson names" used by POSIXct.
 #' \code{TransTz} translates the formatted timezone codes (incl those from USGS) to Olson Names.
 #' @param tz The timezone to be translated.
@@ -120,6 +123,7 @@ CalcWaterYear <- function(POSIXct, dayOf=FALSE) {
 
 
 #' Calculate standard date breaks.
+#' 
 #' \code{CalcDates} calculates standard date breaks.
 #' Calculate standard date breaks.
 #' @param x The input dataframe.
@@ -136,6 +140,7 @@ CalcDates <- function (x) {
 
 
 #' Calculate mean with forced NA removal.
+#' 
 #' \code{CalcMeanNarm} calculates a mean with forced NA removal.
 #' Read a vector and calculate the mean with forced NA removal.
 #' @param x The vector of values.
@@ -145,6 +150,7 @@ CalcMeanNarm <- function(x) {
     }
 
 #' Calculate mean with enforced minimum valid value.
+#' 
 #' \code{CalcMeanMinrm} calculates a mean with an enforced minimum valid value.
 #' Read a vector and calculate the mean with all values below
 #' a specified minimum value set to NA (and therefore ignored).
@@ -157,6 +163,7 @@ CalcMeanMinrm <- function(x, minValid=-1e+30) {
     }
 
 #' Calculate cumulative sum with forced NA=0.
+#' 
 #' \code{CumsumNa} calculates a cumulative sum with NAs converted to 0s.
 #' Read a vector and calculate the cumulative sum with NAs converted to 0s.
 #' @param x The vector of values.
@@ -167,6 +174,7 @@ CumsumNa <- function(x) {
 }
 
 #' Calculate Nash-Sutcliffe Efficiency.
+#' 
 #' \code{Nse} calculates the Nash-Sutcliffe Efficiency.
 #' Calculate the Nash-Sutcliffe Efficiency for vectors
 #' of modelled and observed values.
@@ -181,6 +189,7 @@ Nse <- function (m, o) {
 }
 
 #' Calculate Log Nash-Sutcliffe Efficiency.
+#' 
 #' \code{NseLog} calculates the Log Nash-Sutcliffe Efficiency.
 #' Calculate the Nash-Sutcliffe Efficiency for vectors
 #' of log-transformed modelled and observed values.
@@ -196,7 +205,9 @@ NseLog <- function (m, o) {
     ns
 }
 
+
 #' Calculate root mean squared error.
+#' 
 #' \code{Rmse} calculates the root mean squared error.
 #' Calculate the root mean squared error for vectors
 #' of modelled and observed values.
@@ -210,6 +221,7 @@ Rmse <- function (m, o) {
 }
 
 #' Calculate normalized root mean squared error.
+#' 
 #' \code{RmseNorm} calculates the normalized root mean squared error.
 #' Calculate the normalized root mean squared error for vectors
 #' of modelled and observed values.
@@ -223,6 +235,7 @@ RmseNorm <- function (m, o) {
 }
 
 #' Calculate center-of-mass.
+#' 
 #' \code{CalcCOM} calculates the time step of center of mass.
 #' Calculate the time step when the center-of-mass of
 #' a time series of values occurs.
@@ -238,6 +251,7 @@ CalcCOM <- function (x) {
 }
 
 #' "Flatten" the output from GetMultiNcdf
+#' 
 #' \code{ReshapeMultiNcdf} flattens the output from GetMultiNcdf.
 #' Take the output dataframe from GetMultiNcdf and reshape the dataframe
 #' for ease of use in other functions.
@@ -253,6 +267,7 @@ ReshapeMultiNcdf <- function(myDf) {
 }
 
 #' Create and or name a list with its entries.
+#' 
 #' \code{NamedList} creates a list with names equal to its entries. 
 #' @param theNames Vector to be coerced to character.
 #' @return List with names equal to entries.
@@ -266,6 +281,7 @@ NamedList <- function(theNames) {
 
 
 #' Are all vector entries the same/identical.
+#' 
 #' \code{AllSame} check if all vector entries are same/identical.
 #' @param x A vector.
 #' @param na.rm Logical Remove NAs from output?

@@ -2,10 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{Nse}
 \alias{Nse}
-\title{Calculate Nash-Sutcliffe Efficiency.
-\code{Nse} calculates the Nash-Sutcliffe Efficiency.
-Calculate the Nash-Sutcliffe Efficiency for vectors
-of modelled and observed values.}
+\title{Calculate Nash-Sutcliffe Efficiency.}
 \usage{
 Nse(m, o)
 }
@@ -18,7 +15,6 @@ Nse(m, o)
 The Nash-Sutcliffe Efficiency.
 }
 \description{
-Calculate Nash-Sutcliffe Efficiency.
 \code{Nse} calculates the Nash-Sutcliffe Efficiency.
 Calculate the Nash-Sutcliffe Efficiency for vectors
 of modelled and observed values.

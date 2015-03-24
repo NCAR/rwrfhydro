@@ -2,11 +2,7 @@
 % Please edit documentation in R/ingest_usgs.R
 \name{GetUsgsHucData}
 \alias{GetUsgsHucData}
-\title{Get all the USGS streamgage information within a HUC8.
-\code{GetUsgsHucData} gets all the USGS streamgage information within a HUC8. If an
-output path is supplied, an existing database is examined for existing records and
-the data retrieved from the USGS only extends the available and is saved in the data base.
-Could eventually use startDate and endDate to tweak this for calls which dont care about archival.}
+\title{Get all the USGS streamgage information within a HUC8.}
 \usage{
 GetUsgsHucData(huc8, outPath = NULL,
   metaDBFileName = "usgsDataRetrieval.metaDatabase.RData")
@@ -19,7 +15,6 @@ GetUsgsHucData(huc8, outPath = NULL,
 \item{metaDBFileName}{Character The name of the database metadata file.}
 }
 \description{
-Get all the USGS streamgage information within a HUC8.
 \code{GetUsgsHucData} gets all the USGS streamgage information within a HUC8. If an
 output path is supplied, an existing database is examined for existing records and
 the data retrieved from the USGS only extends the available and is saved in the data base.

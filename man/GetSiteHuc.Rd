@@ -2,8 +2,7 @@
 % Please edit documentation in R/ingest_usgs.R
 \name{GetSiteHuc}
 \alias{GetSiteHuc}
-\title{Given a USGS site code, return its HUC8
-\code{GetSiteHuc} returns a HUC8 given a USGS site name.}
+\title{Given a USGS site code, return its HUC8.}
 \usage{
 GetSiteHuc(site)
 }
@@ -14,7 +13,6 @@ GetSiteHuc(site)
 character HUC8
 }
 \description{
-Given a USGS site code, return its HUC8
 \code{GetSiteHuc} returns a HUC8 given a USGS site name.
 }
 \examples{

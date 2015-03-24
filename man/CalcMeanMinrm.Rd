@@ -2,10 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{CalcMeanMinrm}
 \alias{CalcMeanMinrm}
-\title{Calculate mean with enforced minimum valid value.
-\code{CalcMeanMinrm} calculates a mean with an enforced minimum valid value.
-Read a vector and calculate the mean with all values below
-a specified minimum value set to NA (and therefore ignored).}
+\title{Calculate mean with enforced minimum valid value.}
 \usage{
 CalcMeanMinrm(x, minValid = -1e+30)
 }
@@ -18,7 +15,6 @@ CalcMeanMinrm(x, minValid = -1e+30)
 The mean.
 }
 \description{
-Calculate mean with enforced minimum valid value.
 \code{CalcMeanMinrm} calculates a mean with an enforced minimum valid value.
 Read a vector and calculate the mean with all values below
 a specified minimum value set to NA (and therefore ignored).

@@ -2,9 +2,7 @@
 % Please edit documentation in R/ingest_usgs.R
 \name{TransUsgsProdStat}
 \alias{TransUsgsProdStat}
-\title{Translate USGS product/stat codes to something readable (and vice versa).
-\code{TransUsgsProdStat} Translate USGS product/stat codes to something readable (and vice versa)
-using a lookup table.}
+\title{Translate USGS product/stat codes to something readable (and vice versa).}
 \usage{
 TransUsgsProdStat(names, whichIn = FALSE)
 }
@@ -19,7 +17,6 @@ if whichIn==FALSE : Character of the translation.
         if whichIn==TRUE  : Integer index which passed names are in the table.
 }
 \description{
-Translate USGS product/stat codes to something readable (and vice versa).
 \code{TransUsgsProdStat} Translate USGS product/stat codes to something readable (and vice versa)
 using a lookup table.
 }

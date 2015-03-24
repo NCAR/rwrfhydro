@@ -2,8 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{AllSame}
 \alias{AllSame}
-\title{Are all vector entries the same/identical.
-\code{AllSame} check if all vector entries are same/identical.}
+\title{Are all vector entries the same/identical.}
 \usage{
 AllSame(x, na.rm = FALSE)
 }
@@ -16,7 +15,6 @@ AllSame(x, na.rm = FALSE)
 Logical
 }
 \description{
-Are all vector entries the same/identical.
 \code{AllSame} check if all vector entries are same/identical.
 }
 \examples{

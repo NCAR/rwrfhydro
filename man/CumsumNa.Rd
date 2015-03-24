@@ -2,9 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{CumsumNa}
 \alias{CumsumNa}
-\title{Calculate cumulative sum with forced NA=0.
-\code{CumsumNa} calculates a cumulative sum with NAs converted to 0s.
-Read a vector and calculate the cumulative sum with NAs converted to 0s.}
+\title{Calculate cumulative sum with forced NA=0.}
 \usage{
 CumsumNa(x)
 }
@@ -15,7 +13,6 @@ CumsumNa(x)
 The cumulative sum vector.
 }
 \description{
-Calculate cumulative sum with forced NA=0.
 \code{CumsumNa} calculates a cumulative sum with NAs converted to 0s.
 Read a vector and calculate the cumulative sum with NAs converted to 0s.
 }

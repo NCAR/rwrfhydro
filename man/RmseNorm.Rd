@@ -2,10 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{RmseNorm}
 \alias{RmseNorm}
-\title{Calculate normalized root mean squared error.
-\code{RmseNorm} calculates the normalized root mean squared error.
-Calculate the normalized root mean squared error for vectors
-of modelled and observed values.}
+\title{Calculate normalized root mean squared error.}
 \usage{
 RmseNorm(m, o)
 }
@@ -18,7 +15,6 @@ RmseNorm(m, o)
 The nrmalized root mean squared error.
 }
 \description{
-Calculate normalized root mean squared error.
 \code{RmseNorm} calculates the normalized root mean squared error.
 Calculate the normalized root mean squared error for vectors
 of modelled and observed values.

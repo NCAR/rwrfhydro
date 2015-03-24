@@ -2,8 +2,7 @@
 % Please edit documentation in R/ingest_usgs.R
 \name{LoadMetaDB}
 \alias{LoadMetaDB}
-\title{Load the metadata for the USGS streamflow database.
-\code{LoadMetaDB} Load the metadata for the USGS streamflow database.}
+\title{Load the metadata for the USGS streamflow database.}
 \usage{
 LoadMetaDB(path = ".",
   metaDBFileName = "usgsDataRetrieval.metaDatabase.RData",
@@ -20,7 +19,6 @@ LoadMetaDB(path = ".",
 Character the name of the variables loaded with the file (invisible).
 }
 \description{
-Load the metadata for the USGS streamflow database.
 \code{LoadMetaDB} Load the metadata for the USGS streamflow database.
 }
 

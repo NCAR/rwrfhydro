@@ -2,9 +2,7 @@
 % Please edit documentation in R/ingest_usgs.R
 \name{FindUsgsStns}
 \alias{FindUsgsStns}
-\title{Discover USGS stations using huc8 code or lat/lon/radius.
-\code{FindUsgsStns} wraps dataRetrieval::whatNWISsites with common options for finding USGS gauges.
-See the dataRetrieval package for more deails on what else could be passed or how this could be modified.}
+\title{Discover USGS stations using huc8 code or lat/lon/radius.}
 \usage{
 FindUsgsStns(stnLon = NULL, stnLat = NULL, within = NULL, huc8 = NULL,
   siteType = "ST", hasDataTypeCd = "iv", siteOutput = "expanded")
@@ -25,7 +23,6 @@ FindUsgsStns(stnLon = NULL, stnLat = NULL, within = NULL, huc8 = NULL,
 \item{siteOutput}{how much detail to return}
 }
 \description{
-Discover USGS stations using huc8 code or lat/lon/radius.
 \code{FindUsgsStns} wraps dataRetrieval::whatNWISsites with common options for finding USGS gauges.
 See the dataRetrieval package for more deails on what else could be passed or how this could be modified.
 }

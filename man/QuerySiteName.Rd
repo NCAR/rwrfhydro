@@ -2,8 +2,7 @@
 % Please edit documentation in R/ingest_usgs.R
 \name{QuerySiteName}
 \alias{QuerySiteName}
-\title{Find the name(site id) for a given site(name)  in the local database.
-\code{QuerySiteName} returns the name (site id) for a given site ID (name) in the local database.}
+\title{Find the name(site id) for a given site(name)  in the local database.}
 \usage{
 QuerySiteName(site, path = ".",
   retSiteId = tryCatch(is.na(as.numeric(site)), warning = function(w) TRUE,
@@ -23,7 +22,6 @@ QuerySiteName(site, path = ".",
 Character Site name or number.
 }
 \description{
-Find the name(site id) for a given site(name)  in the local database.
 \code{QuerySiteName} returns the name (site id) for a given site ID (name) in the local database.
 }
 \examples{

@@ -2,8 +2,7 @@
 % Please edit documentation in R/ingest_usgs.R
 \name{QuerySiteData}
 \alias{QuerySiteData}
-\title{Returns the data for given sites from local database.
-\code{QuerySiteData} gets the specified data from the local database.}
+\title{Returns the data for given sites from local database.}
 \usage{
 QuerySiteData(site, product, path = ".",
   metaDBFileName = "usgsDataRetrieval.metaDatabase.RData")
@@ -21,7 +20,6 @@ QuerySiteData(site, product, path = ".",
 dataframe of data with pertinent attributes.
 }
 \description{
-Returns the data for given sites from local database.
 \code{QuerySiteData} gets the specified data from the local database.
 }
 \examples{

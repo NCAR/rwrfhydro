@@ -2,8 +2,7 @@
 % Please edit documentation in R/ingest_usgs.R
 \name{QuerySiteInfo}
 \alias{QuerySiteInfo}
-\title{Returns the desired information from the database file.
-\code{QuerySiteInfo} gets the specified info from the local database.}
+\title{Returns the desired information from the database file.}
 \usage{
 QuerySiteInfo(info, path = ".",
   metaDBFileName = "usgsDataRetrieval.metaDatabase.RData")
@@ -19,7 +18,6 @@ QuerySiteInfo(info, path = ".",
 dataframe of requested info with all available HUC and product codes.
 }
 \description{
-Returns the desired information from the database file.
 \code{QuerySiteInfo} gets the specified info from the local database.
 }
 \examples{

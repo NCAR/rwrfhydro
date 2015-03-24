@@ -2,10 +2,7 @@
 % Please edit documentation in R/ingest_usgs.R
 \name{ExtractHucMeta}
 \alias{ExtractHucMeta}
-\title{For an indivudal product, grab the HUC metadata to be stored in the database.
-\code{ExtractHucMeta} extracts the metadata to stash in a usgsDataRetrieval database for an individual product.
-It gathers the attributes returned by dataRetrieval::readNWISuv , supplements siteInfo with
-startTime and endTime for each station in UTC to assist appending the records.}
+\title{For an indivudal product, grab the HUC metadata to be stored in the database.}
 \usage{
 ExtractHucMeta(hucProdDf)
 }
@@ -16,7 +13,6 @@ ExtractHucMeta(hucProdDf)
 list of metadata for a
 }
 \description{
-For an indivudal product, grab the HUC metadata to be stored in the database.
 \code{ExtractHucMeta} extracts the metadata to stash in a usgsDataRetrieval database for an individual product.
 It gathers the attributes returned by dataRetrieval::readNWISuv , supplements siteInfo with
 startTime and endTime for each station in UTC to assist appending the records.

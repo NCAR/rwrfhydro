@@ -2,9 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{TransTz}
 \alias{TransTz}
-\title{Translate (i.e. invert) timezones to the so calle Olson names used by POSIXct.
-Translate formatted timezones codes to the so-called "Olson names" used by POSIXct.
-\code{TransTz} translates the formatted timezone codes (incl those from USGS) to Olson Names.}
+\title{Translate (i.e. invert) timezones to the so calle Olson names used by POSIXct.}
 \usage{
 TransTz(tz)
 }
@@ -12,7 +10,6 @@ TransTz(tz)
 \item{tz}{The timezone to be translated.}
 }
 \description{
-Translate (i.e. invert) timezones to the so calle Olson names used by POSIXct.
 Translate formatted timezones codes to the so-called "Olson names" used by POSIXct.
 \code{TransTz} translates the formatted timezone codes (incl those from USGS) to Olson Names.
 }

@@ -2,8 +2,7 @@
 % Please edit documentation in R/ingest_usgs.R
 \name{QuerySiteProd}
 \alias{QuerySiteProd}
-\title{Find the products available for a given site in the local database.
-\code{QuerySiteProd} finds the products available for a given site in the local database.}
+\title{Find the products available for a given site in the local database.}
 \usage{
 QuerySiteProd(site, path = ".",
   metaDBFileName = "usgsDataRetrieval.metaDatabase.RData")
@@ -16,7 +15,6 @@ QuerySiteProd(site, path = ".",
 \item{metaDBFileName}{Character The name of the metadata file.}
 }
 \description{
-Find the products available for a given site in the local database.
 \code{QuerySiteProd} finds the products available for a given site in the local database.
 }
 \examples{

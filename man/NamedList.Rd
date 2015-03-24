@@ -2,8 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{NamedList}
 \alias{NamedList}
-\title{Create and or name a list with its entries.
-\code{NamedList} creates a list with names equal to its entries.}
+\title{Create and or name a list with its entries.}
 \usage{
 NamedList(theNames)
 }
@@ -14,7 +13,6 @@ NamedList(theNames)
 List with names equal to entries.
 }
 \description{
-Create and or name a list with its entries.
 \code{NamedList} creates a list with names equal to its entries.
 }
 \examples{

@@ -2,10 +2,7 @@
 % Please edit documentation in R/ingest_usgs.R
 \name{GetUsgsIvProduct}
 \alias{GetUsgsIvProduct}
-\title{For a single product, get instantaneous USGS data and separate data and metadata/attributes into a list.
-\code{GetUsgsIvProduct} gets instantaneous USGS data for a single product code
-and separates the returned dataframe with attributes from dataRetrieval::readNWISuv into a list with
-separate data and metadata/attributes. The meta data are updated with startTime and endTime information.}
+\title{For a single product, get instantaneous USGS data and separate data and metadata/attributes into a list.}
 \usage{
 GetUsgsIvProduct(prodDf)
 }
@@ -17,7 +14,6 @@ subet to an individual product code.}
 list(data=,meta=)
 }
 \description{
-For a single product, get instantaneous USGS data and separate data and metadata/attributes into a list.
 \code{GetUsgsIvProduct} gets instantaneous USGS data for a single product code
 and separates the returned dataframe with attributes from dataRetrieval::readNWISuv into a list with
 separate data and metadata/attributes. The meta data are updated with startTime and endTime information.

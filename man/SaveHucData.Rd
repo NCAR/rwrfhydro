@@ -2,11 +2,7 @@
 % Please edit documentation in R/ingest_usgs.R
 \name{SaveHucData}
 \alias{SaveHucData}
-\title{Save the output of GetUsgsHucData to an archive
-\code{SaveHucData} take a list returned by GetUsgsHucData, create or append to an existing archive, and update
-metadata file. Input list is grouped by HUC codes where each HUC has data and meta lists. The output files
-are written to outPath with the following format HHHHHHHH.data.RData where HHHHHHHH is the HUC8 code. The
-name of the metadata file is configurable. The metadata file contains metadata for all files in the outPath.}
+\title{Save the output of GetUsgsHucData to an archive.}
 \usage{
 SaveHucData(hucData, outPath,
   metaDBFileName = "usgsDataRetrieval.metaDatabase.RData",
@@ -22,7 +18,6 @@ SaveHucData(hucData, outPath,
 \item{overwriteHucDataFile}{Logical Replace/overwrite the existing data file for the HUC with the current data.}
 }
 \description{
-Save the output of GetUsgsHucData to an archive
 \code{SaveHucData} take a list returned by GetUsgsHucData, create or append to an existing archive, and update
 metadata file. Input list is grouped by HUC codes where each HUC has data and meta lists. The output files
 are written to outPath with the following format HHHHHHHH.data.RData where HHHHHHHH is the HUC8 code. The

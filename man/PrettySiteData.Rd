@@ -2,8 +2,7 @@
 % Please edit documentation in R/ingest_usgs.R
 \name{PrettySiteData}
 \alias{PrettySiteData}
-\title{Pretty USGS site data makes nice headers and optionally converts to metric.
-\code{PrettySiteData} beautifies the data frame}
+\title{Pretty USGS site data makes nice headers and optionally converts to metric.}
 \usage{
 PrettySiteData(data, tz = "UTC", metric = metricOnly, metricOnly = FALSE,
   na.rm = TRUE)
@@ -23,7 +22,6 @@ PrettySiteData(data, tz = "UTC", metric = metricOnly, metricOnly = FALSE,
 dataframe similar to input with improved names and/or metric variables.
 }
 \description{
-Pretty USGS site data makes nice headers and optionally converts to metric.
 \code{PrettySiteData} beautifies the data frame
 }
 \examples{

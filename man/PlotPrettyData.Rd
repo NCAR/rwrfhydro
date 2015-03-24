@@ -2,8 +2,7 @@
 % Please edit documentation in R/ingest_usgs.R
 \name{PlotPrettyData}
 \alias{PlotPrettyData}
-\title{Plot USGS site data which has been prettied with PrettySiteData.
-\code{PlotPrettyData} plots USGS site data which has been prettied with PrettySiteData.}
+\title{Plot USGS site data which has been prettied with PrettySiteData.}
 \usage{
 PlotPrettyData(prettyUsgs, plot = TRUE)
 }
@@ -17,7 +16,6 @@ A function(closure) with arguments controlling the look of its graphical output.
         return value is a list of ggplot2 object which can be custom manipulated.
 }
 \description{
-Plot USGS site data which has been prettied with PrettySiteData.
 \code{PlotPrettyData} plots USGS site data which has been prettied with PrettySiteData.
 }
 \examples{

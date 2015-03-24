@@ -17,6 +17,7 @@
 
 #==============================================================================================
 #' Discover USGS stations using huc8 code or lat/lon/radius.
+#' 
 #' \code{FindUsgsStns} wraps dataRetrieval::whatNWISsites with common options for finding USGS gauges. 
 #' See the dataRetrieval package for more deails on what else could be passed or how this could be modified. 
 #' @param stnLon optional
@@ -55,6 +56,7 @@ FindUsgsStns <- function(stnLon=NULL, stnLat=NULL, within=NULL,
 
 #==============================================================================================
 #' Get all the USGS streamgage information within a HUC8. 
+#' 
 #' \code{GetUsgsHucData} gets all the USGS streamgage information within a HUC8. If an
 #' output path is supplied, an existing database is examined for existing records and
 #' the data retrieved from the USGS only extends the available and is saved in the data base.
@@ -142,7 +144,8 @@ GetUsgsHucData <- function(huc8, outPath=NULL,
 
 
 #==============================================================================================
-#' Save the output of GetUsgsHucData to an archive
+#' Save the output of GetUsgsHucData to an archive.
+#' 
 #' \code{SaveHucData} take a list returned by GetUsgsHucData, create or append to an existing archive, and update
 #' metadata file. Input list is grouped by HUC codes where each HUC has data and meta lists. The output files 
 #' are written to outPath with the following format HHHHHHHH.data.RData where HHHHHHHH is the HUC8 code. The 
@@ -215,6 +218,7 @@ SaveHucData <- function(hucData, outPath,
 
 #==============================================================================================
 #' For an indivudal product, grab the HUC metadata to be stored in the database. 
+#' 
 #' \code{ExtractHucMeta} extracts the metadata to stash in a usgsDataRetrieval database for an individual product.
 #' It gathers the attributes returned by dataRetrieval::readNWISuv , supplements siteInfo with
 #' startTime and endTime for each station in UTC to assist appending the records. 
@@ -236,6 +240,7 @@ ExtractHucMeta <- function(hucProdDf) {
 
 #==============================================================================================
 #' For a single product, get instantaneous USGS data and separate data and metadata/attributes into a list.
+#' 
 #' \code{GetUsgsIvProduct} gets instantaneous USGS data for a single product code
 #' and separates the returned dataframe with attributes from dataRetrieval::readNWISuv into a list with 
 #' separate data and metadata/attributes. The meta data are updated with startTime and endTime information.
@@ -254,7 +259,8 @@ GetUsgsIvProduct <- function( prodDf ) {
 
 
 #==============================================================================================
-#' Given a USGS site code, return its HUC8
+#' Given a USGS site code, return its HUC8.
+#' 
 #' \code{GetSiteHuc} returns a HUC8 given a USGS site name. 
 #' @param site Character USGS site number.
 #' @return character HUC8
@@ -266,6 +272,7 @@ GetSiteHuc <- function(site) dataRetrieval::readNWISsite(as.character(site))$huc
 
 #==============================================================================================
 #' Find the products available for a given site in the local database.
+#' 
 #' \code{QuerySiteProd} finds the products available for a given site in the local database.
 #' @param site Character USGS site number.
 #' @param path Character The path to the database.
@@ -282,6 +289,7 @@ QuerySiteProd <- function(site, path='.',
 
 #==============================================================================================
 #' Find the name(site id) for a given site(name)  in the local database.
+#' 
 #' \code{QuerySiteName} returns the name (site id) for a given site ID (name) in the local database.
 #' @param site Character USGS site number or name.
 #' @param path Character The path to the database.
@@ -311,6 +319,7 @@ QuerySiteName <- function(site, path='.',
 
 #==============================================================================================
 #' Returns the desired information from the database file.
+#' 
 #' \code{QuerySiteInfo} gets the specified info from the local database.
 #' @param info Character vector, information fields in HUC$prod$meta$SiteInfo$info.
 #' @param path Character The path to the database directory.
@@ -330,6 +339,7 @@ QuerySiteInfo <- function(info, path='.', metaDBFileName='usgsDataRetrieval.meta
 
 #==============================================================================================
 #' Returns the data for given sites from local database.
+#' 
 #' \code{QuerySiteData} gets the specified data from the local database.
 #' @param site Character USGS site number.
 #' @param product Character USGS product code number.
@@ -363,6 +373,7 @@ QuerySiteData <- function(site, product, path='.',
 
 #==============================================================================================
 #' Pretty USGS site data makes nice headers and optionally converts to metric. 
+#' 
 #' \code{PrettySiteData} beautifies the data frame 
 #' @param data Dataframe from QuerySiteData
 #' @param metric Logical
@@ -420,6 +431,7 @@ PrettySiteData <- function(data, tz='UTC', metric=metricOnly, metricOnly=FALSE,
 
 ##============================================================================================
 #' Load the metadata for the USGS streamflow database.
+#' 
 #' \code{LoadMetaDB} Load the metadata for the USGS streamflow database.
 #' @param path Character path to the meta DB. 
 #' @param metaDBFileName Character name of the meta DB. 
@@ -434,6 +446,7 @@ LoadMetaDB <- function(path='.',
 
 ##============================================================================================
 #' Translate USGS product/stat codes to something readable (and vice versa).
+#' 
 #' \code{TransUsgsProdStat} Translate USGS product/stat codes to something readable (and vice versa) 
 #' using a lookup table. 
 #' @param names Character product_stat codes (e.g. 'X_00060_00011') or their translation 
@@ -480,6 +493,7 @@ TransUsgsProdStat <- function(names, whichIn=FALSE) {
 
 ##============================================================================================
 #' Plot USGS site data which has been prettied with PrettySiteData.
+#' 
 #' \code{PlotPrettyData} plots USGS site data which has been prettied with PrettySiteData.
 #' @param prettyUsgs dataframe returned from PrettySiteData
 #' @param plot Logical to plot before returning or not.
@@ -518,7 +532,8 @@ PlotPrettyData <- function(prettyUsgs, plot=TRUE) {
 }
 
 ##============================================================================================
-#' subset prettyUsgs objects.
+#' Subset prettyUsgs objects.
+#' 
 #' \code{subset.prettyUsgs} subsets prettyUsgs objects and retains their attributes.
 #' @param prettyUsgs A dataframe of class c("prettyUsgs", "data.frame") returned from PrettySiteData
 #' @param ... additional arguments to subset.data.frame
