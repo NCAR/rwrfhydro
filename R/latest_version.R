@@ -92,13 +92,14 @@ checkMasterSha <- function() {
         "*^                                                                     ^*",
         "*^   A  **NEW** update of rwrfhydro has been made (to master branch).  ^*",
         "*^                                                                     ^*",
-        "*^   Automatically updating from github.......                         ^*",
         "*^   Developers take note to update:                                   ^*",
         "*^             'git pull origin master', then merge devBranch)         ^*",
         "*^                                                                     ^*",
-        "*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*" ,
+        "*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*",
+        "                                                                         ",
         sep='\n      ')
-    devtools::install_github('mccreigh/rwrfhydro')
+    doUpdate <- readline(prompt="Would you like to install the update right now? yes/no") == 'yes'
+    if(doUpdate) devtools::install_github('mccreigh/rwrfhydro')
   }
   
   invisible( remoteSha == localSha )

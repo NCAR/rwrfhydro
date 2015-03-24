@@ -22,8 +22,7 @@ Imports:
     reshape2 (>= 1.4.1), 
     doMC (>= 1.3.3), 
     scales (>= 0.2.4), 
-    curl (>= 0.5), 
-    dataRetrieval (>= 2.1.2)
+    curl (>= 0.5)
 LazyData: true
 Suggests: testthat,
     knitr
