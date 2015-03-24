@@ -7,7 +7,7 @@
 \method{subset}{prettyUsgs}(prettyUsgs, ...)
 }
 \arguments{
-\item{prettyUsgs}{A dataframe of class c("prettyUsgs", "data.frame") returned from PrettySiteData}
+\item{prettyUsgs}{A dataframe of class \code{c("prettyUsgs", "data.frame")} returned from \code{PrettySiteData}}
 
 \item{...}{additional arguments to subset.data.frame}
 }

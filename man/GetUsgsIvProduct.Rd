@@ -7,7 +7,7 @@
 GetUsgsIvProduct(prodDf)
 }
 \arguments{
-\item{prodDf}{is a dataframe returned by dataRetrieval::whatNWISdata(stns$site_no, service = "uv")
+\item{prodDf}{is a dataframe returned by \code{dataRetrieval::whatNWISdata(stns$site_no, service = "uv")}
 subet to an individual product code.}
 }
 \value{
@@ -15,7 +15,7 @@ list(data=,meta=)
 }
 \description{
 \code{GetUsgsIvProduct} gets instantaneous USGS data for a single product code
-and separates the returned dataframe with attributes from dataRetrieval::readNWISuv into a list with
+and separates the returned dataframe with attributes from \code{dataRetrieval::readNWISuv} into a list with
 separate data and metadata/attributes. The meta data are updated with startTime and endTime information.
 }
 

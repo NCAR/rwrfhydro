@@ -8,7 +8,7 @@ QuerySiteInfo(info, path = ".",
   metaDBFileName = "usgsDataRetrieval.metaDatabase.RData")
 }
 \arguments{
-\item{info}{Character vector, information fields in HUC$prod$meta$SiteInfo$info.}
+\item{info}{Character vector, information fields in \code{HUC$prod$meta$SiteInfo$info}.}
 
 \item{path}{Character The path to the database directory.}
 

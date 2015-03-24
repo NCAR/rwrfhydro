@@ -18,7 +18,7 @@ SaveHucData(hucData, outPath,
 \item{overwriteHucDataFile}{Logical Replace/overwrite the existing data file for the HUC with the current data.}
 }
 \description{
-\code{SaveHucData} take a list returned by GetUsgsHucData, create or append to an existing archive, and update
+\code{SaveHucData} take a list returned by \code{GetUsgsHucData}, create or append to an existing archive, and update
 metadata file. Input list is grouped by HUC codes where each HUC has data and meta lists. The output files
 are written to outPath with the following format HHHHHHHH.data.RData where HHHHHHHH is the HUC8 code. The
 name of the metadata file is configurable. The metadata file contains metadata for all files in the outPath.

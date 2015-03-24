@@ -14,7 +14,8 @@ QuerySiteName(site, path = ".",
 
 \item{path}{Character The path to the database.}
 
-\item{retSiteId}{Logical return ID (name if FALSE) This is only exposed in case there are issues, should work by default.}
+\item{retSiteId}{Logical return ID (name if FALSE) This is only exposed in case there are issues,
+should work by default.}
 
 \item{metaDBFileName}{Character The name of the metadata file.}
 }

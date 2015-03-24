@@ -42,14 +42,13 @@ ModelErrPctErrPlusQntlIncpt <- function(data, qntlIncpt=.005, pctErr=.1) {
 #' 
 #' \code{ModelErrPctErrPlusQntlIncpt} models errors (same units as input) as percent 
 #' of observed plus some quantile of historical record. 
+#' Error (99.5% of all errors) background is always, fith quantile
+#' flow dependent error saturates at 10% of the observed flow as one moves away from
+#' median flow (assumed to be be flows at which rating curve is most accurate). 
 #' @param data, Numeric the values for which errors are to be modeled.
 #' @param qntlIncpt Numeric the quantile of historical observations to be used as minimum error.
 #' @param pctErr Numeric the percent error associated with the observations.
 #' @export
-#'
-#' Error (99.5% of all errors) background is always, fith quantile
-#' flow dependent error saturates at 10% of the observed flow as one moves away from
-#' median flow (assumed to be be flows at which rating curve is most accurate). 
 ModelErrorsClimTaper <- function(data, qntlClim=.5, pctErr=.15) {
   climObs = quantile(data, qntlClim)
   climObs + pmin( pctErr*data, pctErr*abs(data-climObs) )

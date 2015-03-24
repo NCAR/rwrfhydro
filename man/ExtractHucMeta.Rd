@@ -14,7 +14,7 @@ list of metadata for a
 }
 \description{
 \code{ExtractHucMeta} extracts the metadata to stash in a usgsDataRetrieval database for an individual product.
-It gathers the attributes returned by dataRetrieval::readNWISuv , supplements siteInfo with
+It gathers the attributes returned by \code{dataRetrieval::readNWISuv} , supplements siteInfo with
 startTime and endTime for each station in UTC to assist appending the records.
 }
 

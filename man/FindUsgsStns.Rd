@@ -12,7 +12,7 @@ FindUsgsStns(stnLon = NULL, stnLat = NULL, within = NULL, huc8 = NULL,
 
 \item{stnLat}{optional}
 
-\item{within}{optional, goes with stnLon and stnLat and specifies a search radius in decimal miles.}
+\item{within}{optional, goes with stnLon and stnLat and specifies a search radius in decimal degrees.}
 
 \item{huc8}{optional EIGHT digit HUC code.}
 
@@ -23,7 +23,7 @@ FindUsgsStns(stnLon = NULL, stnLat = NULL, within = NULL, huc8 = NULL,
 \item{siteOutput}{how much detail to return}
 }
 \description{
-\code{FindUsgsStns} wraps dataRetrieval::whatNWISsites with common options for finding USGS gauges.
+\code{FindUsgsStns} wraps \code{dataRetrieval::whatNWISsites} with common options for finding USGS gauges.
 See the dataRetrieval package for more deails on what else could be passed or how this could be modified.
 }
 \examples{

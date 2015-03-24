@@ -16,7 +16,7 @@ A function(closure) with arguments controlling the look of its graphical output.
         return value is a list of ggplot2 object which can be custom manipulated.
 }
 \description{
-\code{PlotPrettyData} plots USGS site data which has been prettied with PrettySiteData.
+\code{PlotPrettyData} plots USGS site data which has been prettied with \code{PrettySiteData}.
 }
 \examples{
 # See vignette "Collect USGS stream observations and build a local database" for examples.
