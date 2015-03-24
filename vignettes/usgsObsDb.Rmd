@@ -36,7 +36,7 @@ library("rwrfhydro")
 
 Say you wanted to find 
 ```{r}
- dbPath <- '/Users/james/usgsDb' 
+ dbPath <- '/Users/jamesmcc/usgsDb' 
 ```
 
 
