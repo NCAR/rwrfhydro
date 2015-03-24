@@ -1,15 +1,14 @@
-## This whole file continues to be a work in progress.
+## This file continues to be a work in progress.
 ## Atomic functionalities desired:
-## 1. FindUsgsStns :identify stn from [ lat lon, stnid, huc? ]
+## XX 1. FindUsgsStns :identify stn from [ lat lon, stnid, huc? ] 
 ## 1.1 mapUsgsStns
-## 2. CheckLocalUsgsLib: identify data in local library
-## 3. GetUsgsStn: get usgs data
-## 4. Convert units.
+## XX 2. CheckLocalUsgsLib: identify data in local library        
+## XX 3. GetUsgsStn: get usgs data
+## XX 4. Convert units.
 ## 4. UpdateLocalUsgsLib: update local library. update from end vs fill holes. 
 ## 5. calculate variance information: examine rating curve information. 
-## 6. output for dart
 ## 7. update metadata using files in same directory?
-## 8. how to query the DB? lat lon, station code, huc? have a first layer which queries NWIS?
+## XX 8. how to query the DB? lat lon, station code, huc? have a first layer which queries NWIS?
 
 ## notes:
 ## 1. might be better to set global variables for DB path and metaDBFileName than to set as options in nearly every
@@ -26,19 +25,16 @@
 #' @param huc8 optional EIGHT digit HUC code. 
 #' @param siteType the type of USGS site to look for. 
 #' @param hasDataTypeCd the kind of data of interest (iv=instantaneous, dv=daily, etc.)
-#' @param siteOutput how much detail to return 
 #' @examples
 #' stnDf <- FindUsgsStns(huc='10190005')
 #' stnDf <- FindUsgsStns(stnLon=254.67374999999998408,stnLat=40.018666670000001773,within=.001)
 #' @export
 FindUsgsStns <- function(stnLon=NULL, stnLat=NULL, within=NULL,
                          huc8=NULL, 
-                         siteType='ST', hasDataTypeCd='iv',
-                         siteOutput='expanded') {
+                         siteType='ST', hasDataTypeCd='iv') {
   argList <- list()
   argList$siteType       <- siteType
   argList$hasDataTypeCd  <- hasDataTypeCd
-  argList$siteOutput     <- siteOutput
   # lat/lon
   if( !is.null(stnLon) && !is.null(stnLat) && !is.null(within) ) {
     if(stnLon>180.) stnLon <- stnLon-360
@@ -252,6 +248,8 @@ GetUsgsIvProduct <- function( prodDf ) {
                                         startDate=prodDf$startDate[1],  
                                         endDate=prodDf$endDate[1], 
                                         tz=prodDf$tz[1])
+  ## it may be desirable to rewrite this usingreadNWISdata 
+  ## inorder to get "expanded" metadata.
   prodMeta <- ExtractHucMeta(prodData)
   ## the subset simply removes the attributes
   list(data=subset(prodData,site_no %in% prodData$site_no), meta=prodMeta)
@@ -342,7 +340,7 @@ QuerySiteInfo <- function(info, path='.', metaDBFileName='usgsDataRetrieval.meta
 #' Returns the data for given sites from local database.
 #' 
 #' \code{QuerySiteData} gets the specified data from the local database.
-#' @param site Character USGS site number.
+#' @param site Character USGS site number or vector of numbers.
 #' @param product Character USGS product code number.
 #' @param path Character path to the database.
 #' @param metaDBFileName Character The name of the metadata file.
@@ -352,9 +350,22 @@ QuerySiteInfo <- function(info, path='.', metaDBFileName='usgsDataRetrieval.meta
 #' dataOrodell <- QuerySiteData(QuerySiteName("FOURMILE CREEK AT ORODELL, CO", p), '00060', p)
 #' siteInfo<-QuerySiteInfo(c('station_nm','site_no','stateCd'), path=p)
 #' dataCO <- QuerySiteData(subset(siteInfo, stateCd=='08' & product=='00060')$site_no, '00060', p)
+#' dataMultiHuc <- QuerySiteData(c('06730500','02084557'),'00060',p)
 #' @export
 QuerySiteData <- function(site, product, path='.',
                           metaDBFileName='usgsDataRetrieval.metaDatabase.RData'){
+  hucVec <- unique(GetSiteHuc(site))
+  if(length(hucVec)==1) {
+    return(QuerySiteData.scalar(site, product, path=path, metaDBFileName=metaDBFileName))
+  } else {
+    return(QuerySiteData.vector(site, product, path=path, metaDBFileName=metaDBFileName))
+  }
+}
+  
+
+#==============================================================================================
+QuerySiteData.scalar <- function(site, product, path='.',
+                                 metaDBFileName='usgsDataRetrieval.metaDatabase.RData'){
   if(!any(QuerySiteProd(site, path=path, metaDB=metaDBFileName) == product)) {
     warning(paste("No product",product,"at site",site,"."))
     return(NULL)
@@ -370,6 +381,13 @@ QuerySiteData <- function(site, product, path='.',
   attr(ret, 'variableInfo')  <- productData$meta$variableInfo
   attr(ret, 'statisticInfo') <- productData$meta$statisticInfo
   ret
+}
+
+#==============================================================================================
+QuerySiteData.vector <- function(site, product, path='.',
+                                 metaDBFileName='usgsDataRetrieval.metaDatabase.RData'){
+  plyr::llply(NamedList(site), QuerySiteData.scalar,
+              product=product, path=path, metaDBFileName=metaDBFileName)
 }
 
 
@@ -390,6 +408,14 @@ QuerySiteData <- function(site, product, path='.',
 #' @export
 PrettySiteData <- function(data, tz='UTC', metric=metricOnly, metricOnly=FALSE, 
                            na.rm=TRUE) {
+  if(class(data)[1]=='data.frame')
+    return(PrettySiteData.df(data, tz='UTC', metric=metric, metricOnly=metricOnly, na.rm=na.rm))
+  if(class(data)[1]=='list')
+    return(plyr::llply(data, PrettySiteData.df, tz='UTC', metric=metric, metricOnly=metricOnly, na.rm=na.rm))
+}
+
+PrettySiteData.df <- function(data, tz='UTC', metric=metricOnly, metricOnly=FALSE, 
+                              na.rm=TRUE) {
   whNames <- TransUsgsProdStat(names(data),whichIn=TRUE)
   prettyNames <- TransUsgsProdStat(names(data)[whNames])
   names(data)[whNames] <- prettyNames
@@ -508,10 +534,12 @@ TransUsgsProdStat <- function(names, whichIn=FALSE) {
 #' # See vignette "Collect USGS stream observations and build a local database" for examples.
 #' @export
 PlotPrettyData <- function(prettyUsgs, plot=TRUE) {
+  if(!('prettyUsgs' %in% class(prettyUsgs))) {
+      warning('The data argument to PlotPrettyData is not of class prettyUsgs. Returning.')
+      return(NULL)
+  }
   variables <- attr(prettyUsgs,'variables')
   codes <- attr(prettyUsgs,'codes')
-  #print(variables)
-  #print(codes)
   plotData <- reshape2::melt(prettyUsgs, id=c("dateTime","site_no",codes))
   timePlot <- ggplot2::ggplot(plotData, ggplot2::aes(x=dateTime, y=value)) +
                 ggplot2::geom_point() + ggplot2::theme_bw()
@@ -549,10 +577,12 @@ subset.prettyUsgs <- function(prettyUsgs, ... ) {
  class     <- attr(prettyUsgs, 'class')
  variables <- attr(prettyUsgs, 'variables')
  codes     <- attr(prettyUsgs, 'codes')
+ variances <- attr(prettyUsgs, 'variances')
  attr(prettyUsgs, 'class') <- 'data.frame'
  subPretty <- subset(prettyUsgs, ...)
- attr(subPretty, 'class')     <- class
- attr(subPretty, 'variables') <- variables
- attr(subPretty, 'codes')     <- codes
+ attr(subPretty, 'class')      <- class
+ attr(subPretty, 'variables')  <- variables
+ attr(subPretty, 'codes')      <- codes
+ attr(prettyUsgs, 'variances') <- variances
  subPretty
 }

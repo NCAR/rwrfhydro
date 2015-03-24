@@ -8,7 +8,7 @@ QuerySiteData(site, product, path = ".",
   metaDBFileName = "usgsDataRetrieval.metaDatabase.RData")
 }
 \arguments{
-\item{site}{Character USGS site number.}
+\item{site}{Character USGS site number or vector of numbers.}
 
 \item{product}{Character USGS product code number.}
 
@@ -27,5 +27,6 @@ p='~/streamflow/OBS/'
 dataOrodell <- QuerySiteData(QuerySiteName("FOURMILE CREEK AT ORODELL, CO", p), '00060', p)
 siteInfo<-QuerySiteInfo(c('station_nm','site_no','stateCd'), path=p)
 dataCO <- QuerySiteData(subset(siteInfo, stateCd=='08' & product=='00060')$site_no, '00060', p)
+dataMultiHuc <- QuerySiteData(c('06730500','02084557'),'00060',p)
 }
 

@@ -5,7 +5,7 @@
 \title{Discover USGS stations using huc8 code or lat/lon/radius.}
 \usage{
 FindUsgsStns(stnLon = NULL, stnLat = NULL, within = NULL, huc8 = NULL,
-  siteType = "ST", hasDataTypeCd = "iv", siteOutput = "expanded")
+  siteType = "ST", hasDataTypeCd = "iv")
 }
 \arguments{
 \item{stnLon}{optional}
@@ -19,8 +19,6 @@ FindUsgsStns(stnLon = NULL, stnLat = NULL, within = NULL, huc8 = NULL,
 \item{siteType}{the type of USGS site to look for.}
 
 \item{hasDataTypeCd}{the kind of data of interest (iv=instantaneous, dv=daily, etc.)}
-
-\item{siteOutput}{how much detail to return}
 }
 \description{
 \code{FindUsgsStns} wraps \code{dataRetrieval::whatNWISsites} with common options for finding USGS gauges.

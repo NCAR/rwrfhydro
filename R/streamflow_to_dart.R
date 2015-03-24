@@ -4,8 +4,6 @@
 # they show an example of doing this interactively, but can also cat a file to
 # create_obs_sequence.
 
-## get usgs data
-## convert units
 ## error model
 ## review/plot
 ## write to obs_seq_out
@@ -13,15 +11,6 @@
 ## create_obs_sequence wants tuples of: (??)
 ## [[[ type, location, time, expected error, and optionally a data value and/or a quality control indicator]]]
 
-
-MkDischarageErrors <- function(data, error3SdFunc, retVariance=TRUE) {
-  ## data can only have a single variable?
-  
-  data$error
-  ## divide by 3 to give 1 sd and then square to get variance
-  data$error <-  (data$error/3)^2  ## variance
-  
-}
 
 #=============================================================================================
 #' Three-sigma errors specified as percent of observed plus some quantile of historical flows.
@@ -38,21 +27,19 @@ Model3SdErrPctErrPlusQntlIncpt <- function(data, qntlIncpt=.005, pctErr=.1) {
 }
 
 #=============================================================================================
-#' Three-sigma error specification assuming errors smaller near climatological median (or other 
+#' Three-sigma error specification assuming errors are smaller near climatological median (or other 
 #' quantile).
 #' 
 #' \code{Model3SdErrClimTaper} models three-sigma errors (same units as input) as 
 #' smallest (\code{qntlIncpt} intercept is some climatological quantile) at 
-#' "climatological" observations (\code{qntlClim}, e.g. median = .5) and grow to some maximum percent error
+#' "climatological" observations (\code{qntlClim}, e.g. median = .5) and grow to some maximum 
+#' percent error (\code{pctErr}). This is expressed by
 #' 
 #' \code{quantile(data, qntlIncpt) + pmin( pctErr*data, pctErr*abs(data-quantile(data, qntlClim)) )}
-
-#' of observed plus some quantile of historical record. 
-#' Error (99.5% of all errors) background is always, fith quantile
-#' flow dependent error saturates at 10% of the observed flow as one moves away from
-#' median flow (assumed to be be flows at which rating curve is most accurate). 
+#' 
 #' @param data, Numeric the values for which errors are to be modeled.
-#' @param qntlIncpt Numeric the quantile of historical observations to be used as minimum error.
+#' @param qntlIncpt Numeric the quantile of historical observations to be used as minimum error or intercept.
+#' @param qntlClim Numeric the quantile of historical observations to be used as observation value of minimum error.
 #' @param pctErr Numeric the percent error associated with the observations.
 #' @export
 Model3SdErrClimTaper <- function(data, qntlIncpt=.05, qntlClim=.5, pctErr=.15) {  
@@ -61,6 +48,33 @@ Model3SdErrClimTaper <- function(data, qntlIncpt=.05, qntlClim=.5, pctErr=.15) {
 }
 
 
+#=============================================================================================
+MkDischargeErrors <- function(prettyUsgs, error3SdFunc, retVariance=TRUE) {
+
+  if(!('prettyUsgs' %in% class(prettyUsgs))) {
+    warning("MkDischarge needs a 'prettyUsgs' object as its first argument. Returning.")
+    return(NULL)
+  }
+  
+  ## Is there more than one variable?
+  variables <- attr(prettyUsgs, 'variables')
+
+  
+  calcErr <- function(var) {
+  
+    
+  }
+    
+  
+  variances <- plyr::llply()
+  
+    
+  
+  data$error
+  ## divide by 3 to give 1 sd and then square to get variance
+  data$error <-  (data$error/3)^2  ## variance
+  
+}
 
 
 
