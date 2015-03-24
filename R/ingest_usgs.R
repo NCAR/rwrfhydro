@@ -406,7 +406,7 @@ QuerySiteData.vector <- function(site, product, path='.',
 #' dataOrodell <- PrettySiteData(QuerySiteData(QuerySiteName("FOURMILE CREEK AT ORODELL, CO", p), 
 #'                                             '00060', p), metricOnly=TRUE)
 #' @export
-PrettySiteData <- function(data, tz='UTC', metric=metricOnly, metricOnly=FALSE, 
+PrettySiteData <- function(data, tz='UTC', metric=metricOnly, metricOnly=TRUE, 
                            na.rm=TRUE) {
   if(class(data)[1]=='data.frame')
     return(PrettySiteData.df(data, tz='UTC', metric=metric, metricOnly=metricOnly, na.rm=na.rm))
@@ -414,7 +414,7 @@ PrettySiteData <- function(data, tz='UTC', metric=metricOnly, metricOnly=FALSE,
     return(plyr::llply(data, PrettySiteData.df, tz='UTC', metric=metric, metricOnly=metricOnly, na.rm=na.rm))
 }
 
-PrettySiteData.df <- function(data, tz='UTC', metric=metricOnly, metricOnly=FALSE, 
+PrettySiteData.df <- function(data, tz='UTC', metric=metricOnly, metricOnly=TRUE, 
                               na.rm=TRUE) {
   whNames <- TransUsgsProdStat(names(data),whichIn=TRUE)
   prettyNames <- TransUsgsProdStat(names(data)[whNames])
@@ -539,9 +539,12 @@ PlotPrettyData <- function(prettyUsgs, plot=TRUE) {
       return(NULL)
   }
   variables <- attr(prettyUsgs,'variables')
-  codes <- attr(prettyUsgs,'codes')
-  plotData <- reshape2::melt(prettyUsgs, id=c("dateTime","site_no",codes))
-  timePlot <- ggplot2::ggplot(plotData, ggplot2::aes(x=dateTime, y=value)) +
+  codes     <- attr(prettyUsgs,'codes')
+  variances <- attr(prettyUsgs,'variances')
+  stDevs    <- attr(prettyUsgs,'st.devs.')
+  
+  plotData <- reshape2::melt(prettyUsgs, id=c("dateTime","site_no", codes, variances, stDevs))
+  timePlot <- ggplot2::ggplot(plotData, ggplot2::aes(x=dateTime, y=value, ymin=value-)) +
                 ggplot2::geom_point() + ggplot2::theme_bw()
 
   multiSite <- if(length(unique(plotData$site_no))>1) TRUE else FALSE
@@ -552,6 +555,8 @@ PlotPrettyData <- function(prettyUsgs, plot=TRUE) {
     timePlot <- timePlot + ggplot2::facet_wrap(site_no~variable, scale='fixed', ncol=1)
   if(!multiSite &  multiVar) 
     timePlot <- timePlot + ggplot2::facet_wrap(site_no~variable, scale='free_y', ncol=length(variables))
+  
+  
   
   ## more stuff to be added here.
   OutFunc <- function(plot=TRUE, yLog=FALSE) {
@@ -577,12 +582,14 @@ subset.prettyUsgs <- function(prettyUsgs, ... ) {
  class     <- attr(prettyUsgs, 'class')
  variables <- attr(prettyUsgs, 'variables')
  codes     <- attr(prettyUsgs, 'codes')
- variances <- attr(prettyUsgs, 'variances')
+ variance  <- attr(prettyUsgs, 'variance')
+ stDev     <- attr(prettyUsgs, 'st.dev.')
  attr(prettyUsgs, 'class') <- 'data.frame'
  subPretty <- subset(prettyUsgs, ...)
  attr(subPretty, 'class')      <- class
  attr(subPretty, 'variables')  <- variables
  attr(subPretty, 'codes')      <- codes
- attr(prettyUsgs, 'variances') <- variances
+ attr(prettyUsgs, 'variance')  <- variance
+ attr(prettyUsgs, 'st.dev.')   <- stDev
  subPretty
 }

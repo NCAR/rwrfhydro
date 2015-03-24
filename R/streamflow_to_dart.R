@@ -34,13 +34,11 @@ Model3SdErrPctErrPlusQntlIncpt <- function(data, qntlIncpt=.005, pctErr=.1) {
 #' smallest (\code{qntlIncpt} intercept is some climatological quantile) at 
 #' "climatological" observations (\code{qntlClim}, e.g. median = .5) and grow to some maximum 
 #' percent error (\code{pctErr}). This is expressed by
-#' 
 #' \code{quantile(data, qntlIncpt) + pmin( pctErr*data, pctErr*abs(data-quantile(data, qntlClim)) )}
-#' 
-#' @param data, Numeric the values for which errors are to be modeled.
-#' @param qntlIncpt Numeric the quantile of historical observations to be used as minimum error or intercept.
-#' @param qntlClim Numeric the quantile of historical observations to be used as observation value of minimum error.
-#' @param pctErr Numeric the percent error associated with the observations.
+#' @param data Numeric The values for which errors are to be modeled.
+#' @param qntlIncpt Numeric The quantile of historical observations to be used as minimum error or intercept.
+#' @param qntlClim Numeric The quantile of historical observations to be used as observation value of minimum error.
+#' @param pctErr Numeric The percent error associated with the observations.
 #' @export
 Model3SdErrClimTaper <- function(data, qntlIncpt=.05, qntlClim=.5, pctErr=.15) {  
   # may consider giving warning about length of timeseries? but how to do without time information.
@@ -49,34 +47,54 @@ Model3SdErrClimTaper <- function(data, qntlIncpt=.05, qntlClim=.5, pctErr=.15) {
 
 
 #=============================================================================================
-MkDischargeErrors <- function(prettyUsgs, error3SdFunc, retVariance=TRUE) {
-
+#' Make variances for prettyUsgs discharge observations. 
+#' 
+#' \code{MkDischargeVariance} makes variances fr prettyUsgs discharge observations. The formulation 
+#' of the variances is subjective. Assuming zero-mean Gaussian observation errors, the approach 
+#' here is to supply a function which estimates the 3-sigma (inner 99.5% error quantiles) around 
+#' the observations. This amount seems somewhat easier to conceptualize than 1-sigma, hence here
+#' we are. This function divides the error amounts by 3 and either returns the standard deviation
+#' or squares the result to return the variance (default).
+#' @param prettyUsgs The prettyUsgs discharge observations to which variances are to be added. 
+#' @param error3SdFunc Function which accepts the data and returns 3-sigma error estimates.
+#' @param retVariance Logical Returns variance if TRUE, else returns 1-sigma error.
+#' @examples
+#' dbPath <- '~/usgsDb/'
+#' prettyOrodell <- 
+#'  PrettySiteData(QuerySiteData(QuerySiteName("FOURMILE CREEK AT ORODELL, CO", path=dbPath), 
+#'                               product='00060', path=dbPath))
+#' prettyOro <- MkDischargeVariance(prettyOrodell, Model3SdErrClimTaper)
+#' @export
+MkDischargeVariance <- function(prettyUsgs, error3SdFunc, retVariance=TRUE) {
   if(!('prettyUsgs' %in% class(prettyUsgs))) {
-    warning("MkDischarge needs a 'prettyUsgs' object as its first argument. Returning.")
+    warning("MkDischargeVariance needs a 'prettyUsgs' object as its first argument. Returning.")
     return(NULL)
+  }
+  if(!('Discharge code' %in% names(prettyUsgs))) {
+    warning("MkDischargeVariance only applies to discharge data. Returning.")
+    return(NULL)
+  }
+  
+  if(retVariance) {
+    errExp <- 2; errStr <- 'variance'; errAtt <- 'variances'
+  } else {
+    errExp <- 1; errStr <- 'st.dev.' ; errAtt <- 'st.devs.'
   }
   
   ## Is there more than one variable?
   variables <- attr(prettyUsgs, 'variables')
-
-  
-  calcErr <- function(var) {
-  
-    
+  varSplit <- strsplit(variables,'[] ()]')
+  errNames  <- plyr::laply(varSplit, function(ch) paste0(ch[1],' ',errStr,' (',ch[3],'^',errExp,')'))
+  names(errNames) <- names(variables) <- variables
+  calcErr <- function(var) (error3SdFunc(var)/3)^(errExp)
+  errs <- plyr::llply(variables, function(var) calcErr(prettyUsgs[[var]]))
+  for (var in variables) {
+    prettyUsgs[[errNames[var]]] <- errs[[var]]
   }
-    
-  
-  variances <- plyr::llply()
-  
-    
-  
-  data$error
-  ## divide by 3 to give 1 sd and then square to get variance
-  data$error <-  (data$error/3)^2  ## variance
-  
+  names(errNames) <- NULL
+  attr(prettyUsgs, errAtt) <- errNames
+  prettyUsgs
 }
-
-
 
 
 #dataHourly$POSIXct <-
