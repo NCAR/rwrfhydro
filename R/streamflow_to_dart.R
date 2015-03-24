@@ -14,21 +14,24 @@
 ## [[[ type, location, time, expected error, and optionally a data value and/or a quality control indicator]]]
 
 
-MkDischarageErrors <- function(data) {
+MkDischarageErrors <- function(data, errorFunc) {
+  ## data cna only have a single variable?
   
+  data$error
   ## divide by 3 to give 1 sd and then square to get variance
-  dataHourly$error <-  (dataHourly$error/3)^2  ## variance
+  data$error <-  (data$error/3)^2  ## variance
   
 }
 
 
-ModelErrors1 <- function(data) {
-  ## Error (99.5% of all errors) doesnt exceed the fifth quantile plus 10% of the observed flow
-#  beta = quantile(data$????Q.cms,.005)
-  eta = .1
-  data$error <-  beta + (eta * dataHourly$Q.cms)
-  fileSeqId='10PctErrPlus5PctlIncpt'
-}
+## Error (99.5% of all errors) doesnt exceed the fifth quantile plus 10% of the observed flow
+## 10PctErrPlus5PctlIncpt
+#ModelErrors1 <- function(data, beta=quantile(data, eta) {
+  #beta = quantile(data$????Q.cms,.005)
+#  eta = .1
+#  data$error <-  beta + (eta * data$Q.cms)
+  
+#}
 
 #=============================================================================================
 #'

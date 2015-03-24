@@ -36,7 +36,7 @@ library("rwrfhydro")
 
 Say you wanted to find 
 ```{r}
- dbPath <- '/Users/jamesmcc/usgsDb' 
+ dbPath <- '/Users/james/usgsDb' 
 ```
 
 
@@ -55,7 +55,7 @@ huc8 <- GetSiteHuc(stnDf$site_no)
 str(FindUsgsStns(huc=huc8))
 ```
 
-Pull the data for this HUC. Curerntly, this grabs all available products for the HUC. Note that the HUC data are organized by product then by data and metadata in the returned list. (Also note that this command sometimes fails on the remote end and may need to be rerun. We may code a while on a try() to avoid this, though that could take some time.)
+Pull the data for this HUC. Currently, this grabs all available products for the HUC. Note that the HUC data are organized by product then by data and metadata in the returned list. (Also note that this command sometimes fails on the remote end and may need to be rerun. We may code a while on a try() to avoid this, though that could take some time.)
 ```{r}
 coData <- GetUsgsHucData(huc=huc8)
 str(coData)
@@ -96,6 +96,8 @@ oroPlot <- PlotPrettyData(prettyOrodell)
 siteInfo<-QuerySiteInfo(c('station_nm','site_no','stateCd'), path=dbPath)
 dataCO <- PrettySiteData(QuerySiteData(subset(siteInfo, stateCd=='08' & product=='00060')$site_no, 
                                        product='00060', path=dbPath))
-coPlot <- PlotPrettyData(subset(dataCO, site_no %in% unique(dataCO$site_no)[1:3]), plot=FALSE) ## 1:3 just to make the plot legible
+## 1:3 just to make the plot legible
+coPlot <- PlotPrettyData(subset(dataCO, site_no %in% unique(dataCO$site_no)[1:3]), plot=FALSE) 
+coPlot(yLog=TRUE)
 ```
 

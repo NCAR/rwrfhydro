@@ -285,14 +285,18 @@ QuerySiteProd <- function(site, path='.',
 #' QuerySiteName('BOULDER CREEK AT MOUTH NEAR LONGMONT, CO', '~/streamflow/OBS/')
 #' @export
 QuerySiteName <- function(site, path='.', 
-                          retSiteId=is.na(try(as.numeric(site),silent=TRUE)), 
+                          retSiteId=tryCatch(is.na(as.numeric(site)), 
+                                             warning=function(w) TRUE, 
+                                             error=function(e) TRUE), 
                           metaDBFileName='usgsDataRetrieval.metaDatabase.RData') {
   ## loads metaDB
   LoadMetaDB(path=path, metaDBFileName=metaDBFileName)
   if(retSiteId) {
-    subset(QuerySiteInfo(c('site_no','station_nm'),path,metaDBFileName), station_nm %in% site)[1,'site_no']
+    subset(QuerySiteInfo(c('site_no','station_nm'),path,metaDBFileName), 
+           station_nm %in% site)[1,'site_no']
   } else {
-    subset(QuerySiteInfo(c('site_no','station_nm'),path,metaDBFileName), site_no %in% site)[1,'station_nm']
+    subset(QuerySiteInfo(c('site_no','station_nm'),path,metaDBFileName), 
+           site_no %in% site)[1,'station_nm']
   }
 }
 
@@ -358,7 +362,8 @@ QuerySiteData <- function(site, product, path='.',
 #' dataOrodell <- PrettySiteData(QuerySiteData(QuerySiteName("FOURMILE CREEK AT ORODELL, CO", p), 
 #'                                             '00060', p), metricOnly=TRUE)
 #' @export
-PrettySiteData <- function(data, tz='UTC', metric=metricOnly, metricOnly=FALSE) {
+PrettySiteData <- function(data, tz='UTC', metric=metricOnly, metricOnly=FALSE, 
+                           na.rm=TRUE) {
   whNames <- TransUsgsProdStat(names(data),whichIn=TRUE)
   prettyNames <- TransUsgsProdStat(names(data)[whNames])
   names(data)[whNames] <- prettyNames
@@ -394,6 +399,8 @@ PrettySiteData <- function(data, tz='UTC', metric=metricOnly, metricOnly=FALSE) 
     }
   }
   
+  if(na.rm) data <- data[-which(is.na(data[attr(data,'variables')])),]
+  attr(data,'class') <- c('prettyUsgs', 'data.frame')
   data
 }
 
@@ -463,17 +470,15 @@ TransUsgsProdStat <- function(names, whichIn=FALSE) {
 #' @param data dataframe returned from PrettySiteData
 #' @return A function(closure) with arguments controlling the look of its graphical output. It's actual
 #'         return value is a list of ggplot2 object which can be custom manipulated. 
-#' @examples
-#' 
+#' #@examples
 #' @export
 PlotPrettyData <- function(data, plot=TRUE) {
   str(data)
   variables <- attr(data,'variables')
   codes <- attr(data,'codes')
-  print(variables)
-  print(codes)
+  #print(variables)
+  #print(codes)
   plotData <- reshape2::melt(data, id=c("dateTime","site_no",codes))
-  str(plotData)
   timePlot <- ggplot2::ggplot(plotData, ggplot2::aes(x=dateTime, y=value)) +
                 ggplot2::geom_point() + ggplot2::theme_bw()
 
@@ -497,3 +502,21 @@ PlotPrettyData <- function(data, plot=TRUE) {
   invisible(OutFunc)
 }
 
+##============================================================================================
+#' subset prettyUsgs objects.
+#' \code{subset.prettyUsgs} subsets prettyUsgs objects and retains their attributes.
+#' @param prettyUsgs A dataframe of class c("prettyUsgs", "data.frame") returned from PrettySiteData
+#' @return A dataframe of class c("prettyUsgs", "data.frame")
+#' #@examples
+#' @export
+subset.prettyUsgs <- function(prettyUsgs, ... ) {
+ class     <- attr(prettyUsgs, 'class')
+ variables <- attr(prettyUsgs, 'variables')
+ codes     <- attr(prettyUsgs, 'codes')
+ attr(prettyUsgs, 'class') <- 'data.frame'
+ subPretty <- subset(prettyUsgs, ...)
+ attr(subPretty, 'class')     <- class
+ attr(subPretty, 'variables') <- variables
+ attr(subPretty, 'codes')     <- codes
+ subPretty
+}
