@@ -14,7 +14,7 @@
 ## [[[ type, location, time, expected error, and optionally a data value and/or a quality control indicator]]]
 
 
-MkDischarageErrors <- function(data, errorFunc) {
+MkDischarageErrors <- function(data, error3SdFunc, retVariance=TRUE) {
   ## data can only have a single variable?
   
   data$error
@@ -24,23 +24,29 @@ MkDischarageErrors <- function(data, errorFunc) {
 }
 
 #=============================================================================================
-#' Errors specified as percent of observed plus some quantile of historical flows.
+#' Three-sigma errors specified as percent of observed plus some quantile of historical flows.
 #' 
-#' \code{ModelErrPctErrPlusQntlIncpt} models errors (same units as input) as percent 
-#' of observed plus some quantile of historical record. 
+#' \code{Model3SdErrPctErrPlusQntlIncpt} models three sigma (standard deviation) errors (same 
+#' units as input) as percent of observed plus some quantile of historical record. 
 #' @param data, Numeric the values for which errors are to be modeled.
 #' @param qntlIncpt Numeric the quantile of historical observations to be used as minimum error.
 #' @param pctErr Numeric the percent error associated with the observations.
 #' @export
-ModelErrPctErrPlusQntlIncpt <- function(data, qntlIncpt=.005, pctErr=.1) {
+Model3SdErrPctErrPlusQntlIncpt <- function(data, qntlIncpt=.005, pctErr=.1) {
   # may consider giving warning about length of timeseries? but how to do without time information.
   quantile(data, qntlIncpt) + (pctErr * data$Q.cms)
 }
 
 #=============================================================================================
-#' Errors specified as percent of observed plus some quantile of historical flows.
+#' Three-sigma error specification assuming errors smaller near climatological median (or other 
+#' quantile).
 #' 
-#' \code{ModelErrPctErrPlusQntlIncpt} models errors (same units as input) as percent 
+#' \code{Model3SdErrClimTaper} models three-sigma errors (same units as input) as 
+#' smallest (\code{qntlIncpt} intercept is some climatological quantile) at 
+#' "climatological" observations (\code{qntlClim}, e.g. median = .5) and grow to some maximum percent error
+#' 
+#' \code{quantile(data, qntlIncpt) + pmin( pctErr*data, pctErr*abs(data-quantile(data, qntlClim)) )}
+
 #' of observed plus some quantile of historical record. 
 #' Error (99.5% of all errors) background is always, fith quantile
 #' flow dependent error saturates at 10% of the observed flow as one moves away from
@@ -49,12 +55,11 @@ ModelErrPctErrPlusQntlIncpt <- function(data, qntlIncpt=.005, pctErr=.1) {
 #' @param qntlIncpt Numeric the quantile of historical observations to be used as minimum error.
 #' @param pctErr Numeric the percent error associated with the observations.
 #' @export
-ModelErrorsClimTaper <- function(data, qntlClim=.5, pctErr=.15) {
-  climObs = quantile(data, qntlClim)
-  climObs + pmin( pctErr*data, pctErr*abs(data-climObs) )
+Model3SdErrClimTaper <- function(data, qntlIncpt=.05, qntlClim=.5, pctErr=.15) {  
+  # may consider giving warning about length of timeseries? but how to do without time information.
+  quantile(data, qntlIncpt) + pmin( pctErr*data, pctErr*abs(data-quantile(data, qntlClim)) )
 }
 
-#fileSeqId='max15PctErrMedianTaperTo0Plus5PctlIncpt'
 
 
 

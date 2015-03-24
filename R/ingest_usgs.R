@@ -425,7 +425,10 @@ PrettySiteData <- function(data, tz='UTC', metric=metricOnly, metricOnly=FALSE,
     }
   }
   
-  if(na.rm) data <- data[-which(is.na(data[attr(data,'variables')])),]
+  if(na.rm & length(whMiss <- which(is.na(data[,attr(data,'variables')[1]]))) ) {
+    data <- data[-whMiss,]
+  }
+    
   attr(data,'class') <- c('prettyUsgs', 'data.frame')
   data
 }

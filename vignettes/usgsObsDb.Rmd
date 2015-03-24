@@ -44,25 +44,25 @@ Say you wanted to find
 
 Perhaps you know the lat/lon of a gage (e.g. from frxst_pts_out.txt) and you need the HUC8. The `within` argument is 
 taken to be in decimal degrees. 
-```{r}
+```{r, results='hold'}
 stnDf <- FindUsgsStns(stnLon=254.67374999999998408,stnLat=40.018666670000001773,within=.001)
 str(stnDf)
 ```
 
 Now you have the site_no or station ID number. You could have also used `FindUsgsStns()` to reveal the gages in the HUC8. This function is a wrapper on dataRetrieval::whatNWISsites which is very flexible. Our wrapper has been written to focus on instantaneous values. Note the flexibility and generality of the underlying function. 
-```{r}
+```{r, results='hold'}
 huc8 <- GetSiteHuc(stnDf$site_no)
 str(FindUsgsStns(huc=huc8))
 ```
 
 Pull the data for this HUC. Currently, this grabs all available products for the HUC. Note that the HUC data are organized by product then by data and metadata in the returned list. (Also note that this command sometimes fails on the remote end and may need to be rerun. We may code a while on a try() to avoid this, though that could take some time.)
-```{r}
+```{r, results='hold'}
 coData <- GetUsgsHucData(huc=huc8)
 str(coData)
 ```
 
 Now save this data to the local database. 
-```{r}
+```{r, results='hold'}
 coFiles <- SaveHucData(coData, outPath=dbPath)
 coFiles
 ```
@@ -80,19 +80,19 @@ QuerySiteInfo(c('station_nm','site_no','dec_lat_va','dec_lon_va'), path=dbPath)
 ```
 
 Say you just want Orodell and you want your code to be readable, translage the name to the code with QuerySiteName (which translates both ways).
-```{r}
+```{r, results='hold'}
 dataOrodell <- QuerySiteData(QuerySiteName("FOURMILE CREEK AT ORODELL, CO", path=dbPath), product='00060', path=dbPath)
 str(dataOrodell)
 ```
 
 Now make it pretty and plot.
-```{r}
+```{r PlotPrettyOrodell, fig.width = 12, fig.height = 6, out.width='700', out.height='350'}
 prettyOrodell <- PrettySiteData(dataOrodell, metric=TRUE)
 oroPlot <- PlotPrettyData(prettyOrodell)
 ```
 
 
-```{r}
+```{r PlotPrettyCO, fig.width = 12, fig.height = 6, out.width='700', out.height='350'}
 siteInfo<-QuerySiteInfo(c('station_nm','site_no','stateCd'), path=dbPath)
 dataCO <- PrettySiteData(QuerySiteData(subset(siteInfo, stateCd=='08' & product=='00060')$site_no, 
                                        product='00060', path=dbPath))
