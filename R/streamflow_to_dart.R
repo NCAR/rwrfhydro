@@ -38,13 +38,13 @@ MkDischarageErrors <- function(data, errorFunc) {
 #' Error (99.5% of all errors) background is always, fith quantile
 #' flow dependent error saturates at 10% of the observed flow as one moves away from
 #' median flow (assumed to be be flows at which rating curve is most accurate). 
-ModelErrorsClimTaper <- function(data) {
+#ModelErrorsClimTaper <- function(data) {
   
-beta = quantile(dataHourly$Q.cms,.05)
-eta = .15
-dataHourly$error <-  beta + pmin(eta*dataHourly$Q.cms,
-                                 eta*abs(dataHourly$Q.cms-quantile(dataHourly$Q.cms,.5)) )
-}
+#beta = quantile(dataHourly$Q.cms,.05)
+#eta = .15
+#dataHourly$error <-  beta + pmin(eta*dataHourly$Q.cms,
+                                 #eta*abs(dataHourly$Q.cms-quantile(dataHourly$Q.cms,.5)) )
+#}
 
 #fileSeqId='max15PctErrMedianTaperTo0Plus5PctlIncpt'
 

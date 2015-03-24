@@ -22,7 +22,7 @@
 #' @param stnLon optional
 #' @param stnLat optional
 #' @param within optional, goes with stnLon and stnLat and specifies a search radius in decimal miles.
-#' @param huc optional EIGHT digit HUC code. 
+#' @param huc8 optional EIGHT digit HUC code. 
 #' @param siteType the type of USGS site to look for. 
 #' @param hasDataTypeCd the kind of data of interest (iv=instantaneous, dv=daily, etc.)
 #' @param siteOutput how much detail to return 
@@ -59,6 +59,9 @@ FindUsgsStns <- function(stnLon=NULL, stnLat=NULL, within=NULL,
 #' output path is supplied, an existing database is examined for existing records and
 #' the data retrieved from the USGS only extends the available and is saved in the data base.
 #' Could eventually use startDate and endDate to tweak this for calls which dont care about archival.
+#' @param huc8 Character The eight-digit HUC code. 
+#' @param outPath Character The path to the database directory
+#' @param metaDBFileName Character The name of the database metadata file.
 #' @examples
 #' bldrHucData    <- GetUsgsHucData(huc='10190005')
 #' satilpaHucData <- GetUsgsHucData(huc='03160203')
@@ -144,15 +147,20 @@ GetUsgsHucData <- function(huc8, outPath=NULL,
 #' metadata file. Input list is grouped by HUC codes where each HUC has data and meta lists. The output files 
 #' are written to outPath with the following format HHHHHHHH.data.RData where HHHHHHHH is the HUC8 code. The 
 #' name of the metadata file is configurable. The metadata file contains metadata for all files in the outPath. 
+#' @param hucData List Returned from GetUsgsHucData.
+#' @param outPath Character The path to the database directory
+#' @param metaDBFileName Character The name of the database metadata file.
+#' @param overwriteHucDataFile Logical Replace/overwrite the existing data file for the HUC with the current data.
+#' @examples
 #' files <- SaveHucData(GetUsgsHucData(huc='10190005'), outPath='/Users/jamesmcc/streamflow/OBS') ##boulder, CO
 #' files <- SaveHucData(GetUsgsHucData(huc='03160203'), outPath='/Users/jamesmcc/streamflow/OBS') ##satilpa, AL
 #' files <- SaveHucData(GetUsgsHucData(huc='03020104'), outPath='/Users/jamesmcc/streamflow/OBS') ##vans, NC
 #' @export
-SaveHucData <- function(out, outPath, 
+SaveHucData <- function(hucData, outPath, 
                         metaDBFileName='usgsDataRetrieval.metaDatabase.RData', 
                         overwriteHucDataFile=FALSE) {
   ##What the HUC?
-  allHuc <- unlist(plyr::llply(out, function(ll) ll$meta$siteInfo$hucCd))
+  allHuc <- unlist(plyr::llply(hucData, function(ll) ll$meta$siteInfo$hucCd))
   ## make sure there's only one HUC.
   if(!AllSame(allHuc)) warning('Not all stations in the same HUC, though they should be.', immediate.=TRUE)
   huc=as.character(allHuc[1])
@@ -169,8 +177,8 @@ SaveHucData <- function(out, outPath,
   ## prepare the data for output.
   ## name the output variables to be used in the files.
   dataVar <- paste0('data.',huc[1])
-  assign(dataVar, out)
-  outHucMetaDB <- out
+  assign(dataVar, hucData)
+  outHucMetaDB <- hucData
   for (name in names(outHucMetaDB)) outHucMetaDB[[name]]$data <- NULL
   #str(outHucMetaDB)
   
@@ -208,9 +216,9 @@ SaveHucData <- function(out, outPath,
 #==============================================================================================
 #' For an indivudal product, grab the HUC metadata to be stored in the database. 
 #' \code{ExtractHucMeta} extracts the metadata to stash in a usgsDataRetrieval database for an individual product.
-#' It gathers the attributes returned by (returned from dataRetrieval::readNWISuv) , supplements siteInfo with
+#' It gathers the attributes returned by dataRetrieval::readNWISuv , supplements siteInfo with
 #' startTime and endTime for each station in UTC to assist appending the records. 
-#' @param hucProdDf
+#' @param hucProdDf dataframe from dataRetrieval::readNWISuv
 #' @return list of metadata for a 
 ExtractHucMeta <- function(hucProdDf) {
   hucMeta <- list( siteInfo      = attr(hucProdDf, 'siteInfo'), 
@@ -304,7 +312,9 @@ QuerySiteName <- function(site, path='.',
 #==============================================================================================
 #' Returns the desired information from the database file.
 #' \code{QuerySiteInfo} gets the specified info from the local database.
-#' @param info Character vector, information fields in HUC$prod$meta$SiteInfo$info
+#' @param info Character vector, information fields in HUC$prod$meta$SiteInfo$info.
+#' @param path Character The path to the database directory.
+#' @param metaDBFileName Character The name of the metadata file.
 #' @return dataframe of requested info with all available HUC and product codes.
 #' @examples 
 #' QuerySiteInfo(c('station_nm','site_no'), path='~/streamflow/OBS/')
@@ -324,6 +334,7 @@ QuerySiteInfo <- function(info, path='.', metaDBFileName='usgsDataRetrieval.meta
 #' @param site Character USGS site number.
 #' @param product Character USGS product code number.
 #' @param path Character path to the database.
+#' @param metaDBFileName Character The name of the metadata file.
 #' @return dataframe of data with pertinent attributes.
 #' @examples 
 #' p='~/streamflow/OBS/'
@@ -356,6 +367,8 @@ QuerySiteData <- function(site, product, path='.',
 #' @param data Dataframe from QuerySiteData
 #' @param metric Logical
 #' @param metricOnly Logical
+#' @param tz Character The timezone for the POSIXct dataTime variable to be returned. 
+#' @param na.rm Logical Remove all missing observations?
 #' @return dataframe similar to input with improved names and/or metric variables.
 #' @examples 
 #' p='~/streamflow/OBS/'
@@ -423,7 +436,8 @@ LoadMetaDB <- function(path='.',
 #' Translate USGS product/stat codes to something readable (and vice versa).
 #' \code{TransUsgsProdStat} Translate USGS product/stat codes to something readable (and vice versa) 
 #' using a lookup table. 
-#' @param prod_stat Character product_stat codes separated with an underscore. 
+#' @param names Character product_stat codes (e.g. 'X_00060_00011') or their translation 
+#' (e.g. 'Discharge (cfs)') separated with an underscore. 
 #' @param whichIn Logical
 #' @return if whichIn==FALSE : Character of the translation.
 #'         if whichIn==TRUE  : Integer index which passed names are in the table. 
@@ -467,18 +481,19 @@ TransUsgsProdStat <- function(names, whichIn=FALSE) {
 ##============================================================================================
 #' Plot USGS site data which has been prettied with PrettySiteData.
 #' \code{PlotPrettyData} plots USGS site data which has been prettied with PrettySiteData.
-#' @param data dataframe returned from PrettySiteData
+#' @param prettyUsgs dataframe returned from PrettySiteData
+#' @param plot Logical to plot before returning or not.
 #' @return A function(closure) with arguments controlling the look of its graphical output. It's actual
 #'         return value is a list of ggplot2 object which can be custom manipulated. 
-#' #@examples
+#' @examples
+#' # See vignette "Collect USGS stream observations and build a local database" for examples.
 #' @export
-PlotPrettyData <- function(data, plot=TRUE) {
-  str(data)
-  variables <- attr(data,'variables')
-  codes <- attr(data,'codes')
+PlotPrettyData <- function(prettyUsgs, plot=TRUE) {
+  variables <- attr(prettyUsgs,'variables')
+  codes <- attr(prettyUsgs,'codes')
   #print(variables)
   #print(codes)
-  plotData <- reshape2::melt(data, id=c("dateTime","site_no",codes))
+  plotData <- reshape2::melt(prettyUsgs, id=c("dateTime","site_no",codes))
   timePlot <- ggplot2::ggplot(plotData, ggplot2::aes(x=dateTime, y=value)) +
                 ggplot2::geom_point() + ggplot2::theme_bw()
 
@@ -506,8 +521,9 @@ PlotPrettyData <- function(data, plot=TRUE) {
 #' subset prettyUsgs objects.
 #' \code{subset.prettyUsgs} subsets prettyUsgs objects and retains their attributes.
 #' @param prettyUsgs A dataframe of class c("prettyUsgs", "data.frame") returned from PrettySiteData
+#' @param ... additional arguments to subset.data.frame
 #' @return A dataframe of class c("prettyUsgs", "data.frame")
-#' #@examples
+#' # See vignette "Collect USGS stream observations and build a local database" for examples.
 #' @export
 subset.prettyUsgs <- function(prettyUsgs, ... ) {
  class     <- attr(prettyUsgs, 'class')

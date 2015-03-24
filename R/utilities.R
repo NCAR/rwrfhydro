@@ -254,7 +254,7 @@ ReshapeMultiNcdf <- function(myDf) {
 
 #' Create and or name a list with its entries.
 #' \code{NamedList} creates a list with names equal to its entries. 
-#' @param theNames
+#' @param theNames Vector to be coerced to character.
 #' @return List with names equal to entries.
 #' @examples 
 #' NamedList(1:5)
@@ -268,7 +268,7 @@ NamedList <- function(theNames) {
 #' Are all vector entries the same/identical.
 #' \code{AllSame} check if all vector entries are same/identical.
 #' @param x A vector.
-#' @param na.rm=FALSE
+#' @param na.rm Logical Remove NAs from output?
 #' @return Logical
 #' @examples 
 #' AllSame( 1:5 )
