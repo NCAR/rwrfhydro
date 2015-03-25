@@ -43,7 +43,7 @@ options(width = 120)
 
 This is the path to the directory where you want your database to be built:
 ```{r}
- dbPath <- '/Users/jamesmcc/usgsDb' 
+ dbPath <- '~/usgsDb' 
 ```
 
 

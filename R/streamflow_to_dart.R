@@ -23,7 +23,7 @@
 #' @export
 Model3SdErrPctErrPlusQntlIncpt <- function(data, qntlIncpt=.005, pctErr=.1) {
   # may consider giving warning about length of timeseries? but how to do without time information.
-  quantile(data, qntlIncpt) + (pctErr * data$Q.cms)
+  quantile(data, qntlIncpt) + (pctErr * pretty$Q.cms)
 }
 
 #=============================================================================================
@@ -64,7 +64,9 @@ Model3SdErrClimTaper <- function(data, qntlIncpt=.05, qntlClim=.5, pctErr=.15) {
 #'  PrettySiteData(QuerySiteData(QuerySiteName("FOURMILE CREEK AT ORODELL, CO", path=dbPath), 
 #'                               product='00060', path=dbPath),metricOnly=FALSE, metric=TRUE)
 #' prettyOro <- MkDischargeVariance(prettyOrodell, Model3SdErrClimTaper)
-#' oroPlot <- PlotPrettyData(prettyOro)
+#' prettyO <- subset(prettyOro, dateTime < as.POSIXct('2012-01-01'))
+#' oroPlot <- PlotPrettyData(prettyO)
+#' 
 #' @export
 MkDischargeVariance <- function(prettyUsgs, error3SdFunc, retVariance=TRUE) {
   if(!('prettyUsgs' %in% class(prettyUsgs))) {
@@ -76,6 +78,7 @@ MkDischargeVariance <- function(prettyUsgs, error3SdFunc, retVariance=TRUE) {
     return(NULL)
   }
   
+  ## only return one, NOT both
   if(retVariance) {
     errExp <- 2; errStr <- 'variance'; errAtt <- 'variances'
   } else {
@@ -98,60 +101,88 @@ MkDischargeVariance <- function(prettyUsgs, error3SdFunc, retVariance=TRUE) {
 }
 
 
+
+#=============================================================================================
+# Make variances for prettyUsgs discharge observations. 
+# 
+#dataHourly <- plyr::ddply(pretty, .(year, month, day, hour),
+                    #summarize,
+                    ##Q.cms=mean(`discharge (cfs)`*cfs2cms, na.rm=TRUE) )
+#                    Q.cms=`discharge (cfs)`[which.max(minute)]*cfs2cms )
+
 #dataHourly$POSIXct <-
   #as.POSIXct(with(dataHourly, paste0(year,'/',month,'/',day,'_',hour)),format='%Y/%m/%d_%H')
 
 
-
-MkDischargeObsSeq <- function(data, outPath, stationName ) {
-
-  ## Discharge obs type currently in pre-release DART
-  ## DART/obs_kind/DEFAULT_obs_kind_mod.F90
-  typeQ=290
+#=============================================================================================
+#' Writes an ascii obs_seq.in file for DART binary create_obs_sequence
+#' 
+#' \code{WriteDischargeObsSeq} makes variances fr prettyUsgs discharge observations. The formulation 
+#' of the variances is subjective. Assuming zero-mean Gaussian observation errors, the approach 
+#' here is to supply a function which estimates the 3-sigma (inner 99.5% error quantiles) around 
+#' the observations. This amount seems somewhat easier to conceptualize than 1-sigma, hence here
+#' we are. This function divides the error amounts by 3 and either returns the standard deviation
+#' or squares the result to return the variance (default).
+#' @param pretty The prettyUsgs discharge observations to which variances are to be added. 
+#' @param outPath     Character The directory where the file is to be written.
+#' @param stationName Character To help identify the outputfile and the station data in the file.
+#' @param errorId     Character To help identify the outputfile and the error function used.
+#' @param typeQ       Numeric   Stream discharge obs type index in my pre-release version of DART. It could change.
+#'                              DART/obs_kind/DEFAULT_obs_kind_mod.F90
+# @examples
+#mkGaugeObsSeq( loganData, '~/boulderCreek/', 'loganMill' )
+#mkGaugeObsSeq( sunshineData, '~/boulderCreek/', 'sunshine' ) 
+#' @concept DART dataMgmt manip
+#' @export
+WritesDischargeObsSeq <- function(pretty, outPath, 
+                              stationName, errorId, 
+                              typeQ=20) {
+  
+  variables <- attr(prettyUsgs,'variables')
+  codes     <- attr(prettyUsgs,'codes')
+  variances <- attr(prettyUsgs,'variances')
+  stDevs    <- attr(prettyUsgs,'st.devs.')
+  errVars   <- c(variances,stDevs)
+  
+  ## only output a single a single variable+variance. 
+  if(length(variables)>1 && length(errVars)) {
+    errUnits <- plyr::laply(strsplit(errVars,'[(^)]'), '[[', 2)
+    if(length(errVars)==1) {
+      theVar <- variables[grep(errUnits,variables)]
+      theErr <- errVars
+    } else {
+      varsWErr <- variables[plyr::laply(errUnits, grep, variables)]
+      whVar <- readline(prompt=paste0('Please select a single variable to plot with error bars: \n',
+                                      paste(1:length(varsWErr),varsWErr, sep=': ', collapse=' \n'),' \n'))
+      theVar <- variables[as.numeric(whVar)]
+      theErr <- errVars[grep( strsplit(theVar,'[(^)]')[[1]][2], errUnits )]
+    }
+    prettyUsgs <- prettyUsgs[,c("dateTime","site_no", codes, theVar, theErr)]
+    variables <- theVar
+    errVars   <- theErr
+  }
   
   ## remove missing observations
-  whNa <- which(is.na(data$`discharge (cfs)`))
-  if(length(whNa)) data <- data[-whNa,]
+  for (var in variables) {
+    whNa <- which(is.na(pretty[[var]]))
+    if(length(whNa)) pretty <- pretty[-whNa,]
+  }
   
   ## time in year month day hour minute second
-  data$year   <-  format(data$POSIXct, '%Y')
-  data$month  <-  format(data$POSIXct, '%m')
-  data$day    <-  format(data$POSIXct, '%d')
-  data$hour   <-  format(data$POSIXct, '%H')
-  data$minute <-  format(data$POSIXct, '%M')
-  data$second <-  format(data$POSIXct, '%S')
+  pretty$year   <-  format(pretty$POSIXct, '%Y')
+  pretty$month  <-  format(pretty$POSIXct, '%m')
+  pretty$day    <-  format(pretty$POSIXct, '%d')
+  pretty$hour   <-  format(pretty$POSIXct, '%H')
+  pretty$minute <-  format(pretty$POSIXct, '%M')
+  pretty$second <-  format(pretty$POSIXct, '%S')
   
-  cfs2cms <- 0.0283168466  ## cms/cfs
+  outFileName <- paste0(outPath,'/',stationName,'.Q.cms.MASTER.',errorId,'.obs_seq.inputForCreateObsSeq')
+
+  ## this is the file listed at the end of the file we will write, it is the name of the
+  ## file to be made by create_obs_seq
+  outSeqFileName <- paste0(stationName,'.Q.cms.MASTER.',errorId,'.obs_seq.out')
   
-  
-  ## put the data onto hourly timestep
-  dataHourly <- ddply(data, .(year, month, day, hour),
-                      summarize,
-                      ##Q.cms=mean(`discharge (cfs)`*cfs2cms, na.rm=TRUE) )
-                      Q.cms=`discharge (cfs)`[which.max(minute)]*cfs2cms )
-  ## lost lat, lon, ele but they are scalar anyway.
-  
-  ## error model
-  ## what are the units of the expected error? = VARIANCE
-  ## Heteroskedastic, e.g. Clark et al 2008, Noh et al 2011
-  ## Specify the error as the 99.5% or the 3rd standard deviation
-  
-  
-  #   ggplot( subset(dataHourly, POSIXct>=as.POSIXct('2013-05-01') & POSIXct<=as.POSIXct('2013-06-01')),
-  #         aes(x=POSIXct, y=Q.cms, ymax=Q.cms+2*sqrt(error), ymin=Q.cms-2*sqrt(error))) +
-  #           geom_errorbar(color='red') +
-  #             geom_point(size=.85)
-  
-  require(scales)
-  print(
-    ggplot( dataHourly, aes(x=POSIXct, y=Q.cms, ymax=Q.cms+2*sqrt(error), ymin=Q.cms-2*sqrt(error))) +
-      geom_errorbar(color='red') +
-      geom_point(size=.85) + scale_x_datetime(breaks = date_breaks("1 month"), labels = date_format("%m\n%Y") )  
-  )
-  ## ###################################################################
   ## open a file for writing
-  outFileName <- paste0(outPath,'/',stationName,'.Q.cms.MASTER.',fileSeqId,'.obs_seq.inputForCreateObsSeq')
-  outSeqFileName <- paste0(stationName,'.Q.cms.MASTER.',fileSeqId,'.obs_seq.out')
   outCon <- file(outFileName, "w")  # open an output file connection
   
   ## create_obs_seqence meta info
@@ -166,7 +197,7 @@ MkDischargeObsSeq <- function(data, outPath, stationName ) {
   ## input meta data for qc field             1
   ##missing
   
-  cat(as.character(nrow(dataHourly)+1),file = outCon, sep = "\n")
+  cat(as.character(nrow(pretty)+1),file = outCon, sep = "\n")
   nCopies <- 1
   cat(as.character(nCopies),file = outCon, sep = "\n")
   nQuality <- 0
@@ -214,23 +245,25 @@ MkDischargeObsSeq <- function(data, outPath, stationName ) {
   ##                 20 STREAM_FLOW
   ##2 [[[repeat]]]
   
-  theEle <- as.character(data$ele.ft[1]*.3048)
-  theLon <- format(data$lon[1] %% 360, digits=20)
-  theLat <- format(data$lat[1], digits=20)
+  theEle <- as.character(pretty$atl._va[1]*feet2meters)
+  theLon <- pretty$dec_long_va
+  theLon <- format(theLon %% 360, digits=20)
+  theLat <- format(pretty$lat[1], digits=20)
   
-  for (i in 1:nrow(dataHourly) ) {
+  for (i in 1:nrow(pretty) ) {
     cat(as.character(i),
-        as.character(20),
+        as.character(typeQ),
         as.character(-1),
         theEle, theLon, theLat,
-        paste(as.character(dataHourly$year[i]),
-              as.character(dataHourly$month[i]),
-              as.character(dataHourly$day[i]),
-              as.character(dataHourly$hour[i]),
-              as.character(0), as.character(0),
+        paste(as.character(pretty$year[i]),
+              as.character(pretty$month[i]),
+              as.character(pretty$day[i]),
+              as.character(pretty$hour[i]),
+              as.character(pretty$minute[i]), 
+              as.character(pretty$second[i]),
               sep=' '),
-        as.character(dataHourly$error)[i], 
-        as.character(dataHourly$Q.cms[i]),
+        as.character(pretty$error)[i], 
+        as.character(pretty$Q.cms[i]),
         file=outCon, sep='\n')
   }
   
@@ -240,6 +273,3 @@ MkDischargeObsSeq <- function(data, outPath, stationName ) {
   close(outCon)
 }
 
-#mkGaugeObsSeq( loganData, '~/boulderCreek/', 'loganMill' )
-#mkGaugeObsSeq( sunshineData, '~/boulderCreek/', 'sunshine' ) 
-2

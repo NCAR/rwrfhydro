@@ -262,7 +262,9 @@ ReshapeMultiNcdf <- function(myDf) {
     for (i in unique(myDf$variableGroup)) {
         newDF[,i] <- subset(myDf$value, myDf$variableGroup==i)
         }
-    newDF$wy <- ifelse(as.numeric(format(newDF$POSIXct,"%m"))>=10,as.numeric(format(newDF$POSIXct,"%Y"))+1,as.numeric(format(newDF$POSIXct,"%Y")))
+    newDF$wy <- ifelse(as.numeric(format(newDF$POSIXct,"%m"))>=10,
+                       as.numeric(format(newDF$POSIXct,"%Y"))+1,
+                       as.numeric(format(newDF$POSIXct,"%Y")))
     newDF
 }
 
@@ -292,6 +294,6 @@ NamedList <- function(theNames) {
 AllSame <- function(x, na.rm=FALSE) all(x==x[which(!is.na(x))[1]], na.rm=na.rm)
 
 
-#' coversion constants
+# coversion constants
 cfs2cms <- 0.0283168466  
 feet2meters <- 0.30480

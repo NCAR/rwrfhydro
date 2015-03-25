@@ -105,7 +105,10 @@ GetUsgsHucData <- function(huc8, outPath=NULL,
   ## Some times fails for various reasons, eventually wrap these various retrievals in try()?
   if(AllSame(meta$startDate) && AllSame(meta$endDate)) {
     # This is the case where all station record updates are exactly the same in time.
+    foo<-GetUsgsIvProduct(subset(meta, parm_cd=='00060'))
+    
     out <- plyr::dlply(meta, plyr::.(parm_cd), GetUsgsIvProduct) 
+  
   } else {
     # This is the case where station record updates are different over time. 
     outStnIndiv <- plyr::dlply(meta, plyr::.(parm_cd), 
@@ -213,17 +216,49 @@ SaveHucData <- function(hucData, outPath,
   
 
 #==============================================================================================
-#' For an indivudal product, grab the HUC metadata to be stored in the database. 
+#' For an indivudal product, Improve site metadata to be stored in the database and file. 
 #' 
-#' \code{ExtractHucMeta} extracts the metadata to stash in a usgsDataRetrieval database for an individual product.
+#' \code{ImproveHucMeta} extracts the metadata to stash in a usgsDataRetrieval database for an individual product.
 #' It gathers the attributes returned by \code{dataRetrieval::readNWISuv} , supplements siteInfo with
 #' startTime and endTime for each station in UTC to assist appending the records. 
 #' @param hucProdDf dataframe from dataRetrieval::readNWISuv
 #' @return list of metadata for a 
-ExtractHucMeta <- function(hucProdDf) {
-  hucMeta <- list( siteInfo      = attr(hucProdDf, 'siteInfo'), 
+ImproveHucMeta <- function(hucProdDf) {
+  
+  meta2 <- dataRetrieval::readNWISdata(site=unique(hucProdDf$site_no), 
+                                       
+                                       hasDataTypeCd="iv", 
+                                       siteOutput='expanded', service = "site")  
+  if(FALSE) {
+    ## THis is a test block to discover what is in common / repeated between the siteInfo which
+    ## comes with hucProdDf and the more extended metadata in meta2 (which cant tell y)
+    m<-merge.data.frame(meta2,hucMeta$siteInfo, by='site_no', all=TRUE, sort=TRUE)
+    repeats <- data.frame( x=c('agency_cd.x','county_cd','dec_lat_va.x','dec_long_va', 'huc_cd',
+                               'site_tp_cd','state_cd','station_nm.x','tz_cd','well_depth_va'), 
+                           y=c('agency_cd.y','countyCd', 'dec_lat_va.y','dec_lon_va','hucCd', 
+                               'siteTypeCd','stateCd','station_nm.y','timeZoneAbbreviation','hole_depth_va'), 
+                           stringsAsFactors=FALSE)
+    checkMatch <- plyr::ddply(repeats, plyr::.(x), 
+                              function(df) {print(df$x); print(df$y);
+                                            print(m[[df$x]]); print(m[[df$y]]);
+                                            data.frame(match=all(m[[df$x]]==m[[df$y]]))} )
+    ## cant be sure well_depth_va and hole_depth_va are the same.
+    ## countyCd and county_cd are the same but countyCd is less accurate as it contains state code too.
+  }
+    
+  ## check all the x names in x
+  xNames<-c('site_no',     'agency_cd',   'dec_lat_va',   'dec_long_va',  'huc_cd',
+            'site_tp_cd',  'state_cd',     'station_nm',   'tz_cd')
+  yNames<-c('site_no',     'agency_cd',   'dec_lat_va',   'dec_lon_va',   'hucCd', 
+            'siteTypeCd',  'stateCd',      'station_nm',   'timeZoneAbbreviation')
+  all(match(xNames, names(meta2)))
+  all(match(yNames, names(hucMeta$siteInfo)))
+  m2 <- merge.data.frame(meta2,hucMeta$siteInfo, by.x=xNames, by.y=yNames, sort=TRUE, all=TRUE)
+  
+  hucMeta <- list( siteInfo      = m2, 
                    variableInfo  = attr(hucProdDf, 'variableInfo'), 
-                   statisticInfo = attr(hucProdDf, 'statisticInfo') )
+                   statisticInfo = attr(hucProdDf, 'statisticInfo') )  
+  
   startTime <- plyr::ldply(hucMeta$siteInfo$site_no, 
                            function(site) min(subset(hucProdDf, site_no == site)$dateTime) )[,1]
   endTime   <- plyr::ldply(hucMeta$siteInfo$site_no, 
@@ -248,9 +283,7 @@ GetUsgsIvProduct <- function( prodDf ) {
                                         startDate=prodDf$startDate[1],  
                                         endDate=prodDf$endDate[1], 
                                         tz=prodDf$tz[1])
-  ## it may be desirable to rewrite this usingreadNWISdata 
-  ## inorder to get "expanded" metadata.
-  prodMeta <- ExtractHucMeta(prodData)
+  prodMeta <- ImproveHucMeta(prodData)
   ## the subset simply removes the attributes
   list(data=subset(prodData,site_no %in% prodData$site_no), meta=prodMeta)
 }
@@ -486,6 +519,7 @@ LoadMetaDB <- function(path='.',
 #' @return if whichIn==FALSE : Character of the translation.
 #'         if whichIn==TRUE  : Integer index which passed names are in the table. 
 TransUsgsProdStat <- function(names, whichIn=FALSE) {
+  ## Elsewhere these rely on a single set of parentheses around the units.
   prodStatLookup <- c( X_00060_00011    ='Discharge (cfs)',   ##instantaneous is 00011 but not worth saying IMO
                        X_00060_00011_cd ='Discharge code',
                        X_00065_00011    ='Stage (ft)',
@@ -533,7 +567,7 @@ TransUsgsProdStat <- function(names, whichIn=FALSE) {
 #' @examples
 #' # See vignette "Collect USGS stream observations and build a local database" for examples.
 #' @export
-PlotPrettyData <- function(prettyUsgs, plot=TRUE) {
+PlotPrettyData <- function(prettyUsgs, plot=TRUE, errInnerQntl=.995) {
   if(!('prettyUsgs' %in% class(prettyUsgs))) {
       warning('The data argument to PlotPrettyData is not of class prettyUsgs. Returning.')
       return(NULL)
@@ -542,16 +576,40 @@ PlotPrettyData <- function(prettyUsgs, plot=TRUE) {
   codes     <- attr(prettyUsgs,'codes')
   variances <- attr(prettyUsgs,'variances')
   stDevs    <- attr(prettyUsgs,'st.devs.')
+  errVars   <- c(variances,stDevs)
   
-  stop()
-  plotData  <- reshape2::melt(prettyUsgs, id=c("dateTime","site_no", codes, variances, stDevs))
-  if(length(c(variances,stDevs))>1)
-    plotData2 <- reshape2::melt(plotData, id=c("dateTime","site_no", codes, "value", "variable"),
-                                variable.name='errors', value.name='err.vals')
+  ## if there are errVars, only plot a single variable with errors. 
+  if(length(variables)>1 && length(errVars)) {
+    errUnits <- plyr::laply(strsplit(errVars,'[(^)]'), '[[', 2)
+    if(length(errVars)==1) {
+      theVar <- variables[grep(errUnits,variables)]
+      theErr <- errVars
+    } else {
+      varsWErr <- variables[plyr::laply(errUnits, grep, variables)]
+      whVar <- readline(prompt=paste0('Please select a single variable to plot with error bars: \n',
+                                      paste(1:length(varsWErr),varsWErr, sep=': ', collapse=' \n'),' \n'))
+      theVar <- variables[as.numeric(whVar)]
+      theErr <- errVars[grep( strsplit(theVar,'[(^)]')[[1]][2], errUnits )]
+    }
+    prettyUsgs <- prettyUsgs[,c("dateTime","site_no", codes, theVar, theErr)]
+    variables <- theVar
+    errVars   <- theErr
+  }
+    
+  plotData  <- reshape2::melt(prettyUsgs, id=c("dateTime","site_no", codes, errVars))
   
-  timePlot <- ggplot2::ggplot(plotData, ggplot2::aes(x=dateTime, y=value)) +
-                ggplot2::geom_point() + ggplot2::theme_bw()
-
+  if (length(errVars)) {
+    ## x==qnorm(pnorm(x,0,1),0,1) ## my reminder i wish were in the R documentation.
+    obsSd <- plotData[[theErr]]
+    if(length(variances)) obsSd <- sqrt(obsSd)
+    plotData$err <- -1*qnorm( ((1-errInnerQntl)/2), mean=0, sd=obsSd )
+    timePlot <- ggplot2::ggplot(plotData, ggplot2::aes(x=dateTime, y=value, 
+                                                       ymin=value-err, ymax=value+err) )
+  } else {
+    timePlot <- ggplot2::ggplot(plotData, ggplot2::aes(x=dateTime, y=value))
+  }
+  timePlot <- timePlot + ggplot2::theme_bw()
+  
   multiSite <- if(length(unique(plotData$site_no))>1) TRUE else FALSE
   multiVar  <- if(length(variables)>1)                TRUE else FALSE
   if( multiSite &  multiVar) 
@@ -561,11 +619,11 @@ PlotPrettyData <- function(prettyUsgs, plot=TRUE) {
   if(!multiSite &  multiVar) 
     timePlot <- timePlot + ggplot2::facet_wrap(site_no~variable, scale='free_y', ncol=length(variables))
   
-  
-  
   ## more stuff to be added here.
-  OutFunc <- function(plot=TRUE, yLog=FALSE) {
+  OutFunc <- function(plot=TRUE, yLog=FALSE, pointSize=1, pointColor='black', errColor='red') {
     if(yLog) timePlot <- timePlot + ggplot2::scale_y_log10()
+    timePlot <- timePlot + ggplot2::geom_point(size=pointSize, color=pointColor) 
+    if (length(errVars)) timePlot <- timePlot + ggplot2::geom_errorbar(color=errColor)
     if(plot) print(timePlot)
     invisible(timePlot)
   }
@@ -587,14 +645,14 @@ subset.prettyUsgs <- function(prettyUsgs, ... ) {
  class     <- attr(prettyUsgs, 'class')
  variables <- attr(prettyUsgs, 'variables')
  codes     <- attr(prettyUsgs, 'codes')
- variance  <- attr(prettyUsgs, 'variance')
- stDev     <- attr(prettyUsgs, 'st.dev.')
+ variances  <- attr(prettyUsgs, 'variances')
+ stDevs     <- attr(prettyUsgs, 'st.devs.')
  attr(prettyUsgs, 'class') <- 'data.frame'
  subPretty <- subset(prettyUsgs, ...)
  attr(subPretty, 'class')      <- class
  attr(subPretty, 'variables')  <- variables
  attr(subPretty, 'codes')      <- codes
- attr(prettyUsgs, 'variance')  <- variance
- attr(prettyUsgs, 'st.dev.')   <- stDev
+ attr(subPretty, 'variances')  <- variances
+ attr(subPretty, 'st.devs.')   <- stDevs
  subPretty
 }
