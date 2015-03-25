@@ -62,8 +62,9 @@ Model3SdErrClimTaper <- function(data, qntlIncpt=.05, qntlClim=.5, pctErr=.15) {
 #' dbPath <- '~/usgsDb/'
 #' prettyOrodell <- 
 #'  PrettySiteData(QuerySiteData(QuerySiteName("FOURMILE CREEK AT ORODELL, CO", path=dbPath), 
-#'                               product='00060', path=dbPath))
+#'                               product='00060', path=dbPath),metricOnly=FALSE, metric=TRUE)
 #' prettyOro <- MkDischargeVariance(prettyOrodell, Model3SdErrClimTaper)
+#' oroPlot <- PlotPrettyData(prettyOro)
 #' @export
 MkDischargeVariance <- function(prettyUsgs, error3SdFunc, retVariance=TRUE) {
   if(!('prettyUsgs' %in% class(prettyUsgs))) {

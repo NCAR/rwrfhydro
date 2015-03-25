@@ -543,8 +543,13 @@ PlotPrettyData <- function(prettyUsgs, plot=TRUE) {
   variances <- attr(prettyUsgs,'variances')
   stDevs    <- attr(prettyUsgs,'st.devs.')
   
-  plotData <- reshape2::melt(prettyUsgs, id=c("dateTime","site_no", codes, variances, stDevs))
-  timePlot <- ggplot2::ggplot(plotData, ggplot2::aes(x=dateTime, y=value, ymin=value-)) +
+  stop()
+  plotData  <- reshape2::melt(prettyUsgs, id=c("dateTime","site_no", codes, variances, stDevs))
+  if(length(c(variances,stDevs))>1)
+    plotData2 <- reshape2::melt(plotData, id=c("dateTime","site_no", codes, "value", "variable"),
+                                variable.name='errors', value.name='err.vals')
+  
+  timePlot <- ggplot2::ggplot(plotData, ggplot2::aes(x=dateTime, y=value)) +
                 ggplot2::geom_point() + ggplot2::theme_bw()
 
   multiSite <- if(length(unique(plotData$site_no))>1) TRUE else FALSE
