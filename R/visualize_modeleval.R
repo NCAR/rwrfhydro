@@ -72,14 +72,14 @@ PlotFluxCompare <- function(strDf.obs, strCol.obs="q_cms",
         }
     # STATS
     nseflow1 <- round(Nse(strDf$qcomp.mod1, strDf$qcomp.obs), 2)
-    biasflow1 <- round(sum(strDf$qcomp.mod1-strDf$qcomp.obs, na.rm=T)/sum(strDf$qcomp.obs, na.rm=TRUE) * 100, 1)
-    maxflow <- max(max(strDf$qcomp.obs), max(strDf$qcomp.mod1))
-    minflow <- min(min(strDf$qcomp.obs), min(strDf$qcomp.mod1))
+    biasflow1 <- round(sum(strDf$qcomp.mod1-strDf$qcomp.obs, na.rm=TRUE)/sum(strDf$qcomp.obs, na.rm=TRUE) * 100, 1)
+    maxflow <- max(max(strDf$qcomp.obs, na.rm=TRUE), max(strDf$qcomp.mod1, na.rm=TRUE))
+    minflow <- min(min(strDf$qcomp.obs, na.rm=TRUE), min(strDf$qcomp.mod1, na.rm=TRUE))
     if (!is.null(strDf.mod2)) {
-        maxflow <- max(maxflow, max(strDf$qcomp.mod2))
-        minflow <- min(minflow, min(strDf$qcomp.mod2))
+        maxflow <- max(maxflow, max(strDf$qcomp.mod2, na.rm=TRUE))
+        minflow <- min(minflow, min(strDf$qcomp.mod2, na.rm=TRUE))
         nseflow2 <- round(Nse(strDf$qcomp.mod2, strDf$qcomp.obs), 2)
-        biasflow2 <- round(sum(strDf$qcomp.mod2-strDf$qcomp.obs, na.rm=T)/sum(strDf$qcomp.obs, na.rm=TRUE) * 100, 1)
+        biasflow2 <- round(sum(strDf$qcomp.mod2-strDf$qcomp.obs, na.rm=TRUE)/sum(strDf$qcomp.obs, na.rm=TRUE) * 100, 1)
         }
     # PLOT
     if (logy) {

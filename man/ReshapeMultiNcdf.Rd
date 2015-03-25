@@ -2,10 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{ReshapeMultiNcdf}
 \alias{ReshapeMultiNcdf}
-\title{"Flatten" the output from GetMultiNcdf
-\code{ReshapeMultiNcdf} flattens the output from GetMultiNcdf.
-Take the output dataframe from GetMultiNcdf and reshape the dataframe
-for ease of use in other functions.}
+\title{"Flatten" the output from GetMultiNcdf}
 \usage{
 ReshapeMultiNcdf(myDf)
 }
@@ -16,7 +13,6 @@ ReshapeMultiNcdf(myDf)
 The reshaped output dataframe.
 }
 \description{
-"Flatten" the output from GetMultiNcdf
 \code{ReshapeMultiNcdf} flattens the output from GetMultiNcdf.
 Take the output dataframe from GetMultiNcdf and reshape the dataframe
 for ease of use in other functions.

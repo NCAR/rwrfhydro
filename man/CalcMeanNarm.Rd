@@ -2,9 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{CalcMeanNarm}
 \alias{CalcMeanNarm}
-\title{Calculate mean with forced NA removal.
-\code{CalcMeanNarm} calculates a mean with forced NA removal.
-Read a vector and calculate the mean with forced NA removal.}
+\title{Calculate mean with forced NA removal.}
 \usage{
 CalcMeanNarm(x)
 }
@@ -15,7 +13,6 @@ CalcMeanNarm(x)
 The mean.
 }
 \description{
-Calculate mean with forced NA removal.
 \code{CalcMeanNarm} calculates a mean with forced NA removal.
 Read a vector and calculate the mean with forced NA removal.
 }

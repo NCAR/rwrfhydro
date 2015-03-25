@@ -2,10 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{NseLog}
 \alias{NseLog}
-\title{Calculate Log Nash-Sutcliffe Efficiency.
-\code{NseLog} calculates the Log Nash-Sutcliffe Efficiency.
-Calculate the Nash-Sutcliffe Efficiency for vectors
-of log-transformed modelled and observed values.}
+\title{Calculate Log Nash-Sutcliffe Efficiency.}
 \usage{
 NseLog(m, o)
 }
@@ -18,7 +15,6 @@ NseLog(m, o)
 The Log Nash-Sutcliffe Efficiency.
 }
 \description{
-Calculate Log Nash-Sutcliffe Efficiency.
 \code{NseLog} calculates the Log Nash-Sutcliffe Efficiency.
 Calculate the Nash-Sutcliffe Efficiency for vectors
 of log-transformed modelled and observed values.
