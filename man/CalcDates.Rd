@@ -2,9 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{CalcDates}
 \alias{CalcDates}
-\title{Calculate standard date breaks.
-\code{CalcDates} calculates standard date breaks.
-Calculate standard date breaks.}
+\title{Calculate standard date breaks.}
 \usage{
 CalcDates(x)
 }
@@ -15,7 +13,6 @@ CalcDates(x)
 The input dataframe with date columns added.
 }
 \description{
-Calculate standard date breaks.
 \code{CalcDates} calculates standard date breaks.
 Calculate standard date breaks.
 }

@@ -2,10 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{Rmse}
 \alias{Rmse}
-\title{Calculate root mean squared error.
-\code{Rmse} calculates the root mean squared error.
-Calculate the root mean squared error for vectors
-of modelled and observed values.}
+\title{Calculate root mean squared error.}
 \usage{
 Rmse(m, o)
 }
@@ -18,7 +15,6 @@ Rmse(m, o)
 The root mean squared error.
 }
 \description{
-Calculate root mean squared error.
 \code{Rmse} calculates the root mean squared error.
 Calculate the root mean squared error for vectors
 of modelled and observed values.
