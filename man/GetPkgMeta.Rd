@@ -4,12 +4,14 @@
 \alias{GetPkgMeta}
 \title{Get a package's metadata fields and associated entries.}
 \usage{
-GetPkgMeta(meta = "concept", package = "rwrfhydro")
+GetPkgMeta(meta = "concept", package = "rwrfhydro", quiet = FALSE)
 }
 \arguments{
 \item{meta}{Character the metadata field.}
 
 \item{package}{Character The package to query for metadata.}
+
+\item{quiet}{Logical Do not print summary to screen.}
 }
 \value{
 List of metadata fields in alphabetical order with corresponding entries.

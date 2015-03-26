@@ -315,6 +315,7 @@ feet2meters <- 0.30480
 #' \code{GetPkgMeta} Get metadata fields and associated entries from a package's documentation (e.g. "keyword" or "concepts".)
 #' @param meta Character the metadata field.
 #' @param package Character The package to query for metadata.
+#' @param quiet Logical Do not print summary to screen.
 #' @return List of metadata fields in alphabetical order with corresponding entries.
 #' @examples 
 #' GetPkgMeta()

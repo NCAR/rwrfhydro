@@ -1,6 +1,6 @@
 ---
 title: "Collect USGS stream observations and build a local database."
-author: "James McCreight and Aubrey Dugger"
+author: "James McCreight"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
