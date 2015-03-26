@@ -259,6 +259,7 @@ CalcCOM <- function (x) {
 #' for ease of use in other functions.
 #' @param myDf The output dataframe from GetMultiNcdf.
 #' @return The reshaped output dataframe.
+#' @export
 ReshapeMultiNcdf <- function(myDf) {
     newDF <- subset(myDf[,c("POSIXct","stat")], myDf$variableGroup==unique(myDf$variableGroup)[1])
     for (i in unique(myDf$variableGroup)) {

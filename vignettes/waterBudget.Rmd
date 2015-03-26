@@ -1,6 +1,6 @@
 ---
 title: "Evaluate water budget partitioning with rwrfhydro"
-author: "Aubrey Dugger and James McCreight"
+author: "Aubrey Dugger"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >

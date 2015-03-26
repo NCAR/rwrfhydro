@@ -8,7 +8,7 @@ InsertRS(inFile, forcPath, forcName = "LDASIN_DOMAIN1", varName = NULL,
   varUnit = NULL, varLong = NULL, varNA = -1e+36, overwrite = TRUE)
 }
 \arguments{
-\item{inFile}{The name of the raster brick or NetCDF file (full pathname) to export.}
+\item{inFile}{The name of the raster stack/brick or NetCDF file (full pathname) to export.}
 
 \item{forcPath}{Path to the forcing data you want to modify. Forcing data files MUST
 match the size/resolution of the images in the inFile.}
@@ -19,10 +19,10 @@ match the size/resolution of the images in the inFile.}
 so make sure it matches the variable name needed in the forcing data.}
 
 \item{varUnit}{Units for the NetCDF export variable. Only required if the inFile
-is a raster brick. If the inFile is a NetCDF file, the units will carry over.}
+is a raster stack/brick. If the inFile is a NetCDF file, the units will carry over.}
 
 \item{varLong}{Long name for the NetCDF export variable. Only required if the inFile
-is a raster brick. If the inFile is a NetCDF file, the longname will carry over.}
+is a raster stack/brick. If the inFile is a NetCDF file, the longname will carry over.}
 
 \item{varNA}{Value to set for "NA" or "no data". Default is -1.e+36.}
 
@@ -30,23 +30,23 @@ is a raster brick. If the inFile is a NetCDF file, the longname will carry over.
 the forcing data. (DEFAULT=TRUE)}
 }
 \description{
-\code{InsertRS} takes a raster brick of RS images and exports individual
+\code{InsertRS} takes a raster stack or brick of RS images and exports individual
 images to matching (by date) forcing NetCDF files.
 }
 \details{
-\code{InsertRS} takes a raster brick  (as created by \code{\link{ConvertRS2Brick}})
-or a NetCDF file (as created by \code{\link{ConvertBrick2NC}}) of RS images and
+\code{InsertRS} takes a raster stack or brick  (as created by \code{\link{ConvertRS2Stack}} or \code{\link{SmoothStack}})
+or a NetCDF file (as created by \code{\link{ConvertStack2NC}}) of RS images and
 exports each layer (time step) to the appropriate time step forcing file.
 Only looks for the date (not time) and inserts at the 00:00 hour on that date.
-The input brick/file should be already processed through the \code{\link{ConvertRS2Brick}}
-or \code{\link{ConvertBrick2NC}} tools or follow the same layer (date) naming convention.
+The input stack, brick, or file should be already processed through the \code{\link{ConvertRS2Stack}}, \code{\link{SmoothStack}},
+or \code{\link{ConvertStack2NC}} tools or follow the same layer (date) naming convention.
 }
 \examples{
-## Export the raster brick of LAI images created through ConvertRS2Brick to the forcing data.
+## Export the raster stack of LAI images created through ConvertRS2Stack to the forcing data.
 
 InsertRS(lai.b, forcPath="FORCING", forcName="LDASIN_DOMAIN3", varName="LAI", varUnit="(m^2)/(m^2)", varLong="Leaf area index")
 
-## Export the NetCDF of LAI images created through ConvertBrick2NC to the forcing data.
+## Export the NetCDF of LAI images created through ConvertStack2NC to the forcing data.
 
 InsertRS("BCNED_LAI.nc", forcPath="FORCING", forcName="LDASIN_DOMAIN3", varName="LAI")
 }

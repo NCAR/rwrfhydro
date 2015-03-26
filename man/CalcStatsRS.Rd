@@ -4,21 +4,21 @@
 \alias{CalcStatsRS}
 \title{Calculates summary statistics from a remote sensing time series}
 \usage{
-CalcStatsRS(inBrick)
+CalcStatsRS(inStack)
 }
 \arguments{
-\item{inBrick}{The name of the raster brick to calculate statistics on.}
+\item{inStack}{The name of the raster stack or brick to calculate statistics on.}
 }
 \value{
 A dataframe of statistics by time period (date).
 }
 \description{
-\code{CalcStatsRS} takes a raster brick of RS images and generates a time series
+\code{CalcStatsRS} takes a raster stack/brick of RS images and generates a time series
 dataframe of summary statistics across the domain for each time step.
 }
 \details{
-\code{CalcStatsRS} takes a raster brick of remote sensing images over a time period
-(as created by \code{\link{ConvertRS2Brick}} or \code{\link{SmoothBrick}})
+\code{CalcStatsRS} takes a raster stack or brick of remote sensing images over a time period
+(as created by \code{\link{ConvertRS2Stack}} or \code{\link{SmoothStack}})
 and generates a dataframe object that summarizes all cells in the RS image at each
 time step. The statistics calculated are mean, min, max, and standard deviation.
 This tool is useful for evaluating how a smoothing function is impacting the

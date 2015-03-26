@@ -4,7 +4,7 @@
 \alias{GetMODIS}
 \title{Get MODIS data and process to match geogrid}
 \usage{
-GetMODIS(geogrdPath, prodName, outDir, pyPath, begin, end)
+GetMODIS(geogrdPath, prodName, outDir, begin, end)
 }
 \arguments{
 \item{geogrdPath}{The pathname to the geogrid file (i.e., geo_em.d01.nc).}
@@ -15,8 +15,6 @@ getProducts() for a complete list of supported products.}
 \item{outDir}{Directory name to store processed TIF files. This is the equivalent
 to the \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package's "job" name. This is a directory name only and NOT a full
 path. The directory will be created in the preset \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package outDirPath.}
-
-\item{pyPath}{The pathname to the required python script "import_wrf_netcdf_cms.py"}
 
 \item{begin}{Date string for the start date to download/process MODIS tiles. The
 date string should follow \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package convention (e.g., "2011.06.01").}
@@ -57,6 +55,6 @@ MODISoptions(localArcPath="/d1/WRF_Hydro/RS/MODIS_ARC", outDirPath="/d1/WRF_Hydr
 ## The raw HDF files will be stored in /d1/WRF_Hydro/RS/MODIS_ARC/ and the final processed
 ## TIF files will be stored in /d1/WRF_Hydro/RS/MODIS_ARC/PROCESSED/Fourmile_LAI/.
 
-GetMODIS(geogrdPath="/d1/WRF_Hydro/Fourmile_fire/DOMAIN/geo_em.d01.nc", prodName="MOD15A2", outDir="Fourmile_LAI", pyPath="/d1/WRF_Hydro/scripts/python/", begin="2011.01.01", end="2011.01.31")
+GetMODIS(geogrdPath="/d1/WRF_Hydro/Fourmile_fire/DOMAIN/geo_em.d01.nc", prodName="MOD15A2", outDir="Fourmile_LAI", begin="2011.01.01", end="2011.01.31")
 }
 

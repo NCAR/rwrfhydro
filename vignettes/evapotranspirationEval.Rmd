@@ -1,6 +1,6 @@
 ---
 title: "Evaluate evapotranspiration simulation with rwrfhydro"
-author: "Aubrey Dugger and James McCreight"
+author: "Aubrey Dugger"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
@@ -51,7 +51,7 @@ ldasoutIndexList <- list( ldasout = ldasoutInd )
 Generate the list of filenames for the GetMultiNcdf tool by providing the pathname to the model OUTPUT directory and the filename pattern to match (in this case we want the LDASOUT files).
 ```{r}
 ldasoutFilesList <- list( ldasout = list.files(path=paste0(dataPath, '/OUTPUT_ALLRT'), 
-                                               pattern=glob2rx('*LDASOUT*'), full.names=TRUE))
+     pattern=glob2rx('*LDASOUT*'), full.names=TRUE))
 ```
 
 Run the tool. To speed things up, we will run this over 8 cores using the doMC package.
@@ -88,8 +88,8 @@ obsFlux30min.usnr1 <- ReadAmerifluxCSV(paste0(dataPath, '/OBS/AMF_USNR1_2013_L2_
 Our LDASOUT time step was 1 day, so we need to aggregate the observations to a UTC daily time step for comparison.
 ```{r}
 obsFlux1d.usnr1 <- aggregate(obsFlux30min.usnr1[names(obsFlux30min.usnr1) != c("POSIXct")], 
-                             by = list(as.POSIXct(round(as.POSIXct(format(obsFlux30min.usnr1$POSIXct, tz="UTC"), tz="UTC"), "days"))), 
-                             CalcMeanNarm)
+     by = list(as.POSIXct(round(as.POSIXct(format(obsFlux30min.usnr1$POSIXct, tz="UTC"), tz="UTC"), "days"))), 
+     CalcMeanNarm)
 names(obsFlux1d.usnr1)[1] <- "POSIXct"
 ```
 
@@ -98,17 +98,8 @@ names(obsFlux1d.usnr1)[1] <- "POSIXct"
 
 ```{r compFluxes, fig.width = 12, fig.height = 6, out.width='700', out.height='350'}
 PlotFluxCompare(obsFlux1d.usnr1, "LE", modLdasout.allrt.niw, "LE", 
-                labelObs="Observed Niwot Ameriflux", 
-                labelMod1="All Routing", title="ET: Niwot Ridge")
-```
-
-Now limit the plot to the May through June snowmelt period. Note that the reported stats are also updated to the new time period.
-```{r compFluxesJune, fig.width = 12, fig.height = 6, out.width='700', out.height='350'}
-PlotFluxCompare(obsFlux1d.usnr1, "LE", modLdasout.allrt.niw, "LE", 
-                labelObs="Observed Niwot Ameriflux", labelMod1="All Routing", 
-                title="ET: Niwot Ridge",  
-                stdate=as.POSIXct("2013-06-01 00:00:00", format="%Y-%m-%d %H:%M:%S", tz="UTC"), 
-                enddate=as.POSIXct("2013-06-30 00:00:00", format="%Y-%m-%d %H:%M:%S", tz="UTC"))
+     labelObs="Observed Niwot Ameriflux", 
+     labelMod1="All Routing", title="ET: Niwot Ridge")
 ```
 
 

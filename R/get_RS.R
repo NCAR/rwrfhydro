@@ -23,7 +23,6 @@
 #' @param outDir Directory name to store processed TIF files. This is the equivalent
 #' to the \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package's "job" name. This is a directory name only and NOT a full
 #' path. The directory will be created in the preset \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package outDirPath.
-#' @param pyPath The pathname to the required python script "import_wrf_netcdf_cms.py"
 #' @param begin Date string for the start date to download/process MODIS tiles. The
 #' date string should follow \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package convention (e.g., "2011.06.01").
 #' @param end Date string for the end date to download/process MODIS tiles. The
@@ -41,16 +40,16 @@
 #' ## The raw HDF files will be stored in /d1/WRF_Hydro/RS/MODIS_ARC/ and the final processed
 #' ## TIF files will be stored in /d1/WRF_Hydro/RS/MODIS_ARC/PROCESSED/Fourmile_LAI/.
 #'
-#' GetMODIS(geogrdPath="/d1/WRF_Hydro/Fourmile_fire/DOMAIN/geo_em.d01.nc", prodName="MOD15A2", outDir="Fourmile_LAI", pyPath="/d1/WRF_Hydro/scripts/python/", begin="2011.01.01", end="2011.01.31")
+#' GetMODIS(geogrdPath="/d1/WRF_Hydro/Fourmile_fire/DOMAIN/geo_em.d01.nc", prodName="MOD15A2", outDir="Fourmile_LAI", begin="2011.01.01", end="2011.01.31")
 #' @export
 
-GetMODIS <- function(geogrdPath, prodName, outDir, pyPath, begin, end) {
+GetMODIS <- function(geogrdPath, prodName, outDir, begin, end) {
     # Check packages
     if (!(require("rgdal") & require("raster") & require("ncdf4") & require("MODIS"))) {
         stop("Required packages not found. Must have R packages: rgdal (requires GDAL system install), raster, ncdf4, and MODIS")
         }
     # Get paths
-    locPath <- paste0(options("MODIS_outDirPath"))
+    locPath <- paste0(options("MODIS_localArcPath"))
     # Get geogrid and projection info
     geogrd.nc <- ncdf4::nc_open(geogrdPath)
     map_proj <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="MAP_PROJ")$value
@@ -69,8 +68,8 @@ GetMODIS <- function(geogrdPath, prodName, outDir, pyPath, begin, end) {
         stop(paste0('Error: Asymmetric grid cells not supported. DX=', dx, ', DY=', dy))
         }
     # Create a readable TIF from geogrid
-    system(paste0("python ", pyPath, "/import_wrf_netcdf_cmd.py --in \"", geogrdPath, "\" --invar \"HGT_M\" --inproj \"+proj=longlat +a=6370000 +b=6370000 +units=degrees +no_defs\" --out \"", locPath, "/geogrid_tmp.tif\" --outproj \"", geogrd.crs, "\" --res ", dx))
-    hgt.r <- raster::raster(paste0(locPath, "/geogrid_tmp.tif"))
+    ExportGeogrid(geogrdPath, "HGT_M", paste0(locPath, "/geogrid_tmp.tif"))
+	  hgt.r <- raster::raster(paste0(locPath, "/geogrid_tmp.tif"))
     system(paste0("rm ", paste0(locPath, "/geogrid_tmp.tif")))
     # Run the download & processing
     mod.list <- MODIS::runGdal(product=prodName, extent=hgt.r, begin=begin, end=end, collection="005", resamplingType='near', buffer=0.04, job=outDir)
@@ -78,14 +77,14 @@ GetMODIS <- function(geogrdPath, prodName, outDir, pyPath, begin, end) {
 
 
 
-#' Convert a set of MODIS images to a raster brick and, optionally, a NetCDF file.
+#' Convert a set of MODIS images to a raster stack and, optionally, a NetCDF file.
 #'
-#' \code{ConvertRS2Brick} takes a set of pre-processed MODIS TIF files and creates
-#' a raster brick and, optionally, a NetCDF file.
+#' \code{ConvertRS2Stack} takes a set of pre-processed MODIS TIF files and creates
+#' a raster stack and, optionally, a NetCDF file.
 #'
-#' \code{ConvertRS2Brick} scans the specified directory and imports pre-processed
+#' \code{ConvertRS2Stack} scans the specified directory and imports pre-processed
 #' MODIS TIF files matching the specified expression and combines them into an R raster
-#' brick object and, optionally, an output NetCDF file. Files in the input directory
+#' stack object and, optionally, an output NetCDF file. Files in the input directory
 #' should be already processed through the \code{\link{GetMODIS}} tool or follow the
 #' same file naming convention used by the MODIS \code{\link[MODIS]{runGdal}} tool.
 #' See the R \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package for
@@ -116,25 +115,25 @@ GetMODIS <- function(geogrdPath, prodName, outDir, pyPath, begin, end) {
 #' @param outFile OPTIONAL name for an output NetCDF file. A NetCDF file will only be created if
 #' this file name is provided. Images will be exported after the
 #' "no data" and scale adjustments are made. If you want to do smoothing or other time series
-#' processing, do not export a NetCDF file here but do processing on the raster brick and then
-#' use ConvertBrick2NC to export the processed brick to a NetCDF file.
+#' processing, do not export a NetCDF file here but do processing on the raster stack and then
+#' use ConvertStack2NC to export the processed brick to a NetCDF file.
 #' @param varName Name for the NetCDF export variable. Only required if outFile is provided.
 #' @param varUnit Units for the NetCDF export variable. Only required if outFile is provided.
 #' @param varLong Long name for the NetCDF export variable. Only required if outFile is provided.
 #' @param varNA Value to set for "NA" or "no data". Default is -1.e+36. Only required if outFile is provided.
-#' @return A raster brick.
+#' @return A raster stack.
 #'
 #' @examples
-#' ## Import the already processed LAI TIF images into a raster brick. Use the full time series of images.
+#' ## Import the already processed LAI TIF images into a raster stack. Use the full time series of images.
 #'
-#' lai.b <- ConvertRS2Brick("/d6/adugger/WRF_Hydro/RS/MODIS_ARC/PROCESSED/BCNED_LAI", "*Lai_1km.tif", noData=100, noDataQual="max", valScale=0.1, valAdd=0)
+#' lai.b <- ConvertRS2Stack("/d6/adugger/WRF_Hydro/RS/MODIS_ARC/PROCESSED/BCNED_LAI", "*Lai_1km.tif", noData=100, noDataQual="max", valScale=0.1, valAdd=0)
 #'
 #' ## Export a subset of the already processed LAI TIF images into an output netcdf file
 #'
-#' lai.b <- ConvertRS2Brick("/d6/adugger/WRF_Hydro/RS/MODIS_ARC/PROCESSED/BCNED_LAI", "*Lai_1km.tif", begin=c("2011.06.01", end="2011.06.30", noData=100, noDataQual="max", valScale=0.1, valAdd=0, outFile="BCNED_LAI.nc", varName="LAI", varUnit="(m^2)/(m^2)", varLong="Leaf area index")
+#' lai.b <- ConvertRS2Stack("/d6/adugger/WRF_Hydro/RS/MODIS_ARC/PROCESSED/BCNED_LAI", "*Lai_1km.tif", begin=c("2011.06.01", end="2011.06.30", noData=100, noDataQual="max", valScale=0.1, valAdd=0, outFile="BCNED_LAI.nc", varName="LAI", varUnit="(m^2)/(m^2)", varLong="Leaf area index")
 #' @export
 
-ConvertRS2Brick <- function(inPath, matchStr, begin=NULL, end=NULL,
+ConvertRS2Stack <- function(inPath, matchStr, begin=NULL, end=NULL,
                             noData=NULL, noDataQual="exact", valScale=1, valAdd=0,
                             outFile=NULL, varName=NULL, varUnit=NULL, varLong=NULL, varNA=-1.e+36) {
     # Get file list
@@ -178,38 +177,32 @@ ConvertRS2Brick <- function(inPath, matchStr, begin=NULL, end=NULL,
             dtInts[n] <- as.integer(difftime(as.POSIXlt(dtStr, format="%Y%j", tz="UTC"), as.POSIXlt("198001", format="%Y%j", tz="UTC", units="days")))
             dtNames[n] <- paste0("DT", format(as.POSIXlt(dtStr, format="%Y%j", tz="UTC"), "%Y.%m.%d"))
             if (n==1) {
-                rsBrick <- raster::brick(rsRast)
+                rsStack <- raster::stack(rsRast)
             } else {
-                rsBrick <- raster::addLayer(rsBrick, rsRast)
+                rsStack <- raster::addLayer(rsStack, rsRast)
                 }
             n <- n+1
          #   } # end date check
         } # end for loop
-    names(rsBrick) <- dtNames
+    names(rsStack) <- dtNames
     if (!is.null(outFile)) {
-        raster::writeRaster(rsBrick, outFile, "CDF", overwrite=TRUE,
-                varname=varName, varunit=varUnit, longname=varLong,
-                xname="west_east", yname="south_north", zname="Time", zunit="days since 1980-01-01", bylayer=FALSE, NAflag=varNA)
-        # Set the time variable
-        ncFile <- ncdf4::nc_open(outFile, write=TRUE)
-        ncdf4::ncvar_put(ncFile, "Time", dtInts)
-        ncdf4::nc_close(ncFile)
-        return(rsBrick)
+	ConvertStack2NC(rsStack, outFile, varName, varUnit, varLong, varNA)
+        return(rsStack)
         }
-    return(rsBrick)
+    return(rsStack)
     }
 
 
-#' Convert a raster brick to a NetCDF file.
+#' Convert a raster stack to a NetCDF file.
 #'
-#' \code{ConvertBrick2NC} takes a raster brick of RS images and outputs a NetCDF file
+#' \code{ConvertStack2NC} takes a raster stack of RS images and outputs a NetCDF file
 #' with a time dimension and specified variable name & metadata.
 #'
-#' \code{ConvertBrick2NC} converts a raster brick to an output NetCDF file. The raster brick
-#' should be already processed through the \code{\link{ConvertRS2Brick}} tool or follow the
+#' \code{ConvertStack2NC} converts a raster stack to an output NetCDF file. The raster stack
+#' should be already processed through the \code{\link{ConvertRS2Stack}} tool or follow the
 #' same layer (date) naming convention.
 #'
-#' @param inBrick The name of the raster brick to export.
+#' @param inStack The name of the raster stack to export.
 #' @param outFile Name for an output NetCDF file.
 #' @param varName Name for the NetCDF export variable.
 #' @param varUnit Units for the NetCDF export variable.
@@ -218,21 +211,21 @@ ConvertRS2Brick <- function(inPath, matchStr, begin=NULL, end=NULL,
 #' @return NULL
 #'
 #' @examples
-#' ## Export the raster brick of LAI images created through ConvertRS2Brick to a NetCDF file. Use the full time series of images.
+#' ## Export the raster stack of LAI images created through ConvertRS2Stack to a NetCDF file. Use the full time series of images.
 #'
-#' ConvertBrick2NC(lai.b, outFile="BCNED_LAI.nc", varName="LAI", varUnit="(m^2)/(m^2)", varLong="Leaf area index")
+#' ConvertStack2NC(lai.b, outFile="BCNED_LAI.nc", varName="LAI", varUnit="(m^2)/(m^2)", varLong="Leaf area index")
 #' @export
 
-ConvertBrick2NC <- function(inBrick, outFile=NULL, varName=NULL, varUnit=NULL, varLong=NULL, varNA=-1.e+36) {
+ConvertStack2NC <- function(inStack, outFile=NULL, varName=NULL, varUnit=NULL, varLong=NULL, varNA=-1.e+36) {
     # Get dates
     dtInts <- c()
-    dtNames <- names(inBrick)
+    dtNames <- names(inStack)
     for (i in 1:length(dtNames)) {
         dtStr <- sub("DT", dtNames[i], replacement="")
         dtInts[i] <- as.integer(difftime(as.POSIXlt(dtStr, format="%Y.%m.%d", tz="UTC"), as.POSIXlt("198001", format="%Y%j", tz="UTC", units="days")))
         }
     # Output NetCDF file
-    raster::writeRaster(inBrick, outFile, "CDF", overwrite=TRUE,
+    raster::writeRaster(inStack, outFile, "CDF", overwrite=TRUE,
             varname=varName, varunit=varUnit, longname=varLong,
             xname="west_east", yname="south_north", zname="Time", zunit="days since 1980-01-01", bylayer=FALSE, NAflag=varNA)
     # Set the time variable
@@ -242,20 +235,20 @@ ConvertBrick2NC <- function(inBrick, outFile=NULL, varName=NULL, varUnit=NULL, v
     }
 
 
-#' Run MODIS-R Whittaker smoothing over pre-processed raster brick.
+#' Run MODIS-R Whittaker smoothing over pre-processed raster stack.
 #'
-#' \code{SmoothBrick} takes a raster brick of RS images and outputs a smoothed
+#' \code{SmoothStack} takes a raster stack of RS images and outputs a smoothed
 #' raster brick over the same time period.
 #'
-#' \code{SmoothBrick} converts a raster brick of RS images (as processed through
-#' \code{\link{ConvertRS2Brick}}) and calls the MODIS-R \code{\link[MODIS]{whittaker.raster}} smoothing
+#' \code{SmoothStack} converts a raster stack of RS images (as processed through
+#' \code{\link{ConvertRS2Stack}}) and calls the MODIS-R \code{\link[MODIS]{whittaker.raster}} smoothing
 #' function to generate a smoothed raster brick over the same time series as the
 #' input. All function parameters are per the \code{\link[MODIS]{whittaker.raster}} function except
-#' we force the timeInfo to be derived from the input raster brick so the names match
+#' we force the timeInfo to be derived from the input raster stack so the names match
 #' and the smoothed brick can be used in other tools. The \code{\link[MODIS]{whittaker.raster}} tool also exports
 #' a set of smoothed TIFs, so also specify an output file directory.
 #'
-#' @param inBrick The name of the raster brick to smooth.
+#' @param inStack The name of the raster stack to smooth.
 #' @param w FROM \code{\link[MODIS]{whittaker.raster}}: In case of MODIS composite the 'VI_Quality' raster-Brick, Stack or filenames. Use preStack functionality to ensure the right input.
 #' @param t FROM \code{\link[MODIS]{whittaker.raster}}: In case of MODIS composite the 'composite_day_of_the_year' raster-Brick, Stack or filenames. Use preStack functionality to ensure the right input.
 #' @param groupYears FROM \code{\link[MODIS]{whittaker.raster}}: Default TRUE, rasterBrick files separated by years as result. If FALSE a single rasterBrick file for the entire period.
@@ -270,19 +263,19 @@ ConvertBrick2NC <- function(inBrick, outFile=NULL, varName=NULL, varUnit=NULL, v
 #' @return raster brick of smoothed images
 #'
 #' @examples
-#' ## Take the raster brick of LAI images created through ConvertRS2Brick and apply a smoothing filter that
+#' ## Take the raster stack of LAI images created through ConvertRS2Stack and apply a smoothing filter that
 #' ## also removes outliers, which we specify to be more than 0.5 LAI from the smoothed value.
 #'
-#' lai.b.sm <- SmoothBrick(lai.b, outDirPath="/Volumes/d1/adugger/RS/MODIS_ARC/PROCESSED/FRNTRNG_LAI_SMOOTHED", groupYears=F, removeOutlier=T, threshold=0.5, lambda=1000, overwrite=TRUE)
+#' lai.b.sm <- SmoothStack(lai.b, outDirPath="/Volumes/d1/adugger/RS/MODIS_ARC/PROCESSED/FRNTRNG_LAI_SMOOTHED", groupYears=F, removeOutlier=T, threshold=0.5, lambda=1000, overwrite=TRUE)
 #' @export
 
-SmoothBrick <- function(inBrick, w=NULL, t=NULL, groupYears=FALSE,
+SmoothStack <- function(inStack, w=NULL, t=NULL, groupYears=FALSE,
                         lambda = 5000, nIter= 3, collapse=FALSE, outDirPath = "./",
                         removeOutlier=FALSE, threshold=NULL, mergeDoyFun="max", ...) {
-	timeInfo <- MODIS::orgTime(inBrick, pos1 = 3, pos2 = 13, format = "%Y.%m.%d", pillow=0)
-    resultList <- MODIS::whittaker.raster(inBrick, w, t, timeInfo, groupYears, lambda, nIter, collapse, outDirPath, removeOutlier, threshold, mergeDoyFun, ...)
+	timeInfo <- MODIS::orgTime(inStack, pos1 = 3, pos2 = 13, format = "%Y.%m.%d", pillow=0)
+    resultList <- MODIS::whittaker.raster(inStack, w, t, timeInfo, groupYears, lambda, nIter, collapse, outDirPath, removeOutlier, threshold, mergeDoyFun, ...)
     resultBrick <- resultList[[1]]
-    names(resultBrick) <- names(inBrick)
+    names(resultBrick) <- names(inStack)
     resultBrick
     }
 
@@ -290,37 +283,37 @@ SmoothBrick <- function(inBrick, w=NULL, t=NULL, groupYears=FALSE,
 
 #' Inserts pre-processed images into appropriate forcing NetCDF files by date.
 #'
-#' \code{InsertRS} takes a raster brick of RS images and exports individual
+#' \code{InsertRS} takes a raster stack or brick of RS images and exports individual
 #' images to matching (by date) forcing NetCDF files.
 #'
-#' \code{InsertRS} takes a raster brick  (as created by \code{\link{ConvertRS2Brick}})
-#' or a NetCDF file (as created by \code{\link{ConvertBrick2NC}}) of RS images and
+#' \code{InsertRS} takes a raster stack or brick  (as created by \code{\link{ConvertRS2Stack}} or \code{\link{SmoothStack}})
+#' or a NetCDF file (as created by \code{\link{ConvertStack2NC}}) of RS images and
 #' exports each layer (time step) to the appropriate time step forcing file.
 #' Only looks for the date (not time) and inserts at the 00:00 hour on that date.
-#' The input brick/file should be already processed through the \code{\link{ConvertRS2Brick}}
-#' or \code{\link{ConvertBrick2NC}} tools or follow the same layer (date) naming convention.
+#' The input stack, brick, or file should be already processed through the \code{\link{ConvertRS2Stack}}, \code{\link{SmoothStack}},
+#' or \code{\link{ConvertStack2NC}} tools or follow the same layer (date) naming convention.
 #'
-#' @param inFile The name of the raster brick or NetCDF file (full pathname) to export.
+#' @param inFile The name of the raster stack/brick or NetCDF file (full pathname) to export.
 #' @param forcPath Path to the forcing data you want to modify. Forcing data files MUST
 #' match the size/resolution of the images in the inFile.
 #' @param forcName The suffix for the forcing data files to modify (DEFAULT="LDASIN_DOMAIN1")
 #' @param varName Name for the NetCDF variable to export. The varibale will be copied as-is,
 #' so make sure it matches the variable name needed in the forcing data.
 #' @param varUnit Units for the NetCDF export variable. Only required if the inFile
-#' is a raster brick. If the inFile is a NetCDF file, the units will carry over.
+#' is a raster stack/brick. If the inFile is a NetCDF file, the units will carry over.
 #' @param varLong Long name for the NetCDF export variable. Only required if the inFile
-#' is a raster brick. If the inFile is a NetCDF file, the longname will carry over.
+#' is a raster stack/brick. If the inFile is a NetCDF file, the longname will carry over.
 #' @param varNA Value to set for "NA" or "no data". Default is -1.e+36.
 #' @param overwrite Boolean to allow the tool to overwrite existing variables if found in
 #' the forcing data. (DEFAULT=TRUE)
 #' @return NULL
 #'
 #' @examples
-#' ## Export the raster brick of LAI images created through ConvertRS2Brick to the forcing data.
+#' ## Export the raster stack of LAI images created through ConvertRS2Stack to the forcing data.
 #'
 #' InsertRS(lai.b, forcPath="FORCING", forcName="LDASIN_DOMAIN3", varName="LAI", varUnit="(m^2)/(m^2)", varLong="Leaf area index")
 #'
-#' ## Export the NetCDF of LAI images created through ConvertBrick2NC to the forcing data.
+#' ## Export the NetCDF of LAI images created through ConvertStack2NC to the forcing data.
 #'
 #' InsertRS("BCNED_LAI.nc", forcPath="FORCING", forcName="LDASIN_DOMAIN3", varName="LAI")
 #' @export
@@ -328,8 +321,8 @@ SmoothBrick <- function(inBrick, w=NULL, t=NULL, groupYears=FALSE,
 InsertRS <- function(inFile, forcPath, forcName="LDASIN_DOMAIN1",
                         varName=NULL, varUnit=NULL, varLong=NULL, varNA=-1.e+36,
                         overwrite=TRUE) {
-    # Raster brick case
-    if (inherits(inFile, "RasterStack")) {
+    # Raster stack/brick case
+    if (inherits(inFile, "RasterStack") | inherits(inFile, "RasterBrick")) {
         dtNames <- names(inFile)
         for (i in dtNames) {
             dtStr <- sub("DT", i, replacement="")
@@ -378,17 +371,17 @@ InsertRS <- function(inFile, forcPath, forcName="LDASIN_DOMAIN1",
 
 #' Calculates summary statistics from a remote sensing time series
 #'
-#' \code{CalcStatsRS} takes a raster brick of RS images and generates a time series
+#' \code{CalcStatsRS} takes a raster stack/brick of RS images and generates a time series
 #' dataframe of summary statistics across the domain for each time step.
 #'
-#' \code{CalcStatsRS} takes a raster brick of remote sensing images over a time period
-#' (as created by \code{\link{ConvertRS2Brick}} or \code{\link{SmoothBrick}})
+#' \code{CalcStatsRS} takes a raster stack or brick of remote sensing images over a time period
+#' (as created by \code{\link{ConvertRS2Stack}} or \code{\link{SmoothStack}})
 #' and generates a dataframe object that summarizes all cells in the RS image at each
 #' time step. The statistics calculated are mean, min, max, and standard deviation.
 #' This tool is useful for evaluating how a smoothing function is impacting the
 #' time series of images.
 #'
-#' @param inBrick The name of the raster brick to calculate statistics on.
+#' @param inStack The name of the raster stack or brick to calculate statistics on.
 #' @return A dataframe of statistics by time period (date).
 #'
 #' @examples
@@ -398,15 +391,130 @@ InsertRS <- function(inFile, forcPath, forcName="LDASIN_DOMAIN1",
 #' with(stats.lai.b, plot(POSIXlt, mean, typ='l'))
 #' @export
 
-CalcStatsRS <- function(inBrick) {
-    minDf <- as.data.frame(raster::cellStats(inBrick, stat="min", na.rm=TRUE))
-    maxDf <- as.data.frame(raster::cellStats(inBrick, stat="max", na.rm=TRUE))
-    meanDf <- as.data.frame(raster::cellStats(inBrick, stat="mean", na.rm=TRUE))
-    sdDf <- as.data.frame(raster::cellStats(inBrick, stat="sd", na.rm=TRUE))
+CalcStatsRS <- function(inStack) {
+    minDf <- as.data.frame(raster::cellStats(inStack, stat="min", na.rm=TRUE))
+    maxDf <- as.data.frame(raster::cellStats(inStack, stat="max", na.rm=TRUE))
+    meanDf <- as.data.frame(raster::cellStats(inStack, stat="mean", na.rm=TRUE))
+    sdDf <- as.data.frame(raster::cellStats(inStack, stat="sd", na.rm=TRUE))
     statDf <- cbind(meanDf, minDf, maxDf, sdDf)
     statDf$POSIXlt <- as.POSIXlt("1980-01-01", format="%Y-%m-%d", tz="UTC")
-    for (i in 1:nrow(statDf)) {        statDf$POSIXlt[i] <- as.POSIXlt(sub("DT",row.names(statDf)[i], replacement=""), "%Y.%m.%d", tz="UTC")        }
+    for (i in 1:nrow(statDf)) {
+	statDf$POSIXlt[i] <- as.POSIXlt(sub("DT",row.names(statDf)[i], replacement=""), "%Y.%m.%d", tz="UTC")
+        }
     colnames(statDf) <- c("mean","min","max","sd","POSIXlt")
     rownames(statDf) <- NULL
     statDf
     }
+
+
+#' Creates a georeferenced TIF from a geogrid variable
+#'
+#' \code{ExportGeogrid} takes a NetCDF geogrid and converts the specified
+#' variable into a georeferenced TIF file.
+#'
+#' \code{ExportGeogrid} takes a standard geogrid in NetCDF format and 
+#' converts the specified variable to a georeferenced geoTiff for use 
+#' in standard GIS tools.
+#'
+#' @param inFile The geogrid NetCDF file.
+#' @param inVar The name of the variable to be converted.
+#' @param outFile The geoTiff filename to create.
+#' @return NULL
+#'
+#' @examples
+#' ## Export the HGT_M field from the geogrid file geo_em.d01_1km.nc
+#' ## to a geoTiff called geogrid_hgt.tif.
+#'
+#' ExportGeogrid("geo_em.d01_1km.nc", "HGT_M", "geogrid_hgt.tif")
+#' @export
+
+ExportGeogrid <- function(inFile, inVar, outFile) {
+	# Check packages
+    if (!(require("rgdal") & require("raster") & require("ncdf4") )) {
+        stop("Required packages not found. Must have R packages: rgdal (requires GDAL system install), raster, ncdf4")
+	}
+	inNC <- ncdf4::nc_open(inFile)
+	inNCVar <- ncdf4::ncvar_get(inNC, inVar)
+	varList <- names(inNC$var)
+	# Data types
+	typlist <- list("byte"="Byte",
+					"short"="Int16",
+					"int"="Int32",
+					"long"="Int32",
+					"float"="Float32",
+					"real"="Float32",
+					"double"="Float64",
+					"ubyte"="qmin_cfs",
+					"ushort"="UInt16",
+					"uint"="UInt32",
+					"int64"="Int64",
+					"uint64"="UInt64")
+	# Get coords
+	if ("XLONG_M" %in% varList & "XLAT_M" %in% varList) {
+		inNCLon <- ncdf4::ncvar_get(inNC, "XLONG_M")
+		inNCLat <- ncdf4::ncvar_get(inNC, "XLAT_M")
+	} else if ("XLONG" %in% varList & "XLAT" %in% varList) {
+		inNCLon <- ncdf4::ncvar_get(inNC, "XLONG")
+		inNCLat <- ncdf4::ncvar_get(inNC, "XLAT")
+	} else if ("lon" %in% varList & "lat" %in% varList) {
+		inNCLon <- ncdf4::ncvar_get(inNC, "lon")
+		inNCLat <- ncdf4::ncvar_get(inNC, "lat")
+	} else {
+		stop('Error: Latitude and longitude fields not found (tried: XLAT_M/XLONG_M, XLAT/XLONG, lat/lon')
+	}
+	# Reverse column order to get UL in UL
+	x <- as.vector(inNCLon[,ncol(inNCLon):1])
+	y <- as.vector(inNCLat[,ncol(inNCLat):1])
+	#coords <- data.frame(lon=x, lat=y)
+	#coordinates(coords) <- c("lon", "lat")
+	#proj4string(coords) <- CRS("+proj=longlat +a=6370000 +b=6370000 +no_defs")
+	coords <- as.matrix(cbind(x, y))
+	# Get geogrid and projection info
+	map_proj <- ncdf4::ncatt_get(inNC, varid=0, attname="MAP_PROJ")$value
+	cen_lat <- ncdf4::ncatt_get(inNC, varid=0, attname="CEN_LAT")$value
+	cen_lon <- ncdf4::ncatt_get(inNC, varid=0, attname="STAND_LON")$value
+	truelat1 <- ncdf4::ncatt_get(inNC, varid=0, attname="TRUELAT1")$value
+	truelat2 <- ncdf4::ncatt_get(inNC, varid=0, attname="TRUELAT2")$value
+	if (map_proj==1) {
+		geogrd.proj <- paste0("+proj=lcc +lat_1=", truelat1, " +lat_2=", truelat2, " +lat_0=", cen_lat, " +lon_0=", cen_lon, " +x_0=0 +y_0=0 +a=6370000 +b=6370000 +units=m +no_defs")
+	#geogrd.crs <- CRS(geogrd.proj)
+    } else {
+		stop('Error: Projection type not supported (currently this tool only works for Lambert Conformal Conic projections).')
+	}
+	dx <- ncdf4::ncatt_get(inNC, varid=0, attname="DX")$value
+	dy <- ncdf4::ncatt_get(inNC, varid=0, attname="DY")$value
+	if ( dx != dy ) {
+		stop(paste0('Error: Asymmetric grid cells not supported. DX=', dx, ', DY=', dy))
+	}
+	#coords.proj <- spTransform(coords, geogrd.crs)
+	projcoords <- rgdal::project(coords, geogrd.proj)
+	ul <- projcoords[1,]
+	# Define geo transform:
+	# x coord of UL corner of UL cell
+	gt0 = ul[1] - dx/2.0
+	# x pixel resolution
+	gt1 = dx
+	# x rotation
+	gt2 = 0.0
+	# y coord of UL corner of UL cell
+	gt3 = ul[2] + dy/2.0
+	# y rotation
+	gt4 = 0.0
+	# y pixel resolution, should be negative
+	gt5 = -dy
+	gt = c(gt0,gt1,gt2,gt3,gt4,gt5)
+	# Setup temp geotif
+	d.drv <- new("GDALDriver", "GTiff")
+	tds.out <- new("GDALTransientDataset", driver = d.drv, 
+				   rows = dim(inNCVar)[2], cols = dim(inNCVar)[1], 
+				   bands = 1, type = typlist[[inNC$var[[inVar]]$prec]])
+	.Call("RGDAL_SetGeoTransform", tds.out, gt, PACKAGE = "rgdal")
+	.Call("RGDAL_SetProject", tds.out, geogrd.proj, PACKAGE = "rgdal")
+	# Prep NC variable
+	inNCVarRast <- raster::as.matrix(raster::raster(inNCVar))
+	inNCVarRast <- inNCVarRast[,ncol(inNCVarRast):1]
+	# Insert data and export geotiff
+	rgdal::putRasterData(tds.out, as.matrix(inNCVarRast))
+	rgdal::saveDataset(tds.out, outFile)
+	rgdal::GDAL.close(tds.out)
+}
