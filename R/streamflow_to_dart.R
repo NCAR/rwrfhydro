@@ -115,7 +115,7 @@ MkDischargeVariance <- function(prettyUsgs, error3SdFunc, retVariance=TRUE) {
 #=============================================================================================
 #' Writes an ascii obs_seq.in file for DART binary create_obs_sequence
 #' 
-#' \code{WriteDischargeObsSeq} makes variances fr prettyUsgs discharge observations. The formulation 
+#' \code{WriteDischargeObsSeq} makes variances for prettyUsgs discharge observations. The formulation 
 #' of the variances is subjective. Assuming zero-mean Gaussian observation errors, the approach 
 #' here is to supply a function which estimates the 3-sigma (inner 99.5% error quantiles) around 
 #' the observations. This amount seems somewhat easier to conceptualize than 1-sigma, hence here

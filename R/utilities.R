@@ -322,7 +322,11 @@ feet2meters <- 0.30480
 #' GetPkgMeta('keyword', package='ggplot2')
 #' @keywords utilities
 #' @export
-GetPkgMeta <- function(meta='concept', package='rwrfhydro', quiet=FALSE) {
+GetPkgMeta <- function(meta=c('concept','keyword'), package='rwrfhydro', quiet=FALSE) {
+  out <- plyr::llply(NamedList(meta), GetPkgMeta.scalar, package=package, quiet=quiet)
+}
+
+GetPkgMeta.scalar <- function(meta='concept', package='rwrfhydro', quiet=FALSE) {
   l1 <- plyr::llply(tools::Rd_db(package), tools:::.Rd_get_metadata, meta)
   l2 <- l1[as.logical(plyr::laply(l1, length))]  ## remove empties
   if(!length(l2)) return(NULL)
@@ -338,11 +342,14 @@ GetPkgMeta <- function(meta='concept', package='rwrfhydro', quiet=FALSE) {
   attr(out, 'package') <- package
   if(!quiet) {
     anS <- if(grepl('s$',meta)) '' else 's'
+    cat('\n')
+    cat('-----------------------------------',sep='\n')
     cat(paste0(package,' ',meta,anS), sep='\n')
-    cat('=========================================',sep='\n')
+    cat('-----------------------------------',sep='\n')
     for (ii in (1:length(out))) {
       cat('* ',names(out)[ii],':\n', sep='')
       cat(paste('   ',out[[ii]],collapse=' '), sep='\n')
+      cat('\n')
     }
   }
   invisible(out)
