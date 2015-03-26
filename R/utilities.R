@@ -157,6 +157,11 @@ CalcMeanNarm <- function(x) {
 #' @param x The vector of values.
 #' @param minValid The minimum valid value.
 #' @return The mean.
+#' @examples
+#' x <- c(1,2,-1e+20,3)
+#' mean(x) # yields -2.5e+19
+#' CalcMeanMinrm(x, 0) # yields 2
+#' @export
 CalcMeanMinrm <- function(x, minValid=-1e+30) {
     x[which(x<minValid)]<-NA
     mean(x, na.rm=TRUE)
@@ -260,6 +265,7 @@ CalcCOM <- function (x) {
 #' @param myDf The output dataframe from GetMultiNcdf.
 #' @return The reshaped output dataframe.
 #' @keywords internal
+#' @export
 ReshapeMultiNcdf <- function(myDf) {
     newDF <- subset(myDf[,c("POSIXct","stat")], myDf$variableGroup==unique(myDf$variableGroup)[1])
     for (i in unique(myDf$variableGroup)) {

@@ -271,18 +271,30 @@ CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q
     results <- as.data.frame(matrix(nrow = 6, ncol = 10))
     colnames(results) = c("nse", "nselog", "cor", "rmse", "rmsenorm", "bias", "mae", "errcom", "errmaxt", "errfdc")
     rownames(results) = c("ts", "daily", "monthly", "yearly", "max10", "min10")
-    exclvars <- names(flxDf.mod) %in% c("POSIXct", "secs", "timest", "date")
+    exclvars <- names(flxDf.mod) %in% c("POSIXct", "secs", "timest", "date", "stat")
+    # Base aggregations
     flxDf.mod.d <- aggregate(flxDf.mod[!exclvars], by = list(flxDf.mod$date), CalcMeanNarm)
     flxDf.mod.mwy <- aggregate(flxDf.mod[c("qcomp.mod","qcomp.obs")], by = list(flxDf.mod$month, flxDf.mod$wy), CalcMeanNarm)
     flxDf.mod.wy <- aggregate(flxDf.mod[c("qcomp.mod","qcomp.obs")], by = list(flxDf.mod$wy), CalcMeanNarm)
+    # Time of center of mass aggregations
     flxDf.mod.dcom <- aggregate(flxDf.mod[c("qcomp.mod","qcomp.obs")], by = list(flxDf.mod$date), CalcCOM)
     flxDf.mod.mwycom <- aggregate(flxDf.mod.d[c("qcomp.mod","qcomp.obs")], by = list(flxDf.mod.d$month, flxDf.mod.d$wy), CalcCOM)
     flxDf.mod.wycom <- aggregate(flxDf.mod.d[c("qcomp.mod","qcomp.obs")], by = list(flxDf.mod.d$wy), CalcCOM)
+    # Time of max aggregations
     flxDf.mod.dmax <- aggregate(flxDf.mod[c("qcomp.mod","qcomp.obs")], by = list(flxDf.mod$date), which.max)
     flxDf.mod.mwymax <- aggregate(flxDf.mod.d[c("qcomp.mod","qcomp.obs")], by = list(flxDf.mod.d$month, flxDf.mod.d$wy), which.max)
     flxDf.mod.wymax <- aggregate(flxDf.mod.d[c("qcomp.mod","qcomp.obs")], by = list(flxDf.mod.d$wy), which.max)
+    # NAs cause which.max to return a list, so force back to ints
+    flxDf.mod.dmax$qcomp.mod <- as.integer(flxDf.mod.dmax$qcomp.mod)
+    flxDf.mod.dmax$qcomp.obs <- as.integer(flxDf.mod.dmax$qcomp.obs)
+    flxDf.mod.mwymax$qcomp.mod <- as.integer(flxDf.mod.mwymax$qcomp.mod)
+    flxDf.mod.mwymax$qcomp.obs <- as.integer(flxDf.mod.mwymax$qcomp.obs)
+    flxDf.mod.wymax$qcomp.mod <- as.integer(flxDf.mod.wymax$qcomp.mod)
+    flxDf.mod.wymax$qcomp.obs <- as.integer(flxDf.mod.wymax$qcomp.obs)
+    # Mins and Maxes
     flxDf.mod.max10 <- subset(flxDf.mod, flxDf.mod$qcomp.obs>=quantile(flxDf.mod$qcomp.obs, 0.90, na.rm=TRUE))
     flxDf.mod.min10 <- subset(flxDf.mod, flxDf.mod$qcomp.obs<=quantile(flxDf.mod$qcomp.obs, 0.10, na.rm=TRUE))
+    # FDCs
     flxDf.mod <- CalcFdc(flxDf.mod, "qcomp.mod")
     flxDf.mod <- CalcFdc(flxDf.mod, "qcomp.obs")
     flxDf.mod.d <- CalcFdc(flxDf.mod.d, "qcomp.mod")

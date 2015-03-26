@@ -19,4 +19,9 @@ The mean.
 Read a vector and calculate the mean with all values below
 a specified minimum value set to NA (and therefore ignored).
 }
+\examples{
+x <- c(1,2,-1e+20,3)
+mean(x) # yields -2.5e+19
+CalcMeanMinrm(x, 0) # yields 2
+}
 
