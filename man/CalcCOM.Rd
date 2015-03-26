@@ -2,10 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{CalcCOM}
 \alias{CalcCOM}
-\title{Calculate center-of-mass.
-\code{CalcCOM} calculates the time step of center of mass.
-Calculate the time step when the center-of-mass of
-a time series of values occurs.}
+\title{Calculate center-of-mass.}
 \usage{
 CalcCOM(x)
 }
@@ -16,7 +13,6 @@ CalcCOM(x)
 The center-of-mass time step.
 }
 \description{
-Calculate center-of-mass.
 \code{CalcCOM} calculates the time step of center of mass.
 Calculate the time step when the center-of-mass of
 a time series of values occurs.
