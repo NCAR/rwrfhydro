@@ -79,15 +79,15 @@ img {
 <div id="import-modelled-datasets" class="section level1">
 <h1>Import modelled datasets</h1>
 <p>Calculate basin-averaged LSM water fluxes. The LSM was run at 1km resolution and the high-res hydro grid was 100m resolution, so our aggregation factor is 10. We only have 1 basin in our model domain, and our basin ID is 1. We are going to use R’s multi-core capability (make sure doMC is installed) and run this summary over 8 cores.</p>
-<pre class="r"><code>modLdasoutWb1h.allrt.fc &lt;- ReadLdasoutWb(paste0(dataPath, '/OUTPUT_ALLRT'), 
+<pre class="r"><code>modLdasoutWb1h.allrt.fc &lt;- ReadLdasoutWb(paste0(dataPath, '/RUN.RTTESTS/OUTPUT_ALLRT'), 
                                          paste0(dataPath, '/DOMAIN/hydro_OrodellBasin_100m.nc'), 
                                          mskvar=&quot;basn_msk&quot;, basid=1, aggfact=10, ncores=8)</code></pre>
 <p>Calculate basin-averaged routing water fluxes.</p>
-<pre class="r"><code>modRtout1h.allrt.fc &lt;- ReadRtout(paste0(dataPath, '/OUTPUT_ALLRT'), 
+<pre class="r"><code>modRtout1h.allrt.fc &lt;- ReadRtout(paste0(dataPath, '/RUN.RTTESTS/OUTPUT_ALLRT'), 
                                  paste0(dataPath, '/DOMAIN/hydro_OrodellBasin_100m.nc'), 
                                  mskvar=&quot;basn_msk&quot;, basid=1, ncores=8)</code></pre>
 <p>Import groundwater outflow model output.</p>
-<pre class="r"><code>modGwout.allrt.fc &lt;- ReadGwOut(paste0(dataPath, '/OUTPUT_ALLRT/GW_outflow.txt'))</code></pre>
+<pre class="r"><code>modGwout.allrt.fc &lt;- ReadGwOut(paste0(dataPath, '/RUN.RTTESTS/OUTPUT_ALLRT/GW_outflow.txt'))</code></pre>
 </div>
 <div id="evaluate-the-predicted-water-budget" class="section level1">
 <h1>Evaluate the predicted water budget</h1>

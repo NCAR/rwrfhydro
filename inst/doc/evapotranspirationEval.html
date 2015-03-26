@@ -91,7 +91,7 @@ ldasoutVariableList &lt;- list( ldasout = ldasoutVars )</code></pre>
 names(ldasoutInd) &lt;- names(ldasoutVars)
 ldasoutIndexList &lt;- list( ldasout = ldasoutInd )</code></pre>
 <p>Generate the list of filenames for the GetMultiNcdf tool by providing the pathname to the model OUTPUT directory and the filename pattern to match (in this case we want the LDASOUT files).</p>
-<pre class="r"><code>ldasoutFilesList &lt;- list( ldasout = list.files(path=paste0(dataPath, '/OUTPUT_ALLRT'), 
+<pre class="r"><code>ldasoutFilesList &lt;- list( ldasout = list.files(path=paste0(dataPath, '/RUN.RTTESTS/OUTPUT_ALLRT'), 
      pattern=glob2rx('*LDASOUT*'), full.names=TRUE))</code></pre>
 <p>Run the tool. To speed things up, we will run this over 8 cores using the doMC package.</p>
 <pre class="r"><code>library(doMC)
@@ -126,6 +126,7 @@ names(obsFlux1d.usnr1)[1] &lt;- &quot;POSIXct&quot;</code></pre>
 <div id="review-model-performance-statistics" class="section level1">
 <h1>Review model performance statistics</h1>
 <pre class="r"><code>CalcModPerf(modLdasout.allrt.niw, obsFlux1d.usnr1, flxCol.mod=&quot;LE&quot;, flxCol.obs=&quot;LE&quot;)</code></pre>
+<pre><code>## Warning: package 'pander' was built under R version 3.1.2</code></pre>
 <table>
 <colgroup>
 <col width="14%"></col>

@@ -27,12 +27,12 @@ dataPath <- '/Users/adugger/WRF_Hydro/test_cases/Fourmile_Creek'
 
 Model 1: Only channel routing turned on (hourly model run).
 ```{r}
-modStrh.chrt.fc <- ReadFrxstPts(paste0(dataPath, '/OUTPUT_CHRT/frxst_pts_out.txt'))
+modStrh.chrt.fc <- ReadFrxstPts(paste0(dataPath, '/RUN.RTTESTS/OUTPUT_CHRT/frxst_pts_out.txt'))
 ```
 
 Model 2: All WRF-Hydro routing options turned on (hourly model run).
 ```{r}
-modStrh.allrt.fc <- ReadFrxstPts(paste0(dataPath, '/OUTPUT_ALLRT/frxst_pts_out.txt'))
+modStrh.allrt.fc <- ReadFrxstPts(paste0(dataPath, '/RUN.RTTESTS/OUTPUT_ALLRT/frxst_pts_out.txt'))
 ```
 
 USGS gage observed data at 5-minute intervals.

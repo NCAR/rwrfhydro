@@ -50,7 +50,7 @@ ldasoutIndexList <- list( ldasout = ldasoutInd )
 
 Generate the list of filenames for the GetMultiNcdf tool by providing the pathname to the model OUTPUT directory and the filename pattern to match (in this case we want the LDASOUT files).
 ```{r}
-ldasoutFilesList <- list( ldasout = list.files(path=paste0(dataPath, '/OUTPUT_ALLRT'), 
+ldasoutFilesList <- list( ldasout = list.files(path=paste0(dataPath, '/RUN.RTTESTS/OUTPUT_ALLRT'), 
      pattern=glob2rx('*LDASOUT*'), full.names=TRUE))
 ```
 
