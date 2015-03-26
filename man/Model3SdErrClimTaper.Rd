@@ -9,21 +9,19 @@ Model3SdErrClimTaper(data, qntlIncpt = 0.05, qntlClim = 0.5,
   pctErr = 0.15)
 }
 \arguments{
-\item{data,}{Numeric the values for which errors are to be modeled.}
+\item{data}{Numeric The values for which errors are to be modeled.}
 
-\item{qntlIncpt}{Numeric the quantile of historical observations to be used as minimum error or intercept.}
+\item{qntlIncpt}{Numeric The quantile of historical observations to be used as minimum error or intercept.}
 
-\item{qntlClim}{Numeric the quantile of historical observations to be used as observation value of minimum error.}
+\item{qntlClim}{Numeric The quantile of historical observations to be used as observation value of minimum error.}
 
-\item{pctErr}{Numeric the percent error associated with the observations.}
+\item{pctErr}{Numeric The percent error associated with the observations.}
 }
 \description{
 \code{Model3SdErrClimTaper} models three-sigma errors (same units as input) as
 smallest (\code{qntlIncpt} intercept is some climatological quantile) at
 "climatological" observations (\code{qntlClim}, e.g. median = .5) and grow to some maximum
 percent error (\code{pctErr}). This is expressed by
-}
-\details{
 \code{quantile(data, qntlIncpt) + pmin( pctErr*data, pctErr*abs(data-quantile(data, qntlClim)) )}
 }
 

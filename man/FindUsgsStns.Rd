@@ -2,6 +2,7 @@
 % Please edit documentation in R/ingest_usgs.R
 \name{FindUsgsStns}
 \alias{FindUsgsStns}
+\alias{dataGet}
 \title{Discover USGS stations using huc8 code or lat/lon/radius.}
 \usage{
 FindUsgsStns(stnLon = NULL, stnLat = NULL, within = NULL, huc8 = NULL,
@@ -28,4 +29,8 @@ See the dataRetrieval package for more deails on what else could be passed or ho
 stnDf <- FindUsgsStns(huc='10190005')
 stnDf <- FindUsgsStns(stnLon=254.67374999999998408,stnLat=40.018666670000001773,within=.001)
 }
+\seealso{
+Other streamObs: \code{\link{PlotPrettyData}}
+}
+\keyword{IO}
 

@@ -87,7 +87,7 @@ filesAL <- SaveHucData(GetUsgsHucData(huc='03160203'), outPath=dbPath) ## Satilp
 # Query the local data
 Now we work entirely locally, having grabbed the data of interest. For all HUC8 and products, any of the siteInfo metadata can be retrieved from the local DB. Note that the same site is repeated for multiple products.
 ```{r}
-QuerySiteInfo(c('station_nm','site_no','dec_lat_va','dec_lon_va'), path=dbPath)
+QuerySiteInfo(c('station_nm','site_no','dec_lat_va','dec_long_va'), path=dbPath)
 ```
 
 Say you just want Orodell and you want your code to be readable: translate the name to the code with QuerySiteName (which translates both ways).

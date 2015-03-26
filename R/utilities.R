@@ -228,6 +228,7 @@ Rmse <- function (m, o) {
 #' @param m The vector of modelled values.
 #' @param o The vector of observed values.
 #' @return The nrmalized root mean squared error.
+#' @keywords internal
 RmseNorm <- function (m, o) {
     err <- sum((m - o)^2, na.rm=T)/(min(sum(!is.na(m)),sum(!is.na(o))))
     rmserr <- sqrt(err) / ( max(o, na.rm=T) - min(o, na.rm=T) ) * 100
@@ -241,6 +242,7 @@ RmseNorm <- function (m, o) {
 #' a time series of values occurs.
 #' @param x The time series vector.
 #' @return The center-of-mass time step.
+#' @keywords internal
 CalcCOM <- function (x) {
     cuml.x <- as.data.frame(CumsumNa(x)/sum(x, na.rm=T))
     colnames(cuml.x) <- c("x")
@@ -257,6 +259,7 @@ CalcCOM <- function (x) {
 #' for ease of use in other functions.
 #' @param myDf The output dataframe from GetMultiNcdf.
 #' @return The reshaped output dataframe.
+#' @keywords internal
 ReshapeMultiNcdf <- function(myDf) {
     newDF <- subset(myDf[,c("POSIXct","stat")], myDf$variableGroup==unique(myDf$variableGroup)[1])
     for (i in unique(myDf$variableGroup)) {
@@ -275,6 +278,7 @@ ReshapeMultiNcdf <- function(myDf) {
 #' @return List with names equal to entries.
 #' @examples 
 #' NamedList(1:5)
+#' @keywords internal
 NamedList <- function(theNames) {
   theList <- as.list(theNames)
   names(theList)<- theNames
@@ -291,9 +295,49 @@ NamedList <- function(theNames) {
 #' @examples 
 #' AllSame( 1:5 )
 #' AllSame( 0*(1:5) )
+#' @keywords internal
 AllSame <- function(x, na.rm=FALSE) all(x==x[which(!is.na(x))[1]], na.rm=na.rm)
 
 
 # coversion constants
 cfs2cms <- 0.0283168466  
 feet2meters <- 0.30480
+
+
+#' Get a package's metadata fields and associated entries.
+#' 
+#' \code{GetPkgMeta} Get metadata fields and associated entries from a package's documentation (e.g. "keyword" or "concepts".)
+#' @param meta Character the metadata field.
+#' @param package Character The package to query for metadata.
+#' @return List of metadata fields in alphabetical order with corresponding entries.
+#' @examples 
+#' GetPkgMeta()
+#' GetPkgMeta('keyword', package='ggplot2')
+#' @keywords utilities
+#' @export
+GetPkgMeta <- function(meta='concept', package='rwrfhydro', quiet=FALSE) {
+  l1 <- plyr::llply(tools::Rd_db(package), tools:::.Rd_get_metadata, meta)
+  l2 <- l1[as.logical(plyr::laply(l1, length))]  ## remove empties
+  if(!length(l2)) return(NULL)
+  l3 <- plyr::llply(l2, function(ll) ll[which(as.logical(nchar(ll)))] ) ## remove blanks
+  ulStrsplit <- function(...) unlist(strsplit(...))
+  l4 <- plyr::llply(l3, ulStrsplit, ' ') ## parse individual keywords
+  names(l4) <- plyr::laply(strsplit(names(l3),'\\.Rd'),'[[',1)  ## remove .Rd from function doc names.
+  out <- plyr::dlply(reshape2::melt(l4), plyr::.(value), function(dd) dd$L1 )
+  out <- out[sort(names(out))]
+  attr(out, 'split_type') <- NULL
+  attr(out, 'split_labels') <- NULL
+  attr(out, 'meta') <- meta
+  attr(out, 'package') <- package
+  if(!quiet) {
+    anS <- if(grepl('s$',meta)) '' else 's'
+    cat(paste0(package,' ',meta,anS), sep='\n')
+    cat('=========================================',sep='\n')
+    for (ii in (1:length(out))) {
+      cat('* ',names(out)[ii],':\n', sep='')
+      cat(paste('   ',out[[ii]],collapse=' '), sep='\n')
+    }
+  }
+  invisible(out)
+}
+

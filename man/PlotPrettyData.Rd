@@ -4,12 +4,16 @@
 \alias{PlotPrettyData}
 \title{Plot USGS site data which has been prettied with PrettySiteData.}
 \usage{
-PlotPrettyData(prettyUsgs, plot = TRUE)
+PlotPrettyData(prettyUsgs, plot = TRUE, errInnerQntl = 0.995)
 }
 \arguments{
 \item{prettyUsgs}{dataframe returned from PrettySiteData}
 
 \item{plot}{Logical to plot before returning or not.}
+
+\item{errInnerQntl}{The inner quantile of the error estimate to be plotted with error bars. For example,
+the "68-95-99.7 rule" where specifying these as the errInnerQntl would display 1, 2, and 3
+standard deviations, respectively.}
 }
 \value{
 A function(closure) with arguments controlling the look of its graphical output. It's actual
@@ -21,4 +25,12 @@ A function(closure) with arguments controlling the look of its graphical output.
 \examples{
 # See vignette "Collect USGS stream observations and build a local database" for examples.
 }
+\seealso{
+Other streamObs: \code{\link{FindUsgsStns}},
+  \code{\link{dataGet}}
+}
+\concept{
+plot
+}
+\keyword{hplot}
 

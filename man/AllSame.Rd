@@ -21,4 +21,5 @@ Logical
 AllSame( 1:5 )
 AllSame( 0*(1:5) )
 }
+\keyword{internal}
 

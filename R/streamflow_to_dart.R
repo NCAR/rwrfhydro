@@ -11,7 +11,6 @@
 ## create_obs_sequence wants tuples of: (??)
 ## [[[ type, location, time, expected error, and optionally a data value and/or a quality control indicator]]]
 
-
 #=============================================================================================
 #' Three-sigma errors specified as percent of observed plus some quantile of historical flows.
 #' 
@@ -66,7 +65,8 @@ Model3SdErrClimTaper <- function(data, qntlIncpt=.05, qntlClim=.5, pctErr=.15) {
 #' prettyOro <- MkDischargeVariance(prettyOrodell, Model3SdErrClimTaper)
 #' prettyO <- subset(prettyOro, dateTime < as.POSIXct('2012-01-01'))
 #' oroPlot <- PlotPrettyData(prettyO)
-#' 
+#' @keywords manip
+#' @concept DART dataMgmt
 #' @export
 MkDischargeVariance <- function(prettyUsgs, error3SdFunc, retVariance=TRUE) {
   if(!('prettyUsgs' %in% class(prettyUsgs))) {
@@ -103,8 +103,6 @@ MkDischargeVariance <- function(prettyUsgs, error3SdFunc, retVariance=TRUE) {
 
 
 #=============================================================================================
-# Make variances for prettyUsgs discharge observations. 
-# 
 #dataHourly <- plyr::ddply(pretty, .(year, month, day, hour),
                     #summarize,
                     ##Q.cms=mean(`discharge (cfs)`*cfs2cms, na.rm=TRUE) )
@@ -129,35 +127,55 @@ MkDischargeVariance <- function(prettyUsgs, error3SdFunc, retVariance=TRUE) {
 #' @param errorId     Character To help identify the outputfile and the error function used.
 #' @param typeQ       Numeric   Stream discharge obs type index in my pre-release version of DART. It could change.
 #'                              DART/obs_kind/DEFAULT_obs_kind_mod.F90
-# @examples
+#' @examples
+#' #Following on examples for MkDischargeVariance
+#' WriteDischargeObsSeq(prettyOro, '~/.', 'orodell', 'climTaperDefault')
 #mkGaugeObsSeq( loganData, '~/boulderCreek/', 'loganMill' )
 #mkGaugeObsSeq( sunshineData, '~/boulderCreek/', 'sunshine' ) 
-#' @concept DART dataMgmt manip
+#' @keywords manip
+#' @concept DART dataMgmt
+#' @family dartObs
 #' @export
-WritesDischargeObsSeq <- function(pretty, outPath, 
-                              stationName, errorId, 
-                              typeQ=20) {
+WriteDischargeObsSeq <- function(pretty, outPath='.', 
+                                 stationName, errorId, 
+                                 typeQ=20) {
   
-  variables <- attr(prettyUsgs,'variables')
-  codes     <- attr(prettyUsgs,'codes')
-  variances <- attr(prettyUsgs,'variances')
-  stDevs    <- attr(prettyUsgs,'st.devs.')
+  if(!('prettyUsgs' %in% class(pretty))) {
+    warning('WriteDischargeObsSeq requires a prettyUsgs object as its first argument.')
+    return(NULL)
+  }
+  
+  variables <- attr(pretty,'variables')
+  codes     <- attr(pretty,'codes')
+  variances <- attr(pretty,'variances')
+  stDevs    <- attr(pretty,'st.devs.')
   errVars   <- c(variances,stDevs)
   
-  ## only output a single a single variable+variance. 
+  if(!length(errVars)) {
+    warning(paste0('WriteDischargeObsSeq requires variances or std.devs. to be specified in ',
+                   'the prettyUsgs object. See MkDischargeVariance.'))
+    return(NULL)
+  }
+  
+  siteInfo  <- attr(pretty,'siteInfo')
+  
+  ## If there is more than one variable, which to use?
+  ## nly output a single a single variable+variance. 
   if(length(variables)>1 && length(errVars)) {
     errUnits <- plyr::laply(strsplit(errVars,'[(^)]'), '[[', 2)
-    if(length(errVars)==1) {
+    if(length(errVars)==1) { 
+      ## this selects from more than one variable using the only available err info.
       theVar <- variables[grep(errUnits,variables)]
       theErr <- errVars
-    } else {
+    } else { 
+      ## otherwise, the variable is user selected.
       varsWErr <- variables[plyr::laply(errUnits, grep, variables)]
       whVar <- readline(prompt=paste0('Please select a single variable to plot with error bars: \n',
                                       paste(1:length(varsWErr),varsWErr, sep=': ', collapse=' \n'),' \n'))
       theVar <- variables[as.numeric(whVar)]
       theErr <- errVars[grep( strsplit(theVar,'[(^)]')[[1]][2], errUnits )]
     }
-    prettyUsgs <- prettyUsgs[,c("dateTime","site_no", codes, theVar, theErr)]
+    pretty <- pretty[,c("dateTime","site_no", codes, theVar, theErr)]
     variables <- theVar
     errVars   <- theErr
   }
@@ -169,12 +187,12 @@ WritesDischargeObsSeq <- function(pretty, outPath,
   }
   
   ## time in year month day hour minute second
-  pretty$year   <-  format(pretty$POSIXct, '%Y')
-  pretty$month  <-  format(pretty$POSIXct, '%m')
-  pretty$day    <-  format(pretty$POSIXct, '%d')
-  pretty$hour   <-  format(pretty$POSIXct, '%H')
-  pretty$minute <-  format(pretty$POSIXct, '%M')
-  pretty$second <-  format(pretty$POSIXct, '%S')
+  pretty$year   <-  format(pretty$dateTime, '%Y')
+  pretty$month  <-  format(pretty$dateTime, '%m')
+  pretty$day    <-  format(pretty$dateTime, '%d')
+  pretty$hour   <-  format(pretty$dateTime, '%H')
+  pretty$minute <-  format(pretty$dateTime, '%M')
+  pretty$second <-  format(pretty$dateTime, '%S')
   
   outFileName <- paste0(outPath,'/',stationName,'.Q.cms.MASTER.',errorId,'.obs_seq.inputForCreateObsSeq')
 
@@ -197,12 +215,15 @@ WritesDischargeObsSeq <- function(pretty, outPath,
   ## input meta data for qc field             1
   ##missing
   
-  cat(as.character(nrow(pretty)+1),file = outCon, sep = "\n")
+  cat(as.character(nrow(pretty)+1), file = outCon, sep = "\n")
+
   nCopies <- 1
-  cat(as.character(nCopies),file = outCon, sep = "\n")
+  cat(as.character(nCopies), file = outCon, sep = "\n")
+  
   nQuality <- 0
-  cat(as.character(nQuality),file = outCon, sep = "\n")
-  cat('"The observations"',file = outCon, sep = "\n")
+  cat(as.character(nQuality), file = outCon, sep = "\n")
+  
+  cat('"The observations"', file = outCon, sep = "\n")
   
   ##1
   ##      Input -1 * state variable index for identity observations
@@ -245,10 +266,10 @@ WritesDischargeObsSeq <- function(pretty, outPath,
   ##                 20 STREAM_FLOW
   ##2 [[[repeat]]]
   
-  theEle <- as.character(pretty$atl._va[1]*feet2meters)
-  theLon <- pretty$dec_long_va
+  theEle <- as.character(siteInfo$alt_va[1]*feet2meters)
+  theLon <- siteInfo$dec_long_va
   theLon <- format(theLon %% 360, digits=20)
-  theLat <- format(pretty$lat[1], digits=20)
+  theLat <- format(siteInfo$dec_lat_va, digits=20)
   
   for (i in 1:nrow(pretty) ) {
     cat(as.character(i),
@@ -271,5 +292,6 @@ WritesDischargeObsSeq <- function(pretty, outPath,
   cat(outSeqFileName, file=outCon, sep='\n')
   
   close(outCon)
+  outFileName
 }
 

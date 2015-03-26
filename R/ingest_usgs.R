@@ -25,6 +25,9 @@
 #' @param huc8 optional EIGHT digit HUC code. 
 #' @param siteType the type of USGS site to look for. 
 #' @param hasDataTypeCd the kind of data of interest (iv=instantaneous, dv=daily, etc.)
+#' @keywords IO
+#' @aliases dataGet
+#' @family streamObs
 #' @examples
 #' stnDf <- FindUsgsStns(huc='10190005')
 #' stnDf <- FindUsgsStns(stnLon=254.67374999999998408,stnLat=40.018666670000001773,within=.001)
@@ -162,7 +165,7 @@ SaveHucData <- function(hucData, outPath,
                         metaDBFileName='usgsDataRetrieval.metaDatabase.RData', 
                         overwriteHucDataFile=FALSE) {
   ##What the HUC?
-  allHuc <- unlist(plyr::llply(hucData, function(ll) ll$meta$siteInfo$hucCd))
+  allHuc <- unlist(plyr::llply(hucData, function(ll) ll$meta$siteInfo$huc_cd))
   ## make sure there's only one HUC.
   if(!AllSame(allHuc)) warning('Not all stations in the same HUC, though they should be.', immediate.=TRUE)
   huc=as.character(allHuc[1])
@@ -225,10 +228,14 @@ SaveHucData <- function(hucData, outPath,
 #' @return list of metadata for a 
 ImproveHucMeta <- function(hucProdDf) {
   
-  meta2 <- dataRetrieval::readNWISdata(site=unique(hucProdDf$site_no), 
-                                       
+  hucMeta <- list( siteInfo      = attr(hucProdDf, 'siteInfo'),
+                   variableInfo  = attr(hucProdDf, 'variableInfo'), 
+                   statisticInfo = attr(hucProdDf, 'statisticInfo') )  
+  
+  meta2 <- dataRetrieval::readNWISdata(site=unique(hucProdDf$site_no),                                        
                                        hasDataTypeCd="iv", 
                                        siteOutput='expanded', service = "site")  
+  
   if(FALSE) {
     ## THis is a test block to discover what is in common / repeated between the siteInfo which
     ## comes with hucProdDf and the more extended metadata in meta2 (which cant tell y)
@@ -245,19 +252,19 @@ ImproveHucMeta <- function(hucProdDf) {
     ## cant be sure well_depth_va and hole_depth_va are the same.
     ## countyCd and county_cd are the same but countyCd is less accurate as it contains state code too.
   }
-    
+  
   ## check all the x names in x
+  hucMeta$siteInfo$countyCd <- NULL
   xNames<-c('site_no',     'agency_cd',   'dec_lat_va',   'dec_long_va',  'huc_cd',
             'site_tp_cd',  'state_cd',     'station_nm',   'tz_cd')
   yNames<-c('site_no',     'agency_cd',   'dec_lat_va',   'dec_lon_va',   'hucCd', 
             'siteTypeCd',  'stateCd',      'station_nm',   'timeZoneAbbreviation')
   all(match(xNames, names(meta2)))
   all(match(yNames, names(hucMeta$siteInfo)))
+  
   m2 <- merge.data.frame(meta2,hucMeta$siteInfo, by.x=xNames, by.y=yNames, sort=TRUE, all=TRUE)
   
-  hucMeta <- list( siteInfo      = m2, 
-                   variableInfo  = attr(hucProdDf, 'variableInfo'), 
-                   statisticInfo = attr(hucProdDf, 'statisticInfo') )  
+  hucMeta$siteInfo <- m2
   
   startTime <- plyr::ldply(hucMeta$siteInfo$site_no, 
                            function(site) min(subset(hucProdDf, site_no == site)$dateTime) )[,1]
@@ -562,10 +569,16 @@ TransUsgsProdStat <- function(names, whichIn=FALSE) {
 #' \code{PlotPrettyData} plots USGS site data which has been prettied with \code{PrettySiteData}.
 #' @param prettyUsgs dataframe returned from PrettySiteData
 #' @param plot Logical to plot before returning or not.
+#' @param errInnerQntl The inner quantile of the error estimate to be plotted with error bars. For example, 
+#'        the "68-95-99.7 rule" where specifying these as the errInnerQntl would display 1, 2, and 3 
+#'        standard deviations, respectively.
 #' @return A function(closure) with arguments controlling the look of its graphical output. It's actual
 #'         return value is a list of ggplot2 object which can be custom manipulated. 
 #' @examples
 #' # See vignette "Collect USGS stream observations and build a local database" for examples.
+#' @keywords hplot
+#' @concept plot
+#' @family streamObs
 #' @export
 PlotPrettyData <- function(prettyUsgs, plot=TRUE, errInnerQntl=.995) {
   if(!('prettyUsgs' %in% class(prettyUsgs))) {

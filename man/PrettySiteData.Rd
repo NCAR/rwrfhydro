@@ -4,7 +4,7 @@
 \alias{PrettySiteData}
 \title{Pretty USGS site data makes nice headers and optionally converts to metric.}
 \usage{
-PrettySiteData(data, tz = "UTC", metric = metricOnly, metricOnly = FALSE,
+PrettySiteData(data, tz = "UTC", metric = metricOnly, metricOnly = TRUE,
   na.rm = TRUE)
 }
 \arguments{
