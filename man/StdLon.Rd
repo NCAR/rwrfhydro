@@ -18,4 +18,5 @@ The standardized object.
 \examples{
 StdLon(0:360)
 }
+\keyword{internal}
 

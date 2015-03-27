@@ -16,4 +16,5 @@ The mean.
 \code{CalcMeanNarm} calculates a mean with forced NA removal.
 Read a vector and calculate the mean with forced NA removal.
 }
+\keyword{internal}
 

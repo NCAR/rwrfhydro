@@ -41,8 +41,9 @@
 #' ## TIF files will be stored in /d1/WRF_Hydro/RS/MODIS_ARC/PROCESSED/Fourmile_LAI/.
 #'
 #' GetMODIS(geogrdPath="/d1/WRF_Hydro/Fourmile_fire/DOMAIN/geo_em.d01.nc", prodName="MOD15A2", outDir="Fourmile_LAI", begin="2011.01.01", end="2011.01.31")
+#' @keywords IO
+#' @concept aconcept
 #' @export
-
 GetMODIS <- function(geogrdPath, prodName, outDir, begin, end) {
     # Check packages
     if (!(require("rgdal") & require("raster") & require("ncdf4") & require("MODIS"))) {
@@ -50,6 +51,9 @@ GetMODIS <- function(geogrdPath, prodName, outDir, begin, end) {
         }
     # Get paths
     locPath <- paste0(options("MODIS_localArcPath"))
+    if (!file.exists(locPath)) {
+      dir.create(locPath, showWarnings = FALSE)
+    }
     # Get geogrid and projection info
     geogrd.nc <- ncdf4::nc_open(geogrdPath)
     map_proj <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="MAP_PROJ")$value
@@ -131,15 +135,16 @@ GetMODIS <- function(geogrdPath, prodName, outDir, begin, end) {
 #' ## Export a subset of the already processed LAI TIF images into an output netcdf file
 #'
 #' lai.b <- ConvertRS2Stack("/d6/adugger/WRF_Hydro/RS/MODIS_ARC/PROCESSED/BCNED_LAI", "*Lai_1km.tif", begin=c("2011.06.01", end="2011.06.30", noData=100, noDataQual="max", valScale=0.1, valAdd=0, outFile="BCNED_LAI.nc", varName="LAI", varUnit="(m^2)/(m^2)", varLong="Leaf area index")
+#' @keywords IO
+#' @concept aconcept
 #' @export
-
 ConvertRS2Stack <- function(inPath, matchStr, begin=NULL, end=NULL,
                             noData=NULL, noDataQual="exact", valScale=1, valAdd=0,
                             outFile=NULL, varName=NULL, varUnit=NULL, varLong=NULL, varNA=-1.e+36) {
     # Get file list
     if (!is.null(begin) & !is.null(end)) {
-        beginDt <- format(as.POSIXlt(begin, format="%Y.%m.%d", tz="UTC"), "%Y%j", tz="UTC")
-        endDt <- format(as.POSIXlt(end, format="%Y.%m.%d", tz="UTC"), "%Y%j", tz="UTC")
+        beginDt <- format(as.POSIXct(begin, format="%Y.%m.%d", tz="UTC"), "%Y%j", tz="UTC")
+        endDt <- format(as.POSIXct(end, format="%Y.%m.%d", tz="UTC"), "%Y%j", tz="UTC")
         timeInfo <- MODIS::orgTime(MODIS::preStack(path=inPath, pattern=matchStr), begin=beginDt, end=endDt, pillow=0)
     } else {
         timeInfo <- MODIS::orgTime(MODIS::preStack(path=inPath, pattern=matchStr), pillow=0)
@@ -154,10 +159,10 @@ ConvertRS2Stack <- function(inPath, matchStr, begin=NULL, end=NULL,
         # Check dates
         fileStr <- sub(inPath, rsFile, replacement="")
         dtStr <- substr(unlist(strsplit(fileStr,"[.]"))[2], nchar(unlist(strsplit(fileStr,"[.]"))[2])-(7-1), nchar(unlist(strsplit(fileStr,"[.]"))[2]))
-        #dtPOSIXlt <- as.POSIXlt(dtStr, format="%Y%j", tz="UTC")
-        #begPOSIXlt <- if(is.null(begin)) { dtPOSIXlt } else { as.POSIXlt(begin, format="%Y.%m.%d", tz="UTC") }
-        #endPOSIXlt <- if(is.null(end)) { dtPOSIXlt } else { as.POSIXlt(end, format="%Y.%m.%d", tz="UTC") }
-        #if ( (dtPOSIXlt >= begPOSIXlt) & (dtPOSIXlt <= endPOSIXlt) ) {
+        #dtPOSIXct <- as.POSIXct(dtStr, format="%Y%j", tz="UTC")
+        #begPOSIXct <- if(is.null(begin)) { dtPOSIXct } else { as.POSIXct(begin, format="%Y.%m.%d", tz="UTC") }
+        #endPOSIXct <- if(is.null(end)) { dtPOSIXct } else { as.POSIXct(end, format="%Y.%m.%d", tz="UTC") }
+        #if ( (dtPOSIXct >= begPOSIXct) & (dtPOSIXct <= endPOSIXct) ) {
             rsRast <- raster::raster(rsFile)
             # Remove MODIS nodata values
             if (!is.null(noData)) {
@@ -174,8 +179,8 @@ ConvertRS2Stack <- function(inPath, matchStr, begin=NULL, end=NULL,
                 rsRast <- rsRast * valScale + valAdd
                 }
             # Track dates
-            dtInts[n] <- as.integer(difftime(as.POSIXlt(dtStr, format="%Y%j", tz="UTC"), as.POSIXlt("198001", format="%Y%j", tz="UTC", units="days")))
-            dtNames[n] <- paste0("DT", format(as.POSIXlt(dtStr, format="%Y%j", tz="UTC"), "%Y.%m.%d"))
+            dtInts[n] <- as.integer(difftime(as.POSIXct(dtStr, format="%Y%j", tz="UTC"), as.POSIXct("198001", format="%Y%j", tz="UTC", units="days")))
+            dtNames[n] <- paste0("DT", format(as.POSIXct(dtStr, format="%Y%j", tz="UTC"), "%Y.%m.%d"))
             if (n==1) {
                 rsStack <- raster::stack(rsRast)
             } else {
@@ -214,15 +219,16 @@ ConvertRS2Stack <- function(inPath, matchStr, begin=NULL, end=NULL,
 #' ## Export the raster stack of LAI images created through ConvertRS2Stack to a NetCDF file. Use the full time series of images.
 #'
 #' ConvertStack2NC(lai.b, outFile="BCNED_LAI.nc", varName="LAI", varUnit="(m^2)/(m^2)", varLong="Leaf area index")
+#' @keywords IO
+#' @concept aconcept
 #' @export
-
 ConvertStack2NC <- function(inStack, outFile=NULL, varName=NULL, varUnit=NULL, varLong=NULL, varNA=-1.e+36) {
     # Get dates
     dtInts <- c()
     dtNames <- names(inStack)
     for (i in 1:length(dtNames)) {
         dtStr <- sub("DT", dtNames[i], replacement="")
-        dtInts[i] <- as.integer(difftime(as.POSIXlt(dtStr, format="%Y.%m.%d", tz="UTC"), as.POSIXlt("198001", format="%Y%j", tz="UTC", units="days")))
+        dtInts[i] <- as.integer(difftime(as.POSIXct(dtStr, format="%Y.%m.%d", tz="UTC"), as.POSIXct("198001", format="%Y%j", tz="UTC", units="days")))
         }
     # Output NetCDF file
     raster::writeRaster(inStack, outFile, "CDF", overwrite=TRUE,
@@ -267,8 +273,9 @@ ConvertStack2NC <- function(inStack, outFile=NULL, varName=NULL, varUnit=NULL, v
 #' ## also removes outliers, which we specify to be more than 0.5 LAI from the smoothed value.
 #'
 #' lai.b.sm <- SmoothStack(lai.b, outDirPath="/Volumes/d1/adugger/RS/MODIS_ARC/PROCESSED/FRNTRNG_LAI_SMOOTHED", groupYears=F, removeOutlier=T, threshold=0.5, lambda=1000, overwrite=TRUE)
+#' @keywords smooth
+#' @concept aconcept
 #' @export
-
 SmoothStack <- function(inStack, w=NULL, t=NULL, groupYears=FALSE,
                         lambda = 5000, nIter= 3, collapse=FALSE, outDirPath = "./",
                         removeOutlier=FALSE, threshold=NULL, mergeDoyFun="max", ...) {
@@ -316,8 +323,9 @@ SmoothStack <- function(inStack, w=NULL, t=NULL, groupYears=FALSE,
 #' ## Export the NetCDF of LAI images created through ConvertStack2NC to the forcing data.
 #'
 #' InsertRS("BCNED_LAI.nc", forcPath="FORCING", forcName="LDASIN_DOMAIN3", varName="LAI")
+#' @keywords IO
+#' @concept aconcept
 #' @export
-
 InsertRS <- function(inFile, forcPath, forcName="LDASIN_DOMAIN1",
                         varName=NULL, varUnit=NULL, varLong=NULL, varNA=-1.e+36,
                         overwrite=TRUE) {
@@ -355,7 +363,7 @@ InsertRS <- function(inFile, forcPath, forcName="LDASIN_DOMAIN1",
         nTime <- inNC$var[[varName]]$dim[[3]]$len
         for (i in 1:(nTime)) {
             dtNum <- inNC$var[[varName]]$dim[[3]]$val[[i]]
-            dtStr <- as.POSIXlt("198001", format = "%Y%j", tz = "UTC")
+            dtStr <- as.POSIXct("198001", format = "%Y%j", tz = "UTC")
             dtStr$mday <- dtStr$mday + dtNum
             dtStrForc <- paste0(format(dtStr, "%Y%m%d"), "00")
             if (overwrite) {
@@ -388,20 +396,21 @@ InsertRS <- function(inFile, forcPath, forcName="LDASIN_DOMAIN1",
 #' ## Calculate domain statistics and plot the mean.
 #'
 #' stats.lai.b <- CalcStatsRS(lai.b)
-#' with(stats.lai.b, plot(POSIXlt, mean, typ='l'))
+#' with(stats.lai.b, plot(POSIXct, mean, typ='l'))
+#' @keywords univar
+#' @concept aconcept
 #' @export
-
 CalcStatsRS <- function(inStack) {
     minDf <- as.data.frame(raster::cellStats(inStack, stat="min", na.rm=TRUE))
     maxDf <- as.data.frame(raster::cellStats(inStack, stat="max", na.rm=TRUE))
     meanDf <- as.data.frame(raster::cellStats(inStack, stat="mean", na.rm=TRUE))
     sdDf <- as.data.frame(raster::cellStats(inStack, stat="sd", na.rm=TRUE))
     statDf <- cbind(meanDf, minDf, maxDf, sdDf)
-    statDf$POSIXlt <- as.POSIXlt("1980-01-01", format="%Y-%m-%d", tz="UTC")
+    statDf$POSIXct <- as.POSIXct("1980-01-01", format="%Y-%m-%d", tz="UTC")
     for (i in 1:nrow(statDf)) {
-	statDf$POSIXlt[i] <- as.POSIXlt(sub("DT",row.names(statDf)[i], replacement=""), "%Y.%m.%d", tz="UTC")
+	statDf$POSIXct[i] <- as.POSIXct(sub("DT",row.names(statDf)[i], replacement=""), "%Y.%m.%d", tz="UTC")
         }
-    colnames(statDf) <- c("mean","min","max","sd","POSIXlt")
+    colnames(statDf) <- c("mean","min","max","sd","POSIXct")
     rownames(statDf) <- NULL
     statDf
     }
@@ -426,8 +435,9 @@ CalcStatsRS <- function(inStack) {
 #' ## to a geoTiff called geogrid_hgt.tif.
 #'
 #' ExportGeogrid("geo_em.d01_1km.nc", "HGT_M", "geogrid_hgt.tif")
+#' @keywords IO
+#' @concept aconcept
 #' @export
-
 ExportGeogrid <- function(inFile, inVar, outFile) {
 	# Check packages
     if (!(require("rgdal") & require("raster") & require("ncdf4") )) {

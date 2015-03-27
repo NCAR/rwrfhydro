@@ -16,4 +16,5 @@ The input dataframe with date columns added.
 \code{CalcDates} calculates standard date breaks.
 Calculate standard date breaks.
 }
+\keyword{internal}
 

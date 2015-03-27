@@ -58,4 +58,10 @@ OUTPUT NoahMP LDASOUT water budget variables:
 
 modLdasoutWb1d.mod1.fc <- ReadLdasoutWb("../RUN.MOD1/OUTPUT", "../DOMAIN/Fulldom_hires_hydrofile_4mile.nc", ncores=16)
 }
+\concept{
+aconcept
+}
+\keyword{IO}
+\keyword{ts}
+\keyword{univar}
 

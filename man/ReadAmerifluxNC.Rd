@@ -30,4 +30,8 @@ with consistent date and data columns for use with other rwrfhydro tools.
 
 obsFlux30min.usnc2 <- ReadAmerifluxNC("../OBS/FLUX/AMF_USNC2_2005_L2_WG_V003.nc", "America/New_York")
 }
+\concept{
+aconcept
+}
+\keyword{IO}
 

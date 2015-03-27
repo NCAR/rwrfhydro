@@ -14,8 +14,9 @@
 #' ## and generate a dataframe with water fluxes added.
 #'
 #' modLDASOUT1d.nort.fc <- CalcNoahmpFluxes(modLDASOUT1d.nort.fc)
+#' @keywords manip
+#' @concept aconcept
 #' @export
-
 CalcNoahmpFluxes <- function(ldasoutDf) {
     if ("ACCPRCP" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_ACCPRCP[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACCPRCP) }
     if ("ACCECAN" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_ACCECAN[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACCECAN) }
@@ -94,8 +95,9 @@ CalcNoahmpFluxes <- function(ldasoutDf) {
 #'
 #' wb.allrt.fc <- CalcNoahmpWatBudg(modLDASOUT1d.allrt.fc, modRTOUT1h.allrt.fc, modGWOUT1h.allrt.fc, sfcrt=TRUE, basarea=63.1)
 #' wb.allrt.fc
+#' @keywords manip
+#' @concept aconcept
 #' @export
-
 CalcNoahmpWatBudg <- function(ldasoutDf, rtoutDf=NULL, gwoutDf=NULL, sfcrt=FALSE, soildeps=c(100,300,600,1000), basarea=NULL) {
     wbDf <- as.data.frame(t(as.matrix(rep(0, 6))))
     colnames(wbDf) <- c("LSM_PRCP","LSM_ECAN","LSM_ETRAN","LSM_EDIR","LSM_DELSWE","LSM_DELCANWAT")
@@ -253,8 +255,9 @@ CalcNoahmpWatBudg <- function(ldasoutDf, rtoutDf=NULL, gwoutDf=NULL, sfcrt=FALSE
 #' yearly   0.05   0.37 0.36 0.55    41.50  -6.5 0.45  -1.50   -3.38     NA
 #' max10   -7.50 -15.94 0.19 3.82    38.89 -24.5 0.04     NA      NA     NA
 #' min10   -2.84  -1.83 0.10 0.05    33.36 -23.7   NA     NA      NA     NA
+#' @keywords univar ts
+#' @concept aconcept
 #' @export
-
 CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q_cms", stdate=NULL, enddate=NULL) {
     # Prepare data
     if (!is.null(stdate) && !is.null(enddate)) {
@@ -424,8 +427,9 @@ CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q
 #'  0.7         0.14    0.25
 #'  0.8         0.11    0.19
 #'  0.9         0.08    0.16
+#' @keywords univar ts
+#' @concept aconcept
 #' @export
-
 CalcFdcPerf <- function (strDf.mod, strDf.obs, strCol.mod="q_cms", strCol.obs="q_cms", stdate=NULL, enddate=NULL) {
     # Prepare data
     if (!is.null(stdate) && !is.null(enddate)) {

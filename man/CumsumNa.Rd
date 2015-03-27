@@ -16,4 +16,5 @@ The cumulative sum vector.
 \code{CumsumNa} calculates a cumulative sum with NAs converted to 0s.
 Read a vector and calculate the cumulative sum with NAs converted to 0s.
 }
+\keyword{internal}
 
