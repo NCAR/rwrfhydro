@@ -343,7 +343,7 @@ GetPkgMeta <- function(meta=c('concept','keyword'), package='rwrfhydro',
     out <- plyr::llply(out, function(mm) mm[which(names(mm) %in% conKey)])
   }
   if(byFunction[1]!=''){  
-    ## scalar returns lists organized by meta (can only apparently search on keywords not function names)
+    ## GetPkgMeta.scalar returns lists organized by meta (can only apparently search on keywords not function names)
     ## so do the "inversion" here (seems like there might be a more elegant way, but .Rd_get_metadata is vague)
     out <- reshape2::melt(out)
     out$value <- as.character(out$value)
@@ -356,8 +356,7 @@ GetPkgMeta <- function(meta=c('concept','keyword'), package='rwrfhydro',
       attr(out[[oo]], 'class') <- c('pkgMeta', class(out[[oo]]))
     }
     attr(out, 'split_type') <- NULL
-    attr(out, 'split_labels') <- NULL
-    
+    attr(out, 'split_labels') <- NULL    
   }
   out <- out[which(as.logical(unlist(plyr::llply(out,length))))]
   if(listMetaOnly) out <- plyr::llply(out, function(ll) { for(cc in names(ll)) ll[[cc]] <- c(''); ll} )
@@ -424,3 +423,32 @@ print.pkgMeta  <- function(pkgMeta) {
   x
 }
 
+
+#' General purpose helper for handling vector arguments.
+#' @keywords util internal
+#' @export
+FormalsToDf <- function(theFunc, envir=parent.frame()) {
+  ## can only have formals of two different lengths other than zero.
+  ## find the length of the formals
+  theFormals <- names(formals(theFunc))
+  formalLens <- plyr::laply(theFormals, function(ff) length(get(ff, envir=envir)))
+  formalLensNz <- formalLens[which(formalLens!=0)]
+  nLenNonZero <- length(unique(formalLensNz))
+  if(nLenNonZero>2) {
+    warning(paste('Formals provided to', theFunc, 'are not collated as required.'))
+    return(NULL)
+  }
+  theFormals <- theFormals[which(formalLens!=0)]
+  formalLens <- formalLens[which(formalLens!=0)]
+  sortFormals <- theFormals[sort(formalLens, index=TRUE, dec=TRUE)$ix]
+  for (ff in sortFormals) {
+    if (ff==sortFormals[1]) {
+      df <- data.frame(get(ff, envir=envir))
+      names(df) <- ff
+    } else df[ff] <- get(ff, envir=envir)
+  }
+  df  
+}
+  
+  
+  

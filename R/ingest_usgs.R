@@ -48,14 +48,7 @@ FindUsgsStns <- function(stnLon=NULL, stnLat=NULL, within=NULL,
     return(NULL)
   }
 
-  vecDf <- if(is.null(huc8)) data.frame(stnLon=stnLon, stnLat=stnLat) else data.frame(huc8=huc8)
-  
-  subFormalNames <- setdiff(names(formals(FindUsgsStns)), c('stnLon','stnLat','huc8'))
-  for (nn in subFormalNames) {
-    var <- get(nn)
-    if(!is.null(var)) vecDf[nn] <- var
-  }
-  
+  vecDf <- FormalsToDf(FindUsgsStns)
   plyr::mdply(vecDf, FindUsgsStns.atomic)
 }
 
@@ -375,6 +368,55 @@ QuerySiteProd <- function(site, path='.',
   subset(QuerySiteInfo('site_no', path, metaDBFileName), site_no %in% site)$product
 }
 
+
+#' General query/get for NWIS instantaneous values.
+#' @examples
+#' haveOro <- QueryHaveSite('06727500', path='~/wrfHydroTestCases/usgsDb', retData=TRUE)
+#' @export
+QueryHaveSite <- function(site, path='.', 
+                          metaDBFileName='usgsDataRetrieval.metaDatabase.RData',
+                          get=FALSE, retData=FALSE) {
+  vecDf <- FormalsToDf(QueryHaveSite)
+  ret <- plyr::mlply(vecDf, QueryHaveSite.atomic)
+  names(ret) <- site
+  ret
+}
+  
+QueryHaveSite.atomic <- function(site, path='.', 
+                                 metaDBFileName='usgsDataRetrieval.metaDatabase.RData',
+                                 get=FALSE, retData=FALSE) {
+  have <- 
+    as.logical(length(QuerySiteProd(site, path=path, 
+                                     metaDBFileName=metaDBFileName)))
+  if(have & !retData) return(have)
+  
+  if(get) {
+    siteHuc8 <- GetSiteHuc(stnDf$site_no)
+    ## do we have this HUC but not the site?
+    haveHuc <- any(QuerySiteInfo('huc_cd')$huc_cd == site)
+    if(haveHuc) {
+      yesOrNo <-
+        readline(prompt=paste0('The site was not found but the data for the HUC already exists. ',
+                              'This currently requires re-retrieving the entire HUC and ',
+                              'overwriting the existing data in the database. Overwrite? (y/n):'))
+      overwrite <- yesOrNo == 'y'
+      if(!overwrite) return(have)
+    }
+    files<-
+      SaveHucData(GetUsgsHucData(huc8 = siteHuc8), outPath = dbPath, 
+                  overwriteHucDataFile = overwrite)
+    have <- file.exists(files[[1]])
+    return(have)
+  }
+  
+  if(have & retData)
+    have <- QuerySiteData(site, 
+                          product=QuerySiteProd(site, path=dbPath,metaDBFileName=metaDBFileName), 
+                          path=dbPath)
+  
+  return(have)
+}
+
 #==============================================================================================
 #' Find the name(site id) for a given site(name)  in the local database.
 #' 
@@ -423,8 +465,14 @@ QuerySiteName <- function(site, path='.',
 #' @concept dataMgmt usgsStreamObs
 #' @family streamObs
 #' @export
-QuerySiteInfo <- function(info, path='.', metaDBFileName='usgsDataRetrieval.metaDatabase.RData') {
+QuerySiteInfo <- function(info=NULL, path='.', 
+                          metaDBFileName='usgsDataRetrieval.metaDatabase.RData') {
   LoadMetaDB(path=path, metaDBFileName=metaDBFileName)
+  if(is.null(info)) {
+    infoVec <- print(names(metaDB[[1]][[1]]$meta$siteInfo))
+    whInfo <- as.numeric(readline(prompt='Enter a vector of info to return:'))
+    info <- infoVec[whInfo]
+  }
   out <- reshape2::melt(plyr::llply(metaDB, function(huc) 
                                     plyr::llply(huc, function(prod) prod$meta$siteInfo[info])), id=info)
   names(out) <- c(info, 'product', 'HUC8')
@@ -447,18 +495,17 @@ QuerySiteInfo <- function(info, path='.', metaDBFileName='usgsDataRetrieval.meta
 #' siteInfo<-QuerySiteInfo(c('station_nm','site_no','stateCd'), path=p)
 #' dataCO <- QuerySiteData(subset(siteInfo, stateCd=='08' & product=='00060')$site_no, '00060', p)
 #' dataMultiHuc <- QuerySiteData(c('06730500','02084557'),'00060',p)
+#' dataMultiHuc <- QuerySiteData(c('06730500','02084557'),c('00060','00065'),p)
 #' @keywords database
 #' @concept dataMgmt usgsStreamObs
 #' @family streamObs
 #' @export
 QuerySiteData <- function(site, product, path='.',
                           metaDBFileName='usgsDataRetrieval.metaDatabase.RData'){
-  hucVec <- unique(GetSiteHuc(site))
-  if(length(hucVec)==1) {
-    return(QuerySiteData.scalar(site, product, path=path, metaDBFileName=metaDBFileName))
-  } else {
-    return(QuerySiteData.vector(site, product, path=path, metaDBFileName=metaDBFileName))
-  }
+  vecDf <- FormalsToDf(QuerySiteData)
+  ret <- plyr::mlply(vecDf, QuerySiteData.scalar)
+  names(ret) <- vecDf$site
+  ret
 }
   
 
@@ -481,14 +528,6 @@ QuerySiteData.scalar <- function(site, product, path='.',
   attr(ret, 'statisticInfo') <- productData$meta$statisticInfo
   ret
 }
-
-#==============================================================================================
-QuerySiteData.vector <- function(site, product, path='.',
-                                 metaDBFileName='usgsDataRetrieval.metaDatabase.RData'){
-  plyr::llply(NamedList(site), QuerySiteData.scalar,
-              product=product, path=path, metaDBFileName=metaDBFileName)
-}
-
 
 #==============================================================================================
 #' Pretty USGS site data makes nice headers and optionally converts to metric. 
