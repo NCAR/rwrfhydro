@@ -320,13 +320,30 @@ feet2meters <- 0.30480
 #' @examples 
 #' GetPkgMeta()
 #' GetPkgMeta('keyword', package='ggplot2')
+#' GetPkgMeta(concept = 'foo', key='hplot' )
+#' print( GetPkgMeta(concept = c('dataMgmt','foo'), key=c('foo','hplot') , quiet=TRUE))
+#' str( GetPkgMeta(concept = c('dataMgmt','foo'), key=c('foo','hplot') , quiet=TRUE))
 #' @keywords utilities
 #' @export
-GetPkgMeta <- function(meta=c('concept','keyword'), package='rwrfhydro', quiet=FALSE) {
-  out <- plyr::llply(NamedList(meta), GetPkgMeta.scalar, package=package, quiet=quiet)
+GetPkgMeta <- function(meta=c('concept','keyword'), package='rwrfhydro',  
+                       keyword=NULL, concept=NULL, quiet=FALSE) {
+  if(!is.null(keyword)  | !is.null(concept)) {
+    nameNull <- 
+      function(n) tryCatch(ifelse(is.null(get(n)),NULL,n),warning=function(w) {})
+    meta <- c(nameNull('concept'),nameNull('keyword'))
+    conKey <- c(concept, keyword)
+  }
+  out <- plyr::llply(NamedList(meta), GetPkgMeta.scalar, package=package)
+  if(!is.null(keyword) | !is.null(concept)) {
+    out <- plyr::llply(out, function(mm) mm[which(names(mm) %in% conKey)] )
+  }
+  out <- out[which(as.logical(unlist(plyr::llply(out,length))))]
+  attr(out,'class') <- c('pkgMeta', class(out))
+  if(!quiet) print(out)
+  invisible(out)
 }
 
-GetPkgMeta.scalar <- function(meta='concept', package='rwrfhydro', quiet=FALSE) {
+GetPkgMeta.scalar <- function(meta='concept', package='rwrfhydro') {
   l1 <- plyr::llply(tools::Rd_db(package), tools:::.Rd_get_metadata, meta)
   l2 <- l1[as.logical(plyr::laply(l1, length))]  ## remove empties
   if(!length(l2)) return(NULL)
@@ -340,18 +357,42 @@ GetPkgMeta.scalar <- function(meta='concept', package='rwrfhydro', quiet=FALSE) 
   attr(out, 'split_labels') <- NULL
   attr(out, 'meta') <- meta
   attr(out, 'package') <- package
-  if(!quiet) {
+  attr(out, 'class') <- c('pkgMeta', class(out))
+  invisible(out)
+}
+
+#' @export
+print.pkgMeta  <- function(pkgMeta) {
+  PrintAtomic <- function(atom) {
+    meta <- attr(atom,'meta')
+    package <- attr(atom,'package')
     anS <- if(grepl('s$',meta)) '' else 's'
     cat('\n')
     cat('-----------------------------------',sep='\n')
     cat(paste0(package,' ',meta,anS), sep='\n')
     cat('-----------------------------------',sep='\n')
-    for (ii in (1:length(out))) {
-      cat('* ',names(out)[ii],':\n', sep='')
-      cat(paste('   ',out[[ii]],collapse=' '), sep='\n')
+    for (ii in (1:length(atom))) {
+      cat('* ',names(atom)[ii],':\n', sep='')
+      cat(paste('   ',atom[[ii]],collapse=' '), sep='\n')
       cat('\n')
     }
+    invisible(1)
   }
-  invisible(out)
+  plyr::llply(pkgMeta, PrintAtomic)
+  invisible(pkgMeta)
+}
+
+
+#' @export
+`[.pkgMeta` <- function(x,i,...) {
+  meta <- attr(x, "meta")
+  package <- attr(x, "package")
+  class <- attr(x, "class")  
+  attr(x, 'class') <- 'list'
+  x <- `[`(x,i,...)
+  attr(x, "meta") <- meta
+  attr(x, "package") <- package
+  attr(x, "class")  <- class
+  x
 }
 

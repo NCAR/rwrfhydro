@@ -4,7 +4,8 @@
 \alias{GetPkgMeta}
 \title{Get a package's metadata fields and associated entries.}
 \usage{
-GetPkgMeta(meta = "concept", package = "rwrfhydro", quiet = FALSE)
+GetPkgMeta(meta = c("concept", "keyword"), package = "rwrfhydro",
+  keyword = NULL, concept = NULL, quiet = FALSE)
 }
 \arguments{
 \item{meta}{Character the metadata field.}
