@@ -25,4 +25,13 @@ bldrHucData    <- GetUsgsHucData(huc='10190005')
 satilpaHucData <- GetUsgsHucData(huc='03160203')
 vansHucData    <- GetUsgsHucData(huc='03020104')
 }
+\seealso{
+Other streamObs: \code{\link{FindUsgsStns}};
+  \code{\link{ImproveHucMeta}};
+  \code{\link{PlotPrettyData}}; \code{\link{SaveHucData}}
+}
+\concept{
+dataGet usgsObs
+}
+\keyword{IO}
 

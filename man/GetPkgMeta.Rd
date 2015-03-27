@@ -12,6 +12,10 @@ GetPkgMeta(meta = c("concept", "keyword"), package = "rwrfhydro",
 
 \item{package}{Character The package to query for metadata.}
 
+\item{keyword}{Character A specific keyword to look for.}
+
+\item{concept}{Character A specific concept to look for.}
+
 \item{quiet}{Logical Do not print summary to screen.}
 }
 \value{
@@ -23,6 +27,9 @@ List of metadata fields in alphabetical order with corresponding entries.
 \examples{
 GetPkgMeta()
 GetPkgMeta('keyword', package='ggplot2')
+GetPkgMeta(concept = 'foo', key='hplot' )
+print( GetPkgMeta(concept = c('dataMgmt','foo'), key=c('foo','hplot') , quiet=TRUE))
+str( GetPkgMeta(concept = c('dataMgmt','foo'), key=c('foo','hplot') , quiet=TRUE))
 }
 \keyword{utilities}
 

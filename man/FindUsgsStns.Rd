@@ -2,7 +2,6 @@
 % Please edit documentation in R/ingest_usgs.R
 \name{FindUsgsStns}
 \alias{FindUsgsStns}
-\alias{dataGet}
 \title{Discover USGS stations using huc8 code or lat/lon/radius.}
 \usage{
 FindUsgsStns(stnLon = NULL, stnLat = NULL, within = NULL, huc8 = NULL,
@@ -24,13 +23,22 @@ FindUsgsStns(stnLon = NULL, stnLat = NULL, within = NULL, huc8 = NULL,
 \description{
 \code{FindUsgsStns} wraps \code{dataRetrieval::whatNWISsites} with common options for finding USGS gauges.
 See the dataRetrieval package for more deails on what else could be passed or how this could be modified.
+One improvement here would be to order results by proximity to supplied lat/lon and filter to nClosest.
 }
 \examples{
 stnDf <- FindUsgsStns(huc='10190005')
+stnDf <- FindUsgsStns(huc=c('10190005','03160203'))
 stnDf <- FindUsgsStns(stnLon=254.67374999999998408,stnLat=40.018666670000001773,within=.001)
+stnDf <- FindUsgsStns(stnLon=c(254.67374999999998408,-87.747224700000004),
+                      stnLat=c(40.018666670000001773, 31.864042489999999),within=.001)
 }
 \seealso{
-Other streamObs: \code{\link{PlotPrettyData}}
+Other streamObs: \code{\link{GetUsgsHucData}};
+  \code{\link{ImproveHucMeta}};
+  \code{\link{PlotPrettyData}}; \code{\link{SaveHucData}}
+}
+\concept{
+dataGet usgsObs
 }
 \keyword{IO}
 

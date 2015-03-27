@@ -17,4 +17,14 @@ list of metadata for a
 It gathers the attributes returned by \code{dataRetrieval::readNWISuv} , supplements siteInfo with
 startTime and endTime for each station in UTC to assist appending the records.
 }
+\seealso{
+Other streamObs: \code{\link{FindUsgsStns}};
+  \code{\link{GetUsgsHucData}};
+  \code{\link{PlotPrettyData}}; \code{\link{SaveHucData}}
+}
+\concept{
+dataGet usgsObs
+}
+\keyword{IO}
+\keyword{internal}
 

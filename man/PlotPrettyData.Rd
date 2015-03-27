@@ -26,8 +26,9 @@ A function(closure) with arguments controlling the look of its graphical output.
 # See vignette "Collect USGS stream observations and build a local database" for examples.
 }
 \seealso{
-Other streamObs: \code{\link{FindUsgsStns}},
-  \code{\link{dataGet}}
+Other streamObs: \code{\link{FindUsgsStns}};
+  \code{\link{GetUsgsHucData}};
+  \code{\link{ImproveHucMeta}}; \code{\link{SaveHucData}}
 }
 \concept{
 plot

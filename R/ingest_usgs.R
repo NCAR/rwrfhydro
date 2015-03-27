@@ -19,6 +19,7 @@
 #' 
 #' \code{FindUsgsStns} wraps \code{dataRetrieval::whatNWISsites} with common options for finding USGS gauges. 
 #' See the dataRetrieval package for more deails on what else could be passed or how this could be modified. 
+#' One improvement here would be to order results by proximity to supplied lat/lon and filter to nClosest.
 #' @param stnLon optional
 #' @param stnLat optional
 #' @param within optional, goes with stnLon and stnLat and specifies a search radius in decimal degrees.
@@ -26,21 +27,50 @@
 #' @param siteType the type of USGS site to look for. 
 #' @param hasDataTypeCd the kind of data of interest (iv=instantaneous, dv=daily, etc.)
 #' @keywords IO
-#' @aliases dataGet
+#' @concept dataGet usgsStreamObs
 #' @family streamObs
 #' @examples
 #' stnDf <- FindUsgsStns(huc='10190005')
+#' stnDf <- FindUsgsStns(huc=c('10190005','03160203'))
 #' stnDf <- FindUsgsStns(stnLon=254.67374999999998408,stnLat=40.018666670000001773,within=.001)
+#' stnDf <- FindUsgsStns(stnLon=c(254.67374999999998408,-87.747224700000004),
+#'                       stnLat=c(40.018666670000001773, 31.864042489999999),within=.001)
 #' @export
 FindUsgsStns <- function(stnLon=NULL, stnLat=NULL, within=NULL,
-                         huc8=NULL, 
-                         siteType='ST', hasDataTypeCd='iv') {
+                         huc8=NULL, siteType='ST', hasDataTypeCd='iv') {
+
+  if(all(is.null(c(stnLon,stnLat,huc8)))) {
+    warning('FindUsgsStns requires either both stnLon and stnLat or huc8 to be set. Returning.')
+    return(NULL)
+  }  
+  if(length(stnLon)!=length(stnLat)) {
+    warning('The stnLon and stnLat arguments to FindUsgsStns must have same length. Returning.')
+    return(NULL)
+  }
+
+  vecDf <- if(is.null(huc8)) data.frame(stnLon=stnLon, stnLat=stnLat) else data.frame(huc8=huc8)
+  
+  subFormalNames <- setdiff(names(formals(FindUsgsStns)), c('stnLon','stnLat','huc8'))
+  for (nn in subFormalNames) {
+    var <- get(nn)
+    if(!is.null(var)) vecDf[nn] <- var
+  }
+  
+  plyr::mdply(vecDf, FindUsgsStns.atomic)
+}
+
+#' @keywords internal
+#' @concept usgsStreamObs dataGet
+#' @family streamObs
+#' @export
+FindUsgsStns.atomic <- function(stnLon=NULL, stnLat=NULL, within=NULL,
+                                huc8=NULL, siteType='ST', hasDataTypeCd='iv') {
   argList <- list()
   argList$siteType       <- siteType
   argList$hasDataTypeCd  <- hasDataTypeCd
   # lat/lon
   if( !is.null(stnLon) && !is.null(stnLat) && !is.null(within) ) {
-    if(stnLon>180.) stnLon <- stnLon-360
+    if(length(whGt180<- which(stnLon>180.))) stnLon[whGt180] <- stnLon[whGt180]-360
     argList$bBox <- as.character(paste(as.character(format(stnLon-within,nsmall=7)),
                                        as.character(format(stnLat-within,nsmall=7)),
                                        as.character(format(stnLon+within,nsmall=7)),
@@ -67,6 +97,9 @@ FindUsgsStns <- function(stnLon=NULL, stnLat=NULL, within=NULL,
 #' bldrHucData    <- GetUsgsHucData(huc='10190005')
 #' satilpaHucData <- GetUsgsHucData(huc='03160203')
 #' vansHucData    <- GetUsgsHucData(huc='03020104')
+#' @keywords IO
+#' @concept dataGet usgsStreamObs
+#' @family streamObs
 #' @export
 GetUsgsHucData <- function(huc8, outPath=NULL, 
                            metaDBFileName='usgsDataRetrieval.metaDatabase.RData' ) {
@@ -160,6 +193,9 @@ GetUsgsHucData <- function(huc8, outPath=NULL,
 #' files <- SaveHucData(GetUsgsHucData(huc='10190005'), outPath='/Users/jamesmcc/streamflow/OBS') ##boulder, CO
 #' files <- SaveHucData(GetUsgsHucData(huc='03160203'), outPath='/Users/jamesmcc/streamflow/OBS') ##satilpa, AL
 #' files <- SaveHucData(GetUsgsHucData(huc='03020104'), outPath='/Users/jamesmcc/streamflow/OBS') ##vans, NC
+#' @keywords IO database
+#' @concept dataGet usgsStreamObs
+#' @family streamObs
 #' @export
 SaveHucData <- function(hucData, outPath, 
                         metaDBFileName='usgsDataRetrieval.metaDatabase.RData', 
@@ -226,6 +262,10 @@ SaveHucData <- function(hucData, outPath,
 #' startTime and endTime for each station in UTC to assist appending the records. 
 #' @param hucProdDf dataframe from dataRetrieval::readNWISuv
 #' @return list of metadata for a 
+#' @keywords IO internal
+#' @concept dataGet usgsStreamObs
+#' @family streamObs
+#' @export
 ImproveHucMeta <- function(hucProdDf) {
   
   hucMeta <- list( siteInfo      = attr(hucProdDf, 'siteInfo'),
@@ -285,6 +325,10 @@ ImproveHucMeta <- function(hucProdDf) {
 #' @param prodDf is a dataframe returned by \code{dataRetrieval::whatNWISdata(stns$site_no, service = "uv")}
 #' subet to an individual product code.
 #' @return list(data=,meta=) 
+#' @keywords IO internal
+#' @concept dataGet usgsStreamObs
+#' @family streamObs
+#' @export
 GetUsgsIvProduct <- function( prodDf ) {  
   prodData <- dataRetrieval::readNWISuv(prodDf$site_no, prodDf$parm_cd, 
                                         startDate=prodDf$startDate[1],  
@@ -304,6 +348,9 @@ GetUsgsIvProduct <- function( prodDf ) {
 #' @return character HUC8
 #' @examples
 #' GetSiteHuc(FindUsgsStns(stnLon=254.67374999999998408,stnLat=40.018666670000001773,within=.001)$site_no)
+#' @keywords IO 
+#' @concept dataGet usgsStreamObs
+#' @family streamObs
 #' @export
 GetSiteHuc <- function(site) dataRetrieval::readNWISsite(as.character(site))$huc
 
@@ -317,6 +364,9 @@ GetSiteHuc <- function(site) dataRetrieval::readNWISsite(as.character(site))$huc
 #' @param metaDBFileName Character The name of the metadata file.
 #' @examples
 #' QuerySiteProd('06730500', '~/streamflow/OBS/')
+#' @keywords database
+#' @concept dataMgmt usgsStreamObs
+#' @family streamObs
 #' @export
 QuerySiteProd <- function(site, path='.', 
                           metaDBFileName='usgsDataRetrieval.metaDatabase.RData') {
@@ -338,6 +388,9 @@ QuerySiteProd <- function(site, path='.',
 #' @examples
 #' QuerySiteName('06730500', '~/streamflow/OBS/')
 #' QuerySiteName('BOULDER CREEK AT MOUTH NEAR LONGMONT, CO', '~/streamflow/OBS/')
+#' @keywords database
+#' @concept dataMgmt usgsStreamObs
+#' @family streamObs
 #' @export
 QuerySiteName <- function(site, path='.', 
                           retSiteId=tryCatch(is.na(as.numeric(site)), 
@@ -366,6 +419,9 @@ QuerySiteName <- function(site, path='.',
 #' @return dataframe of requested info with all available HUC and product codes.
 #' @examples 
 #' QuerySiteInfo(c('station_nm','site_no'), path='~/streamflow/OBS/')
+#' @keywords database
+#' @concept dataMgmt usgsStreamObs
+#' @family streamObs
 #' @export
 QuerySiteInfo <- function(info, path='.', metaDBFileName='usgsDataRetrieval.metaDatabase.RData') {
   LoadMetaDB(path=path, metaDBFileName=metaDBFileName)
@@ -391,6 +447,9 @@ QuerySiteInfo <- function(info, path='.', metaDBFileName='usgsDataRetrieval.meta
 #' siteInfo<-QuerySiteInfo(c('station_nm','site_no','stateCd'), path=p)
 #' dataCO <- QuerySiteData(subset(siteInfo, stateCd=='08' & product=='00060')$site_no, '00060', p)
 #' dataMultiHuc <- QuerySiteData(c('06730500','02084557'),'00060',p)
+#' @keywords database
+#' @concept dataMgmt usgsStreamObs
+#' @family streamObs
 #' @export
 QuerySiteData <- function(site, product, path='.',
                           metaDBFileName='usgsDataRetrieval.metaDatabase.RData'){
@@ -445,6 +504,9 @@ QuerySiteData.vector <- function(site, product, path='.',
 #' p='~/streamflow/OBS/'
 #' dataOrodell <- PrettySiteData(QuerySiteData(QuerySiteName("FOURMILE CREEK AT ORODELL, CO", p), 
 #'                                             '00060', p), metricOnly=TRUE)
+#' @keywords manip
+#' @concept dataMgmt usgsStreamObs
+#' @family streamObs
 #' @export
 PrettySiteData <- function(data, tz='UTC', metric=metricOnly, metricOnly=TRUE, 
                            na.rm=TRUE) {
@@ -508,6 +570,10 @@ PrettySiteData.df <- function(data, tz='UTC', metric=metricOnly, metricOnly=TRUE
 #' @param metaDBFileName Character name of the meta DB. 
 #' @param envir Envrionment where it is to be loaded. 
 #' @return Character the name of the variables loaded with the file (invisible).
+#' @keywords internal database
+#' @concept dataMgmt usgsStreamObs
+#' @family streamObs
+#' @export
 LoadMetaDB <- function(path='.', 
                        metaDBFileName='usgsDataRetrieval.metaDatabase.RData', 
                        envir=globalenv()) {
@@ -525,6 +591,8 @@ LoadMetaDB <- function(path='.',
 #' @param whichIn Logical
 #' @return if whichIn==FALSE : Character of the translation.
 #'         if whichIn==TRUE  : Integer index which passed names are in the table. 
+#' @keywords database internal
+#' @concept dataMgmt usgsStreamObs
 TransUsgsProdStat <- function(names, whichIn=FALSE) {
   ## Elsewhere these rely on a single set of parentheses around the units.
   prodStatLookup <- c( X_00060_00011    ='Discharge (cfs)',   ##instantaneous is 00011 but not worth saying IMO
@@ -577,7 +645,7 @@ TransUsgsProdStat <- function(names, whichIn=FALSE) {
 #' @examples
 #' # See vignette "Collect USGS stream observations and build a local database" for examples.
 #' @keywords hplot
-#' @concept plot
+#' @concept plot usgsStreamObs
 #' @family streamObs
 #' @export
 PlotPrettyData <- function(prettyUsgs, plot=TRUE, errInnerQntl=.995) {
@@ -653,6 +721,9 @@ PlotPrettyData <- function(prettyUsgs, plot=TRUE, errInnerQntl=.995) {
 #' @param ... additional arguments to subset.data.frame
 #' @return A dataframe of class c("prettyUsgs", "data.frame")
 #' # See vignette "Collect USGS stream observations and build a local database" for examples.
+#' @keywords manip
+#' @concept dataMgmt usgsStreamObs
+#' @family streamObs
 #' @export
 subset.prettyUsgs <- function(prettyUsgs, ... ) {
  class     <- attr(prettyUsgs, 'class')

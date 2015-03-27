@@ -28,4 +28,15 @@ files <- SaveHucData(GetUsgsHucData(huc='10190005'), outPath='/Users/jamesmcc/st
 files <- SaveHucData(GetUsgsHucData(huc='03160203'), outPath='/Users/jamesmcc/streamflow/OBS') ##satilpa, AL
 files <- SaveHucData(GetUsgsHucData(huc='03020104'), outPath='/Users/jamesmcc/streamflow/OBS') ##vans, NC
 }
+\seealso{
+Other streamObs: \code{\link{FindUsgsStns}};
+  \code{\link{GetUsgsHucData}};
+  \code{\link{ImproveHucMeta}};
+  \code{\link{PlotPrettyData}}
+}
+\concept{
+dataGet usgsObs
+}
+\keyword{IO}
+\keyword{database}
 

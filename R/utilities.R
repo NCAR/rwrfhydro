@@ -316,6 +316,8 @@ feet2meters <- 0.30480
 #' @param meta Character the metadata field.
 #' @param package Character The package to query for metadata.
 #' @param quiet Logical Do not print summary to screen.
+#' @param keyword Character A specific keyword to look for. 
+#' @param concept Character A specific concept to look for.
 #' @return List of metadata fields in alphabetical order with corresponding entries.
 #' @examples 
 #' GetPkgMeta()
@@ -323,27 +325,48 @@ feet2meters <- 0.30480
 #' GetPkgMeta(concept = 'foo', key='hplot' )
 #' print( GetPkgMeta(concept = c('dataMgmt','foo'), key=c('foo','hplot') , quiet=TRUE))
 #' str( GetPkgMeta(concept = c('dataMgmt','foo'), key=c('foo','hplot') , quiet=TRUE))
+#' GetPkgMeta(byFunction=c('MkDischargeVariance','SaveHucData'))
 #' @keywords utilities
 #' @export
 GetPkgMeta <- function(meta=c('concept','keyword'), package='rwrfhydro',  
-                       keyword=NULL, concept=NULL, quiet=FALSE) {
+                       keyword=NULL, concept=NULL, quiet=FALSE, listMetaOnly=FALSE, 
+                       byFunction='') {
+  ## if specifying keywords or concepts, gather them into a vector conKey
   if(!is.null(keyword)  | !is.null(concept)) {
     nameNull <- 
       function(n) tryCatch(ifelse(is.null(get(n)),NULL,n),warning=function(w) {})
     meta <- c(nameNull('concept'),nameNull('keyword'))
     conKey <- c(concept, keyword)
   }
-  out <- plyr::llply(NamedList(meta), GetPkgMeta.scalar, package=package)
+  out <- plyr::llply(NamedList(meta), GetPkgMeta.scalar, package=package, byFunction=byFunction)
   if(!is.null(keyword) | !is.null(concept)) {
-    out <- plyr::llply(out, function(mm) mm[which(names(mm) %in% conKey)] )
+    out <- plyr::llply(out, function(mm) mm[which(names(mm) %in% conKey)])
+  }
+  if(byFunction[1]!=''){  
+    ## scalar returns lists organized by meta (can only apparently search on keywords not function names)
+    ## so do the "inversion" here (seems like there might be a more elegant way, but .Rd_get_metadata is vague)
+    out <- reshape2::melt(out)
+    out$value <- as.character(out$value)
+    out <- plyr::dlply(out, plyr::.(L2), function(ss) plyr::dlply(ss, plyr::.(L1), function(zz) zz$value))
+    for (oo in names(out)) { 
+      attr(out[[oo]], 'split_type') <- NULL
+      attr(out[[oo]], 'split_labels') <- NULL
+      attr(out[[oo]], 'meta') <- oo
+      attr(out[[oo]], 'package') <- package
+      attr(out[[oo]], 'class') <- c('pkgMeta', class(out[[oo]]))
+    }
+    attr(out, 'split_type') <- NULL
+    attr(out, 'split_labels') <- NULL
+    
   }
   out <- out[which(as.logical(unlist(plyr::llply(out,length))))]
+  if(listMetaOnly) out <- plyr::llply(out, function(ll) { for(cc in names(ll)) ll[[cc]] <- c(''); ll} )
   attr(out,'class') <- c('pkgMeta', class(out))
   if(!quiet) print(out)
   invisible(out)
 }
 
-GetPkgMeta.scalar <- function(meta='concept', package='rwrfhydro') {
+GetPkgMeta.scalar <- function(meta='concept', package='rwrfhydro', byFunction='') {
   l1 <- plyr::llply(tools::Rd_db(package), tools:::.Rd_get_metadata, meta)
   l2 <- l1[as.logical(plyr::laply(l1, length))]  ## remove empties
   if(!length(l2)) return(NULL)
@@ -351,7 +374,8 @@ GetPkgMeta.scalar <- function(meta='concept', package='rwrfhydro') {
   ulStrsplit <- function(...) unlist(strsplit(...))
   l4 <- plyr::llply(l3, ulStrsplit, ' ') ## parse individual keywords
   names(l4) <- plyr::laply(strsplit(names(l3),'\\.Rd'),'[[',1)  ## remove .Rd from function doc names.
-  out <- plyr::dlply(reshape2::melt(l4), plyr::.(value), function(dd) dd$L1 )
+  out <- if(byFunction[1]!='') 
+    l4[byFunction] else plyr::dlply(reshape2::melt(l4), plyr::.(value), function(dd) dd$L1 )
   out <- out[sort(names(out))]
   attr(out, 'split_type') <- NULL
   attr(out, 'split_labels') <- NULL
@@ -367,14 +391,18 @@ print.pkgMeta  <- function(pkgMeta) {
     meta <- attr(atom,'meta')
     package <- attr(atom,'package')
     anS <- if(grepl('s$',meta)) '' else 's'
+    if(!grepl('keyword|concept',meta)) anS <- '()'
+    pkgSep <- if(grepl('keyword|concept',meta)) ' ' else ': '
     cat('\n')
     cat('-----------------------------------',sep='\n')
-    cat(paste0(package,' ',meta,anS), sep='\n')
+    cat(paste0(package,pkgSep,meta,anS), sep='\n')
     cat('-----------------------------------',sep='\n')
-    for (ii in (1:length(atom))) {
-      cat('* ',names(atom)[ii],':\n', sep='')
-      cat(paste('   ',atom[[ii]],collapse=' '), sep='\n')
-      cat('\n')
+    for (ii in (1:length(atom))) {      
+      if(atom[[ii]][1]!='') {
+        cat('* ',names(atom)[ii],':\n', sep='')
+        cat(paste('   ',atom[[ii]],collapse=' '), sep='\n')
+        cat('\n')
+      } else cat(names(atom)[ii],'\n', sep='')
     }
     invisible(1)
   }

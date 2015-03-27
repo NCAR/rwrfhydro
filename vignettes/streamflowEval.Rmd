@@ -19,7 +19,7 @@ library("rwrfhydro")
 
 Set a data path to the Fourmile Creek test case.
 ```{r}
-dataPath <- '/Users/adugger/WRF_Hydro/test_cases/Fourmile_Creek'
+dataPath <- '~/wrfHydroTestCases/Fourmile_Creek/'
 ```
 
 
@@ -35,9 +35,23 @@ Model 2: All WRF-Hydro routing options turned on (hourly model run).
 modStrh.allrt.fc <- ReadFrxstPts(paste0(dataPath, '/RUN.RTTESTS/OUTPUT_ALLRT/frxst_pts_out.txt'))
 ```
 
-USGS gage observed data at 5-minute intervals.
+USGS gage observed data at 5-minute intervals. 
 ```{r}
-obsStr5min.fc <- ReadUsgsGage(paste0(dataPath, '/OBS/5min_str_06727500_110401_140810.txt'))
+
+#obsStr5min.fc <- ReadUsgsGage(paste0(dataPath, '/OBS/5min_str_06727500_110401_140810.txt'))
+
+## get the lon, lat of the frxst_pts_out. The plyr approach works if there is more than one frxst point.
+library(plyr)
+fcLocation <- ddply(modStrh.chrt.fc, .(st_id), function(df) df[1,c('st_lon','st_lat')])
+near <- FindUsgsStns(stnLon=c(fcLocation$st_lon), stnLat=c(fcLocation$st_lat), within=.01)
+
+dbPath <- '~/wrfHydroTestCases/usgsDb/'
+QuerySiteInfo(c('station_nm','site_no','dec_lat_va','dec_long_va'), path=dbPath)
+## show how to match lat,lon of frxst pt instead of just knowing the name/site_no
+
+obsStr5min.fc <- PrettySiteData(QuerySiteData(QuerySiteName("FOURMILE CREEK AT ORODELL, CO", path=dbPath), 
+                                product='00060', path=dbPath))
+names(obsStr5min.fc)[c(2,4)] <- c('POSIXct','q_cms')
 ```
 
 
