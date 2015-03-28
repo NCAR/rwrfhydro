@@ -6,6 +6,7 @@
 #' @return The full path to the file.
 #' @examples
 #' GetPkgDataPath('Fourmile_test_case_AD.hydro_OrodellBasin_100m_8.nc')
+#' @keywords internal
 #' @export
 GetPkgDataPath <- function(theFile='') system.file("extdata", theFile, package = "rwrfhydro")
 
@@ -17,6 +18,7 @@ GetPkgDataPath <- function(theFile='') system.file("extdata", theFile, package =
 #' @return The standardized object.
 #' @examples
 #' StdLon(0:360)
+#' @keywords internal
 #' @export
 StdLon <- function(x) {
   x[which(x>180.)] <- x[which(x>180.)]-360.
@@ -33,6 +35,8 @@ StdLon <- function(x) {
 #' PadRange(c(0,100))
 #' PadRange(c(0,100), delta=.1)
 #' PadRange(c(0,100), diffMult=.1)
+#' @keywords internal
+#' @export
 PadRange <- function(limits, delta=diffMult*diff(limits), diffMult=.05) {
   ## someday throw error if length(limits)>2
   limits+c(-delta,delta)
@@ -48,6 +52,8 @@ PadRange <- function(limits, delta=diffMult*diff(limits), diffMult=.05) {
 #' x
 #' RotateCw(x)
 #' RotateCw(RotateCw(x))
+#' @keywords internal
+#' @export
 RotateCw <- function(matrix) t(apply(matrix, 2, rev))
 
 #' Rotate a matrix counter-clock-wise.
@@ -59,6 +65,8 @@ RotateCw <- function(matrix) t(apply(matrix, 2, rev))
 #' x
 #' RotateCcw(x)
 #' RotateCcw(RotateCcw(x))
+#' @keywords internal
+#' @export
 RotateCcw <- function(matrix) apply(matrix, 1, rev)
 
 
@@ -73,6 +81,7 @@ RotateCcw <- function(matrix) apply(matrix, 1, rev)
 #' format(as.POSIXct('2012-01-01', tz='US/Pacific'),'%Z')
 #' TransTz(format(as.POSIXct('2012-01-01', tz='US/Pacific'),'%Z'))
 #' lubridate::with_tz(as.POSIXct('2012-01-01'),TransTz(format(as.POSIXct('2012-01-01', tz='US/Pacific'),'%Z')))
+#' @keywords internal
 #' @export
 TransTz <- function(tz) {
   olson <- c(EDT ="US/Eastern",  EST ="US/Eastern",
@@ -100,6 +109,7 @@ TransTz <- function(tz) {
 #' @examples
 #' CalcWaterYear(as.POSIXct(c("2011-09-30", "2011-10-01"), tz='US/Pacific'))
 #' CalcWaterYear(as.POSIXct(c("2011-09-30", "2011-10-01"), tz='US/Pacific'), dayOf=TRUE)
+#' @keywords internal
 #' @export
 CalcWaterYear <- function(POSIXct, dayOf=FALSE) {
   if (class(POSIXct)[1]!='POSIXct') {
@@ -126,6 +136,8 @@ CalcWaterYear <- function(POSIXct, dayOf=FALSE) {
 #' Calculate standard date breaks.
 #' @param x The input dataframe.
 #' @return The input dataframe with date columns added.
+#' @keywords internal
+#' @export
 CalcDates <- function (x) {
     x$day <- as.integer(format(x$POSIXct,"%d"))
     x$month <- as.integer(format(x$POSIXct,"%m"))
@@ -143,6 +155,8 @@ CalcDates <- function (x) {
 #' Read a vector and calculate the mean with forced NA removal.
 #' @param x The vector of values.
 #' @return The mean.
+#' @keywords internal
+#' @export
 CalcMeanNarm <- function(x) {
     mean(x, na.rm=TRUE)
     }
@@ -159,6 +173,7 @@ CalcMeanNarm <- function(x) {
 #' x <- c(1,2,-1e+20,3)
 #' mean(x) # yields -2.5e+19
 #' CalcMeanMinrm(x, 0) # yields 2
+#' @keywords internal
 #' @export
 CalcMeanMinrm <- function(x, minValid=-1e+30) {
     x[which(x<minValid)]<-NA
@@ -171,6 +186,8 @@ CalcMeanMinrm <- function(x, minValid=-1e+30) {
 #' Read a vector and calculate the cumulative sum with NAs converted to 0s.
 #' @param x The vector of values.
 #' @return The cumulative sum vector.
+#' @keywords internal
+#' @export
 CumsumNa <- function(x) {
     x[which(is.na(x))] <- 0
     return(cumsum(x))
@@ -184,6 +201,8 @@ CumsumNa <- function(x) {
 #' @param m The vector of modelled values.
 #' @param o The vector of observed values.
 #' @return The Nash-Sutcliffe Efficiency.
+#' @keywords internal
+#' @export
 Nse <- function (m, o) {
     err1 <- sum((m - o)^2, na.rm=T)
     err2 <- sum((o - mean(o, na.rm=T))^2, na.rm=T)
@@ -199,6 +218,8 @@ Nse <- function (m, o) {
 #' @param m The vector of modelled values.
 #' @param o The vector of observed values.
 #' @return The Log Nash-Sutcliffe Efficiency.
+#' @keywords internal
+#' @export
 NseLog <- function (m, o) {
     m <- log(m + 1e-04)
     o <- log(o + 1e-04)
@@ -216,6 +237,8 @@ NseLog <- function (m, o) {
 #' @param m The vector of modelled values.
 #' @param o The vector of observed values.
 #' @return The root mean squared error.
+#' @keywords internal
+#' @export
 Rmse <- function (m, o) {
     err <- sum((m - o)^2, na.rm=T)/(min(sum(!is.na(m)),sum(!is.na(o))))
     rmserr <- sqrt(err)
@@ -230,6 +253,8 @@ Rmse <- function (m, o) {
 #' @param m The vector of modelled values.
 #' @param o The vector of observed values.
 #' @return The nrmalized root mean squared error.
+#' @keywords internal
+#' @export
 RmseNorm <- function (m, o) {
     err <- sum((m - o)^2, na.rm=T)/(min(sum(!is.na(m)),sum(!is.na(o))))
     rmserr <- sqrt(err) / ( max(o, na.rm=T) - min(o, na.rm=T) ) * 100
@@ -243,6 +268,8 @@ RmseNorm <- function (m, o) {
 #' a time series of values occurs.
 #' @param x The time series vector.
 #' @return The center-of-mass time step.
+#' @keywords internal
+#' @export
 CalcCOM <- function (x) {
     cuml.x <- as.data.frame(CumsumNa(x)/sum(x, na.rm=T))
     colnames(cuml.x) <- c("x")
@@ -259,6 +286,7 @@ CalcCOM <- function (x) {
 #' for ease of use in other functions.
 #' @param myDf The output dataframe from GetMultiNcdf.
 #' @return The reshaped output dataframe.
+#' @keywords internal
 #' @export
 ReshapeMultiNcdf <- function(myDf) {
     newDF <- subset(myDf[,c("POSIXct","stat")], myDf$variableGroup==unique(myDf$variableGroup)[1])

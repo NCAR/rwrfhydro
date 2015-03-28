@@ -4,13 +4,13 @@ author: "Aubrey Dugger"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{ET Evaluation}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
 
 # Background
-We are using WRF-Hydro to predict streamflow for Fourmile Creek at the Orodell USGS gage for the 2013 snowmelt period. We ran WRF-Hydro with NoahMP as the LSM for a 3-year spinup period and then did an hourly run for 1 month starting May 1, 2013. We want to evaluate the ET fluxes at a local Ameriflux tower site.
+We are using WRF-Hydro to predict streamflow for Fourmile Creek at the Orodell USGS gage for the 2013 snowmelt period. We ran WRF-Hydro with NoahMP as the LSM for a 3-year spinup period and then did a daily output run for 5 months starting March 1, 2013. We want to evaluate the ET fluxes at a local Ameriflux tower site.
 
 Load the rwrfhydro package. 
 ```{r}
@@ -19,7 +19,7 @@ library("rwrfhydro")
 
 Set a data path to the Fourmile Creek test case.
 ```{r}
-dataPath <- '/Users/adugger/WRF_Hydro/test_cases/Fourmile_Creek'
+dataPath <- '~/wrfHydroTestCases/Fourmile_Creek'
 ```
 
 
@@ -50,7 +50,7 @@ ldasoutIndexList <- list( ldasout = ldasoutInd )
 
 Generate the list of filenames for the GetMultiNcdf tool by providing the pathname to the model OUTPUT directory and the filename pattern to match (in this case we want the LDASOUT files).
 ```{r}
-ldasoutFilesList <- list( ldasout = list.files(path=paste0(dataPath, '/RUN.RTTESTS/OUTPUT_ALLRT'), 
+ldasoutFilesList <- list( ldasout = list.files(path=paste0(dataPath, '/RUN.RTTESTS/OUTPUT_ALLRT_DAILY'), 
      pattern=glob2rx('*LDASOUT*'), full.names=TRUE))
 ```
 

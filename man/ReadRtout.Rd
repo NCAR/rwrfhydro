@@ -45,4 +45,10 @@ OUTPUT RTOUT water budget variables:
 
 modRtout1h.mod1.fc <- ReadRtout("../RUN.MOD1/OUTPUT", "../DOMAIN/Fulldom_hires_hydrofile_4mile.nc", basid=1, ncores=16)
 }
+\concept{
+aconcept
+}
+\keyword{IO}
+\keyword{ts}
+\keyword{univar}
 

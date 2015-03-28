@@ -11,6 +11,9 @@
 #' the data time series with standard USGS columns.
 #' @param returnEnglish Logical: Return variables in english units (cfs and ft)?
 #' @param returnMetric  Logical: Return variables in these units (cms and m)?
+#' @param timeZone  (OPTIONAL) The time zone for the USGS gage data. Only necessary if tz code
+#' is NOT provided in the input file (e.g., daily streamflow gage data files).
+#' Time zone name must be R-friendly for your current OS. See: \url{http://stat.ethz.ch/R-manual/R-devel/library/base/html/timezones.html}
 #' @return A dataframe containing the USGS flow and/or stage data.
 #'
 #' @examples
@@ -19,8 +22,10 @@
 #'
 #' obsStr5min.fc <- ReadUsgsGage("../OBS/STRFLOW/5min_str_06727500_110401_140810.txt")
 #' obsStr5min.fc <- ReadUsgsGage("../OBS/STRFLOW/5min_str_06727500_110401_140810.txt, returnEnglish=FALSE")
+#' @keywords IO
+#' @concept aconcept
 #' @export
-ReadUsgsGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE) {
+ReadUsgsGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, timeZone=NULL) {
 
   outDf <- read.table(pathGageData, sep="\t", na.strings=c("","Rat","Mnt"),
                       stringsAsFactors=F, comment.char="#")
@@ -51,14 +56,15 @@ ReadUsgsGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE) {
       outDf[,cdlist[[i]]] <- as.numeric(outDf[,cdlist[[i]]])
     }
   }
-
-  timeZone <- TransTz(outDf$tz_cd)
-  # Since a gauge shouldnt move, there should only be one time zone
-  if(!all(timeZone == timeZone[1]))
-    warning(paste0("There should only be one timezone for a given gauge, ",
-                   "please check the file: ",pathGageData))
-  timeZone <- timeZone[1]
   
+  if (is.null(timeZone)) {
+    timeZone <- TransTz(outDf$tz_cd)
+    # Since a gauge shouldnt move, there should only be one time zone
+    if(!all(timeZone == timeZone[1]))
+      warning(paste0("There should only be one timezone for a given gauge, ",
+                   "please check the file: ",pathGageData))
+    timeZone <- timeZone[1]
+  }
   # instantaneous vs daily average values
   usgsTimeFmt <- if (grepl(" ",outDf$datetime[1])) {
      "%Y-%m-%d %H:%M" # instantaneous
@@ -116,6 +122,8 @@ ReadUsgsGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE) {
 #' ## and returns a dataframe.
 #'
 #' obsFlux30min.usnc2 <- ReadAmerifluxNC("../OBS/FLUX/AMF_USNC2_2005_L2_WG_V003.nc", "America/New_York")
+#' @keywords IO
+#' @concept aconcept
 #' @export
 ReadAmerifluxNC <- function(pathFluxData, timeZone) {
     ncFile <- nc_open(pathFluxData)
@@ -161,6 +169,8 @@ ReadAmerifluxNC <- function(pathFluxData, timeZone) {
 #' ## and returns a dataframe.
 #'
 #' obsFlux30min.usnr1 <- ReadAmerifluxCSV("../OBS/FLUX/AMF_USNR1_2013_L2_GF_V008.csv", "America/Denver")
+#' @keywords IO
+#' @concept aconcept
 #' @export
 ReadAmerifluxCSV <- function(pathFluxData, timeZone) {
     outDf <- read.table(pathFluxData, sep=",", skip=20, na.strings=c(-6999,-9999), strip.white=T)
