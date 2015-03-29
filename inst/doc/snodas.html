@@ -79,14 +79,16 @@ if(snodasGot) {
   snodasList &lt;-<span class="st"> </span><span class="kw">ReadSnodasDepthSweDate</span>(threeDaysBack)
   <span class="kw">PutSnodasNcdf</span>(snodasList)
 }</code></pre>
+<pre><code>## [1] &quot;SNODAS_20150326.nc&quot;</code></pre>
 </div>
 <div id="update" class="section level1">
 <h1>Update</h1>
 <p>The above can be repeated over multiple dates one might want to get, for example from three days ago until now</p>
 <pre class="sourceCode r"><code class="sourceCode r">datesWanted &lt;-<span class="st"> </span><span class="kw">seq</span>(threeDaysBack,<span class="kw">Sys.Date</span>(), <span class="dt">by =</span> <span class="st">'days'</span>)
-datesWanted    
-
-UpdateSnodas &lt;-<span class="st"> </span>function(POSIXct) {
+datesWanted    </code></pre>
+<pre><code>## [1] &quot;2015-03-26&quot; &quot;2015-03-27&quot; &quot;2015-03-28&quot; &quot;2015-03-29&quot;</code></pre>
+<p>Encapsulate the above in a function with some file existance checking and return summary.</p>
+<pre class="sourceCode r"><code class="sourceCode r">UpdateSnodas &lt;-<span class="st"> </span>function(POSIXct) {
   ## check if we already processed this date/POSIXct, if we didnt process, we'll
   ## download again and process it. (note we could have downloaded but not processed 
   ## so it might not be efficient). 
@@ -105,12 +107,12 @@ UpdateSnodas &lt;-<span class="st"> </span>function(POSIXct) {
 
 update &lt;-<span class="st"> </span>plyr::<span class="kw">ldply</span>(<span class="kw">NamedList</span>(datesWanted), UpdateSnodas)
 update</code></pre>
-<pre><code>## [1] &quot;2015-03-26&quot; &quot;2015-03-27&quot; &quot;2015-03-28&quot; &quot;2015-03-29&quot;
-##          .id       date snodasGot           ncdfFile
+<pre><code>##          .id       date snodasGot           ncdfFile
 ## 1 2015-03-26 2015-03-26     FALSE SNODAS_20150326.nc
 ## 2 2015-03-27 2015-03-27      TRUE SNODAS_20150327.nc
 ## 3 2015-03-28 2015-03-28      TRUE SNODAS_20150328.nc
 ## 4 2015-03-29 2015-03-29      TRUE SNODAS_20150329.nc</code></pre>
+<p>Shows that the first file wasnt “got” - that’s because it was already in place.</p>
 </div>
 
 
