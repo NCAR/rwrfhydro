@@ -45,7 +45,10 @@ The above can be repeated over multiple dates one might want to get, for example
 ```{r, results='hold'}
 datesWanted <- seq(threeDaysBack,Sys.Date(), by = 'days')
 datesWanted    
+```
 
+Encapsulate the above in a function with some file existance checking and return summary. 
+```{r,result='hold'}
 UpdateSnodas <- function(POSIXct) {
   ## check if we already processed this date/POSIXct, if we didnt process, we'll
   ## download again and process it. (note we could have downloaded but not processed 
@@ -66,3 +69,5 @@ UpdateSnodas <- function(POSIXct) {
 update <- plyr::ldply(NamedList(datesWanted), UpdateSnodas)
 update
 ```
+
+Shows that the first file wasnt "got" - that's because it was already in place. 
