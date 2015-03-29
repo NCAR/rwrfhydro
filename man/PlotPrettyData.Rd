@@ -27,11 +27,17 @@ A function(closure) with arguments controlling the look of its graphical output.
 }
 \seealso{
 Other streamObs: \code{\link{FindUsgsStns}};
-  \code{\link{GetUsgsHucData}};
-  \code{\link{ImproveHucMeta}}; \code{\link{SaveHucData}}
+  \code{\link{GetSiteHuc}}; \code{\link{GetUsgsHucData}};
+  \code{\link{GetUsgsIvProduct}};
+  \code{\link{ImproveHucMeta}}; \code{\link{LoadMetaDB}};
+  \code{\link{PrettySiteData}};
+  \code{\link{QueryHaveSite}}; \code{\link{QuerySiteData}};
+  \code{\link{QuerySiteInfo}}; \code{\link{QuerySiteName}};
+  \code{\link{QuerySiteProd}}; \code{\link{SaveHucData}};
+  \code{\link{subset.prettyUsgs}}
 }
 \concept{
-plot
+plot usgsStreamObs
 }
 \keyword{hplot}
 

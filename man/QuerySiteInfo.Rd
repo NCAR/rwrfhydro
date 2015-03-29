@@ -4,7 +4,7 @@
 \alias{QuerySiteInfo}
 \title{Returns the desired information from the database file.}
 \usage{
-QuerySiteInfo(info, path = ".",
+QuerySiteInfo(info = NULL, path = ".",
   metaDBFileName = "usgsDataRetrieval.metaDatabase.RData")
 }
 \arguments{
@@ -23,4 +23,20 @@ dataframe of requested info with all available HUC and product codes.
 \examples{
 QuerySiteInfo(c('station_nm','site_no'), path='~/streamflow/OBS/')
 }
+\seealso{
+Other streamObs: \code{\link{FindUsgsStns}};
+  \code{\link{GetSiteHuc}}; \code{\link{GetUsgsHucData}};
+  \code{\link{GetUsgsIvProduct}};
+  \code{\link{ImproveHucMeta}}; \code{\link{LoadMetaDB}};
+  \code{\link{PlotPrettyData}};
+  \code{\link{PrettySiteData}};
+  \code{\link{QueryHaveSite}}; \code{\link{QuerySiteData}};
+  \code{\link{QuerySiteName}}; \code{\link{QuerySiteProd}};
+  \code{\link{SaveHucData}};
+  \code{\link{subset.prettyUsgs}}
+}
+\concept{
+dataMgmt usgsStreamObs
+}
+\keyword{database}
 

@@ -28,5 +28,22 @@ dataOrodell <- QuerySiteData(QuerySiteName("FOURMILE CREEK AT ORODELL, CO", p), 
 siteInfo<-QuerySiteInfo(c('station_nm','site_no','stateCd'), path=p)
 dataCO <- QuerySiteData(subset(siteInfo, stateCd=='08' & product=='00060')$site_no, '00060', p)
 dataMultiHuc <- QuerySiteData(c('06730500','02084557'),'00060',p)
+dataMultiHuc <- QuerySiteData(c('06730500','02084557'),c('00060','00065'),p)
 }
+\seealso{
+Other streamObs: \code{\link{FindUsgsStns}};
+  \code{\link{GetSiteHuc}}; \code{\link{GetUsgsHucData}};
+  \code{\link{GetUsgsIvProduct}};
+  \code{\link{ImproveHucMeta}}; \code{\link{LoadMetaDB}};
+  \code{\link{PlotPrettyData}};
+  \code{\link{PrettySiteData}};
+  \code{\link{QueryHaveSite}}; \code{\link{QuerySiteInfo}};
+  \code{\link{QuerySiteName}}; \code{\link{QuerySiteProd}};
+  \code{\link{SaveHucData}};
+  \code{\link{subset.prettyUsgs}}
+}
+\concept{
+dataMgmt usgsStreamObs
+}
+\keyword{database}
 

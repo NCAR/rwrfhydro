@@ -27,11 +27,17 @@ vansHucData    <- GetUsgsHucData(huc='03020104')
 }
 \seealso{
 Other streamObs: \code{\link{FindUsgsStns}};
-  \code{\link{ImproveHucMeta}};
-  \code{\link{PlotPrettyData}}; \code{\link{SaveHucData}}
+  \code{\link{GetSiteHuc}}; \code{\link{GetUsgsIvProduct}};
+  \code{\link{ImproveHucMeta}}; \code{\link{LoadMetaDB}};
+  \code{\link{PlotPrettyData}};
+  \code{\link{PrettySiteData}};
+  \code{\link{QueryHaveSite}}; \code{\link{QuerySiteData}};
+  \code{\link{QuerySiteInfo}}; \code{\link{QuerySiteName}};
+  \code{\link{QuerySiteProd}}; \code{\link{SaveHucData}};
+  \code{\link{subset.prettyUsgs}}
 }
 \concept{
-dataGet usgsObs
+dataGet usgsStreamObs
 }
 \keyword{IO}
 

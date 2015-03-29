@@ -318,6 +318,8 @@ feet2meters <- 0.30480
 #' @param quiet Logical Do not print summary to screen.
 #' @param keyword Character A specific keyword to look for. 
 #' @param concept Character A specific concept to look for.
+#' @param listMetaOnly Logical Just return the meta categories (without functons)?
+#' @param byFunction Character Vector of functions for which concepts and keywords are desired.
 #' @return List of metadata fields in alphabetical order with corresponding entries.
 #' @examples 
 #' GetPkgMeta()
@@ -325,6 +327,7 @@ feet2meters <- 0.30480
 #' GetPkgMeta(concept = 'foo', key='hplot' )
 #' print( GetPkgMeta(concept = c('dataMgmt','foo'), key=c('foo','hplot') , quiet=TRUE))
 #' str( GetPkgMeta(concept = c('dataMgmt','foo'), key=c('foo','hplot') , quiet=TRUE))
+#' str( GetPkgMeta(concept = c('dataMgmt','DART'), key=c('internal','hplot') , quiet=TRUE))
 #' GetPkgMeta(byFunction=c('MkDischargeVariance','SaveHucData'))
 #' @keywords utilities
 #' @export

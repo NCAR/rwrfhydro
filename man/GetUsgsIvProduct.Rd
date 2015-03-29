@@ -18,4 +18,20 @@ list(data=,meta=)
 and separates the returned dataframe with attributes from \code{dataRetrieval::readNWISuv} into a list with
 separate data and metadata/attributes. The meta data are updated with startTime and endTime information.
 }
+\seealso{
+Other streamObs: \code{\link{FindUsgsStns}};
+  \code{\link{GetSiteHuc}}; \code{\link{GetUsgsHucData}};
+  \code{\link{ImproveHucMeta}}; \code{\link{LoadMetaDB}};
+  \code{\link{PlotPrettyData}};
+  \code{\link{PrettySiteData}};
+  \code{\link{QueryHaveSite}}; \code{\link{QuerySiteData}};
+  \code{\link{QuerySiteInfo}}; \code{\link{QuerySiteName}};
+  \code{\link{QuerySiteProd}}; \code{\link{SaveHucData}};
+  \code{\link{subset.prettyUsgs}}
+}
+\concept{
+dataGet usgsStreamObs
+}
+\keyword{IO}
+\keyword{internal}
 

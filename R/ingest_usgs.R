@@ -49,7 +49,7 @@ FindUsgsStns <- function(stnLon=NULL, stnLat=NULL, within=NULL,
   }
 
   vecDf <- FormalsToDf(FindUsgsStns)
-  plyr::mdply(vecDf, FindUsgsStns.atomic)
+  ret <- plyr::mdply(vecDf, FindUsgsStns.atomic)
 }
 
 #' @keywords internal
@@ -368,10 +368,20 @@ QuerySiteProd <- function(site, path='.',
   subset(QuerySiteInfo('site_no', path, metaDBFileName), site_no %in% site)$product
 }
 
-
-#' General query/get for NWIS instantaneous values.
+#==============================================================================================
+#' General purpose query/get for instantaneous USGS streamflow data.
+#' 
+#' \code{QueryHaveSite} 
+#' @param site Character USGS site number.
+#' @param path Character The path to the database.
+#' @param metaDBFileName Character The name of the metadata file.
+#' @param get Logical Get the data from NWIS if it is not local? Data are saved to local database.
+#' @param retData Logical OR Character If true return all products, otherwise return the specified product. If get from NWIS, all products are retrieved and saved locally but only specified products are returned. 
 #' @examples
 #' haveOro <- QueryHaveSite('06727500', path='~/wrfHydroTestCases/usgsDb', retData=TRUE)
+#' @keywords database
+#' @concept dataMgmt usgsStreamObs
+#' @family streamObs
 #' @export
 QueryHaveSite <- function(site, path='.', 
                           metaDBFileName='usgsDataRetrieval.metaDatabase.RData',
@@ -379,41 +389,51 @@ QueryHaveSite <- function(site, path='.',
   vecDf <- FormalsToDf(QueryHaveSite)
   ret <- plyr::mlply(vecDf, QueryHaveSite.atomic)
   names(ret) <- site
+  if(length(ret)==1) ret <- ret[[1]]
   ret
 }
   
 QueryHaveSite.atomic <- function(site, path='.', 
                                  metaDBFileName='usgsDataRetrieval.metaDatabase.RData',
                                  get=FALSE, retData=FALSE) {
+  
+  retDataIn <- retData
+  if(!is.logical(retData)) retData <- TRUE
+  
   have <- 
     as.logical(length(QuerySiteProd(site, path=path, 
                                      metaDBFileName=metaDBFileName)))
   if(have & !retData) return(have)
   
-  if(get) {
-    siteHuc8 <- GetSiteHuc(stnDf$site_no)
+  if(!have & get) {
+    siteHuc8 <- GetSiteHuc(site)
     ## do we have this HUC but not the site?
-    haveHuc <- any(QuerySiteInfo('huc_cd')$huc_cd == site)
-    if(haveHuc) {
+    haveHuc <- any(QuerySiteInfo('huc_cd', path=path, 
+                                 metaDBFileName=metaDBFileName)$huc_cd == siteHuc8) 
+
+    if(!haveHuc) {
       yesOrNo <-
         readline(prompt=paste0('The site was not found but the data for the HUC already exists. ',
                               'This currently requires re-retrieving the entire HUC and ',
                               'overwriting the existing data in the database. Overwrite? (y/n):'))
-      overwrite <- yesOrNo == 'y'
+      overwrite <- (yesOrNo == 'y')
       if(!overwrite) return(have)
     }
     files<-
-      SaveHucData(GetUsgsHucData(huc8 = siteHuc8), outPath = dbPath, 
+      SaveHucData(GetUsgsHucData(huc8 = siteHuc8), 
+                  outPath = path, metaDBFileName=metaDBFileName, 
                   overwriteHucDataFile = overwrite)
     have <- file.exists(files[[1]])
-    return(have)
+    if(!retData) return(have)
+    have <- TRUE ## how can I know this is true?
   }
   
-  if(have & retData)
-    have <- QuerySiteData(site, 
-                          product=QuerySiteProd(site, path=dbPath,metaDBFileName=metaDBFileName), 
-                          path=dbPath)
-  
+  if(have & retData) {
+    product<- if(is.logical(retDataIn)) {
+      QuerySiteProd(site, path=path, metaDBFileName=metaDBFileName)
+     } else retDataIn
+    have <- QuerySiteData(site, product=product, path=path)
+  }
   return(have)
 }
 
@@ -505,6 +525,7 @@ QuerySiteData <- function(site, product, path='.',
   vecDf <- FormalsToDf(QuerySiteData)
   ret <- plyr::mlply(vecDf, QuerySiteData.scalar)
   names(ret) <- vecDf$site
+  if(length(ret)==1) ret <- ret[[1]]
   ret
 }
   
@@ -771,7 +792,10 @@ subset.prettyUsgs <- function(prettyUsgs, ... ) {
  variances  <- attr(prettyUsgs, 'variances')
  stDevs     <- attr(prettyUsgs, 'st.devs.')
  attr(prettyUsgs, 'class') <- 'data.frame'
- subPretty <- subset(prettyUsgs, ...)
+ cond <- substitute(...)
+ ## some non-standard eval.
+ env <- list2env(prettyUsgs, parent=parent.frame())
+ subPretty <- prettyUsgs[eval(cond, env),]
  attr(subPretty, 'class')      <- class
  attr(subPretty, 'variables')  <- variables
  attr(subPretty, 'codes')      <- codes

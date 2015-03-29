@@ -18,4 +18,20 @@ character HUC8
 \examples{
 GetSiteHuc(FindUsgsStns(stnLon=254.67374999999998408,stnLat=40.018666670000001773,within=.001)$site_no)
 }
+\seealso{
+Other streamObs: \code{\link{FindUsgsStns}};
+  \code{\link{GetUsgsHucData}};
+  \code{\link{GetUsgsIvProduct}};
+  \code{\link{ImproveHucMeta}}; \code{\link{LoadMetaDB}};
+  \code{\link{PlotPrettyData}};
+  \code{\link{PrettySiteData}};
+  \code{\link{QueryHaveSite}}; \code{\link{QuerySiteData}};
+  \code{\link{QuerySiteInfo}}; \code{\link{QuerySiteName}};
+  \code{\link{QuerySiteProd}}; \code{\link{SaveHucData}};
+  \code{\link{subset.prettyUsgs}}
+}
+\concept{
+dataGet usgsStreamObs
+}
+\keyword{IO}
 

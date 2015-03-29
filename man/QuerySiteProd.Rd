@@ -20,4 +20,20 @@ QuerySiteProd(site, path = ".",
 \examples{
 QuerySiteProd('06730500', '~/streamflow/OBS/')
 }
+\seealso{
+Other streamObs: \code{\link{FindUsgsStns}};
+  \code{\link{GetSiteHuc}}; \code{\link{GetUsgsHucData}};
+  \code{\link{GetUsgsIvProduct}};
+  \code{\link{ImproveHucMeta}}; \code{\link{LoadMetaDB}};
+  \code{\link{PlotPrettyData}};
+  \code{\link{PrettySiteData}};
+  \code{\link{QueryHaveSite}}; \code{\link{QuerySiteData}};
+  \code{\link{QuerySiteInfo}}; \code{\link{QuerySiteName}};
+  \code{\link{SaveHucData}};
+  \code{\link{subset.prettyUsgs}}
+}
+\concept{
+dataMgmt usgsStreamObs
+}
+\keyword{database}
 

@@ -5,7 +5,8 @@
 \title{Get a package's metadata fields and associated entries.}
 \usage{
 GetPkgMeta(meta = c("concept", "keyword"), package = "rwrfhydro",
-  keyword = NULL, concept = NULL, quiet = FALSE)
+  keyword = NULL, concept = NULL, quiet = FALSE, listMetaOnly = FALSE,
+  byFunction = "")
 }
 \arguments{
 \item{meta}{Character the metadata field.}
@@ -17,6 +18,10 @@ GetPkgMeta(meta = c("concept", "keyword"), package = "rwrfhydro",
 \item{concept}{Character A specific concept to look for.}
 
 \item{quiet}{Logical Do not print summary to screen.}
+
+\item{listMetaOnly}{Logical Just return the meta categories (without functons)?}
+
+\item{byFunction}{Character Vector of functions for which concepts and keywords are desired.}
 }
 \value{
 List of metadata fields in alphabetical order with corresponding entries.
@@ -30,6 +35,8 @@ GetPkgMeta('keyword', package='ggplot2')
 GetPkgMeta(concept = 'foo', key='hplot' )
 print( GetPkgMeta(concept = c('dataMgmt','foo'), key=c('foo','hplot') , quiet=TRUE))
 str( GetPkgMeta(concept = c('dataMgmt','foo'), key=c('foo','hplot') , quiet=TRUE))
+str( GetPkgMeta(concept = c('dataMgmt','DART'), key=c('internal','hplot') , quiet=TRUE))
+GetPkgMeta(byFunction=c('MkDischargeVariance','SaveHucData'))
 }
 \keyword{utilities}
 

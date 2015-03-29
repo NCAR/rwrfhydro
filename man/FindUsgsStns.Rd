@@ -33,12 +33,19 @@ stnDf <- FindUsgsStns(stnLon=c(254.67374999999998408,-87.747224700000004),
                       stnLat=c(40.018666670000001773, 31.864042489999999),within=.001)
 }
 \seealso{
-Other streamObs: \code{\link{GetUsgsHucData}};
-  \code{\link{ImproveHucMeta}};
-  \code{\link{PlotPrettyData}}; \code{\link{SaveHucData}}
+Other streamObs: \code{\link{GetSiteHuc}};
+  \code{\link{GetUsgsHucData}};
+  \code{\link{GetUsgsIvProduct}};
+  \code{\link{ImproveHucMeta}}; \code{\link{LoadMetaDB}};
+  \code{\link{PlotPrettyData}};
+  \code{\link{PrettySiteData}};
+  \code{\link{QueryHaveSite}}; \code{\link{QuerySiteData}};
+  \code{\link{QuerySiteInfo}}; \code{\link{QuerySiteName}};
+  \code{\link{QuerySiteProd}}; \code{\link{SaveHucData}};
+  \code{\link{subset.prettyUsgs}}
 }
 \concept{
-dataGet usgsObs
+dataGet usgsStreamObs
 }
 \keyword{IO}
 
