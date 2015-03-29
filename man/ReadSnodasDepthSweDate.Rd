@@ -21,4 +21,14 @@ A list with a SWE and a depth matrix.
 snodasGot <- GetSnodasDepthSweDate(as.POSIXct('2015-02-28'))
 if(snodasGot) snodasList <- ReadSnodasDepthSweDate(as.POSIXct('2015-02-28'))
 }
+\seealso{
+Other SNODAS: \code{\link{CalcSnodasCoords}};
+  \code{\link{GetSnodasDepthSweDate}};
+  \code{\link{PutSnodasCoordsNcdf}};
+  \code{\link{PutSnodasNcdf}}
+}
+\concept{
+SNODAS
+}
+\keyword{manip}
 

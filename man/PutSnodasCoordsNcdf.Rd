@@ -15,4 +15,14 @@ Success if the filename (which is SNODAS_Coordinates.nc), otherwise NULL.
 \examples{
 PutSnodasCoordsNcdf()
 }
+\seealso{
+Other SNODAS: \code{\link{CalcSnodasCoords}};
+  \code{\link{GetSnodasDepthSweDate}};
+  \code{\link{PutSnodasNcdf}};
+  \code{\link{ReadSnodasDepthSweDate}}
+}
+\concept{
+SNODAS
+}
+\keyword{IO}
 

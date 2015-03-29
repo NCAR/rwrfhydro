@@ -285,6 +285,7 @@ ReshapeMultiNcdf <- function(myDf) {
 #' @examples 
 #' NamedList(1:5)
 #' @keywords internal
+#' @export
 NamedList <- function(theNames) {
   theList <- as.list(theNames)
   names(theList)<- theNames
@@ -427,18 +428,38 @@ print.pkgMeta  <- function(pkgMeta) {
 }
 
 
-#' General purpose helper for handling vector arguments.
-#' @keywords util internal
+#' Handle vector arguments to functions in a collated fashion.
+#' 
+#' \code{FormalsToDf} is called inside a function where some formal arguments may have
+#' been supplied as vectors. \code{FormalsToDf} constructs a dataframe from the
+#' arguments which can then be passed to plyr::mlply (or similar, e.g. mdply) to
+#' return a list of results.  The assumption is that all vector arguments are
+#' collated: 1) NULL arguments are dropped; 2) all arguments of length > 1 all have
+#' the same length and are collated. 
+#' @param meta Character the metadata field.
+#' @param package Character The package to query for metadata.
+#' @return Dataframe
+#' @examples 
+#' ## A stupid example where true vectorization is possible
+#' myF.atomic <- function(x,y,z=NULL) if(is.null(z)) x+y else x+y+z  
+#' myF <- function(x,y,z=NULL) { 
+#'   col <- FormalsToDf(myF) 
+#'   plyr::maply(col, myF.atomic, .expand=FALSE)
+#'   }
+#' myF.atomic(x=11:13,y=1:3)
+#' myF(x=11:13,y=1:3)
+#' myF(x=11:13,y=1:2,z=NULL)
+#' @keywords utilities internal
 #' @export
 FormalsToDf <- function(theFunc, envir=parent.frame()) {
   ## can only have formals of two different lengths other than zero.
   ## find the length of the formals
   theFormals <- names(formals(theFunc))
   formalLens <- plyr::laply(theFormals, function(ff) length(get(ff, envir=envir)))
-  formalLensNz <- formalLens[which(formalLens!=0)]
-  nLenNonZero <- length(unique(formalLensNz))
-  if(nLenNonZero>2) {
-    warning(paste('Formals provided to', theFunc, 'are not collated as required.'))
+  formalLensGt1 <- formalLens[which(formalLens>1)]
+  nLenGt1 <- length(unique(formalLensGt1))
+  if(nLenGt1>1) {
+    warning('Formals are not collated as required.')
     return(NULL)
   }
   theFormals <- theFormals[which(formalLens!=0)]

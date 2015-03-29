@@ -2,7 +2,7 @@
 % Please edit documentation in R/snodas.R
 \name{GetSnodasDepthSweDate}
 \alias{GetSnodasDepthSweDate}
-\title{Get and unpack the SNODAS snow depth and SWE tarball for a given date.}
+\title{Get and unpack the SNODAS snow depth and SWE tarball for given dates.}
 \usage{
 GetSnodasDepthSweDate(datePOSIXct, outputDir = ".", overwrite = FALSE,
   quiet = TRUE)
@@ -20,7 +20,7 @@ When true: Pull new tarball and overwrite any existing files with the same date.
 \item{quiet}{Passed to curl, to show it's progress (typcially too fast to matter).}
 }
 \value{
-Success or failure.
+Logical was the file "got"?
 }
 \description{
 \code{GetSnodasDepthSweDate} Get and unpack the SNODAS snow depth and SWE tarball for a given date.
@@ -28,4 +28,14 @@ Success or failure.
 \examples{
 snodasGot <- GetSnodasDepthSweDate(as.POSIXct('2015-02-28'))
 }
+\seealso{
+Other SNODAS: \code{\link{CalcSnodasCoords}};
+  \code{\link{PutSnodasCoordsNcdf}};
+  \code{\link{PutSnodasNcdf}};
+  \code{\link{ReadSnodasDepthSweDate}}
+}
+\concept{
+SNODAS
+}
+\keyword{IO}
 

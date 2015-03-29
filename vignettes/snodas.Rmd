@@ -1,0 +1,68 @@
+---
+title: "Collect the SNODAS product and build a local database."
+author: "James McCreight"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Collect the SNODAS product and build a local database}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+# Background
+Pull SNODAS data and collect into a "database" of local netcdf files. 
+
+# Setup
+Load the rwrfhydro package. 
+```{r, results='hide'}
+library("rwrfhydro")
+```
+
+```{r, echo=FALSE}
+options(width = 120)
+```
+
+This is the path to the directory where you want your database to be built:
+```{r}
+snodasPath <- '~/wrfHydroTestCases/snodas/' 
+setwd(snodasPath)
+```
+
+
+# Get some data
+Grab a single date (both depth and SWE) and transform to netcdf. For the sake of illustration, grab three days ago.
+```{r, results='hold'} 
+threeDaysBack <- Sys.Date() + lubridate::period(-3,'day')
+snodasGot <- GetSnodasDepthSweDate(threeDaysBack)
+if(snodasGot) {
+  snodasList <- ReadSnodasDepthSweDate(threeDaysBack)
+  PutSnodasNcdf(snodasList)
+}
+```
+
+# Update 
+The above can be repeated over multiple dates one might want to get, for example from three days ago until now
+```{r, results='hold'}
+datesWanted <- seq(threeDaysBack,Sys.Date(), by = 'days')
+datesWanted    
+
+UpdateSnodas <- function(POSIXct) {
+  ## check if we already processed this date/POSIXct, if we didnt process, we'll
+  ## download again and process it. (note we could have downloaded but not processed 
+  ## so it might not be efficient). 
+  file <- paste0('SNODAS_',format(POSIXct,'%Y%m%d'),'.nc')
+  processed <- file.exists(file)
+  if(processed) 
+    return(data.frame(date=POSIXct, snodasGot=FALSE, ncdfFile=file))
+  
+  snodasGot <- GetSnodasDepthSweDate(POSIXct)
+  if(snodasGot) {
+    snodasList <- ReadSnodasDepthSweDate(POSIXct)
+    ncdfFile <- PutSnodasNcdf(snodasList)
+  } else ncdfFile <- ''
+  data.frame(date=POSIXct, snodasGot=snodasGot, ncdfFile=ncdfFile)
+}
+
+update <- plyr::ldply(NamedList(datesWanted), UpdateSnodas)
+update
+```

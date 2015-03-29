@@ -1,4 +1,4 @@
-#' Get and unpack the SNODAS snow depth and SWE tarball for a given date.
+#' Get and unpack the SNODAS snow depth and SWE tarball for given dates.
 #'
 #' \code{GetSnodasDepthSweDate} Get and unpack the SNODAS snow depth and SWE tarball for a given date. 
 #' 
@@ -9,12 +9,25 @@
 #'                    When false: If the tarball exists on disk but depth and SWE files dont, just unpack the tarball. \cr
 #'                    When true: Pull new tarball and overwrite any existing files with the same date.
 #' @param quiet       Passed to curl, to show it's progress (typcially too fast to matter).
-#' @return Success or failure. 
+#' @return Logical was the file "got"?
 #' @examples
 #' snodasGot <- GetSnodasDepthSweDate(as.POSIXct('2015-02-28'))
+#' @keywords IO
+#' @concept SNODAS
+#' @family SNODAS
 #' @export
-GetSnodasDepthSweDate <- function(datePOSIXct, outputDir='.', overwrite=FALSE, quiet=TRUE) {
-  # date parameters
+GetSnodasDepthSweDate <- function(datePOSIXct, outputDir='.', overwrite=FALSE, 
+                                  quiet=TRUE) {
+  vecDf <- FormalsToDf(GetSnodasDepthSweDate)
+  ret <- plyr::mlply(vecDf, GetSnodasDepthSweDate.atomic)
+  names(ret) <- datePOSIXct
+  if(length(ret)==1) ret <- ret[[1]]
+  ret
+}
+
+GetSnodasDepthSweDate.atomic <- function(datePOSIXct, outputDir='.', overwrite=FALSE, 
+                                         quiet=TRUE) {
+    # date parameters
   yy <- format(datePOSIXct, c("%Y")); mm <- format(datePOSIXct, c("%m"))
   mon <- format(datePOSIXct, c("%h")); dd <- format(datePOSIXct, c("%d"))
   
@@ -45,7 +58,7 @@ GetSnodasDepthSweDate <- function(datePOSIXct, outputDir='.', overwrite=FALSE, q
     if(!file.exists(theFile)) {
       warning(paste0('Error: File not obtained via FTP: ',theFile))
       setwd(origDir)
-      return(0)
+      return(FALSE)
     }
   }
 
@@ -61,7 +74,7 @@ GetSnodasDepthSweDate <- function(datePOSIXct, outputDir='.', overwrite=FALSE, q
   Sys.chmod(c(depthFile0, sweFile0), mode='0777', use_umask=FALSE)
 
   setwd(origDir)
-  1
+  TRUE
 }
 
 
@@ -75,6 +88,9 @@ GetSnodasDepthSweDate <- function(datePOSIXct, outputDir='.', overwrite=FALSE, q
 #' @examples
 #' snodasGot <- GetSnodasDepthSweDate(as.POSIXct('2015-02-28'))
 #' if(snodasGot) snodasList <- ReadSnodasDepthSweDate(as.POSIXct('2015-02-28'))
+#' @keywords manip
+#' @concept SNODAS
+#' @family SNODAS
 #' @export
 ReadSnodasDepthSweDate <- function(datePOSIXct, outputDir='.') {
   # date parameters
@@ -128,6 +144,9 @@ ReadSnodasDepthSweDate <- function(datePOSIXct, outputDir='.') {
 #' snodasGot <- GetSnodasDepthSweDate(as.POSIXct('2015-02-28'))
 #' if(snodasGot) snodasList <- ReadSnodasDepthSweDate(as.POSIXct('2015-02-28'))
 #' PutSnodasNcdf(snodasList)
+#' @keywords IO
+#' @concept SNODAS
+#' @family SNODAS
 #' @export
 PutSnodasNcdf <- function(snodasList) {
   ## make it a vanilla date... 
@@ -187,6 +206,9 @@ PutSnodasNcdf <- function(snodasList) {
 #' @return A list of lon and lat
 #' @examples
 #' snodasCoords <- CalcSnodasCoords()
+#' @keywords manip
+#' @concept SNODAS
+#' @family SNODAS
 #' @export
 CalcSnodasCoords <- function() {
   nCol=6935
@@ -213,6 +235,9 @@ CalcSnodasCoords <- function() {
 #' @return Success if the filename (which is SNODAS_Coordinates.nc), otherwise NULL.
 #' @examples
 #' PutSnodasCoordsNcdf()
+#' @keywords IO
+#' @concept SNODAS
+#' @family SNODAS
 #' @export
 PutSnodasCoordsNcdf <- function() {
   snodasCoords <- CalcSnodasCoords()

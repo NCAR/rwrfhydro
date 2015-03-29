@@ -20,4 +20,14 @@ snodasGot <- GetSnodasDepthSweDate(as.POSIXct('2015-02-28'))
 if(snodasGot) snodasList <- ReadSnodasDepthSweDate(as.POSIXct('2015-02-28'))
 PutSnodasNcdf(snodasList)
 }
+\seealso{
+Other SNODAS: \code{\link{CalcSnodasCoords}};
+  \code{\link{GetSnodasDepthSweDate}};
+  \code{\link{PutSnodasCoordsNcdf}};
+  \code{\link{ReadSnodasDepthSweDate}}
+}
+\concept{
+SNODAS
+}
+\keyword{IO}
 
