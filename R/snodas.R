@@ -17,64 +17,69 @@
 #' @family SNODAS
 #' @export
 GetSnodasDepthSweDate <- function(datePOSIXct, outputDir='.', overwrite=FALSE, 
-                                  quiet=TRUE) {
+                                  quiet=TRUE, 
+                                  .parallel=(foreach::getDoParWorkers()>1) {
+  
+  ## This atomic function gets called below. 
+  GetSnodasDepthSweDate.atomic <- function(datePOSIXct, outputDir='.', overwrite=FALSE, 
+                                           quiet=TRUE) {
+    # date parameters
+    yy <- format(datePOSIXct, c("%Y")); mm <- format(datePOSIXct, c("%m"))
+    mon <- format(datePOSIXct, c("%h")); dd <- format(datePOSIXct, c("%d"))
+    
+    # depthProdId <- '1036',  sweProdId <- '1034'
+    # Can construct the filenames. Calling this "0" incase they dont match the
+    # names in the tarball.
+    depthFile0<- paste0(outputDir,'/','us_ssmv1',
+                        '1036tS__T0001TTNATS',yy,mm,dd,'05HP001.dat.gz')
+    sweFile0  <- paste0(outputDir,'/','us_ssmv1',
+                        '1034tS__T0001TTNATS',yy,mm,dd,'05HP001.dat.gz')
+    
+    ## If either of the depth or SWE files exist, bail out unless told to overwrite.
+    if( (file.exists(depthFile0) | file.exists(sweFile0)) & !overwrite) return(0)
+    
+    # Go to the correct directory for arciving the data
+    origDir <- getwd()
+    setwd(outputDir)
+    
+    # theFile is the tarball
+    theFile <- paste0('SNODAS_',yy,mm,dd,'.tar')
+    
+    # if theFile (tarball) exists, then skip downloading unless told to overwrite
+    if(!file.exists(theFile) | overwrite) {
+      theUrl <- paste0('ftp://sidads.colorado.edu/DATASETS/NOAA/G02158/masked/',
+                       yy,'/',mm,'_',mon,'/',theFile)
+      if(!quiet) print(paste('SNODAS: ', datePOSIXct))
+      try(curl::curl_download(theUrl, theFile, quiet=quiet))
+      if(!file.exists(theFile)) {
+        warning(paste0('Error: File not obtained via FTP: ',theFile))
+        setwd(origDir)
+        return(FALSE)
+      }
+    }
+    
+    # unpack tarball to depth and SWE. name the tmpDir by date so dates can be done in parallel.
+    tmpDir <- paste0('tmp',yy,mm,dd)
+    if(file.exists(tmpDir)) unlink(tmpDir, recursive=TRUE)
+    untar(theFile, exdir=tmpDir)
+    sweFile <- list.files(path = tmpDir, pattern=glob2rx('*ssmv11034tS*.dat.gz'))  # SWE
+    file.copy(paste0(tmpDir,'/',sweFile), sweFile0)
+    depthFile <- list.files(path = tmpDir, pattern=glob2rx('*ssmv11036tS*.dat.gz'))  # depth
+    file.copy(paste0(tmpDir,'/',depthFile), depthFile0)
+    unlink(c(tmpDir, theFile), recursive=TRUE) 
+    Sys.chmod(c(depthFile0, sweFile0), mode='0777', use_umask=FALSE)
+    
+    setwd(origDir)
+    TRUE
+  }
+  
+  ## FormalsToDf handles vector arguments and passes collated combos 
+  ## to the atomic function 
   vecDf <- FormalsToDf(GetSnodasDepthSweDate)
-  ret <- plyr::mlply(vecDf, GetSnodasDepthSweDate.atomic)
+  ret <- plyr::mlply(vecDf, GetSnodasDepthSweDate.atomic, .parallel=.parallel)
   names(ret) <- datePOSIXct
   if(length(ret)==1) ret <- ret[[1]]
   ret
-}
-
-GetSnodasDepthSweDate.atomic <- function(datePOSIXct, outputDir='.', overwrite=FALSE, 
-                                         quiet=TRUE) {
-    # date parameters
-  yy <- format(datePOSIXct, c("%Y")); mm <- format(datePOSIXct, c("%m"))
-  mon <- format(datePOSIXct, c("%h")); dd <- format(datePOSIXct, c("%d"))
-  
-  # depthProdId <- '1036',  sweProdId <- '1034'
-  # Can construct the filenames. Calling this "0" incase they dont match the
-  # names in the tarball.
-  depthFile0<- paste0(outputDir,'/','us_ssmv1',
-                      '1036tS__T0001TTNATS',yy,mm,dd,'05HP001.dat.gz')
-  sweFile0  <- paste0(outputDir,'/','us_ssmv1',
-                      '1034tS__T0001TTNATS',yy,mm,dd,'05HP001.dat.gz')
-  
-  ## If either of the depth or SWE files exist, bail out unless told to overwrite.
-  if( (file.exists(depthFile0) | file.exists(sweFile0)) & !overwrite) return(0)
-  
-  # Go to the correct directory for arciving the data
-  origDir <- getwd()
-  setwd(outputDir)
-  
-  # theFile is the tarball
-  theFile <- paste0('SNODAS_',yy,mm,dd,'.tar')
-
-  # if theFile (tarball) exists, then skip downloading unless told to overwrite
-  if(!file.exists(theFile) | overwrite) {
-    theUrl <- paste0('ftp://sidads.colorado.edu/DATASETS/NOAA/G02158/masked/',
-                     yy,'/',mm,'_',mon,'/',theFile)
-    if(!quiet) print(paste('SNODAS: ', datePOSIXct))
-    try(curl::curl_download(theUrl, theFile, quiet=quiet))
-    if(!file.exists(theFile)) {
-      warning(paste0('Error: File not obtained via FTP: ',theFile))
-      setwd(origDir)
-      return(FALSE)
-    }
-  }
-
-  # unpack tarball to depth and SWE. name the tmpDir by date so dates can be done in parallel.
-  tmpDir <- paste0('tmp',yy,mm,dd)
-  if(file.exists(tmpDir)) unlink(tmpDir, recursive=TRUE)
-  untar(theFile, exdir=tmpDir)
-  sweFile <- list.files(path = tmpDir, pattern=glob2rx('*ssmv11034tS*.dat.gz'))  # SWE
-  file.copy(paste0(tmpDir,'/',sweFile), sweFile0)
-  depthFile <- list.files(path = tmpDir, pattern=glob2rx('*ssmv11036tS*.dat.gz'))  # depth
-  file.copy(paste0(tmpDir,'/',depthFile), depthFile0)
-  unlink(c(tmpDir, theFile), recursive=TRUE) 
-  Sys.chmod(c(depthFile0, sweFile0), mode='0777', use_umask=FALSE)
-
-  setwd(origDir)
-  TRUE
 }
 
 
