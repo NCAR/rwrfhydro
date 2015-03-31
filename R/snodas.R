@@ -129,8 +129,8 @@ ReadSnodasDepthSweDate <- function(datePOSIXct, outputDir='.') {
   }
 
   list(datePOSIXct=datePOSIXct,
-       depth.mm= RotateCw(matrix(depthData, ncol=nCol, nrow=nRow, byrow=TRUE)),
-       swe.mm  = RotateCw(matrix(sweData,   ncol=nCol, nrow=nRow, byrow=TRUE)) ) 
+       depth.m= RotateCw(matrix(depthData, ncol=nCol, nrow=nRow, byrow=TRUE)),
+       swe.m  = RotateCw(matrix(sweData,   ncol=nCol, nrow=nRow, byrow=TRUE)) ) 
 }
 
 
@@ -154,41 +154,41 @@ PutSnodasNcdf <- function(snodasList) {
   varList = list()
   varList[[1]] <- list( name='SWE',
                        longname='Snow water equivalent',
-                       units='mm',
+                       units='m',
                        precision = 'double',
-                       missing = min(snodasList$swe.mm),
+                       missing = min(snodasList$swe.m),
                        dimensionList =
                        list(
-                            y=list(name='Latitude',values=1:nrow(snodasList$swe.mm),
+                            y=list(name='Latitude',values=1:nrow(snodasList$swe.m),
                               units='Degrees North', unlimited=FALSE,
                               create_dimvar=FALSE),
-                            x=list(name='Longitude',values=1:ncol(snodasList$swe.mm),
+                            x=list(name='Longitude',values=1:ncol(snodasList$swe.m),
                               units='Degrees East', unlimited=FALSE,
                               create_dimvar=FALSE),
                             t=list(name='Time',values=as.numeric(theDate),
                               units='POSIXct', unlimited=TRUE,
                               create_dimvar=TRUE)
                             ),
-                       data = snodasList$swe.mm ) 
+                       data = snodasList$swe.m ) 
 
   varList[[2]] <- list( name='snowDepth',
                        longname='Snow depth',
-                       units='mm',
+                       units='m',
                        precision = 'double',
-                       missing = min(snodasList$depth.mm),
+                       missing = min(snodasList$depth.m),
                        dimensionList =
                        list(
-                            y=list(name='Latitude',values=1:nrow(snodasList$depth.mm),
+                            y=list(name='Latitude',values=1:nrow(snodasList$depth.m),
                               units='Degrees North', unlimited=FALSE,
                               create_dimvar=FALSE),
-                            x=list(name='Longitude',values=1:ncol(snodasList$depth.mm),
+                            x=list(name='Longitude',values=1:ncol(snodasList$depth.m),
                               units='Degrees East', unlimited=FALSE,
                               create_dimvar=FALSE),
                             t=list(name='Time',values=as.numeric(theDate),
                               units='POSIXct', unlimited=TRUE,
                               create_dimvar=TRUE)
                             ),
-                       data = snodasList$depth.mm )
+                       data = snodasList$depth.m )
 
   globalAttList <- list()
   globalAttList[[1]] <- list(name='Time',value='2012-07-05_00:00:00', precision="text")
