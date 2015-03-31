@@ -349,6 +349,8 @@ GetPkgMeta <- function(meta=c('concept','keyword'), package='rwrfhydro',
   if(byFunction[1]!=''){  
     ## GetPkgMeta.scalar returns lists organized by meta (can only apparently search on keywords not function names)
     ## so do the "inversion" here (seems like there might be a more elegant way, but .Rd_get_metadata is vague)
+    out[which(!as.logical(plyr::laply(out, length)))] <- NULL
+    if(!length(out)) return(NULL)
     out <- reshape2::melt(out)
     out$value <- as.character(out$value)
     out <- plyr::dlply(out, plyr::.(L2), function(ss) plyr::dlply(ss, plyr::.(L1), function(zz) zz$value))

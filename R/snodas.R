@@ -9,6 +9,7 @@
 #'                    When false: If the tarball exists on disk but depth and SWE files dont, just unpack the tarball. \cr
 #'                    When true: Pull new tarball and overwrite any existing files with the same date.
 #' @param quiet       Passed to curl, to show it's progress (typcially too fast to matter).
+#' @param .parallel   Logical Defaults to (foreach::getDoParWorkers>1), so if you've set up parallelization it is automatically used. 
 #' @return Logical was the file "got"?
 #' @examples
 #' snodasGot <- GetSnodasDepthSweDate(as.POSIXct('2015-02-28'))
@@ -18,7 +19,7 @@
 #' @export
 GetSnodasDepthSweDate <- function(datePOSIXct, outputDir='.', overwrite=FALSE, 
                                   quiet=TRUE, 
-                                  .parallel=(foreach::getDoParWorkers()>1) {
+                                  .parallel=(foreach::getDoParWorkers()>1) ){
   
   ## This atomic function gets called below. 
   GetSnodasDepthSweDate.atomic <- function(datePOSIXct, outputDir='.', overwrite=FALSE, 
