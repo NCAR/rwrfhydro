@@ -48,33 +48,28 @@ FindUsgsStns <- function(stnLon=NULL, stnLat=NULL, within=NULL,
     return(NULL)
   }
 
+  FindUsgsStns.atomic <- function(stnLon=NULL, stnLat=NULL, within=NULL,
+                                  huc8=NULL, siteType='ST', hasDataTypeCd='iv') {
+    argList <- list()
+    argList$siteType       <- siteType
+    argList$hasDataTypeCd  <- hasDataTypeCd
+    # lat/lon
+    if( !is.null(stnLon) && !is.null(stnLat) && !is.null(within) ) {
+      if(length(whGt180<- which(stnLon>180.))) stnLon[whGt180] <- stnLon[whGt180]-360
+      argList$bBox <- as.character(paste(as.character(format(stnLon-within,nsmall=7)),
+                                         as.character(format(stnLat-within,nsmall=7)),
+                                         as.character(format(stnLon+within,nsmall=7)),
+                                         as.character(format(stnLat+within,nsmall=7)), sep=',' ))
+    }
+    # huc
+    if (!is.null(huc8)) argList$huc <- as.character(huc8)
+    #print(argList)
+    do.call(dataRetrieval::whatNWISsites, argList)
+  }
+  
   vecDf <- FormalsToDf(FindUsgsStns)
   ret <- plyr::mdply(vecDf, FindUsgsStns.atomic)
 }
-
-#' @keywords internal
-#' @concept usgsStreamObs dataGet
-#' @family streamObs
-#' @export
-FindUsgsStns.atomic <- function(stnLon=NULL, stnLat=NULL, within=NULL,
-                                huc8=NULL, siteType='ST', hasDataTypeCd='iv') {
-  argList <- list()
-  argList$siteType       <- siteType
-  argList$hasDataTypeCd  <- hasDataTypeCd
-  # lat/lon
-  if( !is.null(stnLon) && !is.null(stnLat) && !is.null(within) ) {
-    if(length(whGt180<- which(stnLon>180.))) stnLon[whGt180] <- stnLon[whGt180]-360
-    argList$bBox <- as.character(paste(as.character(format(stnLon-within,nsmall=7)),
-                                       as.character(format(stnLat-within,nsmall=7)),
-                                       as.character(format(stnLon+within,nsmall=7)),
-                                       as.character(format(stnLat+within,nsmall=7)), sep=',' ))
-  }
-  # huc
-  if (!is.null(huc8)) argList$huc <- as.character(huc8)
-  #print(argList)
-  do.call(dataRetrieval::whatNWISsites, argList)
-}
-
 
 #==============================================================================================
 #' Get all the USGS streamgage information within a HUC8. 
@@ -341,6 +336,8 @@ GetUsgsIvProduct <- function( prodDf ) {
 #' @return character HUC8
 #' @examples
 #' GetSiteHuc(FindUsgsStns(stnLon=254.67374999999998408,stnLat=40.018666670000001773,within=.001)$site_no)
+#' huc <- GetSiteHuc(gages2RefAttr$STAID[1:3])
+#' names(huc)<-gages2RefAttr$STAID[1:3]
 #' @keywords IO 
 #' @concept dataGet usgsStreamObs
 #' @family streamObs
@@ -386,6 +383,51 @@ QuerySiteProd <- function(site, path='.',
 QueryHaveSite <- function(site, path='.', 
                           metaDBFileName='usgsDataRetrieval.metaDatabase.RData',
                           get=FALSE, retData=FALSE) {
+  
+  QueryHaveSite.atomic <- function(site, path='.', 
+                                   metaDBFileName='usgsDataRetrieval.metaDatabase.RData',
+                                   get=FALSE, retData=FALSE) {
+    
+    retDataIn <- retData
+    if(!is.logical(retData)) retData <- TRUE
+    
+    have <- 
+      as.logical(length(QuerySiteProd(site, path=path, 
+                                      metaDBFileName=metaDBFileName)))
+    if(have & !retData) return(have)
+    
+    if(!have & get) {
+      siteHuc8 <- GetSiteHuc(site)
+      ## do we have this HUC but not the site?
+      haveHuc <- any(QuerySiteInfo('huc_cd', path=path, 
+                                   metaDBFileName=metaDBFileName)$huc_cd == siteHuc8) 
+      
+      if(!haveHuc) {
+        yesOrNo <-
+          readline(prompt=paste0('The site was not found but the data for the HUC already exists. ',
+                                 'This currently requires re-retrieving the entire HUC and ',
+                                 'overwriting the existing data in the database. Overwrite? (y/n):'))
+        overwrite <- (yesOrNo == 'y')
+        if(!overwrite) return(have)
+      }
+      files<-
+        SaveHucData(GetUsgsHucData(huc8 = siteHuc8), 
+                    outPath = path, metaDBFileName=metaDBFileName, 
+                    overwriteHucDataFile = overwrite)
+      have <- file.exists(files[[1]])
+      if(!retData) return(have)
+      have <- TRUE ## how can I know this is true?
+    }
+    
+    if(have & retData) {
+      product<- if(is.logical(retDataIn)) {
+        QuerySiteProd(site, path=path, metaDBFileName=metaDBFileName)
+      } else retDataIn
+      have <- QuerySiteData(site, product=product, path=path)
+    }
+    return(have)
+  }
+  
   vecDf <- FormalsToDf(QueryHaveSite)
   ret <- plyr::mlply(vecDf, QueryHaveSite.atomic)
   names(ret) <- site
@@ -393,49 +435,7 @@ QueryHaveSite <- function(site, path='.',
   ret
 }
   
-QueryHaveSite.atomic <- function(site, path='.', 
-                                 metaDBFileName='usgsDataRetrieval.metaDatabase.RData',
-                                 get=FALSE, retData=FALSE) {
-  
-  retDataIn <- retData
-  if(!is.logical(retData)) retData <- TRUE
-  
-  have <- 
-    as.logical(length(QuerySiteProd(site, path=path, 
-                                     metaDBFileName=metaDBFileName)))
-  if(have & !retData) return(have)
-  
-  if(!have & get) {
-    siteHuc8 <- GetSiteHuc(site)
-    ## do we have this HUC but not the site?
-    haveHuc <- any(QuerySiteInfo('huc_cd', path=path, 
-                                 metaDBFileName=metaDBFileName)$huc_cd == siteHuc8) 
 
-    if(!haveHuc) {
-      yesOrNo <-
-        readline(prompt=paste0('The site was not found but the data for the HUC already exists. ',
-                              'This currently requires re-retrieving the entire HUC and ',
-                              'overwriting the existing data in the database. Overwrite? (y/n):'))
-      overwrite <- (yesOrNo == 'y')
-      if(!overwrite) return(have)
-    }
-    files<-
-      SaveHucData(GetUsgsHucData(huc8 = siteHuc8), 
-                  outPath = path, metaDBFileName=metaDBFileName, 
-                  overwriteHucDataFile = overwrite)
-    have <- file.exists(files[[1]])
-    if(!retData) return(have)
-    have <- TRUE ## how can I know this is true?
-  }
-  
-  if(have & retData) {
-    product<- if(is.logical(retDataIn)) {
-      QuerySiteProd(site, path=path, metaDBFileName=metaDBFileName)
-     } else retDataIn
-    have <- QuerySiteData(site, product=product, path=path)
-  }
-  return(have)
-}
 
 #==============================================================================================
 #' Find the name(site id) for a given site(name)  in the local database.
