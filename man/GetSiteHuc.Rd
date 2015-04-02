@@ -17,6 +17,8 @@ character HUC8
 }
 \examples{
 GetSiteHuc(FindUsgsStns(stnLon=254.67374999999998408,stnLat=40.018666670000001773,within=.001)$site_no)
+huc <- GetSiteHuc(gages2RefAttr$STAID[1:3])
+names(huc)<-gages2RefAttr$STAID[1:3]
 }
 \seealso{
 Other streamObs: \code{\link{FindUsgsStns}};

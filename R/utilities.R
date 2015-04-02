@@ -1,6 +1,6 @@
 #' Simplifed loading of rwrfhydro data included with the package.
 #' 
-#' \code{GetPkgData} is a simplified wrapper (for system.file) for loading external 
+#' \code{GetPkgRawDataPath} is a simplified wrapper (for system.file) for loading external 
 #' rwrfhydro data included with the package.
 #' @param theFile The external data file to load (this is in dirrefent places before, 
 #'        rwrfhydro/inst/extdata, and after build, rwrfhydro/). 
@@ -8,7 +8,7 @@
 #' @examples
 #' GetPkgDataPath('Fourmile_test_case_AD.hydro_OrodellBasin_100m_8.nc')
 #' @export
-GetPkgDataPath <- function(theFile='') system.file("extdata", theFile, package = "rwrfhydro")
+GetPkgRawDataPath <- function(theFile='') system.file("extdata", theFile, package = "rwrfhydro")
 
 
 #' Standardize lon to (-180,180].
@@ -349,6 +349,8 @@ GetPkgMeta <- function(meta=c('concept','keyword'), package='rwrfhydro',
   if(byFunction[1]!=''){  
     ## GetPkgMeta.scalar returns lists organized by meta (can only apparently search on keywords not function names)
     ## so do the "inversion" here (seems like there might be a more elegant way, but .Rd_get_metadata is vague)
+    out[which(!as.logical(plyr::laply(out, length)))] <- NULL
+    if(!length(out)) return(NULL)
     out <- reshape2::melt(out)
     out$value <- as.character(out$value)
     out <- plyr::dlply(out, plyr::.(L2), function(ss) plyr::dlply(ss, plyr::.(L1), function(zz) zz$value))
@@ -403,7 +405,7 @@ print.pkgMeta  <- function(pkgMeta) {
     for (ii in (1:length(atom))) {      
       if(atom[[ii]][1]!='') {
         cat('* ',names(atom)[ii],':\n', sep='')
-        cat(paste('   ',atom[[ii]],collapse=' '), sep='\n')
+        writeLines(strwrap(paste('   ',atom[[ii]],collapse=' '),prefix='   '))
         cat('\n')
       } else cat(names(atom)[ii],'\n', sep='')
     }

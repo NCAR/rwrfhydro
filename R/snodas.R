@@ -9,6 +9,7 @@
 #'                    When false: If the tarball exists on disk but depth and SWE files dont, just unpack the tarball. \cr
 #'                    When true: Pull new tarball and overwrite any existing files with the same date.
 #' @param quiet       Passed to curl, to show it's progress (typcially too fast to matter).
+#' @param .parallel   Logical Defaults to (foreach::getDoParWorkers>1), so if you've set up parallelization it is automatically used. 
 #' @return Logical was the file "got"?
 #' @examples
 #' snodasGot <- GetSnodasDepthSweDate(as.POSIXct('2015-02-28'))
@@ -17,64 +18,69 @@
 #' @family SNODAS
 #' @export
 GetSnodasDepthSweDate <- function(datePOSIXct, outputDir='.', overwrite=FALSE, 
-                                  quiet=TRUE) {
+                                  quiet=TRUE, 
+                                  .parallel=(foreach::getDoParWorkers()>1) ){
+  
+  ## This atomic function gets called below. 
+  GetSnodasDepthSweDate.atomic <- function(datePOSIXct, outputDir='.', overwrite=FALSE, 
+                                           quiet=TRUE) {
+    # date parameters
+    yy <- format(datePOSIXct, c("%Y")); mm <- format(datePOSIXct, c("%m"))
+    mon <- format(datePOSIXct, c("%h")); dd <- format(datePOSIXct, c("%d"))
+    
+    # depthProdId <- '1036',  sweProdId <- '1034'
+    # Can construct the filenames. Calling this "0" incase they dont match the
+    # names in the tarball.
+    depthFile0<- paste0(outputDir,'/','us_ssmv1',
+                        '1036tS__T0001TTNATS',yy,mm,dd,'05HP001.dat.gz')
+    sweFile0  <- paste0(outputDir,'/','us_ssmv1',
+                        '1034tS__T0001TTNATS',yy,mm,dd,'05HP001.dat.gz')
+    
+    ## If either of the depth or SWE files exist, bail out unless told to overwrite.
+    if( (file.exists(depthFile0) | file.exists(sweFile0)) & !overwrite) return(0)
+    
+    # Go to the correct directory for arciving the data
+    origDir <- getwd()
+    setwd(outputDir)
+    
+    # theFile is the tarball
+    theFile <- paste0('SNODAS_',yy,mm,dd,'.tar')
+    
+    # if theFile (tarball) exists, then skip downloading unless told to overwrite
+    if(!file.exists(theFile) | overwrite) {
+      theUrl <- paste0('ftp://sidads.colorado.edu/DATASETS/NOAA/G02158/masked/',
+                       yy,'/',mm,'_',mon,'/',theFile)
+      if(!quiet) print(paste('SNODAS: ', datePOSIXct))
+      try(curl::curl_download(theUrl, theFile, quiet=quiet))
+      if(!file.exists(theFile)) {
+        warning(paste0('Error: File not obtained via FTP: ',theFile))
+        setwd(origDir)
+        return(FALSE)
+      }
+    }
+    
+    # unpack tarball to depth and SWE. name the tmpDir by date so dates can be done in parallel.
+    tmpDir <- paste0('tmp',yy,mm,dd)
+    if(file.exists(tmpDir)) unlink(tmpDir, recursive=TRUE)
+    untar(theFile, exdir=tmpDir)
+    sweFile <- list.files(path = tmpDir, pattern=glob2rx('*ssmv11034tS*.dat.gz'))  # SWE
+    file.copy(paste0(tmpDir,'/',sweFile), sweFile0)
+    depthFile <- list.files(path = tmpDir, pattern=glob2rx('*ssmv11036tS*.dat.gz'))  # depth
+    file.copy(paste0(tmpDir,'/',depthFile), depthFile0)
+    unlink(c(tmpDir, theFile), recursive=TRUE) 
+    Sys.chmod(c(depthFile0, sweFile0), mode='0777', use_umask=FALSE)
+    
+    setwd(origDir)
+    TRUE
+  }
+  
+  ## FormalsToDf handles vector arguments and passes collated combos 
+  ## to the atomic function 
   vecDf <- FormalsToDf(GetSnodasDepthSweDate)
-  ret <- plyr::mlply(vecDf, GetSnodasDepthSweDate.atomic)
+  ret <- plyr::mlply(vecDf, GetSnodasDepthSweDate.atomic, .parallel=.parallel)
   names(ret) <- datePOSIXct
   if(length(ret)==1) ret <- ret[[1]]
   ret
-}
-
-GetSnodasDepthSweDate.atomic <- function(datePOSIXct, outputDir='.', overwrite=FALSE, 
-                                         quiet=TRUE) {
-    # date parameters
-  yy <- format(datePOSIXct, c("%Y")); mm <- format(datePOSIXct, c("%m"))
-  mon <- format(datePOSIXct, c("%h")); dd <- format(datePOSIXct, c("%d"))
-  
-  # depthProdId <- '1036',  sweProdId <- '1034'
-  # Can construct the filenames. Calling this "0" incase they dont match the
-  # names in the tarball.
-  depthFile0<- paste0(outputDir,'/','us_ssmv1',
-                      '1036tS__T0001TTNATS',yy,mm,dd,'05HP001.dat.gz')
-  sweFile0  <- paste0(outputDir,'/','us_ssmv1',
-                      '1034tS__T0001TTNATS',yy,mm,dd,'05HP001.dat.gz')
-  
-  ## If either of the depth or SWE files exist, bail out unless told to overwrite.
-  if( (file.exists(depthFile0) | file.exists(sweFile0)) & !overwrite) return(0)
-  
-  # Go to the correct directory for arciving the data
-  origDir <- getwd()
-  setwd(outputDir)
-  
-  # theFile is the tarball
-  theFile <- paste0('SNODAS_',yy,mm,dd,'.tar')
-
-  # if theFile (tarball) exists, then skip downloading unless told to overwrite
-  if(!file.exists(theFile) | overwrite) {
-    theUrl <- paste0('ftp://sidads.colorado.edu/DATASETS/NOAA/G02158/masked/',
-                     yy,'/',mm,'_',mon,'/',theFile)
-    if(!quiet) print(paste('SNODAS: ', datePOSIXct))
-    try(curl::curl_download(theUrl, theFile, quiet=quiet))
-    if(!file.exists(theFile)) {
-      warning(paste0('Error: File not obtained via FTP: ',theFile))
-      setwd(origDir)
-      return(FALSE)
-    }
-  }
-
-  # unpack tarball to depth and SWE. name the tmpDir by date so dates can be done in parallel.
-  tmpDir <- paste0('tmp',yy,mm,dd)
-  if(file.exists(tmpDir)) unlink(tmpDir, recursive=TRUE)
-  untar(theFile, exdir=tmpDir)
-  sweFile <- list.files(path = tmpDir, pattern=glob2rx('*ssmv11034tS*.dat.gz'))  # SWE
-  file.copy(paste0(tmpDir,'/',sweFile), sweFile0)
-  depthFile <- list.files(path = tmpDir, pattern=glob2rx('*ssmv11036tS*.dat.gz'))  # depth
-  file.copy(paste0(tmpDir,'/',depthFile), depthFile0)
-  unlink(c(tmpDir, theFile), recursive=TRUE) 
-  Sys.chmod(c(depthFile0, sweFile0), mode='0777', use_umask=FALSE)
-
-  setwd(origDir)
-  TRUE
 }
 
 
@@ -129,8 +135,8 @@ ReadSnodasDepthSweDate <- function(datePOSIXct, outputDir='.') {
   }
 
   list(datePOSIXct=datePOSIXct,
-       depth.mm= RotateCw(matrix(depthData, ncol=nCol, nrow=nRow, byrow=TRUE)),
-       swe.mm  = RotateCw(matrix(sweData,   ncol=nCol, nrow=nRow, byrow=TRUE)) ) 
+       depth.m= RotateCw(matrix(depthData, ncol=nCol, nrow=nRow, byrow=TRUE)),
+       swe.m  = RotateCw(matrix(sweData,   ncol=nCol, nrow=nRow, byrow=TRUE)) ) 
 }
 
 
@@ -155,41 +161,41 @@ PutSnodasNcdf <- function(snodasList) {
   varList = list()
   varList[[1]] <- list( name='SWE',
                        longname='Snow water equivalent',
-                       units='mm',
+                       units='m',
                        precision = 'double',
-                       missing = min(snodasList$swe.mm),
+                       missing = min(snodasList$swe.m),
                        dimensionList =
                        list(
-                            y=list(name='Latitude',values=1:nrow(snodasList$swe.mm),
+                            y=list(name='Latitude',values=1:nrow(snodasList$swe.m),
                               units='Degrees North', unlimited=FALSE,
                               create_dimvar=FALSE),
-                            x=list(name='Longitude',values=1:ncol(snodasList$swe.mm),
+                            x=list(name='Longitude',values=1:ncol(snodasList$swe.m),
                               units='Degrees East', unlimited=FALSE,
                               create_dimvar=FALSE),
                             t=list(name='Time',values=as.numeric(theDate),
                               units='POSIXct', unlimited=TRUE,
                               create_dimvar=TRUE)
                             ),
-                       data = snodasList$swe.mm ) 
+                       data = snodasList$swe.m ) 
 
   varList[[2]] <- list( name='snowDepth',
                        longname='Snow depth',
-                       units='mm',
+                       units='m',
                        precision = 'double',
-                       missing = min(snodasList$depth.mm),
+                       missing = min(snodasList$depth.m),
                        dimensionList =
                        list(
-                            y=list(name='Latitude',values=1:nrow(snodasList$depth.mm),
+                            y=list(name='Latitude',values=1:nrow(snodasList$depth.m),
                               units='Degrees North', unlimited=FALSE,
                               create_dimvar=FALSE),
-                            x=list(name='Longitude',values=1:ncol(snodasList$depth.mm),
+                            x=list(name='Longitude',values=1:ncol(snodasList$depth.m),
                               units='Degrees East', unlimited=FALSE,
                               create_dimvar=FALSE),
                             t=list(name='Time',values=as.numeric(theDate),
                               units='POSIXct', unlimited=TRUE,
                               create_dimvar=TRUE)
                             ),
-                       data = snodasList$depth.mm )
+                       data = snodasList$depth.m )
 
   globalAttList <- list()
   globalAttList[[1]] <- list(name='Time',value='2012-07-05_00:00:00', precision="text")

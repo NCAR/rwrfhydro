@@ -11,7 +11,9 @@ github_pat <- function() {
   pat
 }
 
-##
+#
+#' @keywords internal
+#' @export
 github_GET <- function(path, ..., pat = github_pat()) {
   if (!is.null(pat)) {
     auth <- httr::authenticate(pat, "x-oauth-basic", "basic")
@@ -33,11 +35,15 @@ github_GET <- function(path, ..., pat = github_pat()) {
 }
 
 ##
+#' @keywords internal
+#' @export
 github_commit <- function(username, repo, ref = "master") {
   github_GET(file.path("repos", username, repo, "commits", ref))
 }
 
 ##
+#' @keywords internal
+#' @export
 remote_metadata.github_remote <- function(x, bundle = NULL, source = NULL) {
   # Determine sha as efficiently as possible
   if (!is.null(x$sha)) {
@@ -69,9 +75,12 @@ remote_metadata.github_remote <- function(x, bundle = NULL, source = NULL) {
 }
 
 ##
+#' @keywords internal
+#' @export
 remote_metadata <- function(x, bundle = NULL, source = NULL) UseMethod("remote_metadata")
 
-
+#' @keywords internal
+#' @export
 checkMasterSha <- function() {
   ## Static remote variable for rwrfhydro repo master.
   remote <-

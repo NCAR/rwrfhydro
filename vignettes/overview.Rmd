@@ -1,0 +1,68 @@
+---
+title: "An overview of rwrfhydro functionality"
+author: "James McCreight and Aubrey Dugger"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{An overview of rwrfhydro functionality}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+# Background
+The rwrfhydro package is intended as a multi-purpose tool for computing activities
+related to the WRF Hydro model. But how do you know which tool to use or even if the right tool might exist? If you are developing a new set of tools, how do you help users 
+discover your tools?
+
+Tools are organized or tagged in two ways. First, using the existing set of R "keywords". Second, tools are tagged with customized "concepts". We illustrate how to reveal these categories and the functions within them for rwrfhydro. For developers, we show how to document keywords and concepts and how to cross-reference within the documentation. 
+
+(Note that these commands will not work for packages loaded by devtools::load_all, you have to load an installed rwrfhydro version.)
+
+# Setup
+Load the rwrfhydro package. 
+```{r, results='hide'}
+library("rwrfhydro")
+```
+
+```{r, echo=FALSE}
+options(width = 100)
+```
+
+The slicer and dicer of package discovery will be default spew both concepts and keywords, each in alphabetical order and show the functions associated with each. 
+```{r}
+pkgMeta <- GetPkgMeta()
+```
+
+Note the structure of the returned value which could be computed on.
+```{r}
+str(pkgMeta)
+```
+
+To suppress printing of the functions and see only the concepts:
+```{r}
+GetPkgMeta(listMetaOnly = TRUE, meta='concept')
+```
+
+Or perhaps you just want to look at certain concepts and keywords
+```{r}
+GetPkgMeta(concept=c('plot', 'dataGet'), keyword=c('hplot', 'manip'))
+```
+
+What were the concepts or keywords of GetPkgMeta?
+```{r}
+GetPkgMeta(byFunction = 'GetPkgMeta')
+```
+
+The function can be applied to other packages too.
+```{r}
+GetPkgMeta(package='dataRetrieval', list=TRUE)
+```
+
+# Documenting
+The following show the Roxygen markdown used to tag keywords and concepts onto a function.
+The family field cross-references documentation with all other functions with that family.
+
+
+Internals should be exported but tagged with keyword "internal" so that the documentation is 
+still available to users. 
+
