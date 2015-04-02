@@ -14,20 +14,27 @@
 #' @param plot Logical: plot or not?
 #' @return A function which can be called to plot the data and allow adjustment of its arguments, the plotting parameters.
 #' @examples
-#' file<-GetPkgData('Fourmile_test_case_AD/hydro_OrodellBasin_100m_8.nc')
-#' ggMapFunction <- VisualizeDomain(file, "CHANNELGRID")
-#' ggMap1 <- ggMapFunction(zoom=11, pointshape=15, pointsize=7, 
+#' ## See the vignette "WRF Hydro Domain and Channel Visualization", for details. 
+#' ## set your test case path
+#' tcPath <- '~/wrfHydroTestCases/'
+#' fcPath <- paste0(tcPath,'Fourmile_Creek/')
+#' hydroFile<-paste0(fcPath,'/DOMAIN/hydro_OrodellBasin_100m.nc')
+#' GgMapFunction <- VisualizeDomain(hydroFile, "CHANNELGRID")
+#' ggMap1 <- GgMapFunction(zoom=11, pointshape=15, pointsize=7, 
 #'                         source="google", maptype="terrain")
 #' # Add a streamflow gauge point; compare reality and the model.
 #' orodellLonLat <- data.frame(lon=c(254.6722259521484375, 254.67374999999998408)-360, 
 #'                            lat=c(40.019321441650390625, 40.018666670000001773),
 #'                            gauge=c('model','USGS'))
-#' ggMap2 <- ggMapFunction(location=c(lon=orodellLonLat$lon[1], lat=orodellLonLat$lat[1]),
+#' ggMap2 <- GgMapFunction(location=c(lon=orodellLonLat$lon[1], lat=orodellLonLat$lat[1]),
 #'                         zoom=14, pointshape=15, pointsize=7, 
 #'                         source="google", maptype="terrain", plot=FALSE) 
 #' ggMap2 + geom_point(data=orodellLonLat, aes(x=lon,y=lat, shape=gauge)) +
-#'          scale_x_continuous(limits=rev(orodellLonLat$lon+c( .01,-.01))) +
+#'          scale_x_continuous(limits=rev(orodellLonLat$lon+c( .01 ,-.01 ))) +
 #'          scale_y_continuous(limits=rev(orodellLonLat$lat+c( .005,-.005))) 
+#' @concept plot DART
+#' @keywords hplot
+#' @family domain
 #' @export
 VisualizeDomain <- function(file, variable=NULL, plot=TRUE) {
   
@@ -38,7 +45,7 @@ VisualizeDomain <- function(file, variable=NULL, plot=TRUE) {
   
   # Determine if this is coarse or fine grid file.
   resolution <- 'fine'
-  if(any(tolower(names(nc$dim))=='time')) resolution <- 'coarse'
+  if(any(tolower(names(nc$dim))=='ladn_cat')) resolution <- 'coarse'
   
   # A coarse file must have at least 3 dimensions, 
   # 2 in space and (time is the unlimited/last dimension)
