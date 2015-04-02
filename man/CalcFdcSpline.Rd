@@ -35,4 +35,8 @@ fdc.obsStr5min.fc <- CalcFdcSpline(obsStr5min.fc, "q_cms")
 fdc.obsStr5min.fc(0.2)
 > 0.72
 }
+\concept{
+aconcept
+}
+\keyword{univar}
 

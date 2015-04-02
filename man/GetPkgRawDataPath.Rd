@@ -20,4 +20,5 @@ rwrfhydro data included with the package.
 \examples{
 GetPkgDataPath('Fourmile_test_case_AD.hydro_OrodellBasin_100m_8.nc')
 }
+\keyword{internal}
 

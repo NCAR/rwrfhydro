@@ -28,6 +28,10 @@ time series of images.
 ## Calculate domain statistics and plot the mean.
 
 stats.lai.b <- CalcStatsRS(lai.b)
-with(stats.lai.b, plot(POSIXlt, mean, typ='l'))
+with(stats.lai.b, plot(POSIXct, mean, typ='l'))
 }
+\concept{
+aconcept
+}
+\keyword{univar}
 

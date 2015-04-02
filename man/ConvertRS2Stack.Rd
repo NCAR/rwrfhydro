@@ -78,4 +78,8 @@ lai.b <- ConvertRS2Stack("/d6/adugger/WRF_Hydro/RS/MODIS_ARC/PROCESSED/BCNED_LAI
 
 lai.b <- ConvertRS2Stack("/d6/adugger/WRF_Hydro/RS/MODIS_ARC/PROCESSED/BCNED_LAI", "*Lai_1km.tif", begin=c("2011.06.01", end="2011.06.30", noData=100, noDataQual="max", valScale=0.1, valAdd=0, outFile="BCNED_LAI.nc", varName="LAI", varUnit="(m^2)/(m^2)", varLong="Leaf area index")
 }
+\concept{
+aconcept
+}
+\keyword{IO}
 

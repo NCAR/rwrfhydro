@@ -15,6 +15,8 @@
 #' ## and return a dataframe.
 #'
 #' modStr1h.mod1.fc <- ReadFrxstPts("../OUTPUT/frxst_pts_out.txt")
+#' @keywords IO
+#' @concept aconcept
 #' @export
 ReadFrxstPts <- function(pathOutfile) {
     myobj <- read.table(pathOutfile, header=F, sep=",", colClasses=c("character","character","integer","numeric","numeric","numeric","numeric","numeric"), na.strings=c("********","*********","************"))
@@ -42,6 +44,8 @@ myobj
 #' ## and return a dataframe.
 #'
 #' modGWout1h.mod1.fc <- ReadGwOut("../OUTPUT/GW_outflow.txt")
+#' @keywords IO
+#' @concept aconcept
 #' @export
 ReadGwOut <- function(pathOutfile) {
     myobj <- read.table(pathOutfile,header=F)
@@ -100,8 +104,9 @@ ReadGwOut <- function(pathOutfile) {
 #' ## components over the time series.
 #'
 #' modLdasoutWb1d.mod1.fc <- ReadLdasoutWb("../RUN.MOD1/OUTPUT", "../DOMAIN/Fulldom_hires_hydrofile_4mile.nc", ncores=16)
+#' @keywords IO univar ts
+#' @concept aconcept
 #' @export
-
 ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, aggfact=10, ncores=1) {
     if (ncores > 1) {
         doMC::registerDoMC(ncores)
@@ -183,8 +188,9 @@ ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, a
 #' ## components over the time series.
 #'
 #' modRtout1h.mod1.fc <- ReadRtout("../RUN.MOD1/OUTPUT", "../DOMAIN/Fulldom_hires_hydrofile_4mile.nc", basid=1, ncores=16)
+#' @keywords IO univar ts
+#' @concept aconcept
 #' @export
-
 ReadRtout <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, ncores=1) {
     if (ncores > 1) {
         doMC::registerDoMC(ncores)

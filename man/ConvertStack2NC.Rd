@@ -34,4 +34,8 @@ same layer (date) naming convention.
 
 ConvertStack2NC(lai.b, outFile="BCNED_LAI.nc", varName="LAI", varUnit="(m^2)/(m^2)", varLong="Leaf area index")
 }
+\concept{
+aconcept
+}
+\keyword{IO}
 

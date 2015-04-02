@@ -35,4 +35,8 @@ percent exceedances and, optionally the fitted spline curve.
 
 PlotFdc(obsStr5min.fc, fdcProb=0.2)
 }
+\concept{
+aconcept
+}
+\keyword{hplot}
 
