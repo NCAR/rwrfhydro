@@ -36,11 +36,12 @@ demand.)
 \examples{
 # This example only shows data for 3 dates, because of limitation of package data.
 # Find the package data directory on your machine
-pkgDataDir <- GetPkgDataPath()
-
-# fileList - These are the groups of files.
-lsmFiles <- list.files(path=pkgDataDir, pattern='LDASOUT_DOMAIN', full.names=TRUE)
-hydroFiles <- list.files(path=pkgDataDir, pattern='HYDRO_RST', full.names=TRUE)
+tcPath <- '~/wrfHydroTestCases/'
+fcPath <- paste0(tcPath,'Fourmile_Creek/')
+dataPath <- paste0(fcPath,'/RUN.RTTESTS/OUTPUT_CHRT_DAILY/')
+fileList - These are the groups of files.
+lsmFiles <- list.files(path=dataPath, pattern='LDASOUT_DOMAIN', full.names=TRUE)
+hydroFiles <- list.files(path=dataPath, pattern='HYDRO_RST', full.names=TRUE)
 fileList <- list( lsm=lsmFiles, hydro=hydroFiles)
 
 # varList - Define which variables are desired for each file group.
@@ -51,12 +52,12 @@ hydroVars <- list(streamflow='qlink1', smc1='sh2ox', smc2='sh2ox', smc3='sh2ox',
 variableList <- list(lsm=lsmVars, hydro=hydroVars)
 
 # indexList - Define what indices/stats are desired for each variable.
-# Note that only scalars can be retrieved for each entry.
+# Note that only scalars can be returned for each entry. Spatial fields can be summarized via statistics.
 # Show how to define your own useful stats to use.
 # For basin average and max we need the basin mask (this is a non-standard
 # field in the fine grid file).
 library(ncdf4)
-fineGridNc <- nc_open(GetPkgDataPath('Fourmile_test_case_AD.hydro_OrodellBasin_100m_8msk.nc'))
+fineGridNc <- nc_open(paste0(fcPath,'DOMAIN/hydro_OrodellBasin_100m.nc'))
 basinMask <- ncvar_get(fineGridNc, 'basn_msk_geogrid')
 nc_close(fineGridNc)
 basAvg <- function(var) sum(basinMask*var)/sum(basinMask)
@@ -87,6 +88,6 @@ library(scales)
 ggplot( fileData, aes(x=POSIXct, y=value, color=fileGroup)) +
   geom_line() + geom_point() +
   facet_wrap(~variableGroup, scales='free_y', ncol=1) +
-  scale_x_datetime(breaks = date_breaks("5 days"))
+  scale_x_datetime(breaks = date_breaks("5 days")) + theme_bw()
 }
 

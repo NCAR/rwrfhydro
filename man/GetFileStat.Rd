@@ -27,4 +27,12 @@ a variable, and may apply a specified statistic.
 \examples{
 This is to do.
 }
+\seealso{
+Other getMultiNcdf: \code{\link{GetMultiNcdfFile}};
+  \code{\link{GetMultiNcdfVariable}}
+}
+\concept{
+dataGet
+}
+\keyword{internal}
 

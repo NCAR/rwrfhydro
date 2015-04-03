@@ -150,7 +150,7 @@ ReadSnodasDepthSweDate <- function(datePOSIXct, outputDir='.') {
 #' snodasGot <- GetSnodasDepthSweDate(as.POSIXct('2015-02-28'))
 #' if(snodasGot) snodasList <- ReadSnodasDepthSweDate(as.POSIXct('2015-02-28'))
 #' PutSnodasNcdf(snodasList)
-#' @TODO make output, particularly time dim, cf compliant.
+# @TODO make output, particularly time dim, cf compliant.
 #' @keywords IO
 #' @concept SNODAS
 #' @family SNODAS

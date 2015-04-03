@@ -28,4 +28,12 @@ A dataframe
 Typically calls GetFileStat to get the individual variables.
 Typically called by GetMultiNcdfFile.
 }
+\seealso{
+Other getMultiNcdf: \code{\link{GetFileStat}};
+  \code{\link{GetMultiNcdfFile}}
+}
+\concept{
+dataGet
+}
+\keyword{internal}
 
