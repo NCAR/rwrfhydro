@@ -115,7 +115,11 @@ checkMasterSha <- function() {
   invisible( remoteSha == localSha )
 }
  
+
+#' @export
+CheckForUpdates <- function() { checkMasterSha() }
+
 .onLoad <- function(libname, pkgname) {
-  checkMasterSha()
+  cat("To check rwrfhydro updates (to master branch) run: CheckForUpdates()", sep='\n     ')
 }
  

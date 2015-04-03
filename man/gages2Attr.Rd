@@ -4,40 +4,7 @@
 \name{gages2Attr}
 \alias{gages2Attr}
 \title{Gages-II attributes}
-\format{\preformatted{'data.frame':	9322 obs. of  16 variables:
- $ X         : num  2027372 2058479 2096534 2088549 2104214 ...
- $ Y         : num  2964480 2992966 2921786 2931578 2953507 ...
- $ STAID     : chr  "01011000" "01013500" "01015800" "01016500" ...
- $ STANAME   : chr  "Allagash River near Allagash, Maine" "Fish River near Fort Kent, Maine" "Aroostook River near Masardis, Maine" "MACHIAS RIVER NEAR ASHLAND, ME" ...
- $ CLASS     : chr  "Non-ref" "Ref" "Non-ref" "Non-ref" ...
- $ AGGECOREGI: chr  "NorthEast" "NorthEast" "NorthEast" "NorthEast" ...
- $ DRAIN_SQKM: num  3187 2253 2314 848 4279 ...
- $ HUC02     : chr  "01" "01" "01" "01" ...
- $ LAT_GAGE  : num  47.1 47.2 46.5 46.6 46.8 ...
- $ LNG_GAGE  : num  -69.1 -68.6 -68.4 -68.4 -68.2 ...
- $ STATE     : chr  "ME" "ME" "ME" "ME" ...
- $ HCDN_2009 : chr  "" "yes" "" "" ...
- $ ACTIVE09  : chr  "yes" "yes" "yes" "" ...
- $ FLYRS1900 : num  78 85 51 32 79 0 1 9 6 47 ...
- $ FLYRS1950 : num  60 60 51 32 60 0 1 9 6 39 ...
- $ FLYRS1990 : num  20 20 19 0 20 0 1 9 6 6 ...
-}}
-\usage{
-gages2Attr
-}
-\description{
-These are the attributes taken from the USGS Gages-II data set. \cr
-\link[http://water.usgs.gov/GIS/metadata/usgswrd/XML/gagesII_Sept2011.xml]{http://water.usgs.gov/GIS/metadata/usgswrd/XML/gagesII_Sept2011.xml}
-}
-\section{Usage}{
-
- \code{gages2Attr} \cr
- \code{data(gages2Attr)}
-}
-
-\section{Format}{
-
-data.frame:  9322 obs. of  16 variables:
+\format{data.frame:  9322 obs. of  16 variables:
 \describe{
  \item{X}{}
  \item{Y}{}
@@ -55,7 +22,18 @@ data.frame:  9322 obs. of  16 variables:
  \item{FLYRS1900}{}
  \item{FLYRS1950}{}
  \item{FLYRS1990}{}
+}}
+\usage{
+gages2Attr
 }
+\description{
+These are the attributes taken from the USGS Gages-II data set. \cr
+\link[http://water.usgs.gov/GIS/metadata/usgswrd/XML/gagesII_Sept2011.xml]{http://water.usgs.gov/GIS/metadata/usgswrd/XML/gagesII_Sept2011.xml}
+}
+\section{Usage}{
+
+ \code{gages2Attr} \cr
+ \code{data(gages2Attr)}
 }
 
 \section{Citation}{

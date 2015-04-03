@@ -39,6 +39,7 @@ library("rwrfhydro")
 
 ```{r, echo=FALSE}
 options(width = 120)
+library(printr)
 ```
 
 This is the path to the directory where you want your database to be built:
@@ -67,7 +68,7 @@ str(FindUsgsStns(huc=huc8))
 FindUsgsStns is a wrapper on dataRetrieval::whatNWISsites which has been written to focus on instantaneous values. (It is worth noting the flexibility and generality of the underlying function.)
 
 Now pull the data for this HUC8. Currently, this grabs all available products for the HUC. Note that the HUC data are organized by product code (e.g. `00060`) then by `data` and `meta` in the returned list. (Also note that this command sometimes fails on the remote end and may need to be rerun.) In `meta`, siteInfo is the meta that we use in querying the local data base in commands shown below.
-```{r, results='hold'}
+```{r, results='hold', eval=FALSE}
 coData <- GetUsgsHucData(huc=huc8)
 str(coData)
 ```
@@ -79,7 +80,7 @@ coFiles
 ```
 
 For a little more variety of HUCs in the database, let's also grab the following HUC. 
-```{r}
+```{r, eval=FALSE}
 filesAL <- SaveHucData(GetUsgsHucData(huc='03160203'), outPath=dbPath) ## Satilpa, AL
 ```
 
@@ -124,4 +125,15 @@ We can also retrieve data from sites in different HUC8s.
 ```{r}
 dataMultiHuc <- PrettySiteData(QuerySiteData(c('06730500','02469800'), product='00060', path=dbPath))
 str(dataMultiHuc)
+```
+
+# GagesII Attributes 
+We've imported the gages-II atributes to be directly available in R.
+```{r}
+?gages2Attr
+```
+
+More specifically:
+```{r}
+str(gages2Attr)
 ```

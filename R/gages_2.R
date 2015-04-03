@@ -11,7 +11,7 @@
 #'  \code{gages2Attr} \cr
 #'  \code{data(gages2Attr)}
 #'  
-#' @section Format:
+#' @format
 #' data.frame:  9322 obs. of  16 variables:
 #' \describe{
 #'  \item{X}{}

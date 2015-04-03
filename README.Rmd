@@ -32,14 +32,21 @@ Table of Contents
 
 # Installing
 Installing the development package (not on [CRAN](http://cran.r-project.org/)) is facilitated by the devtools package (on CRAN),
-so devtools is installed in this process. The following is done for the initial install or to update the rwrfhydro package 
-(we are consider trying to notifying users if there have been repository updates each time the library is loaded).
+so devtools is installed in this process. The following is done for the initial install or to update the rwrfhydro package.
 ``` R
 install.packages("devtools")
 devtools::install_github("mccreigh/rwrfhydro")
 ```
 The very first time this is run, it can take a while to install all the package dependencies listed as "Imports" in the
 [DESCRIPTION](https://github.com/mccreigh/rwrfhydro/blob/master/DESCRIPTION) file. 
+
+To check for updates (to the master branch) once rwrfhydro is loaded run `CheckForUpdates()`. 
+
+To install other branches than master and perhaps from your own fork:
+``` R
+devtools::install_github("username/rwrfhydro", ref='myBranch')
+```
+Note that `CheckForUpdates()` will always tell you there are updates if you are using a different branch than master. 
 
 # Using
 After the one-time install or any subsequent re-installs/updates, simply load the rwrfhydro library in an R session:
