@@ -19,6 +19,7 @@ library("rwrfhydro")
 
 ```{r, echo=FALSE}
 options(width = 190)
+library(printr)
 ```
 
 Set a data path to the Fourmile Creek test case.
@@ -42,7 +43,7 @@ modStrd.allrt.fc <- ReadFrxstPts(paste0(dataPath, '/RUN.RTTESTS/OUTPUT_ALLRT_DAI
 USGS gage observed data at 5-minute intervals. Find the nearest gage to the forecast point in the above files. (The following approach can be used when multiple forecast points are output by the model.)
 ```{r, , results='asis'}
 library(plyr)
-fcLocation <- ddply(modStrh.chrt.fc, .(st_id), function(df) df[1,c('st_lon','st_lat')])
+fcLocation <- ddply(modStrd.chrt.fc, .(st_id), function(df) df[1,c('st_lon','st_lat')])
 near <- FindUsgsStns(stnLon=c(fcLocation$st_lon), stnLat=c(fcLocation$st_lat), within=.005)
 near
 ```
@@ -83,8 +84,8 @@ PlotFluxCompare(obsStr5min.fc, "q_cms", modStrd.chrt.fc, "q_cms", strDf.mod2=mod
 Calculate percent exceedances for flow duration curves. Note that we need to subset the observations to match our model run output times, and vice versa.
 ```{r}
 obsStr5min.comp.fc <- CalcFdc(subset(obsStr5min.fc, POSIXct %in% c(modStrd.chrt.fc$POSIXct)))
-modStrd.chrt.comp.fc <- CalcFdc(subset(modStrd.chrt.fc, POSIXct %in% c(obsStr5min.2013.fc$POSIXct)))
-modStrd.allrt.comp.fc <- CalcFdc(subset(modStrd.allrt.fc, POSIXct %in% c(obsStr5min.2013.fc$POSIXct)))
+modStrd.chrt.comp.fc <- CalcFdc(subset(modStrd.chrt.fc, POSIXct %in% c(obsStr5min.comp.fc$POSIXct)))
+modStrd.allrt.comp.fc <- CalcFdc(subset(modStrd.allrt.fc, POSIXct %in% c(obsStr5min.comp.fc$POSIXct)))
 ```
 
 Compare how the models are doing predicting flow values that will be exceeded 20% of the time.
@@ -146,7 +147,6 @@ help(CalcModPerf)
 <div style="border:1px solid; border-radius: 25px; padding: 12px 25px;">
 ```{r, echo=FALSE}
 <<background='#FF0000'>>
-library(printr)
 help(CalcModPerf)
 ```
 </div>

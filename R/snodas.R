@@ -9,7 +9,7 @@
 #'                    When false: If the tarball exists on disk but depth and SWE files dont, just unpack the tarball. \cr
 #'                    When true: Pull new tarball and overwrite any existing files with the same date.
 #' @param quiet       Passed to curl, to show it's progress (typcially too fast to matter).
-#' @param .parallel   Logical Defaults to (foreach::getDoParWorkers>1), so if you've set up parallelization it is automatically used. 
+#' @param parallel   Logical Defaults to (foreach::getDoParWorkers>1), so if you've set up parallelization it is automatically used. 
 #' @return Logical was the file "got"?
 #' @examples
 #' snodasGot <- GetSnodasDepthSweDate(as.POSIXct('2015-02-28'))
@@ -19,7 +19,7 @@
 #' @export
 GetSnodasDepthSweDate <- function(datePOSIXct, outputDir='.', overwrite=FALSE, 
                                   quiet=TRUE, 
-                                  .parallel=(foreach::getDoParWorkers()>1) ){
+                                  parallel=(foreach::getDoParWorkers()>1) ){
   
   ## This atomic function gets called below. 
   GetSnodasDepthSweDate.atomic <- function(datePOSIXct, outputDir='.', overwrite=FALSE, 
@@ -77,7 +77,8 @@ GetSnodasDepthSweDate <- function(datePOSIXct, outputDir='.', overwrite=FALSE,
   ## FormalsToDf handles vector arguments and passes collated combos 
   ## to the atomic function 
   vecDf <- FormalsToDf(GetSnodasDepthSweDate)
-  ret <- plyr::mlply(vecDf, GetSnodasDepthSweDate.atomic, .parallel=.parallel)
+  vecDf <- vecDf[,-which(names(vecDf) %in% c('parallel'))] ## exclude formals not passed to atomic
+  ret <- plyr::mlply(vecDf, GetSnodasDepthSweDate.atomic, .parallel=parallel)
   names(ret) <- datePOSIXct
   if(length(ret)==1) ret <- ret[[1]]
   ret
@@ -145,6 +146,7 @@ ReadSnodasDepthSweDate <- function(datePOSIXct, outputDir='.') {
 #' \code{PutSnodasNcdf} Put the output of ReadSnodasDepthSweDate into a netcdf file. 
 #' 
 #' @param snodasList The output of ReadSnodasDepthSweDate. 
+#' @param outputDir Character. The directory path where the output files are to be written. 
 #' @return Success if the filename which is (SNODAS_YYYYMMDD.nc), otherwise NULL.
 #' @examples
 #' snodasGot <- GetSnodasDepthSweDate(as.POSIXct('2015-02-28'))
@@ -155,7 +157,7 @@ ReadSnodasDepthSweDate <- function(datePOSIXct, outputDir='.') {
 #' @concept SNODAS
 #' @family SNODAS
 #' @export
-PutSnodasNcdf <- function(snodasList) {
+PutSnodasNcdf <- function(snodasList, outputDir='.') {
   ## make it a vanilla date... 
   theDate <- as.POSIXct(format(snodasList$datePOSIXct,'%Y-%m-%d'),'UTC')
   varList = list()
@@ -201,7 +203,7 @@ PutSnodasNcdf <- function(snodasList) {
   globalAttList[[1]] <- list(name='Time',value='2012-07-05_00:00:00', precision="text")
   globalAttList[[2]] <- list(name='POSIXct Origin',value='1970-01-01 00:00.00 UTC', precision="text")
   
-  outFile <- paste0('SNODAS_',format(snodasList$datePOSIXct,'%Y%m%d'),'.nc')
+  outFile <- paste0(outputDir,'/','SNODAS_',format(snodasList$datePOSIXct,'%Y%m%d'),'.nc')
   MkNcdf( varList, globalAttList, outFile )
 }  
 

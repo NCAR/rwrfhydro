@@ -22,10 +22,9 @@ library("rwrfhydro")
 options(width = 120)
 ```
 
-This is the path to the directory where you want your database to be built:
+This is the path to the directory where you want your database to be built (it should exist):
 ```{r}
 snodasPath <- '~/wrfHydroTestCases/snodas/' 
-setwd(snodasPath)
 ```
 
 
@@ -33,11 +32,25 @@ setwd(snodasPath)
 Grab a single date (both depth and SWE) and transform to netcdf. For the sake of illustration, grab three days ago.
 ```{r, results='hold'} 
 threeDaysBack <- Sys.Date() + lubridate::period(-3,'day')
-snodasGot <- GetSnodasDepthSweDate(threeDaysBack)
+snodasGot <- GetSnodasDepthSweDate(threeDaysBack, outputDir=snodasPath)
 if(snodasGot) {
-  snodasList <- ReadSnodasDepthSweDate(threeDaysBack)
-  PutSnodasNcdf(snodasList)
+  snodasList <- ReadSnodasDepthSweDate(threeDaysBack, outputDir=snodasPath)
+  snodasNcFile <- PutSnodasNcdf(snodasList, outputDir=snodasPath)
+  snodasNcFile
 }
+
+```
+
+# Read ncdf and visualize
+```{r, , fig.width = 12, fig.height = 6*1.5, out.width='700', out.height='525'}
+library(ncdf4)
+ncid<-nc_open(filename = snodasNcFile)
+names(ncid$var)
+swe <- ncvar_get(nc = ncid, varid = 'SWE')
+nc_close(ncid)
+## There were some serious outliers three days ago.
+swe[swe>quantile(as.vector(swe),.999, na.rm=TRUE)] <- NA
+image(swe)
 ```
 
 # Update 
@@ -49,25 +62,26 @@ datesWanted
 
 Encapsulate the above in a function with some file existance checking and return summary. 
 ```{r,result='hold'}
-UpdateSnodas <- function(POSIXct) {
+UpdateSnodas <- function(POSIXct, outPath='.') {
   ## check if we already processed this date/POSIXct, if we didnt process, we'll
   ## download again and process it. (note we could have downloaded but not processed 
   ## so it might not be efficient). 
-  file <- paste0('SNODAS_',format(POSIXct,'%Y%m%d'),'.nc')
+  file <- paste0(outPath, 'SNODAS_',format(POSIXct,'%Y%m%d'),'.nc')
   processed <- file.exists(file)
   if(processed) 
     return(data.frame(date=POSIXct, snodasGot=FALSE, ncdfFile=file))
   
-  snodasGot <- GetSnodasDepthSweDate(POSIXct)
+  snodasGot <- GetSnodasDepthSweDate(POSIXct, outputDir=outPath)
   if(snodasGot) {
-    snodasList <- ReadSnodasDepthSweDate(POSIXct)
-    ncdfFile <- PutSnodasNcdf(snodasList)
+    snodasList <- ReadSnodasDepthSweDate(POSIXct, outputDir=outPath)
+    ncdfFile <- PutSnodasNcdf(snodasList, outputDir=outPath)
   } else ncdfFile <- ''
   data.frame(date=POSIXct, snodasGot=snodasGot, ncdfFile=ncdfFile)
 }
 
-update <- plyr::ldply(NamedList(datesWanted), UpdateSnodas)
+update <- plyr::ldply(NamedList(datesWanted), UpdateSnodas, outPath=snodasPath)
 update
 ```
 
 Shows that the first file wasnt "got" - that's because it was already in place. 
+

@@ -5,7 +5,7 @@
 \title{Get and unpack the SNODAS snow depth and SWE tarball for given dates.}
 \usage{
 GetSnodasDepthSweDate(datePOSIXct, outputDir = ".", overwrite = FALSE,
-  quiet = TRUE, .parallel = (foreach::getDoParWorkers() > 1))
+  quiet = TRUE, parallel = (foreach::getDoParWorkers() > 1))
 }
 \arguments{
 \item{datePOSIXct}{The date in POSIXct format for which data is desired. Only whole days matter.}
@@ -19,7 +19,7 @@ When true: Pull new tarball and overwrite any existing files with the same date.
 
 \item{quiet}{Passed to curl, to show it's progress (typcially too fast to matter).}
 
-\item{.parallel}{Logical Defaults to (foreach::getDoParWorkers>1), so if you've set up parallelization it is automatically used.}
+\item{parallel}{Logical Defaults to (foreach::getDoParWorkers>1), so if you've set up parallelization it is automatically used.}
 }
 \value{
 Logical was the file "got"?

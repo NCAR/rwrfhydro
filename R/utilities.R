@@ -10,8 +10,6 @@
 #' @keywords internal
 #' @export
 GetPkgRawDataPath <- function(theFile='') system.file("extdata", theFile, package = "rwrfhydro")
-
-
 #' Standardize lon to (-180,180].
 #' 
 #' \code{StdLon} Standardizes longitude to (-180,180]

@@ -1,8 +1,50 @@
 
 ## I have the reference data exported to a csv. 
 ## Import that csv and store as package data
-#' @keywords internal
-#' @export
+
+#' Gages-II attributes
+#' 
+#' These are the attributes taken from the USGS Gages-II data set. \cr
+#' \link[http://water.usgs.gov/GIS/metadata/usgswrd/XML/gagesII_Sept2011.xml]{http://water.usgs.gov/GIS/metadata/usgswrd/XML/gagesII_Sept2011.xml}
+#' 
+#' @section Usage:
+#'  \code{gages2Attr} \cr
+#'  \code{data(gages2Attr)}
+#'  
+#' @section Format:
+#' data.frame:  9322 obs. of  16 variables:
+#' \describe{
+#'  \item{X}{}
+#'  \item{Y}{}
+#'  \item{STAID}{}
+#'  \item{STANAME}{}
+#'  \item{CLASS}{}
+#'  \item{AGGECOREGI}{}
+#'  \item{DRAIN_SQKM}{}
+#'  \item{HUC02}{}
+#'  \item{LAT_GAGE}{}
+#'  \item{LNG_GAGE}{}
+#'  \item{STATE}{}
+#'  \item{HCDN_2009}{}
+#'  \item{ACTIVE09}{}
+#'  \item{FLYRS1900}{}
+#'  \item{FLYRS1950}{}
+#'  \item{FLYRS1990}{}
+#' }
+#' 
+#' @section Citation:
+#' Originator: James Falcone \cr
+#' Publication_Date: 20111012 \cr
+#' Title: GAGES-II: Geospatial Attributes of Gages for Evaluating Streamflow \cr
+#' Geospatial_Data_Presentation_Form: vector digital data
+#' Publication_Information: \cr
+#' Publication_Place: Reston, Virginia \cr
+#' Publisher: U.S. Geological Survey \cr
+#' Online_Linkage: \link[http://water.usgs.gov/lookup/getspatial?gagesII_Sept2011]{http://water.usgs.gov/lookup/getspatial?gagesII_Sept2011} \cr
+#' @concept data
+#' @keywords data
+"gages2Attr"
+
 #  gages2Attr <- read.csv(file=file, sep=',', header=TRUE,
 #                         colClasses=c(rep('numeric',  2), 
 #                                      rep('character',4),
@@ -16,6 +58,7 @@
 
 #' @keywords internal
 #' Find the HUC8 of each gages2 station and add to an extended gages 2 data set. 
+#' This could be used to get more metadata at this stage, though most if it will be gotten later.
 #' @export 
 GetGages2NwisMeta <- function() {
   chunkSize<- 500 ## how many can i get at a time, this was as high as i went.
