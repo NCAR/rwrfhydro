@@ -16,20 +16,20 @@
 #' \describe{
 #'  \item{X}{}
 #'  \item{Y}{}
-#'  \item{STAID}{}
-#'  \item{STANAME}{}
-#'  \item{CLASS}{}
-#'  \item{AGGECOREGI}{}
-#'  \item{DRAIN_SQKM}{}
-#'  \item{HUC02}{}
-#'  \item{LAT_GAGE}{}
-#'  \item{LNG_GAGE}{}
-#'  \item{STATE}{}
-#'  \item{HCDN_2009}{}
-#'  \item{ACTIVE09}{}
-#'  \item{FLYRS1900}{}
-#'  \item{FLYRS1950}{}
-#'  \item{FLYRS1990}{}
+#'  \item{STAID}{Station ID from USGS NWIS}
+#'  \item{STANAME}{Station Name from USGS NWIS}
+#'  \item{CLASS}{Classification (Ref or Non-ref)}
+#'  \item{AGGECOREGI}{Aggregated ecoregion}
+#'  \item{DRAIN_SQKM}{Drainage area, sq km}
+#'  \item{HUC02}{Hydrologic Unit Code, 2-digit}
+#'  \item{LAT_GAGE}{Latitude, decimal degrees}
+#'  \item{LNG_GAGE}{Longitude, decimal degrees}
+#'  \item{STATE}{State at gage location}
+#'  \item{HCDN_2009}{If gage is part of HCDN-2009}
+#'  \item{ACTIVE09}{If gage active in water year 2009}
+#'  \item{FLYRS1900}{Number of complete years of flow data between 1900 and 2009}
+#'  \item{FLYRS1950}{Number of complete years of flow data between 1950 and 2009}
+#'  \item{FLYRS1990}{Number of complete years of flow data between 1990 and 2009}
 #' }
 #' 
 #' @section Citation:
