@@ -69,21 +69,18 @@ FindUsgsStns is a wrapper on dataRetrieval::whatNWISsites which has been written
 
 Now pull the data for this HUC8. Currently, this grabs all available products for the HUC. Note that the HUC data are organized by product code (e.g. `00060`) then by `data` and `meta` in the returned list. (Also note that this command sometimes fails on the remote end and may need to be rerun.) In `meta`, siteInfo is the meta that we use in querying the local data base in commands shown below.
 ```{r, results='hold'}
-#, eval=FALSE}
 coData <- GetUsgsHucData(huc=huc8)
 str(coData)
 ```
 
 Now save this data to the local database. 
 ```{r, results='hold'}
-#,eval=FALSE}
 coFiles <- SaveHucData(coData, outPath=dbPath)
 coFiles
 ```
 
 For a little more variety of HUCs in the database, let's also grab the following HUC. 
 ```{r}
-#, eval=FALSE}
 filesAL <- SaveHucData(GetUsgsHucData(huc='03160203'), outPath=dbPath) ## Satilpa, AL
 ```
 
