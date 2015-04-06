@@ -5,23 +5,22 @@
 #' Gages-II attributes
 #' 
 #' These are the attributes taken from the USGS Gages-II data set. \cr
-#' \link[http://water.usgs.gov/GIS/metadata/usgswrd/XML/gagesII_Sept2011.xml]{http://water.usgs.gov/GIS/metadata/usgswrd/XML/gagesII_Sept2011.xml}
+#' \link[http://water.usgs.gov/GIS/metadata/usgswrd/XML/gagesII_Sept2011.xml]{http://water.usgs.gov/GIS/metadata/usgswrd/XML/gagesII_Sept2011.xml} \cr
+#' The original gages-II atributes are in \code{gages2Attr} additional attributes may be placed in \code{gages2AttrPlus}.
 #' 
-#' @section Usage:
-#'  \code{gages2Attr} \cr
-#'  \code{data(gages2Attr)}
+#' @usage
+#'  gages2Attr; gages2AttrPlus
 #'  
 #' @format
 #' data.frame:  9322 obs. of  16 variables:
 #' \describe{
-#'  \item{X}{}
-#'  \item{Y}{}
 #'  \item{STAID}{Station ID from USGS NWIS}
 #'  \item{STANAME}{Station Name from USGS NWIS}
 #'  \item{CLASS}{Classification (Ref or Non-ref)}
 #'  \item{AGGECOREGI}{Aggregated ecoregion}
 #'  \item{DRAIN_SQKM}{Drainage area, sq km}
 #'  \item{HUC02}{Hydrologic Unit Code, 2-digit}
+#'  \item{HUC08}{ONLY in gages2AttrPlus: Hydrologic Unit Code, 8-digit}
 #'  \item{LAT_GAGE}{Latitude, decimal degrees}
 #'  \item{LNG_GAGE}{Longitude, decimal degrees}
 #'  \item{STATE}{State at gage location}
@@ -53,7 +52,9 @@
 #                                      rep('character',3),
 #                                      rep('numeric',3) ), 
 #                         stringsAsFactors=FALSE )
-#  devtools::use_data(gages2Attr)
+# gages2Attr$X <- gages2Attr$Y <- NULL
+#devtools::use_data(gages2Attr, overwrite=TRUE)
+
 
 
 #' @keywords internal
@@ -103,8 +104,8 @@ GetGages2NwisMeta <- function() {
 #g2NwisMeta<-GetGages2NwisMeta()
 #gages2AttrPlus <- gages2Attr
 #all(g2NwisMeta$site == gages2Attr$STAID)
-#gages2AttrPlus$HUC8 <- g2NwisMeta$huc8
-#devtools::use_data(gages2AttrPlus) 
+#gages2AttrPlus$HUC08 <- g2NwisMeta$huc8
+#devtools::use_data(gages2AttrPlus, overwrite=TRUE) 
   
   
   
