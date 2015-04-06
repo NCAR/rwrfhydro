@@ -522,33 +522,53 @@ QuerySiteInfo <- function(info=NULL, path='.',
 #' @export
 QuerySiteData <- function(site, product, path='.',
                           metaDBFileName='usgsDataRetrieval.metaDatabase.RData'){
+
+  QuerySiteData.scalar <- function(site, product, path='.',
+                                   metaDBFileName='usgsDataRetrieval.metaDatabase.RData'){
+    if(!any(QuerySiteProd(site, path=path, metaDB=metaDBFileName) == product)) {
+      warning(paste("No product",product,"at site",site,"."))
+      return(NULL)
+    }
+    huc <- subset(QuerySiteInfo(c('site_no'), path=path, metaDBFileName=metaDBFileName), 
+                  product == product & site_no %in% site)$HUC8[1]
+    load(paste0(path,'/',huc,'.data.RData'))
+    productData <- get(paste0('data.',huc))[[product]]
+    rm(list=paste0('data.',huc))
+    ret <- subset(productData$data, site_no %in% site )
+    ret <- within(ret, {agency_cd <- NULL})  ## this may or may not be desirable in the long run.
+    attr(ret, 'siteInfo')      <- subset(productData$meta$siteInfo, site_no %in% site)
+    attr(ret, 'variableInfo')  <- productData$meta$variableInfo
+    attr(ret, 'statisticInfo') <- productData$meta$statisticInfo
+    ret
+  }
+  
+  #ret0<-QuerySiteData.scalar(site, product, path=path, metaDBFileName=metaDBFileName)
   vecDf <- FormalsToDf(QuerySiteData)
   ret <- plyr::mlply(vecDf, QuerySiteData.scalar)
   names(ret) <- vecDf$site
-  if(length(ret)==1) ret <- ret[[1]]
-  ret
-}
   
-
-#==============================================================================================
-QuerySiteData.scalar <- function(site, product, path='.',
-                                 metaDBFileName='usgsDataRetrieval.metaDatabase.RData'){
-  if(!any(QuerySiteProd(site, path=path, metaDB=metaDBFileName) == product)) {
-    warning(paste("No product",product,"at site",site,"."))
-    return(NULL)
+  if(length(ret)==1) {
+    ret <- ret[[1]]
+  } else {
+    ## if the number of variables is just 1
+    uniqVars <- unique(plyr::laply(ret, function(ll) attr(ll,'variableInfo')$parameterCd))
+    if(length(uniqVars)==1) {
+      attList <- list(siteInfo  = plyr::ldply(ret, function(dd) attr(dd,'siteInfo' )),
+                      variables = attr(ret[[1]],'variableInfo'),
+                      codes     = attr(ret[[1]],'statisticInfo') )
+      splitNames <- names(attr(ret,'split_labels'))
+      attList$siteInfo <- attList$siteInfo[,setdiff(names(attList$siteInfo),splitNames)]
+      ret <- plyr::ldply(ret)
+      ret <- ret[,setdiff(names(ret),splitNames)]  
+      for(nn in names(attList))  attr(ret, nn) <- attList[[nn]]
+    } else {
+        warning("I have not coded the cases of returning multiple variables yet and it needs some thought",
+                immediate. = TRUE)
+    }
   }
-  huc <- subset(QuerySiteInfo(c('site_no'), path=path, metaDBFileName=metaDBFileName), 
-                product == product & site_no %in% site)$HUC8[1]
-  load(paste0(path,'/',huc,'.data.RData'))
-  productData <- get(paste0('data.',huc))[[product]]
-  rm(list=paste0('data.',huc))
-  ret <- subset(productData$data, site_no %in% site )
-  ret <- within(ret, {agency_cd <- NULL})  ## this may or may not be desirable in the long run.
-  attr(ret, 'siteInfo')      <- subset(productData$meta$siteInfo, site_no %in% site)
-  attr(ret, 'variableInfo')  <- productData$meta$variableInfo
-  attr(ret, 'statisticInfo') <- productData$meta$statisticInfo
   ret
 }
+
 
 #==============================================================================================
 #' Pretty USGS site data makes nice headers and optionally converts to metric. 
