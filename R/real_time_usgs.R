@@ -16,12 +16,17 @@ system.time(
 ## took 10. mins on 4 processors 
 
 
+hucList <- NamedList(formatC(1:21,width=2,flag='0'))
 CollectPullStats <- function(huc){
-  load(paste0("~/huc",huc,'.RData'))
-  data.frame(time=pullTime['elapsed'], size=obSize[1], 
+  theFile <- list.files(path='~/usgsStreamData/realTimeData/',
+                        pattern=paste0('huc',huc), full.names=TRUE)
+  print(theFile)
+  if(!file.exists(theFile[1])) return(data.frame(time=NA,size=NA, nSTns=NA))
+  load(theFile[1])
+  data.frame(time=pullTime['elapsed'], 
+             size=as.numeric(strsplit(obSize[1], ' ')[[1]][1]),
              nStns=length(unique(data$site_no)) )
 }
-hucList <- NamedList(formatC(1:21,width=2,flag='0'))
 pullDf<-plyr::ldply(hucList,CollectPullStats)
 
 library(ggplot2)
