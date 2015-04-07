@@ -307,7 +307,7 @@ ReshapeMultiNcdf <- function(myDf) {
 #' @return List with names equal to entries.
 #' @examples 
 #' NamedList(1:5)
-#' @keywords internal
+#' @keywords manip
 #' @export
 NamedList <- function(theNames) {
   theList <- as.list(theNames)

@@ -18,5 +18,5 @@ List with names equal to entries.
 \examples{
 NamedList(1:5)
 }
-\keyword{internal}
+\keyword{manip}
 

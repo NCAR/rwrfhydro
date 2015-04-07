@@ -611,7 +611,7 @@ PrettySiteData.df <- function(data, tz='UTC', metric=metricOnly, metricOnly=TRUE
     attr(data,'codes') <- c('Discharge code')
   }
   if('Stage (ft)'      %in% prettyNames) {
-    attr(data,'variables') <- c('Stage (feet)')
+    attr(data,'variables') <- c('Stage (ft)')
     attr(data,'codes') <- c('Stage code')
   }
   
@@ -628,16 +628,23 @@ PrettySiteData.df <- function(data, tz='UTC', metric=metricOnly, metricOnly=TRUE
       data$`Stage (m)` <- data$`Stage (ft)`*feet2meters
       if(metricOnly) {
         data$`Stage (ft)` <- NULL
-        attr(data,'variables') <- c('Stage (meters)')
-      } else attr(data,'variables') <- c('Stage (feet)','Stage (meters)')
+        attr(data,'variables') <- c('Stage (m)')
+      } else attr(data,'variables') <- c('Stage (ft)','Stage (m)')
     }
   }
   
+  ## take out missing rows
   if(na.rm & length(whMiss <- which(is.na(data[,attr(data,'variables')[1]]))) ) {
     data <- data[-whMiss,]
   }
     
   attr(data,'class') <- c('prettyUsgs', 'data.frame')
+  
+  ## remove "superflous" columns
+  selVars <- c('site_no','dateTime',attr(data,'variables'), attr(data,'codes'))
+  data <- data[,selVars]
+  #str(data)
+  
   data
 }
 
@@ -823,3 +830,29 @@ subset.prettyUsgs <- function(prettyUsgs, ... ) {
  attr(subPretty, 'st.devs.')   <- stDevs
  subPretty
 }
+
+
+#' @keywords internal
+#' @export
+`[.prettyUsgs` <- function(prettyUsgs, ... ) {
+  class      <- attr(prettyUsgs, 'class')
+  variables  <- attr(prettyUsgs, 'variables')
+  codes      <- attr(prettyUsgs, 'codes')
+  variances  <- attr(prettyUsgs, 'variances')
+  stDevs     <- attr(prettyUsgs, 'st.devs.')
+  attr(prettyUsgs, 'class') <- 'data.frame'
+  cond <- substitute(...)
+  ## some non-standard eval.
+  env <- list2env(prettyUsgs, parent=parent.frame())
+  subPretty <- `[.data.frame`(prettyUsgs, ...)
+  attr(subPretty, 'class')      <- class
+  attr(subPretty, 'variables')  <- variables
+  attr(subPretty, 'codes')      <- codes
+  attr(subPretty, 'variances')  <- variances
+  attr(subPretty, 'st.devs.')   <- stDevs
+  subPretty
+}
+
+
+
+
