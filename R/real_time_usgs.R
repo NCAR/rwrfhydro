@@ -6,6 +6,10 @@ GetActiveHucData <- function(huc, parameterCd=c('00060','00065')) {
 
 if(FALSE){
 
+## some linux commands for reference
+#jamesmcc@hydro-c1:~/usgsStreamData/realTimeData> times=`ls | cut -c1-16 | uniq`  
+#jamesmcc@hydro-c1:~/usgsStreamData/realTimeData> for i in $times; do find . -type f -name "$i*" -exec du -ch {} + | grep total$; done
+  
 allFiles <- list.files(path='/home/jamesmcc/usgsStreamData/realTimeData/', 
                        pattern='.huc.*RData$', full.names=TRUE)
   
