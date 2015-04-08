@@ -33,7 +33,7 @@ obsData   <- readWebCsv(obsFile)
 stats <- rwrfhydro::CalcModPerf(modelData, obsData)
 
 ## it occurs to me that it might be germane to somehow print 
-## near the table.
+## the units in or near the table.
 ## there are issues with using stdout from R on some platforms, 
 ## this may need help
 write.csv(stats, file=stdout())
