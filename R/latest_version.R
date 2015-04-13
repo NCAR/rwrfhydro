@@ -84,7 +84,7 @@ CheckMasterSha <- function() {
   ## Static remote variable for rwrfhydro repo master.
   localRef <- packageDescription('rwrfhydro')$RemoteRef
   if(localRef != 'master')
-    cat('NOTE: You are using branch "',localRef,'"\n', sep='')
+    cat('\n *** NOTE: You are using branch "',localRef,'" ***\n', sep='')
   remote <-
     structure(list(host = "api.github.com", repo = "rwrfhydro", subdir = NULL, 
                    username = "mccreigh", ref = localRef, sha = NULL,
