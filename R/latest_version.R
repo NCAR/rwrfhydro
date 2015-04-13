@@ -82,9 +82,12 @@ GetRemoteMetadata <- function(x, bundle = NULL, source = NULL) UseMethod("GetRem
 #' @export
 CheckMasterSha <- function() {
   ## Static remote variable for rwrfhydro repo master.
+  localRef <- packageDescription('rwrfhydro')$RemoteRef
+  if(localRef != 'master')
+    cat('NOTE: You are using branch "',localRef,'"', '', sep='\n')
   remote <-
     structure(list(host = "api.github.com", repo = "rwrfhydro", subdir = NULL, 
-                   username = "mccreigh", ref = "master", sha = NULL,
+                   username = "mccreigh", ref = localRef, sha = NULL,
                    auth_token = NULL),
               .Names = c("host", "repo", "subdir",
                          "username", "ref", "sha", "auth_token"),
@@ -92,10 +95,13 @@ CheckMasterSha <- function() {
 
   remoteSha <- GetRemoteMetadata(remote, NULL, source)$RemoteSha
   localSha  <- packageDescription('rwrfhydro')$RemoteSha
+  
   if(is.null(localSha)) return(invisible('devtools'))
   
   if( remoteSha != localSha ) {
-    cat("",
+    
+    if(localRef == 'master') {
+      cat("",
         "*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*",
         "*^                                                                     ^*",
         "*^   A  **NEW** update of rwrfhydro has been made (to master branch).  ^*",
@@ -107,8 +113,18 @@ CheckMasterSha <- function() {
         "*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*",
         "                                                                         ",
         sep='\n      ')
-    #doUpdate <- readline(prompt="Would you like to install the update right now? yes/no \n") == 'yes'
-    #if(doUpdate) devtools::install_github('mccreigh/rwrfhydro')
+    } else {
+      cat("",
+          "*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*",
+          "",
+          "   A  **NEW** update of rwrfhydro has been made to this branch.",
+          "",
+          "   To update: devtools::install_github('mccreigh/rwrfhydro', ref='",localRef,"')",        
+          "",
+          "*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*",
+          "",
+          sep='\n      ')
+    }
   }
   
   if( remoteSha == localSha ) cat("You are using the latest version of the master branch.",sep='\n')                                  
