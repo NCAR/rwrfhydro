@@ -119,7 +119,8 @@ checkMasterSha <- function() {
 #' @export
 CheckForUpdates <- function() { checkMasterSha() }
 
-.onLoad <- function(libname, pkgname) {
-  cat("To check rwrfhydro updates (to master branch) run: CheckForUpdates()", sep='\n     ')
+.onAttach <- function(libname, pkgname) {
+  msg <- "To check rwrfhydro updates (to master branch) run: CheckForUpdates()"
+  packageStartupMessage(msg)
 }
  
