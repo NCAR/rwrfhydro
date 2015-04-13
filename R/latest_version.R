@@ -127,7 +127,7 @@ CheckMasterSha <- function() {
           sep='\n      ')
     }
   }
-  
+   
   if( remoteSha == localSha ) cat("You are using the latest version.",sep='\n')                                  
   
   invisible( remoteSha == localSha )
