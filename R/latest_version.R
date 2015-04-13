@@ -84,7 +84,7 @@ CheckMasterSha <- function() {
   ## Static remote variable for rwrfhydro repo master.
   localRef <- packageDescription('rwrfhydro')$RemoteRef
   if(localRef != 'master')
-    cat('NOTE: You are using branch "',localRef,'"', '', sep='\n')
+    cat('NOTE: You are using branch "',localRef,'"\n')
   remote <-
     structure(list(host = "api.github.com", repo = "rwrfhydro", subdir = NULL, 
                    username = "mccreigh", ref = localRef, sha = NULL,
@@ -127,7 +127,7 @@ CheckMasterSha <- function() {
     }
   }
   
-  if( remoteSha == localSha ) cat("You are using the latest version of the master branch.",sep='\n')                                  
+  if( remoteSha == localSha ) cat("You are using the latest version.",sep='\n')                                  
   
   invisible( remoteSha == localSha )
 }
