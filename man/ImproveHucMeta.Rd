@@ -21,8 +21,7 @@ startTime and endTime for each station in UTC to assist appending the records.
 Other streamObs: \code{\link{FindUsgsStns}};
   \code{\link{GetSiteHuc}}; \code{\link{GetUsgsHucData}};
   \code{\link{GetUsgsIvProduct}}; \code{\link{LoadMetaDB}};
-  \code{\link{PlotPrettyData}};
-  \code{\link{PrettySiteData}};
+  \code{\link{PlotPrettyData}}; \code{\link{PrettyUsgs}};
   \code{\link{QueryHaveSite}}; \code{\link{QuerySiteData}};
   \code{\link{QuerySiteInfo}}; \code{\link{QuerySiteName}};
   \code{\link{QuerySiteProd}}; \code{\link{SaveHucData}};

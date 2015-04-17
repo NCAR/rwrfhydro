@@ -7,7 +7,7 @@
 \method{subset}{prettyUsgs}(prettyUsgs, ...)
 }
 \arguments{
-\item{prettyUsgs}{A dataframe of class \code{c("prettyUsgs", "data.frame")} returned from \code{PrettySiteData}}
+\item{prettyUsgs}{A dataframe of class \code{c("prettyUsgs", "data.frame")} returned from \code{PrettyUsgs}}
 
 \item{...}{additional arguments to subset.data.frame}
 }
@@ -23,8 +23,7 @@ Other streamObs: \code{\link{FindUsgsStns}};
   \code{\link{GetSiteHuc}}; \code{\link{GetUsgsHucData}};
   \code{\link{GetUsgsIvProduct}};
   \code{\link{ImproveHucMeta}}; \code{\link{LoadMetaDB}};
-  \code{\link{PlotPrettyData}};
-  \code{\link{PrettySiteData}};
+  \code{\link{PlotPrettyData}}; \code{\link{PrettyUsgs}};
   \code{\link{QueryHaveSite}}; \code{\link{QuerySiteData}};
   \code{\link{QuerySiteInfo}}; \code{\link{QuerySiteName}};
   \code{\link{QuerySiteProd}}; \code{\link{SaveHucData}}
