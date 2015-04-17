@@ -609,7 +609,7 @@ PrettyUsgs <- function(data, tz='UTC',
   
   PrettyUsgs.df <- function(data, tz='UTC', 
                             metric=TRUE, 
-                            na.rm=TRUE, format='wide') {
+                            na.rm=TRUE, format='long') {
     
     ## rename the variables
     varUnits <- TransUsgsProdStat(data$variable)
