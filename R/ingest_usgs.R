@@ -174,9 +174,9 @@ GetUsgsHucData <- function(huc8, outPath=NULL,
 #' @param metaDBFileName Character The name of the database metadata file.
 #' @param overwriteHucDataFile Logical Replace/overwrite the existing data file for the HUC with the current data.
 #' @examples
-#' files <- SaveHucData(GetUsgsHucData(huc='10190005'), outPath='/Users/jamesmcc/streamflow/OBS') ##boulder, CO
-#' files <- SaveHucData(GetUsgsHucData(huc='03160203'), outPath='/Users/jamesmcc/streamflow/OBS') ##satilpa, AL
-#' files <- SaveHucData(GetUsgsHucData(huc='03020104'), outPath='/Users/jamesmcc/streamflow/OBS') ##vans, NC
+#' files <- SaveHucData(GetUsgsHucData(huc='10190005'), outPath='~/wrfHydroTestCases/usgsDb') ##boulder, CO
+#' files <- SaveHucData(GetUsgsHucData(huc='03160203'), outPath='~/wrfHydroTestCases/usgsDb') ##satilpa, AL
+#' files <- SaveHucData(GetUsgsHucData(huc='03020104'), outPath='~/wrfHydroTestCases/usgsDb')  ##vans, NC
 #' @keywords IO database
 #' @concept dataGet usgsStreamObs
 #' @family streamObs
@@ -184,6 +184,9 @@ GetUsgsHucData <- function(huc8, outPath=NULL,
 SaveHucData <- function(hucData, outPath, 
                         metaDBFileName='usgsDataRetrieval.metaDatabase.RData', 
                         overwriteHucDataFile=FALSE) {
+  
+  if(!file.exists(outPath)) warning("outPath does not exist.", immediate. = TRUE)
+  
   ##What the HUC?
   allHuc <- unlist(plyr::llply(hucData, function(ll) ll$meta$siteInfo$huc_cd))
   ## make sure there's only one HUC.
@@ -434,7 +437,7 @@ QueryHaveSite <- function(site, path='.',
 
 
 #==============================================================================================
-#' Find the name(site id) for a given site(name)  in the local database.
+#' Find the name (site id) for a given site (name)  in the local database.
 #' 
 #' \code{QuerySiteName} returns the name (site id) for a given site ID (name) in the local database.
 #' @param site Character USGS site number or name.
@@ -468,7 +471,7 @@ QuerySiteName <- function(site, path='.',
 
 
 #==============================================================================================
-#' Returns the desired information from the database file.
+#' Returns the desired information from the database metadata file.
 #' 
 #' \code{QuerySiteInfo} gets the specified info from the local database.
 #' @param info Character vector, information fields in \code{HUC$prod$meta$SiteInfo$info}.
@@ -522,7 +525,7 @@ QuerySiteInfo <- function(info=NULL, path='.',
 QuerySiteData <- function(site, product, path='.',
                           metaDBFileName='usgsDataRetrieval.metaDatabase.RData'){
 
-  QuerySiteData.scalar <- function(site, product, path='.',
+  QuerySiteData.atomic <- function(site, product, path='.',
                                    metaDBFileName='usgsDataRetrieval.metaDatabase.RData'){
     if(!any(QuerySiteProd(site, path=path, metaDB=metaDBFileName) == product)) {
       warning(paste("No product",product,"at site",site,"."))
@@ -541,7 +544,6 @@ QuerySiteData <- function(site, product, path='.',
     
     varNameBase <- paste0(attr(ret, 'variableInfo')$parameterCd, '_',
                           attr(ret, 'statisticInfo')$statisticCd )
-    print(varNameBase)
     
     codeName <- grep(paste0(varNameBase,'_cd$'), names(ret), value=TRUE)
     varName  <- grep(paste0(varNameBase,'$'),    names(ret), value=TRUE)
@@ -549,8 +551,6 @@ QuerySiteData <- function(site, product, path='.',
     newNames <- c(ifelse(length(codeName),'code',  integer(0)),
                   ifelse(length(varName), 'value', integer(0)))
     if(!length(newNames)) warning('variable name not found, this needs fixed.', immediate. = TRUE)
-print(newNames)
-print(oldNames)
     names(newNames) <- oldNames
     ret <- plyr::rename(ret, newNames)
     ret$variable <- varName
@@ -559,7 +559,7 @@ print(oldNames)
   
   #ret0<-QuerySiteData.scalar(site, product, path=path, metaDBFileName=metaDBFileName)
   vecDf <- FormalsToDf(QuerySiteData)
-  ret <- plyr::mlply(vecDf, QuerySiteData.scalar, .inform=TRUE)
+  ret <- plyr::mlply(vecDf, QuerySiteData.atomic, .inform=TRUE)
   names(ret) <- vecDf$site
 
   if(length(ret)==1) {
@@ -595,9 +595,9 @@ print(oldNames)
 #' @examples 
 #' p='~/wrfHydroTestCases/usgsDb/'
 #' dataOrodell <- PrettyUsgs(QuerySiteData(QuerySiteName("FOURMILE CREEK AT ORODELL, CO", p), 
-#'                                             '00060', p), metricOnly=TRUE)
+#'                                             '00060', p), metric=TRUE)
 #' ## multisite and multiproduct case
-#' dataMultiHuc <- PrettyUsgs(QuerySiteData(c('06730500','02084557'),c('00065','00060'),p))
+#' dataMultiHuc <- PrettyUsgs(QuerySiteData(c('06730500','02470072'),c('00065','00060'),p))
 #' @keywords manip
 #' @concept dataMgmt usgsStreamObs
 #' @family streamObs
@@ -649,7 +649,7 @@ PrettyUsgs <- function(data, tz='UTC',
   }
 
   if(class(data)[1]=='data.frame')
-    return(PrettyUsgs.df(data, tz='UTC', metric=metric, metricOnly=metricOnly, na.rm=na.rm))
+    return(PrettyUsgs.df(data, tz='UTC', metric=metric, na.rm=na.rm))
   if(class(data)[1]=='list')
     stop('foooooo')
     #return(plyr::llply(data, PrettyUsgs.df, tz='UTC', metric=metric, metricOnly=metricOnly, na.rm=na.rm))
