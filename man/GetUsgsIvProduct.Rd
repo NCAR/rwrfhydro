@@ -22,8 +22,7 @@ separate data and metadata/attributes. The meta data are updated with startTime 
 Other streamObs: \code{\link{FindUsgsStns}};
   \code{\link{GetSiteHuc}}; \code{\link{GetUsgsHucData}};
   \code{\link{ImproveHucMeta}}; \code{\link{LoadMetaDB}};
-  \code{\link{PlotPrettyData}};
-  \code{\link{PrettySiteData}};
+  \code{\link{PlotPrettyData}}; \code{\link{PrettyUsgs}};
   \code{\link{QueryHaveSite}}; \code{\link{QuerySiteData}};
   \code{\link{QuerySiteInfo}}; \code{\link{QuerySiteName}};
   \code{\link{QuerySiteProd}}; \code{\link{SaveHucData}};

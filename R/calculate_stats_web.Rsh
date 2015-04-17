@@ -1,4 +1,4 @@
-#!/opt/R/bin/Rscript
+#!/usr/bin/Rscript
 ## the  above path often needs customization.
 
 ## Scripts arguments are
@@ -19,16 +19,16 @@ obsFile   <- args[2]
 ## assuming the two files have the same format
 ## make a single "metafunction" and tweak once
 readWebCsv <- function(file) {
-  data <- read.csv(file, header=TRUE,
+  data <- read.csv(file, header=TRUE, skip=2,
                    stringsAsFactors=FALSE)
-  ##data$POSIXct <- as.POSIXct
-  ##data$value <- ## this is matched in CalcModPerf
+  data$POSIXct <- as.POSIXct(data$time, tz='UTC')
+  data$time <- NULL
+  names(data)[1] <- c("q_cms")
   data
 }
 
 modelData <- readWebCsv(modelFile)
 obsData   <- readWebCsv(obsFile)
-
 
 stats <- rwrfhydro::CalcModPerf(modelData, obsData)
 

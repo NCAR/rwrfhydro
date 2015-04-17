@@ -2,12 +2,12 @@
 % Please edit documentation in R/ingest_usgs.R
 \name{PlotPrettyData}
 \alias{PlotPrettyData}
-\title{Plot USGS site data which has been prettied with PrettySiteData.}
+\title{Plot USGS site data which has been prettied with PrettyUsgs.}
 \usage{
 PlotPrettyData(prettyUsgs, plot = TRUE, errInnerQntl = 0.995)
 }
 \arguments{
-\item{prettyUsgs}{dataframe returned from PrettySiteData}
+\item{prettyUsgs}{dataframe returned from PrettyUsgs}
 
 \item{plot}{Logical to plot before returning or not.}
 
@@ -20,7 +20,7 @@ A function(closure) with arguments controlling the look of its graphical output.
         return value is a list of ggplot2 object which can be custom manipulated.
 }
 \description{
-\code{PlotPrettyData} plots USGS site data which has been prettied with \code{PrettySiteData}.
+\code{PlotPrettyData} plots USGS site data which has been prettied with \code{PrettyUsgs}.
 }
 \examples{
 # See vignette "Collect USGS stream observations and build a local database" for examples.
@@ -30,10 +30,10 @@ Other streamObs: \code{\link{FindUsgsStns}};
   \code{\link{GetSiteHuc}}; \code{\link{GetUsgsHucData}};
   \code{\link{GetUsgsIvProduct}};
   \code{\link{ImproveHucMeta}}; \code{\link{LoadMetaDB}};
-  \code{\link{PrettySiteData}};
-  \code{\link{QueryHaveSite}}; \code{\link{QuerySiteData}};
-  \code{\link{QuerySiteInfo}}; \code{\link{QuerySiteName}};
-  \code{\link{QuerySiteProd}}; \code{\link{SaveHucData}};
+  \code{\link{PrettyUsgs}}; \code{\link{QueryHaveSite}};
+  \code{\link{QuerySiteData}}; \code{\link{QuerySiteInfo}};
+  \code{\link{QuerySiteName}}; \code{\link{QuerySiteProd}};
+  \code{\link{SaveHucData}};
   \code{\link{subset.prettyUsgs}}
 }
 \concept{
