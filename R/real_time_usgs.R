@@ -49,8 +49,8 @@ latentDf <- plyr::ldply(allFiles, CollectLatency, .parallel=TRUE)
 nhrs <- 5
 nrow(latentDf)
 library(ggplot2)
-ggplot(subset(latentDf, abs(deltaT.min) < nhrs*60), 
-       aes(x=deltaT.min, y=..count../1135805 )) + 
+ggplot(subset(latentDf, abs(deltaT.min) < nhrs*60 & deltaT.min < 0), 
+       aes(x=deltaT.min, y=..count../566558 )) + 
   geom_histogram(fill='lightblue', alpha=.5, binwidth=15, color='orange') + 
   scale_x_continuous(breaks=15*( (-1*(nhrs*4)):0 ), 
                      name='Time of obs relative to retrieval time (minutes)') +

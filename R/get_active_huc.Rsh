@@ -32,7 +32,7 @@ print(outFile)
 print(paste(huc, dateId, sep=': '))
 
 ## pullTime and obSize are also diagnostic
-pullTime<- system.time(data<-GetActiveHucData(huc))
+pullTime<- system.time(data<-GetActiveHucData(huc,parameterCd=c('00060')))
 obSize <- format(object.size(data), units='MB')
 
 save(data, pullTime, obSize, file=outFile)
