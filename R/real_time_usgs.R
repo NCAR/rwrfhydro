@@ -34,8 +34,6 @@ ggplot(mPullDf, aes(x=time.sec, y=value, color=huc02)) +
   facet_wrap(~variable,ncol=1, scales='free_y') +
   theme_bw(base_size=24) 
   
-}
-
 
 CollectLatency <- function(file){
   load(file)
@@ -80,3 +78,4 @@ CollectStnReps <- function(file){
 
 repsDf <- plyr::ldply(allFiles, CollectStnReps, .parallel=TRUE)
 
+}
