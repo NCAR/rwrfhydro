@@ -38,7 +38,7 @@ if(FALSE){
 ## as success, that's a plyr::daply. 
 
 #' @export
-MkNcPrettyUsgs <- function(prettyDf, outPath='.') {
+WriteNcPrettyUsgs <- function(prettyDf, outPath='.') {
   
   ## break up by site*product until we get ragged arrays. 
   
@@ -64,3 +64,41 @@ MkNcPrettyUsgs <- function(prettyDf, outPath='.') {
   
   
 }
+
+
+WriteNcTimeSlice <- function(dfByPosix, outPath, varianceFunction) {
+    
+    #str(dfByPosix)
+    fileName <- TimeSliceFileName(dfByPosix$POSIXct[1])
+    
+    ## does the file exist
+    if(!file.exists(fileName)) {
+      # This is append to netcdf
+      print("file exists")
+      str(dfByPosix)
+      
+      stop()
+      varList = list()
+      varList[[1]] <- list(name='precipMult',
+                           longname='Precipitation Multiplier',
+                           units='-',
+                           precision = 'double',
+                           missing = -9999,
+                           dimensionList = list(scalar=list(name='scalar',values=1,
+                                                            units='-', unlimited=FALSE,
+                                                            create_dimvar=FALSE)),,
+                                                data = 1:1 )    
+
+    } else {
+      # This is create a new netcdf
+      print("file dne")
+      ncid <- nc_open(filename, write=TRUE)
+    }
+    stop()
+}
+
+TimeSliceFileName <- function(POSIXct)
+  paste0(format(POSIXct,'%Y-%m-%d_%H:%M:%S'), '.usgsTimeSlice.ncdf')
+
+  
+  

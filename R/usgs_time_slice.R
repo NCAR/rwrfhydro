@@ -29,24 +29,10 @@ SliceHucFile <- function(file, outPath, nearest,
   data$dateTime <- RoundMinutes(data$dateTime, nearest=nearest)
   print(table(data$dateTime))
   outList <- plyr::ddply(data, plyr::.(dateTime), 
-                         WriteTimeSlice, 
+                         WriteNcTimeSlice, 
                          outPath, varianceFunction, 
                          .parallel=(foreach::getDoParWorkers() > 1 ) )
   outList
-}
-
-
-WriteTimeSlice <- function(dfByPosix, outPath, varianceFunction) {
-  
-  #str(dfByPosix)
-  fileName <- TimeSliceFileName()
-  ## does the file exist
-  if(file.exists(fileName)) {
-    
-  } else {
-    
-  }
-  stop()
 }
 
 
@@ -62,6 +48,4 @@ RoundMinutes <- function(POSIXct, nearest=5) {
   POSIXct + lubridate::seconds(round(diffMin*60))   
 }
 
-TimeSliceFileName <- function(POSIXct)
-  paste0(format(POSIXct,'%Y-%m-%d_%H:%M:%S'), '.usgsTimeSlice.ncdf')
 
