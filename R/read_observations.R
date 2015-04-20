@@ -103,6 +103,90 @@ ReadUsgsGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, ti
 }
 
 
+#' Read standard-format text data table downloaded from CO DWR
+#'
+#' \code{ReadCoDwrGage} reads CO DWR gage data table (streamflow and/or stage) and puts into a dataframe.
+#'
+#' \code{ReadCoDwrGage} reads a streamflow or stage time series data table (standard CO DWR
+#' data format) and outputs a dataframe with consistent date and data columns for use with other
+#' rwrfhydro tools.
+#' 
+#' @param pathGageData The full pathname to the streamflow/stage time series text file as
+#' downloaded from CO DWR. The file should include the standard CO DWR header info and
+#' the data time series with standard CO DWR columns.
+#' @param returnEnglish Logical: Return variables in english units (cfs and ft)
+#' @param returnMetric  Logical: Return variables in these units (cms and m)
+#' @param timeZone  (OPTIONAL) The time zone for the gage data. Only necessary if tz code
+#' is NOT provided in the input file (e.g., daily streamflow gage data files).
+#' Time zone name must be R-friendly for your current OS. See: \url{http://stat.ethz.ch/R-manual/R-devel/library/base/html/timezones.html}
+#' @return A dataframe containing the flow and/or stage data.
+#'
+#' @examples
+#' ## Take a text file downloaded from the CO DWR website for 15-minute flow at Alamosa River
+#' ## and create a dataframe called "obsStr15min.alaterco".
+#'
+#' obsStr15min.alaterco <- ReadCoDwrGage("../OBS/STRFLOW/ALATERCO_41715103512.txt")
+#' obsStr15min.alaterco <- ReadUsgsGage("../OBS/STRFLOW/ALATERCO_41715103512.txt", returnEnglish=FALSE)
+#' @keywords IO
+#' @concept aconcept
+#' @export
+ReadCoDwrGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, timeZone=NULL) {
+  # Manually remove commented lines since cannot automate due to mismatch between column names and column count
+  ncomm <- as.integer(system(paste('grep "#"', pathGageData, '| wc -l'), intern=TRUE))
+  outDf <- read.table(pathGageData, sep="\t", stringsAsFactors=F, skip=ncomm+1,
+                      na.strings=c("B","Bw","Dis","E","Eqp","Ice","M","na","nf","Prov","Rat","S","Ssn","wtr op","----"))
+  # Deal with header (not 1:1 with data columns)
+  outDf.tmp <- read.table(pathGageData, sep="\t", na.strings=c(""),
+                           stringsAsFactors=F, skip=ncomm, nrows=1)
+  outDf.head <- c()
+  outDf.units <- c()
+  for (i in 1:ncol(outDf.tmp)) {
+    outDf.head[i] <- unlist(strsplit(outDf.tmp[1,i], split=" ", fixed=TRUE))[1]
+    outDf.units[i] <- unlist(strsplit(outDf.tmp[1,i], split=" ", fixed=TRUE))[2]
+  }
+  # Deal with duplicate "Date/Time" header. We need to know the index so we can remove it from "units" too.
+  tmp<-grep("Date/Time", outDf.head, fixed=TRUE)
+  outDf.head[tmp[2]]<-"datetime"
+  outDf.head<-c(outDf.head[1:(tmp[1]-1)], outDf.head[(tmp[1]+1):length(outDf.head)])
+  outDf.units<-c(outDf.units[1:(tmp[1]-1)], outDf.units[(tmp[1]+1):length(outDf.units)])
+  colnames(outDf) <- outDf.head
+  names(outDf.units)<-outDf.head
+  attr(outDf, "units")<-outDf.units
+  
+  # Unit conversions
+  if ("DISCHRG" %in% names(outDf)) {
+      if (attributes(outDf)$units[["DISCHRG"]] == "(cfs)") {
+          if (returnMetric) { outDf$q_cms <- outDf$DISCHRG * (0.3048^3) }
+          if (returnEnglish) { outDf$q_cfs <- outDf$DISCHRG }
+          }
+      if (attributes(outDf)$units[["DISCHRG"]] == "(cms)") {
+            if (returnMetric) { outDf$q_cms <- outDf$DISCHRG }
+            if (returnEnglish) { outDf$q_cfs <- outDf$DISCHRG / (0.3048^3) }
+          }
+  }
+  if ("GAGE_HT" %in% names(outDf)) {
+    if (attributes(outDf)$units[["GAGE_HT"]] == "(ft)") {
+      if (returnMetric) { outDf$ht_m <- outDf$GAGE_HT * (0.3048) }
+      if (returnEnglish) { outDf$ht_ft <- outDf$GAGE_HT }
+    }
+    if (attributes(outDf)$units[["GAGE_HT"]] == "(m)") {
+      if (returnMetric) { outDf$ht_m <- outDf$GAGE_HT }
+      if (returnEnglish) { outDf$ht_ft <- outDf$GAGE_HT / (0.3048) }
+    }
+  }
+  # Deal with time
+  if (is.null(timeZone)) { timeZone <- "America/Denver" } # assuming local time for all gages?
+  usgsTimeFmt <- if (grepl(" ",outDf$datetime[1])) {
+    "%Y-%m-%d %H:%M" # instantaneous
+  } else { "%Y-%m-%d" }  # daily avg
+  outDf$POSIXct <- as.POSIXct(as.character(outDf$datetime), format=usgsTimeFmt, tz=timeZone)
+  
+  outDf$wy <- CalcWaterYear(outDf$POSIXct)
+  
+  outDf
+}
+
+
 #' Read standard-format NetCDF data downloaded from Ameriflux
 #'
 #' \code{ReadAmerifluxNC} reads Ameriflux data table (Level 2 standardized NetCDF file) and creates

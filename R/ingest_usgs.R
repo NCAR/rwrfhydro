@@ -64,7 +64,9 @@ FindUsgsStns <- function(stnLon=NULL, stnLat=NULL, within=NULL,
     # huc
     if (!is.null(huc8)) argList$huc <- as.character(huc8)
     #print(argList)
-    do.call(dataRetrieval::whatNWISsites, argList)
+    out <- tryCatch(suppressWarnings(do.call(dataRetrieval::whatNWISsites, argList)), 
+                    error=function(cond) {message(cond); return(NA)})
+    return(out)
   }
   
   vecDf <- FormalsToDf(FindUsgsStns)
