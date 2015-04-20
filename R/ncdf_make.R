@@ -39,6 +39,7 @@
 #' globalAttList[[2]] <- list(name='Some reall atts',value='#$%^!!', precision="text" )
 #' dum <- MkNcdf( varList, globalAttList, '~/test1.nc' )
 #' 
+#' 
 #' #Example 2 - append to an existing file's variable.
 #' varList1 = list()
 #' varList1[[1]] <- list( name='precipMult22',
@@ -49,10 +50,10 @@
 #'                       dimensionList =
 #'                           list(  # n.b. the dimension order: z,y,x,t
 #'                                 y=list(name='y',values=2.5+((0:6)*5),
-#'                                        units='lat', unlimited=FALSE,
+#'                                        units='lat', unlimited=TRUE,
 #'                                        create_dimvar=TRUE),
 #'                                 x=list(name='x',values=c(10,20),
-#'                                        units='lon', unlimited=TRUE,
+#'                                        units='lon', unlimited=FALSE,
 #'                                        create_dimvar=TRUE)
 #'                                ),
 #'                      data = matrix( 1:7, nrow=7, ncol=2 ) )
@@ -65,32 +66,45 @@
 #'                       missing = -9999,
 #'                       dimensionList =
 #'                           list(  # n.b. the dimension order: z,y,x,t
-#'                                 y=list(name='y',values=2.5+((0:6)*5),
-#'                                        units='lat', unlimited=FALSE,
+#'                                 y=list(name='y',values=99,
+#'                                        units='lat', unlimited=TRUE,
 #'                                        create_dimvar=TRUE),
-#'                                 x=list(name='x',values=c(30),
-#'                                        units='lon', unlimited=TRUE,
+#'                                 x=list(name='x',values=c(10,20),
+#'                                        units='lon', unlimited=FALSE,
 #'                                        create_dimvar=TRUE)
 #'                                ),
-#'                      data = matrix( 11:17, nrow=7, ncol=1 ) )
+#'                      data =  c(1:2)+10 )
 #'
 #' globalAttList <- list()
 #' globalAttList[[1]] <- list(name='Some reall atts',value='#$%^!!', precision="text" )
 #' 
 #' dum <- MkNcdf( varList1, globalAttList, '~/test2.nc', over=TRUE )
+#' n<-ncdf4::nc_open('~/test2.nc')
+#' p<-ncdf4::ncvar_get(n,'precipMult22')
+#' y<-ncdf4::ncvar_get(n,'y')
+#' x<-ncdf4::ncvar_get(n,'x')
+#' ncdf4::nc_close(n)
+#' 
 #' dum <- MkNcdf( varList2, globalAttList, '~/test2.nc' )
+#' n<-ncdf4::nc_open('~/test2.nc')
+#' p<-ncdf4::ncvar_get(n,'precipMult22')
+#' y<-ncdf4::ncvar_get(n,'y')
+#' x<-ncdf4::ncvar_get(n,'x')
+#' ncdf4::nc_close(n)
 #' 
 #' @export
-MkNcdf <- function( varList, globalAttList, filename, overwrite=FALSE, 
+MkNcdf <- function( varList, filename, 
+                    globalAttList=NULL,
+                    overwrite=FALSE, 
                     force_v4=TRUE ) {   
 
-  fileExists <- file.exists(filename)
   names(varList) <- plyr::laply(varList,'[[', 'name')
   
-  if(!fileExists | overwrite) {
+  fileExists <- file.exists(filename)
   
+  ## Create/overwrite the file or append to an existing file?
+  if(!fileExists | overwrite) {  
     append <- FALSE
-    
     ## Define all the variables with their proper dimensions.
     doDefVar <- function( var ) { ## var is a list
       ## Handle the dimensions. 
@@ -112,7 +126,7 @@ MkNcdf <- function( varList, globalAttList, filename, overwrite=FALSE,
     defVarList <- plyr::llply(varList, doDefVar)    
     
     ## there's no "noclobber" option to nc_create, so you have to do 
-    ## this manually else get an occasional errlr
+    ## this manually else get an occasional error.
     if(fileExists) unlink(filename)
     ncid <- ncdf4::nc_create(filename, defVarList, force_v4=force_v4)  
   
@@ -132,28 +146,51 @@ MkNcdf <- function( varList, globalAttList, filename, overwrite=FALSE,
   }
 
   ## Put the vars into the file
-  doPutVar <- function(var) {
+  for(varName in names(varList)) {
+    var <- varList[[varName]]
     if(append) {
-      start <- ncid$var[[var$name]]$varsize + plyr::laply(ncid$var[[var$name]]$dim,'[[', 'unlim')
-      count <- 
-        #plyr::laply(varList[[var$name]]$dimensionList, function(dd) dd$unlimited) *     ##unlimited?
-        plyr::laply(varList[[var$name]]$dimensionList, function(dd) length(dd$values))  #+ ##length of new data
-        #!(plyr::laply(varList[[var$name]]$dimensionList, function(dd) dd$unlimited) )    ##need a 1 for limited dimensions
+      ## start: at the first non-unlim indices in the next unlimited dim.
+      start <- (ncid$var[[var$name]]$varsize * 
+                 plyr::laply(ncid$var[[var$name]]$dim,'[[', 'unlim')) + 1
+      ## count: how much data was passed in?
+      count <- plyr::laply(varList[[var$name]]$dimensionList, 
+                           function(dd) length(dd$values))  
+      
+      ## have to redefine the dimension?
+      varDimInfo <- ncid$var[[var$name]]$dim
+      names(varDimInfo) <- plyr::laply(varDimInfo, '[[', 'name')
+      unlimDimName <- subset(plyr::ldply(varDimInfo,'[[','unlim'),`[[`)$.id
+      ncdf4::ncvar_put( ncid, unlimDimName, 
+                        var$dimensionList[[unlimDimName]]$values,
+                        start=varDimInfo[[unlimDimName]]$len+1, 
+                        count=length(var$dimensionList[[unlimDimName]]$values))
+      ncdf4::ncvar_put( ncid, var$name, var$data, 
+                        start=start, count=count)
+                        #verbose=TRUE)
     } else {
       count <- ncid$var[[var$name]]$varsize
       start <- count*0 + 1
+      ncdf4::ncvar_put( ncid, var$name, var$data, start=start, count=count )
     }
-    ncdf4::ncvar_put( ncid, var$name, var$data, start=start, count=count )
+   
   }
-  dum <- plyr::llply( varList, doPutVar )
+  
   
   ## global attributes
-  doPutGlobalAtts <- function( att )
-    ncdf4::ncatt_put( ncid, 0, att$name, att$value, prec=att$precision )
-  dum <- plyr::llply( globalAttList, doPutGlobalAtts )
+  if(!is.null(globalAttList)) {
+    doPutGlobalAtts <- function( att )
+      ncdf4::ncatt_put( ncid, 0, att$name, att$value, prec=att$precision )
+    dum <- plyr::llply( globalAttList, doPutGlobalAtts )
+  }
   
   ## Close
   ncdf4::nc_close(ncid)
   ## Return the filename for reference.
   filename
 }  
+
+## no ncdump on osx, so give a similar feeling function
+ncdumpH <-function() {
+  
+}
+
