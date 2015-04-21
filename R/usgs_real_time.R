@@ -1,8 +1,13 @@
 #' @export
 GetActiveHucData <- function(huc, parameterCd=c('00060','00065')) {
   dataRetrieval::readNWISdata(service='iv', huc=huc, siteStatus='active', 
-                              parameterCd=parameterCd)
+                              parameterCd=parameterCd,
+                              period='PT4H')
 }
+#system.time(for(i in 1:10) dum<-GetActiveHucData('10',parameterCd = '00060'))
+##averaged over 10 pulls, pulling only 00060 using "period='PT4H"' took 
+## huc06: 130% longer, huc14: 146% longer, huc10: 221% longer. 
+
 
 if(FALSE){
 
