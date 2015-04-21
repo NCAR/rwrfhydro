@@ -2,21 +2,28 @@
 
 language: c
 
-before_install:
-  - curl -OL http://raw.github.com/craigcitro/r-travis/master/scripts/travis-tool.sh
-  - chmod 755 ./travis-tool.sh
-  - ./travis-tool.sh bootstrap
-
-install:
-  - ./travis-tool.sh install_deps
-
-script: ./travis-tool.sh run_tests
-
-after_failure:
-  - ./travis-tool.sh dump_logs
+os:
+    - osx
+    - linux
 
 env:
-  - WARNINGS_ARE_ERRORS=1
+   global:
+     - CRAN: http://cran.rstudio.com
+     - R_BUILD_ARGS="--no-build-vignettes --no-manual"
+     - R_CHECK_ARGS="--no-build-vignettes --no-manual --as-cran"
+     - BOOTSTRAP_LATEX=""
+     - NOT_CRAN="true" 
+
+script: "./travis-tool.sh run_tests""
+
+before_script:
+  - curl -OL http://raw.github.com/craigcitro/r-travis/master/scripts/travis-tool.sh
+  - chmod 755 ./travis-tool.sh
+  - "./travis-tool.sh bootstrap""
+  - "./travis-tool.sh install_deps - ./travis-tool.sh install_r plyr grid lubridate ncdf4 ggplot2 ggmap RColorBrewer reshape2 doMC scales curl dataRetrieval raster"
+
+after_script:
+  - "./travis-tool.sh dump_logs"
 
 notifications:
   email:
