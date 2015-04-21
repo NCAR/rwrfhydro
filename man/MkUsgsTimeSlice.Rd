@@ -4,7 +4,7 @@
 \alias{MkUsgsTimeSlice}
 \title{Make timeslices from active USGS discharge data files.}
 \usage{
-MkUsgsTimeSlice(realTimeFiles, outPath, nearestMin = 5, oldestTime,
+MkUsgsTimeSlice(realTimeFiles, outPath, nearestMin = 5, oldestTime = NULL,
   qcFunction, varianceFunction, processedInputPath)
 }
 \arguments{
@@ -30,7 +30,8 @@ moved upon successful processing to ncdf timeslice files.
 returns the data frame with the new \code{variance} column.}
 }
 \value{
-A dataframe
+A dataframe with two columns: \code{POSIXct} and \code{filename} which given the
+time of the timeslice and the corresponding file name with full path.
 }
 \description{
 Make timeslices from active USGS discharge data files.
@@ -42,9 +43,18 @@ realTimeFiles <- list.files(pattern='huc.*.RData',
 outPath = '~/usgsStreamData/timeSliceData/'
 library(doMC)
 registerDoMC(4)
+ret1 <- MkUsgsTimeSlice( realTimeFiles[1:21], outPath=outPath,
+                         oldest=as.POSIXct('2015-04-15 00:00:00', tz='UTC') )
+nrow(ret1)
+
 ret1 <- MkUsgsTimeSlice( realTimeFiles[1:21], outPath=outPath )
+nrow(ret1)
 ncdump(ret1$V1[230])
 ret2 <- MkUsgsTimeSlice( realTimeFiles[22:42], outPath=outPath )
 ncdump(ret1$V1[230])
+
+ret1 <- MkUsgsTimeSlice( realTimeFiles, outPath=outPath,
+                        oldest=as.POSIXct('2015-04-15 00:00:00', tz='UTC') )
+ncdump(ret1[1,2])
 }
 

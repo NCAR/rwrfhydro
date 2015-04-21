@@ -1,0 +1,36 @@
+# Sample .travis.yml for R projects from https://github.com/craigcitro/r-travis
+
+language: c
+
+sudo: required
+
+os:
+    - linux
+
+env:
+   global:
+     - CRAN: http://cran.rstudio.com
+     - R_BUILD_ARGS="--no-build-vignettes --no-manual"
+     - R_CHECK_ARGS="--no-build-vignettes --no-manual --as-cran"
+     - BOOTSTRAP_LATEX=""
+     - NOT_CRAN="true" 
+
+before_script:
+  - curl -OL http://raw.github.com/craigcitro/r-travis/master/scripts/travis-tool.sh
+  - chmod 755 ./travis-tool.sh
+  - "./travis-tool.sh bootstrap"
+  - "./travis-tool.sh install_deps - ./travis-tool.sh install_r plyr grid lubridate ncdf4 ggplot2 ggmap RColorBrewer reshape2 doMC scales curl dataRetrieval raster"
+
+script: "./travis-tool.sh run_tests"
+
+after_script:
+  - "./travis-tool.sh dump_logs"
+
+branches:
+  except:
+  - procUsgs
+
+notifications:
+  email:
+    on_success: change
+    on_failure: change
