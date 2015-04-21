@@ -43,6 +43,7 @@
 #' @concept data
 #' @keywords data
 "gages2Attr"
+"gages2AttrPlus"
 
 #  gages2Attr <- read.csv(file=file, sep=',', header=TRUE,
 #                         colClasses=c(rep('numeric',  2), 
