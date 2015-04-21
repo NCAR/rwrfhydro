@@ -1,4 +1,5 @@
 
+## this code is for development of WriteNcPrettyUsgs
 if(FALSE){
   ## look at platoro example
   poNcid <- ncdf4::nc_open('~/Desktop/ALL_PLATORO_DATA.nc')
@@ -12,7 +13,6 @@ if(FALSE){
     pDf$variable <- attr(pDf, 'variables')[1]
     renames <- c('value', 'code')
     names(renames) <- c(attr(pDf,'variables')[1], attr(pDf,'codes')[1])
-    print(renames)
     pDf <- plyr::rename(pDf, renames)
     pDf
   }
@@ -66,63 +66,136 @@ WriteNcPrettyUsgs <- function(prettyDf, outPath='.') {
 }
 
 
-#' Write timeslice data
+#' Write a USGS discharge timeslice to a netcdf file. 
 #' 
+#' @param dfByPosix   Dataframe, a data frame with the following columns: 
+#' \code{site_no}, \code{dateTime}, \code{code}, \code{queryTime}, \code{discharge.cms}, 
+#' and \code{variance} where dateTime is the same for the entire dataframe. 
+#' @param outPath     Character, the file name with path for the output netcdf file. 
 #' @examples
-#' 
+#' See \link{MkUsgsTimeSlice}.
+#' @keywords internal
 #' @export
-WriteNcTimeSlice <- function(dfByPosix, outPath, varianceFunction) {
+WriteNcTimeSlice <- function(dfByPosix, outPath) {
     
-    #str(dfByPosix)
     fileName <- TimeSliceFileName(dfByPosix$dateTime[1])
+    outFileName <- paste0(outPath,'/',fileName)
     
-    ## does the file exist
-    if(!file.exists(fileName)) {
-      # This is append to netcdf
-      print("file exists")
-      str(dfByPosix)
-      
-      ## have to check?
-      ## 1) if station(s) already exists in the file
-      ## and, if so, 1.2) if the value(s) is(are) the same.
+    ## does the file exist?
+    if(file.exists(outFileName)) {
+      print("file exists: merging... ")
+      ## one cant change random rows of a netcdf file, only slabs.
+      ## seems more efficient to read in the old file and merge them old with the 
+      ## new and sort it out and then overwrite the file. 
+      dfByPosix <- rbind(dfByPosix, ReadNcTimeSlice(outFileName))      
     }
-      stop()
-      
-     ## need to set the missing value used by ncdf4? i think it's NA by default
-     dimensionList <-
-       list(  # n.b. the dimension order: z,y,x,t
-         stationId=list(name='stationId',
-                        units='', 
-                        values=as.numeric(dfByPosix$site_no),
-                        unlimited=TRUE,
-                        create_dimvar=TRUE),
-         time=list(name='time',
-                   units='seconds since 1970-01-01 00:00:00 UTC', 
-                   values=as.numeric(dfByPosix$dateTime[1]),
-                   unlimited=FALSE,
-                   create_dimvar=TRUE)
-       )
-     
-     varList = list()
-     varList[[1]] <- 
-       list( name='discharge',
-             longname='Discharge.cubic_meters_per_second',
-             units='m^3/s',
-             precision = 'double',
-             #missing = ,
-             dimensionList=dimensionList,
-             data = dfByPosix$discharge.cms )
-     
-     globalAttList <- list()
-     globalAttList[[1]] <- list(name='Some reall atts',value='#$%^!!', precision="text" )
-     
-     dum <- MkNcdf( varList, file='~/test2.nc')
-
     
+    ## could have multiple of the same station at a given time. 
+    ## simly take the most recent. if it got this far it has had some qc
+    dfByPosix <- plyr::ddply(dfByPosix, plyr::.(site_no),
+                             function(df) df[which.max(df$queryTime)[1],])
+      
+    ## need to set the missing value used by ncdf4? i think it's NA by default
+    dimensionList <-
+     list(  # n.b. the dimension order: z,y,x,t
+       stationId=list(name='stationId',
+                      units='', 
+                      values=as.numeric(dfByPosix$site_no),
+                      unlimited=TRUE,
+                      create_dimvar=TRUE),
+       time=list(name='time',
+                 units='seconds since 1970-01-01 00:00:00 UTC', 
+                 values=as.integer(dfByPosix$dateTime[1]),
+                 unlimited=FALSE,
+                 create_dimvar=TRUE),
+       codeStrLen=list(name='codeStrLen',
+                       units='', 
+                       values=1:4,
+                       unlimited=FALSE,
+                       create_dimvar=FALSE)
+     )
+     
+    varList = list()
+    varList[[1]] <- 
+      list( name='discharge',
+            longname='Discharge.cubic_meters_per_second',
+            units='m^3/s',
+            precision = 'double',
+            #missing = ,
+            dimensionList=dimensionList[c('stationId','time')],
+            data = dfByPosix$discharge.cms )
+
+    varList[[2]] <- 
+      list( name='variance',
+            longname='Discharge.variance',
+            units='m^6/s^2',
+            precision = 'double',
+            #missing = ,
+            dimensionList=dimensionList[c('stationId','time')],
+            data = .1*dfByPosix$variance )
+    
+    varList[[3]] <- 
+      list( name='discharge_code',
+            longname='Discharge.code.USGS',
+            units='-',
+            precision = 'char',
+            #missing = ,
+            dimensionList=dimensionList[c('codeStrLen','stationId','time')],
+            data = dfByPosix$code )
+    
+    varList[[4]] <- 
+      list( name='queryTime',
+            longname='queryTime',
+            units='seconds since 1970-01-01 00:00:00 local TZ',
+            precision = 'double',
+            #missing = ,
+            dimensionList=dimensionList[c('stationId','time')],
+            data = as.integer(dfByPosix$queryTime) )
+  
+    globalAttList <- list()
+    globalAttList[[1]] <- list(name='Some reall atts',value='#$%^!!', precision="text" )
+     
+    MkNcdf( varList, globalAttList=globalAttList, 
+            file=paste0(outPath,'/',fileName), 
+            overwrite=TRUE )
 }
 
+##====================================================================================
 TimeSliceFileName <- function(POSIXct)
   paste0(format(POSIXct,'%Y-%m-%d_%H:%M:%S'), '.usgsTimeSlice.ncdf')
 
+##====================================================================================
+#'
+#' Read a USGS discharge data timeslice from a netcdf file. 
+#' 
+#' This is kind of the inverse of WriteNcTimeSlice to be used in extending existing
+#' timeslices on file.
+#' @param file, the ncdf file to read.
+#' @examples
+#' sliceFiles <- list.files('~/usgsStreamData/timeSliceData/','.*', full.names=TRUE)
+#' ReadNcTimeSlice(tail(sliceFiles,1))
+#' @keywords internal
+#' @export
+ReadNcTimeSlice <- function(file) {  
+  ncRead <- ncdf4::nc_open(file)
+
+  varNames <- names(ncRead$var)
+  sliceDf <- as.data.frame(plyr::llply(NamedList(varNames),
+                           function(nn) ncdf4::ncvar_get(ncRead,nn)), stringsAsFactors=FALSE)
+  dimNames <- setdiff(names(ncRead$dim),'codeStrLen')
+  for(dd in dimNames) {
+    sliceDf[[dd]] <- ncdf4::ncvar_get(ncRead,dd)
+  }
+  ncdf4::nc_close(ncRead)
   
+  sliceDf$queryTime <- as.POSIXct('1970-01-01 00:00:00',tz='UTC') + sliceDf$queryTime
+  sliceDf$time      <- as.POSIXct('1970-01-01 00:00:00',tz='UTC') + sliceDf$time
+  
+  sliceDf <- plyr::rename(sliceDf, c("discharge"="discharge.cms",
+                                     "time"="dateTime",
+                                     "discharge_code"="code",
+                                     "stationId"="site_no"))
+  
+  sliceDf
+}
   
