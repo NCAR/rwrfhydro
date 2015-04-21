@@ -25,6 +25,10 @@ before_script:
 after_script:
   - "./travis-tool.sh dump_logs"
 
+branches:
+  except:
+  - procUsgs
+
 notifications:
   email:
     on_success: change
