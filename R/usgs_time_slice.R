@@ -1,3 +1,4 @@
+##===================================================================
 #' Make timeslices from active USGS discharge data files. 
 #' 
 #' @param realTimeFiles Character vector of active RData format files to be processed. 
@@ -17,26 +18,44 @@
 #' @return A dataframe with two columns: \code{POSIXct} and \code{filename} which given the
 #' time of the timeslice and the corresponding file name with full path. 
 #' @examples
+#' \dontrun{
 #' realTimeFiles <- list.files(pattern='huc.*.RData', 
 #'                             path='~/usgsStreamData/realTimeData', 
 #'                             full.names=TRUE)
 #' outPath = '~/usgsStreamData/timeSliceData/'
 #' library(doMC)
 #' registerDoMC(4)
-
+#' 
+#' ## A first test
 #' ret1 <- MkUsgsTimeSlice( realTimeFiles[1:21], outPath=outPath, 
 #'                          oldest=as.POSIXct('2015-04-15 00:00:00', tz='UTC') )
 #' nrow(ret1)
 #' 
+#' ## delete the files and see how many more are created without the oldestTime set
+#' unlink(ret1$file)
 #' ret1 <- MkUsgsTimeSlice( realTimeFiles[1:21], outPath=outPath )
-#' nrow(ret1)
-#' ncdump(ret1$V1[230])
+#' nrow(ret1)  ## quite a few more files. 
+#' ncdump(ret1$file[230])  ## 27 stations
 #' ret2 <- MkUsgsTimeSlice( realTimeFiles[22:42], outPath=outPath )
-#' ncdump(ret1$V1[230])
+#' ncdump(ret1$file[230])  ## 58 stations
 #' 
-#' ret1 <- MkUsgsTimeSlice( realTimeFiles, outPath=outPath, 
-#'                         oldest=as.POSIXct('2015-04-15 00:00:00', tz='UTC') )
-#' ncdump(ret1[1,2])
+#' ## new experiment
+#' unlink(unique(c(ret1$file, ret2$file)))
+#' ret1 <- MkUsgsTimeSlice( realTimeFiles, outPath=outPath, nearest=60,
+#'                         oldest=as.POSIXct('2015-04-15 00:00:00', tz='UTC'), 
+#'                         processed='~/usgsStreamData/realTimeDataPROCESSED/' )
+#' nStn <- 
+#'   plyr::ldply(NamedList(ret1$file), 
+#'               function(ff) { nc <- ncdump(ff, quiet=TRUE)
+#'                              data.frame(nStn=nc$dim$stationId$len,
+#'                                         time=as.POSIXct('1970-01-01 00:00:00',tz='UTC') + nc$dim$time$vals,
+#'                                        nUniqueStn = length(unique(nc$dim$stationId$vals)) )},
+#'              .parallel=TRUE)
+#' library(ggplot2)
+#' ggplot(nStn, aes(x=time,y=nStn)) + geom_point(color='red')
+#' 
+#' 
+#' ## end dontrun }  
 MkUsgsTimeSlice <- function( realTimeFiles, outPath, 
                              nearestMin=5, 
                              oldestTime=NULL,
@@ -97,10 +116,17 @@ MkUsgsTimeSlice <- function( realTimeFiles, outPath,
                          WriteNcTimeSlice, 
                          outPath, 
                          .parallel=(foreach::getDoParWorkers() > 1 ) ) #, .inform=TRUE )
+  
+  if(!missing(processedInputPath)) {
+    fileNameNoPath <- plyr::laply(strsplit(realTimeFiles,'\\/'), function(ss) tail(ss,1))
+    dum <- file.rename(realTimeFiles, paste0(processedInputPath,'/',fileNameNoPath))
+  }
+
   names(outList) <- c('POSIXct', 'file')
   outList  
 }
 
+##===================================================================
 #' Round a POSIXct time to the nearest mth minute.
 #' 
 #' @param POSIXct, POSIXct class vector. 
@@ -122,4 +148,70 @@ RoundMinutes <- function(POSIXct, nearest=5) {
   diffMin <- roundMin - theMin
   #lubridate::round_date(POSIXct,'minute') + lubridate::seconds(round(diffMin*60))
   lubridate::round_date(POSIXct,'minute') + lubridate::minutes(round(diffMin))
+}
+
+##===================================================================
+QcUsgsTimeSlice <- function() {
+
+  # CODES FROM 
+  # http://water.usgs.gov/GIS/metadata/usgswrd/XML/nwis_surface_water.xml
+
+  #Instantaneous Value Qualification Code (uv_rmk_cd) 
+  #  e     The value has been edited or estimated by USGS personnel
+  #  A     The value is affected by ice at the measurement site.
+  #  B     The value is affected by backwater at the measurement site.
+  #  R     The rating is undefined for this value
+  #  &     This value is affected by unspecified reasons.
+  #  K     The value is affected by  instrument calibration drift.
+  #  X     The value is erroneous. It will not be used.
+  #  <     The Value is known to be less than reported value
+  #  >     The value is known to be greater than reported value
+  #  E     The value was computed from an estimated value
+  #  F     The value was modified due to automated filtering.
+  
+  ## map the instanataneous qualifier to an action to be taken
+  ivQualifCdMap <- c(
+      'e' = 'ok',           # The value has been edited or estimated by USGS personnel
+      'A' = 'remove',       # The value is affected by ice at the measurement site.
+      'B' = 'remove',       # The value is affected by backwater at the measurement site.
+      'R' = 'xtra.uncert',  # The rating is undefined for this value
+      '&' = 'remove',       # This value is affected by unspecified reasons.
+      'K' = 'remove',       # The value is affected by  instrument calibration drift.
+      'X' = 'remove',       # The value is erroneous. It will not be used.
+      '<' = '',             # The Value is known to be less than reported value
+      '>' = '',             # The value is known to be greater than reported value
+      'E' = '',             # The value was computed from an estimated value
+      'F' = ''              # The value was modified due to automated filtering.
+  )
+  
+  
+  #Instantaneous and Daily Value Status Codes
+  #  Ssn    Parameter monitored seasonally
+  #  Ice    Ice affected
+  #  Pr     Partial-record site
+  #  Rat    Rating being developed or revised
+  #  Eqp    Equipment malfunction
+  #  Fld    Flood damage
+  #  Dis    Data-collection discontinued
+  #  Dry    Dry
+  #  --     Parameter not determined
+  #  Mnt    Maintenance in progress
+  #  ZFl    Zero flow
+  #  ***    Temporarily unavailable
+   
+  ivStatusCdMap <- c(
+    'Ssn' = '',     #   Parameter monitored seasonally
+    'Ice' = '',     #   Ice affected
+    'Pr ' = '',     #   Partial-record site
+    'Rat' = '',     #   Rating being developed or revised
+    'Eqp' = '',     #   Equipment malfunction
+    'Fld' = '',     #   Flood damage
+    'Dis' = '',     #   Data-collection discontinued
+    'Dry' = '',     #   Dry
+    '-- ' = '',     #   Parameter not determined
+    'Mnt' = '',     #   Maintenance in progress
+    'ZFl' = '',     #   Zero flow
+    '***' = ''      #   Temporarily unavailable
+  )
+  
 }
