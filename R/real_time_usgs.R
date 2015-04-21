@@ -48,7 +48,7 @@ nhrs <- 5
 nrow(latentDf)
 library(ggplot2)
 ggplot(subset(latentDf, abs(deltaT.min) < nhrs*60 & deltaT.min < 0), 
-       aes(x=deltaT.min, y=..count../566558 )) + 
+       aes(x=deltaT.min, y=..count../331072 )) + 
   geom_histogram(fill='lightblue', alpha=.5, binwidth=15, color='orange') + 
   scale_x_continuous(breaks=15*( (-1*(nhrs*4)):0 ), 
                      name='Time of obs relative to retrieval time (minutes)') +
@@ -60,7 +60,7 @@ cdfDelta <- ecdf(latentDf$deltaT.min)
 cumProb  <- cdfDelta(seq(-135,0, by=15))
 names(cumProb) <- seq(-135,0, by=15)
 cumProb
-## yea! forecast observations are in the data set!
+
 binProb  <- diff(cdfDelta(seq(-135,0, by=15)))
 names(binProb) <- paste0(seq(-135,-15,by=15), ':', seq(-120,0,by=15))
 binProb
