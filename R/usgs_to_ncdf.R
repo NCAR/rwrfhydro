@@ -38,7 +38,7 @@ if(FALSE){
 ## as success, that's a plyr::daply. 
 
 #' @export
-MkNcPrettyUsgs <- function(prettyDf, outPath='.') {
+WriteNcPrettyUsgs <- function(prettyDf, outPath='.') {
   
   ## break up by site*product until we get ragged arrays. 
   
@@ -64,3 +64,65 @@ MkNcPrettyUsgs <- function(prettyDf, outPath='.') {
   
   
 }
+
+
+#' Write timeslice data
+#' 
+#' @examples
+#' 
+#' @export
+WriteNcTimeSlice <- function(dfByPosix, outPath, varianceFunction) {
+    
+    #str(dfByPosix)
+    fileName <- TimeSliceFileName(dfByPosix$dateTime[1])
+    
+    ## does the file exist
+    if(!file.exists(fileName)) {
+      # This is append to netcdf
+      print("file exists")
+      str(dfByPosix)
+      
+      ## have to check?
+      ## 1) if station(s) already exists in the file
+      ## and, if so, 1.2) if the value(s) is(are) the same.
+    }
+      stop()
+      
+     ## need to set the missing value used by ncdf4? i think it's NA by default
+     dimensionList <-
+       list(  # n.b. the dimension order: z,y,x,t
+         stationId=list(name='stationId',
+                        units='', 
+                        values=as.numeric(dfByPosix$site_no),
+                        unlimited=TRUE,
+                        create_dimvar=TRUE),
+         time=list(name='time',
+                   units='seconds since 1970-01-01 00:00:00 UTC', 
+                   values=as.numeric(dfByPosix$dateTime[1]),
+                   unlimited=FALSE,
+                   create_dimvar=TRUE)
+       )
+     
+     varList = list()
+     varList[[1]] <- 
+       list( name='discharge',
+             longname='Discharge.cubic_meters_per_second',
+             units='m^3/s',
+             precision = 'double',
+             #missing = ,
+             dimensionList=dimensionList,
+             data = dfByPosix$discharge.cms )
+     
+     globalAttList <- list()
+     globalAttList[[1]] <- list(name='Some reall atts',value='#$%^!!', precision="text" )
+     
+     dum <- MkNcdf( varList, file='~/test2.nc')
+
+    
+}
+
+TimeSliceFileName <- function(POSIXct)
+  paste0(format(POSIXct,'%Y-%m-%d_%H:%M:%S'), '.usgsTimeSlice.ncdf')
+
+  
+  
