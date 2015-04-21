@@ -1,3 +1,5 @@
+[![Travis-CI Build Status](https://travis-ci.org/mccreigh/rwrfhydro.png?branch=master)](https://travis-ci.org/mccreigh/rwrfhydro)
+
 # rwrfhydro
 A community-contributed tool box for managing, analyzing, and visualizing WRF Hydro (and HydroDART) input and output files in R.
 
