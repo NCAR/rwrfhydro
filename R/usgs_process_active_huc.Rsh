@@ -3,7 +3,7 @@
 ## 1: queryTime: character, the dateId denoting the query time.
 ## 2  inPath:    character, the path for the input files. 
 ## 2: outPath:   character, the directory where the output is to be placed.
-library(rwrfhydro)
+suppressPackageStartupMessages(library(rwrfhydro))
 
 args <- commandArgs(TRUE)
 
@@ -29,6 +29,9 @@ queryFiles <- list.files(path=inPath, pattern=queryTime,
 if(!length(queryFiles)) {
   write("There were no real time files to process!", stderr())
 }
+
+print(queryFiles)
+print(outPath)
 
 ret1 <- MkUsgsTimeSlice( queryFiles, 
                          outPath=outPath, 

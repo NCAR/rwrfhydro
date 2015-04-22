@@ -3,7 +3,7 @@
 ## 1: huc2 code: character, a huc two in 01:21
 ## 2: outPath: character, the directory where the output is to be placed.
 ## 3: dateId: character, a date time identifier
-library(rwrfhydro)
+suppressPackageStartupMessages(library(rwrfhydro))
 
 args <- commandArgs(TRUE)
 
