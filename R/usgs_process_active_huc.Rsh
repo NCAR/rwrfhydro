@@ -30,15 +30,16 @@ if(!length(queryFiles)) {
   write("There were no real time files to process!", stderr())
 }
 
-dput(queryFiles)
-dput(outPath)
+suppressPackageStartupMessages(library(lubridate))
+suppressPackageStartupMessages(library(doMC))
+registerDoMC(16)
 
-options(warn=1)
-ret1 <- MkUsgsTimeSlice( queryFiles, 
-                         outPath=outPath, 
-                         nearest=60,
-                         oldest=as.POSIXct('2015-04-15 00:00:00', tz='UTC')
-                        )
+oldest <- as.POSIXct('2015-04-15 00:00:00', tz='UTC')
+nearest <- 60
+#options(warn=1)
+ret1 <- MkUsgsTimeSlice( queryFiles, outPath=outPath, 
+                         nearest=nearest, oldest=oldest )
+
 
 ## a message for standard out diagnostics
-write(ret1, stdout())
+print(ret1)
