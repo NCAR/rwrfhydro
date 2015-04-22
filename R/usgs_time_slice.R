@@ -11,8 +11,6 @@
 #' procedures involving the temporal domain will be applied elsewhere. 
 #' @param varianceFunction Function, used to derive the observation variance from 
 #' a dataframe with the following columns: \code{site_no}, \code{dateTime}, \code{code}, 
-#' @param processedInputPath Character, a directory path to which proccessed input files are 
-#' moved upon successful processing to ncdf timeslice files. 
 #' \code{queryTime}, and \code{discharge.cms}. The function accepts the dataframe and 
 #' returns the data frame with the new \code{variance} column. 
 #' @return A dataframe with two columns: \code{POSIXct} and \code{filename} which given the
@@ -42,8 +40,7 @@
 #' ## new experiment
 #' unlink(unique(c(ret1$file, ret2$file)))
 #' ret1 <- MkUsgsTimeSlice( realTimeFiles, outPath=outPath, nearest=60,
-#'                         oldest=as.POSIXct('2015-04-15 00:00:00', tz='UTC'), 
-#'                         processed='~/usgsStreamData/realTimeDataPROCESSED/' )
+#'                         oldest=as.POSIXct('2015-04-15 00:00:00', tz='UTC'))
 #' nStn <- 
 #'   plyr::ldply(NamedList(ret1$file), 
 #'               function(ff) { nc <- ncdump(ff, quiet=TRUE)
@@ -74,8 +71,7 @@
 #' for (ii in 1:1 ) {
 #' ret1 <- MkUsgsTimeSlice( realTimeFiles[chunkDf$start[ii]:chunkDf$end[ii]], 
 #'                          outPath=outPath, nearest=60,
-#'                          oldest=as.POSIXct('2015-04-15 00:00:00', tz='UTC')#, 
-#'                          #processed='~/usgsStreamData/realTimeDataPROCESSED/'
+#'                          oldest=as.POSIXct('2015-04-15 00:00:00', tz='UTC')
 #'                        )
 #' }
 #' 
@@ -84,8 +80,7 @@ MkUsgsTimeSlice <- function( realTimeFiles, outPath,
                              nearestMin=5, 
                              oldestTime=NULL,
                              qcFunction, 
-                             varianceFunction, 
-                             processedInputPath){
+                             varianceFunction ){
 
   ## get all the active data from the specified files
   GetActiveData <- function(file) {
@@ -141,11 +136,6 @@ MkUsgsTimeSlice <- function( realTimeFiles, outPath,
                          outPath, 
                          .parallel=(foreach::getDoParWorkers() > 1 ) ) #, .inform=TRUE )
   
-  if(!missing(processedInputPath)) {
-    fileNameNoPath <- plyr::laply(strsplit(realTimeFiles,'\\/'), function(ss) tail(ss,1))
-    dum <- file.rename(realTimeFiles, paste0(processedInputPath,'/',fileNameNoPath))
-  }
-
   names(outList) <- c('POSIXct', 'file')
   outList  
 }
