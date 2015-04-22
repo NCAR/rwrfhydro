@@ -76,6 +76,9 @@
 #' }
 #' 
 #' ## end dontrun }  
+#' @family usgs
+#' @concept usgs
+#' @export
 MkUsgsTimeSlice <- function( realTimeFiles, outPath, 
                              nearestMin=5, 
                              oldestTime=NULL,

@@ -16,6 +16,7 @@ if(!file.exists(inPath)) {
   warning(paste0('inPath DNE: ',inPath))
   return(NULL)
 }
+
 ## arg 2: outPath
 outPath <- args[3]
 if(!file.exists(outPath)) {
@@ -25,13 +26,15 @@ if(!file.exists(outPath)) {
 
 queryFiles <- list.files(path=inPath, pattern=queryTime, 
                          full.name=TRUE)
-## what happens if there are no files?
+if(!length(queryFiles)) {
+  write("There were no real time files to process!", stderr())
+}
 
-ret1 <- MkUsgsTimeSlice( rqueryFiles, 
-                          outPath=outPath, 
-                          nearest=60,
-                          oldest=as.POSIXct('2015-04-15 00:00:00', tz='UTC')#, 
-                          #processed='~/usgsStreamData/realTimeDataPROCESSED/'
+ret1 <- MkUsgsTimeSlice( queryFiles, 
+                         outPath=outPath, 
+                         nearest=60,
+                         oldest=as.POSIXct('2015-04-15 00:00:00', tz='UTC')
                         )
 
-ret1
+## a message for standard out diagnostics
+write(ret1, stdout())
