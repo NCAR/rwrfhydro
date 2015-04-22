@@ -1,37 +1,40 @@
 #!/opt/R/bin/Rscript
 ## arguments are
-## 1: queryTime: character, the dateId denoting the query time.
-## 2  inPath:    character, the path for the input files. 
-## 2: outPath:   character, the directory where the output is to be placed.
+## 1: huc2 code: character, a huc two in 01:21
+## 2: outPath: character, the directory where the output is to be placed.
+## 3: dateId: character, a date time identifier
 library(rwrfhydro)
 
 args <- commandArgs(TRUE)
 
 ## arg 1: huc
-queryTime <- args[1]
+huc <- formatC(as.numeric(args[1]), width=2, flag='0')
+if(!(huc %in% formatC(1:21, width=2, flag='0'))) return(NULL)
 
-## arg 2: inPath
-inPath <- args[2]
-if(!file.exists(inPath)) {
-  warning(paste0('inPath DNE: ',inPath))
-  return(NULL)
-}
 ## arg 2: outPath
-outPath <- args[3]
-if(!file.exists(outPath)) {
-  warning(paste0('outPath DNE: ',outPath))
-  return(NULL)
-}
+outPath <- args[2]
+print(outPath)
+if(!file.exists(outPath)) return(NULL)
 
-queryFiles <- list.files(path=inPath, pattern=queryTime, 
-                         full.name=TRUE)
-## what happens if there are no files?
+## arg 3
+dateId <- args[3]
 
-ret1 <- MkUsgsTimeSlice( rqueryFiles, 
-                          outPath=outPath, 
-                          nearest=60,
-                          oldest=as.POSIXct('2015-04-15 00:00:00', tz='UTC')#, 
-                          #processed='~/usgsStreamData/realTimeDataPROCESSED/'
-                        )
+## organize by time, then by HUC
+outPrefix <- paste0(outPath,'/',dateId,'.huc',huc)
+outTmp <- paste0(outPrefix,'.tmp')
+outFile <- paste0(outPrefix,'.RData')
 
-ret1
+## create a tmp file that indicates this task is still working
+system(paste0('touch ',outTmp))
+
+## diagnositc
+print(outFile)
+print(paste(huc, dateId, sep=': '))
+
+## pullTime and obSize are also diagnostic
+pullTime<- system.time( data<-GetActiveHucData(huc,parameterCd=c('00060')) )
+obSize <- format(object.size(data), units='MB')
+
+save(data, pullTime, obSize, file=outFile)
+
+system(paste0('rm ',outTmp))

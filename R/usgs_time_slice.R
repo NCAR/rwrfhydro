@@ -59,16 +59,16 @@
 #'                             full.names=TRUE)
 #' outPath = '~/usgsStreamData/timeSliceData/'
 #' library(doMC)
-#' registerDoMC(15)
+#' registerDoMC(12)
 #' 
-#' ## I'm worried about using too much memory, so break up the problem
+#' ## I'm worried about using too much memory, when I run this on all 
+#' ## previously collected data, so break up the problem
 #' chunkSize <- 1000
 #' chunkDf <- data.frame( ind = 0:(length(realTimeFiles) %/% chunkSize) )
 #' chunkDf <- within(chunkDf, { start = (ind)*chunkSize+1
 #'                              end   = pmin( (ind+1)*chunkSize, length(realTimeFiles)) } )
 #' 
-#' #for (ii in 1:nrow(chunkDf) ) {
-#' for (ii in 1:1 ) {
+#' for (ii in 1:nrow(chunkDf) ) {
 #' ret1 <- MkUsgsTimeSlice( realTimeFiles[chunkDf$start[ii]:chunkDf$end[ii]], 
 #'                          outPath=outPath, nearest=60,
 #'                          oldest=as.POSIXct('2015-04-15 00:00:00', tz='UTC')
