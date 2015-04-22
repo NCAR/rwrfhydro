@@ -30,8 +30,8 @@ if(!length(queryFiles)) {
   write("There were no real time files to process!", stderr())
 }
 
-print(queryFiles)
-print(outPath)
+dput(queryFiles)
+dput(outPath)
 
 ret1 <- MkUsgsTimeSlice( queryFiles, 
                          outPath=outPath, 
