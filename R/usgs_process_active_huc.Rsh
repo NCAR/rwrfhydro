@@ -33,6 +33,7 @@ if(!length(queryFiles)) {
 dput(queryFiles)
 dput(outPath)
 
+options(warn=1)ß
 ret1 <- MkUsgsTimeSlice( queryFiles, 
                          outPath=outPath, 
                          nearest=60,
