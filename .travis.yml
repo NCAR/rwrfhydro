@@ -16,6 +16,7 @@ env:
      - NOT_CRAN="true" 
 
 before_install:
+  - sudo apt-get update -qq
   - sudo apt-get install -qq libnetcdfc++4 netcdf-bin
 
 #before_script:
