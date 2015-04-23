@@ -10,8 +10,6 @@ os:
 env:
    global:
      - CRAN: http://cran.rstudio.com
-     - R_CHECK_ARGS="--no-vignettes --no-manual --no-examples"
-     - R_BUILD_ARGS="--no-build-vignettes --no-manual"
      - BOOTSTRAP_LATEX=""
      - NOT_CRAN="true" 
 
@@ -21,6 +19,19 @@ before_install:
 
 r_github_packages:
   - yihui/printr
+
+
+warnings_are_errors: false
+
+r_check_args: 
+  - "--no-vignettes"
+  - "--no-manual"
+  - "--no-examples"
+  - "--no-tests"
+
+r_build_args:
+  - "--no-build-vignettes"
+  - "--no-manual"
 
 branches:
   except:
