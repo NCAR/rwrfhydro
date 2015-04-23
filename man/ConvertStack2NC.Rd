@@ -34,8 +34,13 @@ same layer (date) naming convention.
 
 ConvertStack2NC(lai.b, outFile="BCNED_LAI.nc", varName="LAI", varUnit="(m^2)/(m^2)", varLong="Leaf area index")
 }
+\seealso{
+Other MODIS: \code{\link{CalcStatsRS}};
+  \code{\link{ConvertRS2Stack}}; \code{\link{GetMODIS}};
+  \code{\link{InsertRS}}; \code{\link{SmoothStack}}
+}
 \concept{
-aconcept
+MODIS dataMgmt
 }
 \keyword{IO}
 

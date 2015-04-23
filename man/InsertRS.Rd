@@ -50,8 +50,14 @@ InsertRS(lai.b, forcPath="FORCING", forcName="LDASIN_DOMAIN3", varName="LAI", va
 
 InsertRS("BCNED_LAI.nc", forcPath="FORCING", forcName="LDASIN_DOMAIN3", varName="LAI")
 }
+\seealso{
+Other MODIS: \code{\link{CalcStatsRS}};
+  \code{\link{ConvertRS2Stack}};
+  \code{\link{ConvertStack2NC}}; \code{\link{GetMODIS}};
+  \code{\link{SmoothStack}}
+}
 \concept{
-aconcept
+MODIS dataMgmt
 }
 \keyword{IO}
 

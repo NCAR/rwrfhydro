@@ -29,7 +29,7 @@ in standard GIS tools.
 ExportGeogrid("geo_em.d01_1km.nc", "HGT_M", "geogrid_hgt.tif")
 }
 \concept{
-aconcept
+dataMgmt
 }
 \keyword{IO}
 

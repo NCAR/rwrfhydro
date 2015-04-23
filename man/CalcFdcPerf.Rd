@@ -21,11 +21,11 @@ Also assumes model output and observation both contain POSIXct fields (called "P
 
 \item{strCol.obs}{The column name for the streamflow time series for the OBSERVED data (default="q_cms")}
 
-\item{stdate}{Start date for plot/statistics (DEFAULT=NULL, all records will be used).
+\item{stdate}{Start date for statistics (DEFAULT=NULL, all records will be used).
 Date MUST be specified in POSIXct format with appropriate timezone
 (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))}
 
-\item{enddate}{End date for plot/statistics (DEFAULT=NULL, all records will be used).
+\item{enddate}{End date for statistics (DEFAULT=NULL, all records will be used).
 Date MUST be specified in POSIXct format with appropriate timezone
 (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))}
 }
@@ -73,7 +73,7 @@ Output:
  0.9         0.08    0.16
 }
 \concept{
-aconcept
+modelEval
 }
 \keyword{ts}
 \keyword{univar}

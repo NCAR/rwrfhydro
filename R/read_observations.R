@@ -23,7 +23,8 @@
 #' obsStr5min.fc <- ReadUsgsGage("../OBS/STRFLOW/5min_str_06727500_110401_140810.txt")
 #' obsStr5min.fc <- ReadUsgsGage("../OBS/STRFLOW/5min_str_06727500_110401_140810.txt, returnEnglish=FALSE")
 #' @keywords IO
-#' @concept aconcept
+#' @concept dataGet
+#' @family obsDataReads
 #' @export
 ReadUsgsGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, timeZone=NULL) {
 
@@ -128,9 +129,10 @@ ReadUsgsGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, ti
 #' obsStr15min.alaterco <- ReadCoDwrGage("../OBS/STRFLOW/ALATERCO_41715103512.txt")
 #' obsStr15min.alaterco <- ReadUsgsGage("../OBS/STRFLOW/ALATERCO_41715103512.txt", returnEnglish=FALSE)
 #' @keywords IO
-#' @concept aconcept
+#' @concept dataGet
+#' @family obsDataReads
 #' @export
-ReadCoDwrGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, timeZone=NULL) {
+ReadCoDwrGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, timeZone="MST") {
   # Manually remove commented lines since cannot automate due to mismatch between column names and column count
   ncomm <- as.integer(system(paste('grep "#"', pathGageData, '| wc -l'), intern=TRUE))
   outDf <- read.table(pathGageData, sep="\t", stringsAsFactors=F, skip=ncomm+1,
@@ -175,7 +177,7 @@ ReadCoDwrGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, t
     }
   }
   # Deal with time
-  if (is.null(timeZone)) { timeZone <- "America/Denver" } # assuming local time for all gages?
+  #if (is.null(timeZone)) { timeZone <- "MST" } # assuming local time for all gages, no daylight savings?
   usgsTimeFmt <- if (grepl(" ",outDf$datetime[1])) {
     "%Y-%m-%d %H:%M" # instantaneous
   } else { "%Y-%m-%d" }  # daily avg
@@ -207,7 +209,8 @@ ReadCoDwrGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, t
 #'
 #' obsFlux30min.usnc2 <- ReadAmerifluxNC("../OBS/FLUX/AMF_USNC2_2005_L2_WG_V003.nc", "America/New_York")
 #' @keywords IO
-#' @concept aconcept
+#' @concept dataGet
+#' @family obsDataReads
 #' @export
 ReadAmerifluxNC <- function(pathFluxData, timeZone) {
     ncFile <- nc_open(pathFluxData)
@@ -254,7 +257,8 @@ ReadAmerifluxNC <- function(pathFluxData, timeZone) {
 #'
 #' obsFlux30min.usnr1 <- ReadAmerifluxCSV("../OBS/FLUX/AMF_USNR1_2013_L2_GF_V008.csv", "America/Denver")
 #' @keywords IO
-#' @concept aconcept
+#' @concept dataGet
+#' @family obsDataReads
 #' @export
 ReadAmerifluxCSV <- function(pathFluxData, timeZone) {
     outDf <- read.table(pathFluxData, sep=",", skip=20, na.strings=c(-6999,-9999), strip.white=T)

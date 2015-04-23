@@ -30,8 +30,13 @@ time series of images.
 stats.lai.b <- CalcStatsRS(lai.b)
 with(stats.lai.b, plot(POSIXct, mean, typ='l'))
 }
+\seealso{
+Other MODIS: \code{\link{ConvertRS2Stack}};
+  \code{\link{ConvertStack2NC}}; \code{\link{GetMODIS}};
+  \code{\link{InsertRS}}; \code{\link{SmoothStack}}
+}
 \concept{
-aconcept
+MODIS dataAnalysis
 }
 \keyword{univar}
 

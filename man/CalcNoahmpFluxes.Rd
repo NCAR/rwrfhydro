@@ -26,8 +26,13 @@ NOTE: Currently only works for runs using NoahMP as the LSM.
 
 modLDASOUT1d.nort.fc <- CalcNoahmpFluxes(modLDASOUT1d.nort.fc)
 }
+\seealso{
+Other modelEvaluation: \code{\link{CalcModPerfMulti}};
+  \code{\link{CalcModPerf}};
+  \code{\link{CalcNoahmpWatBudg}}
+}
 \concept{
-aconcept
+dataMgmt
 }
 \keyword{manip}
 

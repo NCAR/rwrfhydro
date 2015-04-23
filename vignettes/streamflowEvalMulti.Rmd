@@ -1,6 +1,6 @@
 ---
 title: "Evaluate streamflow simulations over multiple basins with rwrfhydro"
-author: "Aubrey Dugger and James McCreight"
+author: "Aubrey Dugger"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
@@ -10,7 +10,7 @@ vignette: >
 ---
 
 # Background
-We are using WRF-Hydro to predict streamflow for multiple basins in the Upper Rio Grande for 2004-2014. We ran WRF-Hydro with NoahMP as the LSM for the 10-year period with hourly output. We want to evaluate model performance at various gage stations in the domain.
+We are using WRF-Hydro to predict streamflow for multiple basins in the Upper Rio Grande for 2004-2014. We ran WRF-Hydro in LSM-only mode (no routing) with NoahMP as the LSM for the 10-year period with daily output. We want to evaluate model performance at various gage stations in the domain.
 
 Load the rwrfhydro package. 
 ```{r}
@@ -22,26 +22,60 @@ options(width = 190)
 library(printr)
 ```
 
-Set a data path to the Fourmile Creek test case.
+Set the data paths for the Upper Rio Grande (test case general, model output, streamflow observations, basin masks).
 ```{r}
-dataPath <- '~/wrfHydroTestCases/Upper_RioGrande/'
+casePath <- '~/wrfHydroTestCases/Upper_RioGrande/'
+outPath <- '~/wrfHydroTestCases/Upper_RioGrande/OUTPUT_WY2014'
+obsPath <- '~/wrfHydroTestCases/Upper_RioGrande/OBS/STRFLOW'
+mskPath <- '~/wrfHydroTestCases/Upper_RioGrande/DOMAIN/MASKS'
+```
+
+Create a lookup list to match basin mask ID to gage ID.
+```{r}
+idList <- list("alamosa_1k"="ALATERCO", 
+               "conejos_1k"="CONMOGCO", 
+               "s_frk_1k"="RIOSFKCO", 
+               "rio_wagw_1k"="RIOWAGCO", 
+               "saguache_1k"="SAGSAGCO", 
+               "trinchera_1k"="TRITURCO")
 ```
 
 # Import observed datasets
 
-Import all gage data from data files we downloaded from the CO DWR website. First, we specify where the gage data files live and build a file list.
+Import all gage data from data files we downloaded from the CO DWR website. First, we build a file list.
 ```{r}
-gageDir <- paste0(dataPath, "/OBS/STRFLOW")
-fileList <- list.files(gageDir, pattern=glob2rx("*.txt"))
+obsList <- list.files(obsPath, pattern=glob2rx("*.txt"))
 ```
 
-Then, we loop through the files and built a single dataframe with all the gage data
+Then, we loop through the files and built a single dataframe with all the gage data. We use the ReadCoDwrGage tool to import the individual gage files.
 ```{r}
 obsStr <- data.frame()
-for (i in 1:length(fileList)) {
-  tmp <- ReadCoDwrGage(paste0(gageDir, "/", fileList[i]))
+for (i in 1:length(obsList)) {
+  tmp <- ReadCoDwrGage(paste0(obsPath, "/", obsList[i]))
   obsStr <- plyr::rbind.fill(obsStr,tmp)
 }
+```
+
+To view the first few lines of our observed dataframe:
+```{r}
+head(obsStr)
+```
+
+Until we can automate this from the data download side, we will have to manually set the gage drainage areas. We will set it up as an attribute to the observation dataframe.
+```{r}
+attr(obsStr, "area_sqmi") <- c(ALATERCO=107, CONMOGCO=282, RIOSFKCO=216, 
+                               RIOWAGCO=780, SAGSAGCO=595, TRITURCO=45)
+attr(obsStr, "gage_name") <- c(ALATERCO="ALAMOSA RIVER ABOVE TERRACE RESERVOIR",
+                               CONMOGCO="CONEJOS RIVER NEAR MOGOTE",
+                               RIOSFKCO="SOUTH FORK RIO GRANDE RIVER AT SOUTH FORK",
+                               RIOWAGCO="RIO GRANDE RIVER AT WAGON WHEEL GAP",
+                               SAGSAGCO="SAGUACHE CREEK NEAR SAGUACHE",
+                               TRITURCO="TRINCHERA CREEK ABOVE TURNER'S RANCH")
+```
+
+To access this attribute:
+```{r}
+attributes(obsStr)$area_sqmi
 ```
 
 We can double-check to make sure we have all of the gages we expect.
@@ -50,7 +84,7 @@ unique(obsStr$Station)
 ```
 
 And we can plot hydrographs for any of the gages.
-```{r}
+```{r plotHydro_OBS, fig.width = 12, fig.height = 6, out.width='700', out.height='350'}
 with(subset(obsStr, obsStr$Station=="ALATERCO"), plot(POSIXct, q_cms, typ='l', col='blue'))
 with(subset(obsStr, obsStr$Station=="SAGSAGCO"), lines(POSIXct, q_cms, col='green'))
 legend("topright", c("ALATERCO","SAGSAGCO"), col=c("blue","green"), lty=c(1,1))
@@ -58,140 +92,167 @@ legend("topright", c("ALATERCO","SAGSAGCO"), col=c("blue","green"), lty=c(1,1))
 
 # Import model results
 
-Calculate basin-averaged LSM water fluxes. The LSM was run at 1km resolution and the high-res hydro grid was 100m resolution, so our aggregation factor is 10. We are going to use R's multi-core capability (make sure  doMC is installed) and run this summary over 8 cores.
-
-We loop through the number of basins modelled.
+We are going to use R's multi-core capability (make sure  doMC is installed) and run this summary over 8 cores.
 ```{r}
-mskDir <- paste0(dataPath, "/DOMAIN/MASKS")
-fileList <- list.files(gageDir, pattern=glob2rx("*.nc"))
-for (i in 1:6)
-modLdasoutWb1h.allrt.fc <- ReadLdasoutWb(paste0(dataPath, '/OUTPUT'), 
-                                         paste0(dataPath, '/DOMAIN/Fulldom_hires_hydrofile.nc'), 
-                                         mskvar="basn_msk", basid=1, aggfact=10, ncores=8)
+library(doMC)
+registerDoMC(8)
 ```
 
-Calculate basin-averaged routing water fluxes. 
+We loop through the predefined basin masks and use ReadLdasoutWb to calculate the basin-averaged water budget components. Since we have already resampled the high-res basins to the low-res geogrid and set each mask value to 1, we set basid to 1 and aggfact to 1 (no aggregation). We will also grab the basin area for each mask (as a cell count) and track it as an attribute to the output dataframe.
 ```{r}
-modRtout1h.allrt.fc <- ReadRtout(paste0(dataPath, '/RUN.RTTESTS/OUTPUT_ALLRT_DAILY'), 
-                                 paste0(dataPath, '/DOMAIN/hydro_OrodellBasin_100m.nc'), 
-                                 mskvar="basn_msk", basid=1, ncores=8)
+mskList <- list.files(mskPath, pattern=glob2rx("*.nc"))
+modLdasout <- data.frame()
+tmparea<-data.frame(matrix(nrow=1,ncol=0))
+for (i in 1:length(mskList)) {
+  tmp <- ReadLdasoutWb(outPath, paste0(mskPath, "/", mskList[i]), 
+                       mskvar="basn_msk", basid=1, aggfact=1, ncores=8)
+  tmp$Station <- idList[[unlist(strsplit(mskList[i], "[.]"))[1]]]
+  modLdasout <- rbind(modLdasout, tmp)
+  tmparea[,idList[[unlist(strsplit(mskList[i], "[.]"))[1]]]] <- attributes(tmp)$area_cellcnt
+}
+attr(modLdasout, "area_cellcnt") <- tmparea
 ```
 
-Import groundwater outflow model output.
+To view the first few lines of our model output dataframe:
 ```{r}
-modGwout.allrt.fc <- ReadGwOut(paste0(dataPath, '/RUN.RTTESTS/OUTPUT_ALLRT_DAILY/GW_outflow.txt'))
+head(modLdasout)
 ```
 
+And to view the basin area attribute:
+```{r}
+attributes(modLdasout)$area_cellcnt
+```
+
+This model output gives us accumulated mm and mm per time step. We need to calcuate flowrates in cms. The ReadLdasoutWb returns the basin area as a (geogrid) cell count, and since we know the cellsize to be 1km, we can calculate flowrate as a volume.
+```{r}
+gageList <- unique(modLdasout$Station)
+modLdasout$q_cms <- NA
+for (i in 1:length(gageList)) {
+  basarea <- attributes(modLdasout)$area_cellcnt[[gageList[i]]]
+  timestep <- as.integer(difftime(modLdasout$POSIXct[2], modLdasout$POSIXct[1], units="secs"))
+  # Conversion: 1000 = mm * km^2 to m^3
+  modLdasout$q_cms[modLdasout$Station==gageList[i]] <- 
+                                with(subset(modLdasout, modLdasout$Station==gageList[i]), 
+                                (DEL_SFCRNOFF+DEL_UGDRNOFF) * basarea / timestep * 1000)           
+}
+```
 
 # Plot hydrographs 
 
-Compare hydrographs for the full model run.
-```{r compHydrographs, fig.width = 12, fig.height = 6, out.width='700', out.height='350'}
-PlotFluxCompare(obsStr5min.fc, "q_cms", modStrd.chrt.fc, "q_cms", strDf.mod2=modStrd.allrt.fc, 
-     strCol.mod2="q_cms", labelObs="Observed Fourmile Creek at Orodell", 
-     labelMod1="Channel Routing Only", labelMod2="All Routing", 
-     title="Streamflow: Fourmile Creek")
+Compare hydrographs for a single basin.
+```{r plotHydro_ALATERCO, fig.width = 12, fig.height = 6, out.width='700', out.height='350'}
+stnid <- "ALATERCO"
+PlotFluxCompare(subset(obsStr, obsStr$Station==stnid), "q_cms", 
+                subset(modLdasout, modLdasout$Station==stnid), "q_cms", 
+                labelObs=paste0("Observed at ", stnid), labelMod1="Model", 
+                title=paste0("Streamflow: ", attributes(obsStr)$gage_name[[stnid]]))
 ```
 
-Now limit the plot to the peak May flow period only. The reported stats are updated to the new time period. (Note that the R warning is innocuous because the subset adjusts for timezone, so it's ok that the timezones don't match.)
-```{r compHydrographsSnow, fig.width = 12, fig.height = 6, out.width='700', out.height='350'}
-PlotFluxCompare(obsStr5min.fc, "q_cms", modStrd.chrt.fc, "q_cms", strDf.mod2=modStrd.allrt.fc, 
-     strCol.mod2="q_cms", labelObs="Observed Fourmile Creek at Orodell", 
-     labelMod1="Channel Routing Only", labelMod2="All Routing", 
-     title="Streamflow: Fourmile Creek", 
-     stdate=as.POSIXct("2013-05-01 00:00:00", format="%Y-%m-%d %H:%M:%S", tz="UTC"), 
-     enddate=as.POSIXct("2013-05-31 00:00:00", format="%Y-%m-%d %H:%M:%S", tz="UTC"))
-```
-
-# Review flow duration curves
-
-<b>NOTE</b>: You generally evaluate flow duration curves and staistics over much longer time periods (e.g., multiple years) than what we demo here. To make the test case more portable, we are only evaluating once-a-day model output over 5 months. 
-
-Calculate percent exceedances for flow duration curves. Note that we need to subset the observations to match our model run output times, and vice versa.
+Or create a loop to output PNGs for each basin.
 ```{r}
-obsStr5min.comp.fc <- CalcFdc(subset(obsStr5min.fc, POSIXct %in% c(modStrd.chrt.fc$POSIXct)))
-modStrd.chrt.comp.fc <- CalcFdc(subset(modStrd.chrt.fc, POSIXct %in% c(obsStr5min.comp.fc$POSIXct)))
-modStrd.allrt.comp.fc <- CalcFdc(subset(modStrd.allrt.fc, POSIXct %in% c(obsStr5min.comp.fc$POSIXct)))
+for (i in 1:length(gageList)) {
+  png(paste0(casePath, "hydro_wy2014_", gageList[i], ".png"), width = 700, height = 350)
+  PlotFluxCompare(subset(obsStr, obsStr$Station==gageList[i]), "q_cms", 
+                  subset(modLdasout, modLdasout$Station==gageList[i]), "q_cms", 
+                  labelObs=paste0("Observed at ", gageList[i]), labelMod1="Model", 
+                  title=paste0("Streamflow: ", attributes(obsStr)$gage_name[[gageList[i]]]))
+  dev.off()
+}
 ```
 
-Compare how the models are doing predicting flow values that will be exceeded 20% of the time.
-First, calculate the fitted spline functions.
+
+# Run aggregations
+
+We can aggregate model output to monthly volumes in acre-ft.
 ```{r}
-fdc.obsStr5min.comp.fc <- CalcFdcSpline(obsStr5min.comp.fc)
-fdc.modStrd.chrt.comp.fc <- CalcFdcSpline(modStrd.chrt.comp.fc)
-fdc.modStrd.allrt.comp.fc <- CalcFdcSpline(modStrd.allrt.comp.fc)
+modLdasout$mo <- as.integer(format(modLdasout$POSIXct, "%m"))
+modLdasout$yr <- as.integer(format(modLdasout$POSIXct, "%Y"))
+modLdasout.mo <- plyr::ddply(modLdasout, plyr::.(Station, yr, mo), 
+                             plyr::summarise, mean_qcms=mean(q_cms, na.rm=TRUE),
+                             .parallel=TRUE)
+# Unit conversion: m^3/s -> m^3/mo -> ft^3/mo -> ac-ft/mo
+modLdasout.mo$qvol_acft <- modLdasout.mo$mean_qcms * 86400 * 
+                              CalcMonthDays(modLdasout.mo$mo, modLdasout.mo$yr) / 
+                              0.3048^3 / 43560
 ```
 
-Then, evaluate at the 20% exceedance percentage (high flows).
-```{r, results='hold'}
-fdc.obsStr5min.comp.fc(0.2)
-fdc.modStrd.chrt.comp.fc(0.2)
-fdc.modStrd.allrt.comp.fc(0.2)
+Which yields a new dataframe of monthly values:
+```{r}
+head(modLdasout.mo)
 ```
 
-Now try the 80% exceedance percentage (low flows).
-```{r, results='hold'}
-fdc.obsStr5min.comp.fc(0.8)
-fdc.modStrd.chrt.comp.fc(0.8)
-fdc.modStrd.allrt.comp.fc(0.8)
+And similar aggregations on the observed data.
+```{r}
+obsStr$mo <- as.integer(format(obsStr$POSIXct, "%m", tz="UTC"))
+obsStr$yr <- as.integer(format(obsStr$POSIXct, "%Y", tz="UTC"))
+obsStr.mo <- plyr::ddply(obsStr, plyr::.(Station, yr, mo), 
+                         plyr::summarise, mean_qcms=mean(q_cms, na.rm=TRUE), 
+                         .parallel=TRUE)
+# Unit conversion: m^3/s -> m^3/mo -> ft^3/mo -> ac-ft/mo
+obsStr.mo$qvol_acft <- obsStr.mo$mean_qcms * 86400 *
+                            CalcMonthDays(obsStr.mo$mo, obsStr.mo$yr) /
+                            0.3048^3 / 43560
 ```
 
-Plot flow duration curves for a more complete picture. This tool will do the date matching for us, so no need to subset the datasets.
-```{r flowDurationCurves, fig.width = 12, fig.height = 6, out.width='700', out.height='350'}
-PlotFdcCompare(obsStr5min.fc, "q_cms", modStrd.chrt.fc, "q_cms", strDf.mod2=modStrd.allrt.fc, 
-     strCol.mod2="q_cms", labelObs="Observed Fourmile Creek", 
-     labelMod1="Channel Routing Only", labelMod2="All Routing")
+Which yields a new dataframe of monthly values:
+```{r}
+head(obsStr.mo)
 ```
 
+# Plot monthly flow volumes
 
-# Review model performance statistics
+First, let's add a POSIXct column for ease of plotting. We'll associate monthly vaues with the 1st day of each month for plotting.
+```{r}
+modLdasout.mo$POSIXct <- as.POSIXct(paste0(modLdasout.mo$yr,"-",modLdasout.mo$mo,"-01", 
+                                           format="%Y-%m-%d", tz="UTC"))
+obsStr.mo$POSIXct <- as.POSIXct(paste0(obsStr.mo$yr,"-",obsStr.mo$mo,"-01", 
+                                       format="%Y-%m-%d", tz="UTC"))
+```
 
-Calculate model performance stats (special formatting comands hidden). Again, this tool does the date matching for us.
-```{r, results='hide'}
-CalcModPerf(modStrd.chrt.fc, obsStr5min.fc)
+Now we can plot comparisons. We'll create a simple function to automate this for a specified station.
+```{r}
+PlotMoVol <- function(stnid) {
+  tmp <- merge(subset(modLdasout.mo, modLdasout.mo$Station==stnid), 
+               subset(obsStr.mo, obsStr.mo$Station==stnid), by=c("mo","yr"))
+  maxval <- max(max(tmp$qvol_acft.x, na.rm=TRUE), max(tmp$qvol_acft.y, na.rm=TRUE))
+  with(subset(modLdasout.mo, modLdasout.mo$Station==stnid), 
+     plot(POSIXct, qvol_acft, typ='l', col='red', ylim=c(0,maxval),
+          main=paste0("Monthly Flow Volumes (WY 2014): ", stnid)))
+  with(subset(obsStr.mo, obsStr.mo$Station==stnid), lines(POSIXct, qvol_acft))
+  legend("topleft", c("Model","Observed"), col=c('red', 'black'), lty=c(1,1))
+  }
+```
+
+Then we can plot to graphic:
+```{r flowMoVol_ALATERCO, fig.width = 12, fig.height = 6, out.width='700', out.height='350'}
+PlotMoVol("ALATERCO")
+```
+
+Or plot to PNG file in batch:
+```{r}
+for (i in 1:length(gageList)) {
+  png(paste0(casePath, "qvol_wy2014_", gageList[i], ".png"), width = 600, height = 600)
+  PlotMoVol(gageList[i])
+  dev.off()
+}
+```
+
+# Generate summary statistics
+
+We use the CalModPerfMulti tool to generate statistics for each gage, then we stack the gage stat rows into a dataframe.
+```{r, results = "hide"}
+perfStats <- data.frame()
+for (i in 1:length(gageList)) {
+	out <- CalcModPerfMulti( subset(modLdasout, modLdasout$Station==gageList[i]), 
+                            subset(obsStr, obsStr$Station==gageList[i]) )
+	out$Station <- gageList[i]
+  perfStats <- rbind(perfStats, out)
+  }
+perfStats
 ```
 
 ```{r, , results = "asis", echo=FALSE}
-library(pander)
-pander::pandoc.table(CalcModPerf(modStrd.chrt.fc, obsStr5min.fc),split.table=Inf)
+suppressPackageStartupMessages(library(pander))
+pander::pandoc.table(perfStats, justify="left", caption="")
 ```
 
-```{r, results='hide'}
-CalcModPerf(modStrd.allrt.fc, obsStr5min.fc)
-```
-
-```{r, , results = "asis", echo=FALSE}
-pander::pandoc.table(CalcModPerf(modStrd.allrt.fc, obsStr5min.fc), split.table=Inf)
-```
-
-Help on CalcModPerf gives details on the individual statistics returned.
-```{r, results='hide'}
-<<background='#FF0000'>>
-help(CalcModPerf)
-```
-
-<div style="border:1px solid; border-radius: 25px; padding: 12px 25px;">
-```{r, echo=FALSE}
-<<background='#FF0000'>>
-help(CalcModPerf)
-```
-</div>
-<br><br>
-Calculate flow duration curve performance statistics.
-```{r, results='hide'}
-CalcFdcPerf(modStrd.allrt.fc, obsStr5min.fc)
-```
-
-```{r, , results = "asis", echo=FALSE}
-pander::pandoc.table(CalcFdcPerf(modStrd.allrt.fc, obsStr5min.fc),split.table=Inf)
-```
-
-Again, help on CalcFdcPerf gives details on the individual statistics returned.
-```{r, results='hide' }
-help(CalcFdcPerf)
-```
-<div style="border:1px solid; border-radius: 25px; padding: 12px 25px;">
-```{r, echo=FALSE }
-help(CalcFdcPerf)
-```
-</div>

@@ -35,8 +35,12 @@ percent exceedances and, optionally the fitted spline curve.
 
 PlotFdc(obsStr5min.fc, fdcProb=0.2)
 }
+\seealso{
+Other flowDurationCurves: \code{\link{CalcFdcSpline}};
+  \code{\link{CalcFdc}}; \code{\link{PlotFdcCompare}}
+}
 \concept{
-aconcept
+modelEval plot
 }
 \keyword{hplot}
 

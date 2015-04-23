@@ -42,7 +42,8 @@
 #'
 #' GetMODIS(geogrdPath="/d1/WRF_Hydro/Fourmile_fire/DOMAIN/geo_em.d01.nc", prodName="MOD15A2", outDir="Fourmile_LAI", begin="2011.01.01", end="2011.01.31")
 #' @keywords IO
-#' @concept aconcept
+#' @concept MODIS dataGet
+#' @family MODIS
 #' @export
 GetMODIS <- function(geogrdPath, prodName, outDir, begin, end) {
     # Check packages
@@ -136,7 +137,8 @@ GetMODIS <- function(geogrdPath, prodName, outDir, begin, end) {
 #'
 #' lai.b <- ConvertRS2Stack("/d6/adugger/WRF_Hydro/RS/MODIS_ARC/PROCESSED/BCNED_LAI", "*Lai_1km.tif", begin=c("2011.06.01", end="2011.06.30", noData=100, noDataQual="max", valScale=0.1, valAdd=0, outFile="BCNED_LAI.nc", varName="LAI", varUnit="(m^2)/(m^2)", varLong="Leaf area index")
 #' @keywords IO
-#' @concept aconcept
+#' @concept MODIS dataMgmt
+#' @family MODIS
 #' @export
 ConvertRS2Stack <- function(inPath, matchStr, begin=NULL, end=NULL,
                             noData=NULL, noDataQual="exact", valScale=1, valAdd=0,
@@ -220,7 +222,8 @@ ConvertRS2Stack <- function(inPath, matchStr, begin=NULL, end=NULL,
 #'
 #' ConvertStack2NC(lai.b, outFile="BCNED_LAI.nc", varName="LAI", varUnit="(m^2)/(m^2)", varLong="Leaf area index")
 #' @keywords IO
-#' @concept aconcept
+#' @concept MODIS dataMgmt
+#' @family MODIS
 #' @export
 ConvertStack2NC <- function(inStack, outFile=NULL, varName=NULL, varUnit=NULL, varLong=NULL, varNA=-1.e+36) {
     # Get dates
@@ -274,7 +277,8 @@ ConvertStack2NC <- function(inStack, outFile=NULL, varName=NULL, varUnit=NULL, v
 #'
 #' lai.b.sm <- SmoothStack(lai.b, outDirPath="/Volumes/d1/adugger/RS/MODIS_ARC/PROCESSED/FRNTRNG_LAI_SMOOTHED", groupYears=F, removeOutlier=T, threshold=0.5, lambda=1000, overwrite=TRUE)
 #' @keywords smooth
-#' @concept aconcept
+#' @concept MODIS dataAnalysis
+#' @family MODIS
 #' @export
 SmoothStack <- function(inStack, w=NULL, t=NULL, groupYears=FALSE,
                         lambda = 5000, nIter= 3, collapse=FALSE, outDirPath = "./",
@@ -324,7 +328,8 @@ SmoothStack <- function(inStack, w=NULL, t=NULL, groupYears=FALSE,
 #'
 #' InsertRS("BCNED_LAI.nc", forcPath="FORCING", forcName="LDASIN_DOMAIN3", varName="LAI")
 #' @keywords IO
-#' @concept aconcept
+#' @concept MODIS dataMgmt
+#' @family MODIS
 #' @export
 InsertRS <- function(inFile, forcPath, forcName="LDASIN_DOMAIN1",
                         varName=NULL, varUnit=NULL, varLong=NULL, varNA=-1.e+36,
@@ -398,7 +403,8 @@ InsertRS <- function(inFile, forcPath, forcName="LDASIN_DOMAIN1",
 #' stats.lai.b <- CalcStatsRS(lai.b)
 #' with(stats.lai.b, plot(POSIXct, mean, typ='l'))
 #' @keywords univar
-#' @concept aconcept
+#' @concept MODIS dataAnalysis
+#' @family MODIS
 #' @export
 CalcStatsRS <- function(inStack) {
     minDf <- as.data.frame(raster::cellStats(inStack, stat="min", na.rm=TRUE))
@@ -436,7 +442,7 @@ CalcStatsRS <- function(inStack) {
 #'
 #' ExportGeogrid("geo_em.d01_1km.nc", "HGT_M", "geogrid_hgt.tif")
 #' @keywords IO
-#' @concept aconcept
+#' @concept dataMgmt
 #' @export
 ExportGeogrid <- function(inFile, inVar, outFile) {
 	# Check packages

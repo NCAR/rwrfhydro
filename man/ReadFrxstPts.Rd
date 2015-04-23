@@ -27,8 +27,12 @@ rwrfhydro tools.
 
 modStr1h.mod1.fc <- ReadFrxstPts("../OUTPUT/frxst_pts_out.txt")
 }
+\seealso{
+Other modelDataReads: \code{\link{ReadGwOut}};
+  \code{\link{ReadLdasoutWb}}; \code{\link{ReadRtout}}
+}
 \concept{
-aconcept
+dataGet
 }
 \keyword{IO}
 

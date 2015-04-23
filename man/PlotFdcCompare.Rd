@@ -59,8 +59,12 @@ RECALCULATE the flow exceedance probabilities on the fly.
 
 PlotFdcCompare(obsStr5min.fc, "q_cms", modStrh.allrt.fc, "q_cms", strDf.mod2=modStrh.chrt.fc, strCol.mod2="q_cms", labelObs="Observed Fourmile Creek", labelMod1="All Routing", labelMod2="Channel Routing Only")
 }
+\seealso{
+Other flowDurationCurves: \code{\link{CalcFdcSpline}};
+  \code{\link{CalcFdc}}; \code{\link{PlotFdc}}
+}
 \concept{
-aconcept
+modelEval plot
 }
 \keyword{hplot}
 

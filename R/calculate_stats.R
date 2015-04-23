@@ -15,7 +15,8 @@
 #'
 #' modLDASOUT1d.nort.fc <- CalcNoahmpFluxes(modLDASOUT1d.nort.fc)
 #' @keywords manip
-#' @concept aconcept
+#' @concept dataMgmt
+#' @family modelEvaluation
 #' @export
 CalcNoahmpFluxes <- function(ldasoutDf) {
     if ("ACCPRCP" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_ACCPRCP[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACCPRCP) }
@@ -96,7 +97,8 @@ CalcNoahmpFluxes <- function(ldasoutDf) {
 #' wb.allrt.fc <- CalcNoahmpWatBudg(modLDASOUT1d.allrt.fc, modRTOUT1h.allrt.fc, modGWOUT1h.allrt.fc, sfcrt=TRUE, basarea=63.1)
 #' wb.allrt.fc
 #' @keywords manip
-#' @concept aconcept
+#' @concept modelEval
+#' @family modelEvaluation
 #' @export
 CalcNoahmpWatBudg <- function(ldasoutDf, rtoutDf=NULL, gwoutDf=NULL, sfcrt=FALSE, soildeps=c(100,300,600,1000), basarea=NULL) {
     wbDf <- as.data.frame(t(as.matrix(rep(0, 6))))
@@ -234,10 +236,10 @@ CalcNoahmpWatBudg <- function(ldasoutDf, rtoutDf=NULL, gwoutDf=NULL, sfcrt=FALSE
 #' Also assumes model output and observation both contain POSIXct fields (called "POSIXct").
 #' @param flxCol.mod The column name for the flux time series for the MODEL data (default="q_cms")
 #' @param flxCol.obs The column name for the flux time series for the OBSERVED data (default="q_cms")
-#' @param stdate Start date for plot/statistics (DEFAULT=NULL, all records will be used).
+#' @param stdate Start date for statistics (DEFAULT=NULL, all records will be used).
 #' Date MUST be specified in POSIXct format with appropriate timezone
 #' (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))
-#' @param enddate End date for plot/statistics (DEFAULT=NULL, all records will be used).
+#' @param enddate End date for statistics (DEFAULT=NULL, all records will be used).
 #' Date MUST be specified in POSIXct format with appropriate timezone
 #' (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))
 #' @param subdivisions Number of subdivisions used in flow duration curve integration
@@ -261,7 +263,8 @@ CalcNoahmpWatBudg <- function(ldasoutDf, rtoutDf=NULL, gwoutDf=NULL, sfcrt=FALSE
 #' max10   -7.50 -15.94 0.19 3.82    38.89 -24.5 0.04     NA      NA     NA
 #' min10   -2.84  -1.83 0.10 0.05    33.36 -23.7   NA     NA      NA     NA
 #' @keywords univar ts
-#' @concept aconcept
+#' @concept modelEval
+#' @family modelEvaluation
 #' @export
 CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q_cms", stdate=NULL, enddate=NULL, subdivisions=1000) {
     # Internal functions
@@ -488,10 +491,10 @@ CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q
 #' Also assumes model output and observation both contain POSIXct fields (called "POSIXct").
 #' @param flxCol.mod The column name for the flux time series for the MODEL data (default="q_cms")
 #' @param flxCol.obs The column name for the flux time series for the OBSERVED data (default="q_cms")
-#' @param stdate Start date for plot/statistics (DEFAULT=NULL, all records will be used).
+#' @param stdate Start date for statistics (DEFAULT=NULL, all records will be used).
 #' Date MUST be specified in POSIXct format with appropriate timezone
 #' (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))
-#' @param enddate End date for plot/statistics (DEFAULT=NULL, all records will be used).
+#' @param enddate End date for statistics (DEFAULT=NULL, all records will be used).
 #' Date MUST be specified in POSIXct format with appropriate timezone
 #' (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))
 #' @return A new dataframe containing the model performance statistics.
@@ -518,7 +521,8 @@ CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q
 #' min10_cor min10_rmse min10_rmsenorm min10_bias min10_mae
 #'      0.59       0.11          53.89       -7.3      0.09
 #' @keywords univar ts
-#' @concept aconcept
+#' @concept modelEval
+#' @family modelEvaluation
 #' @export
 CalcModPerfMulti <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q_cms", stdate=NULL, enddate=NULL) {
   # Internal functions
@@ -730,10 +734,10 @@ CalcModPerfMulti <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.o
 #' Also assumes model output and observation both contain POSIXct fields (called "POSIXct").
 #' @param strCol.mod The column name for the streamflow time series for the MODEL data (default="q_cms")
 #' @param strCol.obs The column name for the streamflow time series for the OBSERVED data (default="q_cms")
-#' @param stdate Start date for plot/statistics (DEFAULT=NULL, all records will be used).
+#' @param stdate Start date for statistics (DEFAULT=NULL, all records will be used).
 #' Date MUST be specified in POSIXct format with appropriate timezone
 #' (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))
-#' @param enddate End date for plot/statistics (DEFAULT=NULL, all records will be used).
+#' @param enddate End date for statistics (DEFAULT=NULL, all records will be used).
 #' Date MUST be specified in POSIXct format with appropriate timezone
 #' (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))
 #' @return A new dataframe containing the flow duration curve statistics.
@@ -758,7 +762,8 @@ CalcModPerfMulti <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.o
 #'  0.8         0.11    0.19
 #'  0.9         0.08    0.16
 #' @keywords univar ts
-#' @concept aconcept
+#' @concept modelEval
+#' @family modelEvaluation flowDurationCurves
 #' @export
 CalcFdcPerf <- function (strDf.mod, strDf.obs, strCol.mod="q_cms", strCol.obs="q_cms", stdate=NULL, enddate=NULL) {
     # Prepare data

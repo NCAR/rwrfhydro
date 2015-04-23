@@ -35,8 +35,12 @@ fdc.obsStr5min.fc <- CalcFdcSpline(obsStr5min.fc, "q_cms")
 fdc.obsStr5min.fc(0.2)
 > 0.72
 }
+\seealso{
+Other flowDurationCurves: \code{\link{CalcFdc}};
+  \code{\link{PlotFdcCompare}}; \code{\link{PlotFdc}}
+}
 \concept{
-aconcept
+modelEval
 }
 \keyword{univar}
 

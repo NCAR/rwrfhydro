@@ -5,7 +5,7 @@
 \title{Read standard-format text data table downloaded from CO DWR}
 \usage{
 ReadCoDwrGage(pathGageData, returnMetric = TRUE, returnEnglish = TRUE,
-  timeZone = NULL)
+  timeZone = "MST")
 }
 \arguments{
 \item{pathGageData}{The full pathname to the streamflow/stage time series text file as
@@ -38,8 +38,12 @@ rwrfhydro tools.
 obsStr15min.alaterco <- ReadCoDwrGage("../OBS/STRFLOW/ALATERCO_41715103512.txt")
 obsStr15min.alaterco <- ReadUsgsGage("../OBS/STRFLOW/ALATERCO_41715103512.txt", returnEnglish=FALSE)
 }
+\seealso{
+Other obsDataReads: \code{\link{ReadAmerifluxCSV}};
+  \code{\link{ReadAmerifluxNC}}; \code{\link{ReadUsgsGage}}
+}
 \concept{
-aconcept
+dataGet
 }
 \keyword{IO}
 

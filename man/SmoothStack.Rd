@@ -55,8 +55,14 @@ a set of smoothed TIFs, so also specify an output file directory.
 
 lai.b.sm <- SmoothStack(lai.b, outDirPath="/Volumes/d1/adugger/RS/MODIS_ARC/PROCESSED/FRNTRNG_LAI_SMOOTHED", groupYears=F, removeOutlier=T, threshold=0.5, lambda=1000, overwrite=TRUE)
 }
+\seealso{
+Other MODIS: \code{\link{CalcStatsRS}};
+  \code{\link{ConvertRS2Stack}};
+  \code{\link{ConvertStack2NC}}; \code{\link{GetMODIS}};
+  \code{\link{InsertRS}}
+}
 \concept{
-aconcept
+MODIS dataAnalysis
 }
 \keyword{smooth}
 

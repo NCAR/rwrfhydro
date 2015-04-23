@@ -82,8 +82,12 @@ wb.nort.fc
 wb.allrt.fc <- CalcNoahmpWatBudg(modLDASOUT1d.allrt.fc, modRTOUT1h.allrt.fc, modGWOUT1h.allrt.fc, sfcrt=TRUE, basarea=63.1)
 wb.allrt.fc
 }
+\seealso{
+Other modelEvaluation: \code{\link{CalcModPerfMulti}};
+  \code{\link{CalcModPerf}}; \code{\link{CalcNoahmpFluxes}}
+}
 \concept{
-aconcept
+modelEval
 }
 \keyword{manip}
 
