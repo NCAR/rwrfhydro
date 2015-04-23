@@ -16,7 +16,7 @@ env:
      - NOT_CRAN="true" 
 
 before_install:
-  - sudo apt-get install -qq libhdf5-serial-dev netcdf-bin libnetcdf-dev
+  - - sudo pip install netCDF4
 
 #before_script:
 #  - curl -OL http://raw.github.com/craigcitro/r-travis/master/scripts/travis-tool.sh
