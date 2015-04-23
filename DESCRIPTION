@@ -29,4 +29,5 @@ LazyData: true
 Suggests: testthat,
     knitr,
     printr
+BuildVignettes: false
 VignetteBuilder: knitr
