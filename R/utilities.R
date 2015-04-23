@@ -307,7 +307,7 @@ ReshapeMultiNcdf <- function(myDf) {
 #' @return List with names equal to entries.
 #' @examples 
 #' NamedList(1:5)
-#' @keywords internal
+#' @keywords manip
 #' @export
 NamedList <- function(theNames) {
   theList <- as.list(theNames)
@@ -326,6 +326,7 @@ NamedList <- function(theNames) {
 #' AllSame( 1:5 )
 #' AllSame( 0*(1:5) )
 #' @keywords internal
+#' @export
 AllSame <- function(x, na.rm=FALSE) all(x==x[which(!is.na(x))[1]], na.rm=na.rm)
 
 

@@ -1,20 +1,19 @@
 ## This code borrowed almost entirely from devtools. Thanks, Hadley.
 
 #' Retrieve Github personal access token.
-#' Looks in env var \code{GITHUB_PAT}.
+#' Looks in env var \code{GetGithubPat}.
 #' @keywords internal
-github_pat <- function() {
-  pat <- Sys.getenv('GITHUB_PAT')
+GetGithubPat <- function() {
+  pat <- Sys.getenv('GetGithubPat')
   if (identical(pat, "")) return(NULL)
-
-  message("Using github PAT from envvar GITHUB_PAT")
+  message("Using github PAT from envvar GetGithubPat")
   pat
 }
 
-#
+
 #' @keywords internal
 #' @export
-github_GET <- function(path, ..., pat = github_pat()) {
+github_GET <- function(path, ..., pat = GetGithubPat()) {
   if (!is.null(pat)) {
     auth <- httr::authenticate(pat, "x-oauth-basic", "basic")
   } else {
@@ -37,14 +36,14 @@ github_GET <- function(path, ..., pat = github_pat()) {
 ##
 #' @keywords internal
 #' @export
-github_commit <- function(username, repo, ref = "master") {
+CommitGithub <- function(username, repo, ref = "master") {
   github_GET(file.path("repos", username, repo, "commits", ref))
 }
 
 ##
 #' @keywords internal
 #' @export
-remote_metadata.github_remote <- function(x, bundle = NULL, source = NULL) {
+GetRemoteMetadata.github_remote <- function(x, bundle = NULL, source = NULL) {
   # Determine sha as efficiently as possible
   if (!is.null(x$sha)) {
     # Might be cached already (because re-installing)
@@ -54,7 +53,7 @@ remote_metadata.github_remote <- function(x, bundle = NULL, source = NULL) {
     sha <- git_extract_sha1(bundle)
   } else {
     # Otherwise can use github api
-    sha <- github_commit(x$username, x$repo, x$ref)$sha
+    sha <- CommitGithub(x$username, x$repo, x$ref)$sha
   }
 
   list(
@@ -77,26 +76,32 @@ remote_metadata.github_remote <- function(x, bundle = NULL, source = NULL) {
 ##
 #' @keywords internal
 #' @export
-remote_metadata <- function(x, bundle = NULL, source = NULL) UseMethod("remote_metadata")
+GetRemoteMetadata <- function(x, bundle = NULL, source = NULL) UseMethod("GetRemoteMetadata")
 
 #' @keywords internal
 #' @export
-checkMasterSha <- function() {
+CheckMasterSha <- function() {
   ## Static remote variable for rwrfhydro repo master.
+  localRef <- packageDescription('rwrfhydro')$RemoteRef
+  if(localRef != 'master')
+    cat('\n*** NOTE: You are using branch "',localRef,'" ***\n\n', sep='')
   remote <-
     structure(list(host = "api.github.com", repo = "rwrfhydro", subdir = NULL, 
-                   username = "mccreigh", ref = "master", sha = NULL,
+                   username = "mccreigh", ref = localRef, sha = NULL,
                    auth_token = NULL),
               .Names = c("host", "repo", "subdir",
                          "username", "ref", "sha", "auth_token"),
               class = c("github_remote", "remote"))
 
-  remoteSha <- remote_metadata(remote, NULL, source)$RemoteSha
+  remoteSha <- GetRemoteMetadata(remote, NULL, source)$RemoteSha
   localSha  <- packageDescription('rwrfhydro')$RemoteSha
+  
   if(is.null(localSha)) return(invisible('devtools'))
   
   if( remoteSha != localSha ) {
-    cat("",
+    
+    if(localRef == 'master') {
+      cat("",
         "*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*",
         "*^                                                                     ^*",
         "*^   A  **NEW** update of rwrfhydro has been made (to master branch).  ^*",
@@ -108,18 +113,32 @@ checkMasterSha <- function() {
         "*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*",
         "                                                                         ",
         sep='\n      ')
-    #doUpdate <- readline(prompt="Would you like to install the update right now? yes/no \n") == 'yes'
-    #if(doUpdate) devtools::install_github('mccreigh/rwrfhydro')
+    } else {
+      cat("",
+          "*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*",
+          "",
+          "   A  **NEW** update of rwrfhydro has been made to this branch.",
+          "",
+          "   To update:",
+   paste0("    devtools::install_github('mccreigh/rwrfhydro', ref='",localRef,"')"),        
+          "",
+          "*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*^*",
+          "",
+          sep='\n      ')
+    }
   }
+   
+  if( remoteSha == localSha ) cat("You are using the latest version.",sep='\n')                                  
   
   invisible( remoteSha == localSha )
 }
  
 
 #' @export
-CheckForUpdates <- function() { checkMasterSha() }
+CheckForUpdates <- function() { CheckMasterSha() }
 
-.onLoad <- function(libname, pkgname) {
-  cat("To check rwrfhydro updates (to master branch) run: CheckForUpdates()", sep='\n     ')
+.onAttach <- function(libname, pkgname) {
+  msg <- "To check rwrfhydro updates run: CheckForUpdates()"
+  packageStartupMessage(msg)
 }
  

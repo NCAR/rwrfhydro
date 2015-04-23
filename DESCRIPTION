@@ -28,8 +28,5 @@ Imports:
 LazyData: true
 Suggests: testthat,
     knitr,
-    printr,
-    rgdal, 
-    rgeos,
-    MODIS
+    printr
 VignetteBuilder: knitr

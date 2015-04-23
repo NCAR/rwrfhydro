@@ -129,12 +129,8 @@ GetUsgsHucData <- function(huc8, outPath=NULL,
     
   ## Actually get the data.
   ## Some times fails for various reasons, eventually wrap these various retrievals in try()?
-  if(AllSame(meta$startDate) && AllSame(meta$endDate)) {
-    # This is the case where all station record updates are exactly the same in time.
-    foo<-GetUsgsIvProduct(subset(meta, parm_cd=='00060'))
-    
+  if(AllSame(meta$startDate) && AllSame(meta$endDate)) {  
     out <- plyr::dlply(meta, plyr::.(parm_cd), GetUsgsIvProduct) 
-  
   } else {
     # This is the case where station record updates are different over time. 
     outStnIndiv <- plyr::dlply(meta, plyr::.(parm_cd), 
@@ -180,9 +176,9 @@ GetUsgsHucData <- function(huc8, outPath=NULL,
 #' @param metaDBFileName Character The name of the database metadata file.
 #' @param overwriteHucDataFile Logical Replace/overwrite the existing data file for the HUC with the current data.
 #' @examples
-#' files <- SaveHucData(GetUsgsHucData(huc='10190005'), outPath='/Users/jamesmcc/streamflow/OBS') ##boulder, CO
-#' files <- SaveHucData(GetUsgsHucData(huc='03160203'), outPath='/Users/jamesmcc/streamflow/OBS') ##satilpa, AL
-#' files <- SaveHucData(GetUsgsHucData(huc='03020104'), outPath='/Users/jamesmcc/streamflow/OBS') ##vans, NC
+#' files <- SaveHucData(GetUsgsHucData(huc='10190005'), outPath='~/wrfHydroTestCases/usgsDb') ##boulder, CO
+#' files <- SaveHucData(GetUsgsHucData(huc='03160203'), outPath='~/wrfHydroTestCases/usgsDb') ##satilpa, AL
+#' files <- SaveHucData(GetUsgsHucData(huc='03020104'), outPath='~/wrfHydroTestCases/usgsDb')  ##vans, NC
 #' @keywords IO database
 #' @concept dataGet usgsStreamObs
 #' @family streamObs
@@ -190,6 +186,9 @@ GetUsgsHucData <- function(huc8, outPath=NULL,
 SaveHucData <- function(hucData, outPath, 
                         metaDBFileName='usgsDataRetrieval.metaDatabase.RData', 
                         overwriteHucDataFile=FALSE) {
+  
+  if(!file.exists(outPath)) warning("outPath does not exist.", immediate. = TRUE)
+  
   ##What the HUC?
   allHuc <- unlist(plyr::llply(hucData, function(ll) ll$meta$siteInfo$huc_cd))
   ## make sure there's only one HUC.
@@ -440,7 +439,7 @@ QueryHaveSite <- function(site, path='.',
 
 
 #==============================================================================================
-#' Find the name(site id) for a given site(name)  in the local database.
+#' Find the name (site id) for a given site (name)  in the local database.
 #' 
 #' \code{QuerySiteName} returns the name (site id) for a given site ID (name) in the local database.
 #' @param site Character USGS site number or name.
@@ -474,7 +473,7 @@ QuerySiteName <- function(site, path='.',
 
 
 #==============================================================================================
-#' Returns the desired information from the database file.
+#' Returns the desired information from the database metadata file.
 #' 
 #' \code{QuerySiteInfo} gets the specified info from the local database.
 #' @param info Character vector, information fields in \code{HUC$prod$meta$SiteInfo$info}.
@@ -505,19 +504,22 @@ QuerySiteInfo <- function(info=NULL, path='.',
 #==============================================================================================
 #' Returns the data for given sites from local database.
 #' 
-#' \code{QuerySiteData} gets the specified data from the local database.
+#' \code{QuerySiteData} gets the specified data from the local database in long format.
 #' @param site Character USGS site number or vector of numbers.
 #' @param product Character USGS product code number.
 #' @param path Character path to the database.
 #' @param metaDBFileName Character The name of the metadata file.
 #' @return dataframe of data with pertinent attributes.
 #' @examples 
-#' p='~/streamflow/OBS/'
+#' p='~/wrfHydroTestCases/usgsDb/'
 #' dataOrodell <- QuerySiteData(QuerySiteName("FOURMILE CREEK AT ORODELL, CO", p), '00060', p)
 #' siteInfo<-QuerySiteInfo(c('station_nm','site_no','stateCd'), path=p)
 #' dataCO <- QuerySiteData(subset(siteInfo, stateCd=='08' & product=='00060')$site_no, '00060', p)
 #' dataMultiHuc <- QuerySiteData(c('06730500','02084557'),'00060',p)
-#' dataMultiHuc <- QuerySiteData(c('06730500','02084557'),c('00060','00065'),p)
+#' Case with ill-defined variables
+#' dataMultiHuc <- QuerySiteData('06730500','00065',p)
+#' ## This is the multisite multi product case.
+#' dataMultiHuc <- QuerySiteData(c('06730500','02084557'),c('00065','00060'),p)
 #' @keywords database
 #' @concept dataMgmt usgsStreamObs
 #' @family streamObs
@@ -525,7 +527,7 @@ QuerySiteInfo <- function(info=NULL, path='.',
 QuerySiteData <- function(site, product, path='.',
                           metaDBFileName='usgsDataRetrieval.metaDatabase.RData'){
 
-  QuerySiteData.scalar <- function(site, product, path='.',
+  QuerySiteData.atomic <- function(site, product, path='.',
                                    metaDBFileName='usgsDataRetrieval.metaDatabase.RData'){
     if(!any(QuerySiteProd(site, path=path, metaDB=metaDBFileName) == product)) {
       warning(paste("No product",product,"at site",site,"."))
@@ -537,110 +539,123 @@ QuerySiteData <- function(site, product, path='.',
     productData <- get(paste0('data.',huc))[[product]]
     rm(list=paste0('data.',huc))
     ret <- subset(productData$data, site_no %in% site )
-    ret <- within(ret, {agency_cd <- NULL})  ## this may or may not be desirable in the long run.
+    ret <- within(ret, {agency_cd <- NULL; tz_cd <- NULL})  ## this may or may not be desirable in the long run.
     attr(ret, 'siteInfo')      <- subset(productData$meta$siteInfo, site_no %in% site)
     attr(ret, 'variableInfo')  <- productData$meta$variableInfo
     attr(ret, 'statisticInfo') <- productData$meta$statisticInfo
+    
+    varNameBase <- paste0(attr(ret, 'variableInfo')$parameterCd, '_',
+                          attr(ret, 'statisticInfo')$statisticCd )
+    
+    codeName <- grep(paste0(varNameBase,'_cd$'), names(ret), value=TRUE)
+    varName  <- grep(paste0(varNameBase,'$'),    names(ret), value=TRUE)
+    oldNames <- c(codeName, varName)
+    newNames <- c(ifelse(length(codeName),'code',  integer(0)),
+                  ifelse(length(varName), 'value', integer(0)))
+    if(!length(newNames)) warning('variable name not found, this needs fixed.', immediate. = TRUE)
+    names(newNames) <- oldNames
+    ret <- plyr::rename(ret, newNames)
+    ret$variable <- varName
     ret
   }
   
   #ret0<-QuerySiteData.scalar(site, product, path=path, metaDBFileName=metaDBFileName)
   vecDf <- FormalsToDf(QuerySiteData)
-  ret <- plyr::mlply(vecDf, QuerySiteData.scalar)
+  ret <- plyr::mlply(vecDf, QuerySiteData.atomic, .inform=TRUE)
   names(ret) <- vecDf$site
-  
+
   if(length(ret)==1) {
     ret <- ret[[1]]
   } else {
-    ## if the number of variables is just 1
-    uniqVars <- unique(plyr::laply(ret, function(ll) attr(ll,'variableInfo')$parameterCd))
-    if(length(uniqVars)==1) {
-      attList <- list(siteInfo  = plyr::ldply(ret, function(dd) attr(dd,'siteInfo' )),
-                      variables = attr(ret[[1]],'variableInfo'),
-                      codes     = attr(ret[[1]],'statisticInfo') )
-      splitNames <- names(attr(ret,'split_labels'))
-      attList$siteInfo <- attList$siteInfo[,setdiff(names(attList$siteInfo),splitNames)]
-      ret <- plyr::ldply(ret)
-      ret <- ret[,setdiff(names(ret),splitNames)]  
-      for(nn in names(attList))  attr(ret, nn) <- attList[[nn]]
-    } else {
-        warning("I have not coded the cases of returning multiple variables yet and it needs some thought",
-                immediate. = TRUE)
-    }
+    attList <- list(siteInfo      = plyr::ldply(ret, function(dd) attr(dd,'siteInfo' )),
+                    variableInfo  = plyr::ldply(ret, function(dd) attr(dd,'variableInfo')),
+                    statisticInfo = attr(ret[[1]],'statisticInfo') )
+    splitNames <- names(attr(ret,'split_labels'))
+    attList$siteInfo <- attList$siteInfo[,setdiff(names(attList$siteInfo),splitNames)]
+    ret <- plyr::ldply(ret)
+    ret <- ret[,setdiff(names(ret),splitNames)]  
+    for(nn in names(attList))  attr(ret, nn) <- attList[[nn]]
   }
   ret
 }
 
 
 #==============================================================================================
-#' Pretty USGS site data makes nice headers and optionally converts to metric. 
+#' PrettyUsgs constructs the S3 class prettyUsgs.
 #' 
-#' \code{PrettySiteData} beautifies the data frame 
+#' \code{PrettyUsgs} beautifies data frames of USGS data. This is the S3 constructor for the 
+#' PrettyUsgs object. 
 #' @param data Dataframe from QuerySiteData
-#' @param metric Logical
-#' @param metricOnly Logical
+#' @param metric Logical. Units are either metric or not (not both). 
+#' @param format character, either 'wide' or 'long'. In wide format there are more columns, one 
+#' for each variable named \code{'variable (units)'}. In long format, there are columns \code{value}, 
+#' \code{variable}, and \code{units}. Switching between long and wide formats can be done with 
+#' \code{Reformat()} (though I've yet to program this...). 
 #' @param tz Character The timezone for the POSIXct dataTime variable to be returned. 
 #' @param na.rm Logical Remove all missing observations?
 #' @return dataframe similar to input with improved names and/or metric variables.
 #' @examples 
-#' p='~/streamflow/OBS/'
-#' dataOrodell <- PrettySiteData(QuerySiteData(QuerySiteName("FOURMILE CREEK AT ORODELL, CO", p), 
-#'                                             '00060', p), metricOnly=TRUE)
+#' p='~/wrfHydroTestCases/usgsDb/'
+#' dataOrodell <- PrettyUsgs(QuerySiteData(QuerySiteName("FOURMILE CREEK AT ORODELL, CO", p), 
+#'                                             '00060', p), metric=TRUE)
+#' ## multisite and multiproduct case
+#' dataMultiHuc <- PrettyUsgs(QuerySiteData(c('06730500','02470072'),c('00065','00060'),p))
 #' @keywords manip
 #' @concept dataMgmt usgsStreamObs
 #' @family streamObs
 #' @export
-PrettySiteData <- function(data, tz='UTC', metric=metricOnly, metricOnly=TRUE, 
-                           na.rm=TRUE) {
-  if(class(data)[1]=='data.frame')
-    return(PrettySiteData.df(data, tz='UTC', metric=metric, metricOnly=metricOnly, na.rm=na.rm))
-  if(class(data)[1]=='list')
-    return(plyr::llply(data, PrettySiteData.df, tz='UTC', metric=metric, metricOnly=metricOnly, na.rm=na.rm))
-}
+PrettyUsgs <- function(data, tz='UTC', 
+                       metric=TRUE, 
+                       na.rm=TRUE, format='long') {
+  
+  
+  PrettyUsgs.df <- function(data, tz='UTC', 
+                            metric=TRUE, 
+                            na.rm=TRUE, format='long') {
+    
+    ## rename the variables
+    varUnits <- TransUsgsProdStat(data$variable)
+    data$variable <- varUnits
+    ## I decided against a separate units column. It could be generated like this.
+    #theSplit <- strsplit(varUnits, '\\(|\\)|\\ ')
+    #data$variable <- plyr::laply(theSplit, '[[', 1)
+    #data$units    <- plyr::laply(theSplit, '[[', 3)
+    
+    ## use POSIXct colname instead of dateTime
+    data <- plyr::rename(data, c('dateTime'='POSIXct'))
+    
+    ## transform to the specified tz from UTC, if requested.
+    if(tz != 'UTC') data$POSIXct <- lubridate::with_tz(data$POSIXct, tz=tz)
 
-PrettySiteData.df <- function(data, tz='UTC', metric=metricOnly, metricOnly=TRUE, 
-                              na.rm=TRUE) {
-  whNames <- TransUsgsProdStat(names(data),whichIn=TRUE)
-  prettyNames <- TransUsgsProdStat(names(data)[whNames])
-  names(data)[whNames] <- prettyNames
-  attr(data,'variableInfo') <- attr(data,'statisticInfo') <- NULL
-  
-  if(tz != 'UTC') data$dateTime <- lubridate::with_tz(data$dateTime, tz=tz)
-  data$tz_cd <- NULL
-  
-  if('Discharge (cfs)' %in% prettyNames) {
-    attr(data,'variables') <- c('Discharge (cfs)')
-    attr(data,'codes') <- c('Discharge code')
-  }
-  if('Stage (ft)'      %in% prettyNames) {
-    attr(data,'variables') <- c('Stage (feet)')
-    attr(data,'codes') <- c('Stage code')
-  }
-  
-  if(metric) {
-    if('Discharge (cfs)' %in% prettyNames) {
-      data$`Discharge (cms)` <- data$`Discharge (cfs)`*cfs2cms
-      if(metricOnly) {
-        data$`Discharge (cfs)` <- NULL
-        attr(data,'variables') <- c('Discharge (cms)')
-      } else attr(data,'variables') <- c('Discharge (cfs)','Discharge (cms)')
+    if(metric) {
+      engToMetricNames <- c('Discharge (cfs)' = 'Discharge (cms)',
+                            'Stage (ft)'      = 'Stage (m)' )
+      engToMetricValue <- c('Discharge (cms)' = cfs2cms,
+                            'Stage (m)'       = feet2meters)
+      ## this is a bit overkill since this is only getting one product per site... but ohwell.
+      data$variable <- engToMetricNames[data$variable]
+      data$value <- data$value * engToMetricValue[data$variable]
     }
     
-    if('Stage (ft)' %in% prettyNames) {
-      data$`Stage (m)` <- data$`Stage (ft)`*feet2meters
-      if(metricOnly) {
-        data$`Stage (ft)` <- NULL
-        attr(data,'variables') <- c('Stage (meters)')
-      } else attr(data,'variables') <- c('Stage (feet)','Stage (meters)')
+    ## na.rm: take out missing rows
+    if(na.rm) {
+      whMiss <- which(is.na(data$value))
+      if(length(whMiss)) data <- data[-whMiss,]
     }
-  }
-  
-  if(na.rm & length(whMiss <- which(is.na(data[,attr(data,'variables')[1]]))) ) {
-    data <- data[-whMiss,]
-  }
     
-  attr(data,'class') <- c('prettyUsgs', 'data.frame')
-  data
+    attr(data,'variableInfo') <- attr(data,'statisticInfo') <- NULL
+    
+    ## attributes / object information. 
+    structure(data, format = 'wide',
+                    class  = c('prettyUsgs', 'data.frame'))
+  }
+
+  if(class(data)[1]=='data.frame')
+    return(PrettyUsgs.df(data, tz='UTC', metric=metric, na.rm=na.rm))
+  if(class(data)[1]=='list')
+    stop('foooooo')
+    #return(plyr::llply(data, PrettyUsgs.df, tz='UTC', metric=metric, metricOnly=metricOnly, na.rm=na.rm))
+  
 }
 
 
@@ -714,10 +729,10 @@ TransUsgsProdStat <- function(names, whichIn=FALSE) {
 
 
 ##============================================================================================
-#' Plot USGS site data which has been prettied with PrettySiteData.
+#' Plot USGS site data which has been prettied with PrettyUsgs.
 #' 
-#' \code{PlotPrettyData} plots USGS site data which has been prettied with \code{PrettySiteData}.
-#' @param prettyUsgs dataframe returned from PrettySiteData
+#' \code{PlotPrettyData} plots USGS site data which has been prettied with \code{PrettyUsgs}.
+#' @param prettyUsgs dataframe returned from PrettyUsgs
 #' @param plot Logical to plot before returning or not.
 #' @param errInnerQntl The inner quantile of the error estimate to be plotted with error bars. For example, 
 #'        the "68-95-99.7 rule" where specifying these as the errInnerQntl would display 1, 2, and 3 
@@ -799,7 +814,7 @@ PlotPrettyData <- function(prettyUsgs, plot=TRUE, errInnerQntl=.995) {
 #' Subset prettyUsgs objects.
 #' 
 #' \code{subset.prettyUsgs} subsets prettyUsgs objects and retains their attributes.
-#' @param prettyUsgs A dataframe of class \code{c("prettyUsgs", "data.frame")} returned from \code{PrettySiteData}
+#' @param prettyUsgs A dataframe of class \code{c("prettyUsgs", "data.frame")} returned from \code{PrettyUsgs}
 #' @param ... additional arguments to subset.data.frame
 #' @return A dataframe of class c("prettyUsgs", "data.frame")
 #' # See vignette "Collect USGS stream observations and build a local database" for examples.
@@ -825,3 +840,29 @@ subset.prettyUsgs <- function(prettyUsgs, ... ) {
  attr(subPretty, 'st.devs.')   <- stDevs
  subPretty
 }
+
+
+#' @keywords internal
+#' @export
+`[.prettyUsgs` <- function(prettyUsgs, ... ) {
+  class      <- attr(prettyUsgs, 'class')
+  variables  <- attr(prettyUsgs, 'variables')
+  codes      <- attr(prettyUsgs, 'codes')
+  variances  <- attr(prettyUsgs, 'variances')
+  stDevs     <- attr(prettyUsgs, 'st.devs.')
+  attr(prettyUsgs, 'class') <- 'data.frame'
+  cond <- substitute(...)
+  ## some non-standard eval.
+  env <- list2env(prettyUsgs, parent=parent.frame())
+  subPretty <- `[.data.frame`(prettyUsgs, ...)
+  attr(subPretty, 'class')      <- class
+  attr(subPretty, 'variables')  <- variables
+  attr(subPretty, 'codes')      <- codes
+  attr(subPretty, 'variances')  <- variances
+  attr(subPretty, 'st.devs.')   <- stDevs
+  subPretty
+}
+
+
+
+
