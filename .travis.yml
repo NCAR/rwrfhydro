@@ -17,7 +17,7 @@ env:
 
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -qq netcdf-bin
+  - sudo apt-get install -qq netcdf-bin libnetcdf-dev
 
 #before_script:
 #  - curl -OL http://raw.github.com/craigcitro/r-travis/master/scripts/travis-tool.sh
