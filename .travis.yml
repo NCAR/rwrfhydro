@@ -21,8 +21,8 @@ env:
 #  - "./travis-tool.sh bootstrap"
 #  - "./travis-tool.sh install_deps - ./travis-tool.sh install_r plyr grid lubridate ncdf4 ggplot2 ggmap RColorBrewer reshape2 doMC scales curl dataRetrieval raster"
 
-#r_github_packages:
-#  - yihui/printr
+r_github_packages:
+  - yihui/printr
 
 #script: "./travis-tool.sh run_tests"
 
