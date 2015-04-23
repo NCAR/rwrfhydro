@@ -1,6 +1,6 @@
 # Sample .travis.yml for R projects from https://github.com/craigcitro/r-travis
 
-language: c
+language: r
 
 sudo: required
 
@@ -15,16 +15,19 @@ env:
      - BOOTSTRAP_LATEX=""
      - NOT_CRAN="true" 
 
-before_script:
-  - curl -OL http://raw.github.com/craigcitro/r-travis/master/scripts/travis-tool.sh
-  - chmod 755 ./travis-tool.sh
-  - "./travis-tool.sh bootstrap"
-  - "./travis-tool.sh install_deps - ./travis-tool.sh install_r plyr grid lubridate ncdf4 ggplot2 ggmap RColorBrewer reshape2 doMC scales curl dataRetrieval raster"
+#before_script:
+#  - curl -OL http://raw.github.com/craigcitro/r-travis/master/scripts/travis-tool.sh
+#  - chmod 755 ./travis-tool.sh
+#  - "./travis-tool.sh bootstrap"
+#  - "./travis-tool.sh install_deps - ./travis-tool.sh install_r plyr grid lubridate ncdf4 ggplot2 ggmap RColorBrewer reshape2 doMC scales curl dataRetrieval raster"
 
-script: "./travis-tool.sh run_tests"
+#r_github_packages:
+#  - yihui/printr
 
-after_script:
-  - "./travis-tool.sh dump_logs"
+#script: "./travis-tool.sh run_tests"
+
+#after_script:
+#  - "./travis-tool.sh dump_logs"
 
 branches:
   except:
