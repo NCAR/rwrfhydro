@@ -34,3 +34,5 @@ notifications:
   email:
     on_success: change
     on_failure: change
+  slack: rwrfhydro:gypCLswcjfFuScThqR9rQUZR
+    
