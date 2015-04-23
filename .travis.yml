@@ -15,6 +15,9 @@ env:
      - BOOTSTRAP_LATEX=""
      - NOT_CRAN="true" 
 
+before_install:
+  - sudo apt-get install -qq netcdf
+
 #before_script:
 #  - curl -OL http://raw.github.com/craigcitro/r-travis/master/scripts/travis-tool.sh
 #  - chmod 755 ./travis-tool.sh
