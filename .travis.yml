@@ -16,7 +16,7 @@ env:
      - NOT_CRAN="true" 
 
 before_install:
-  - - sudo pip install netCDF4
+  - sudo apt-get install -qq libnetcdfc++4 netcdf-bin
 
 #before_script:
 #  - curl -OL http://raw.github.com/craigcitro/r-travis/master/scripts/travis-tool.sh
