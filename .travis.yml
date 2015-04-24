@@ -1,32 +1,25 @@
-# Sample .travis.yml for R projects from https://github.com/craigcitro/r-travis
-
 language: r
-
 sudo: required
-
 os:
-    - linux
-
+- linux
 env:
-   global:
-     - CRAN: http://cran.rstudio.com
-     - R_BUILD_ARGS="--no-build-vignettes --no-manual"
-     - R_CHECK_ARGS="--no-build-vignettes --no-manual --as-cran"
-     - BOOTSTRAP_LATEX=""
-     - NOT_CRAN="true" 
-
+  global:
+  - CRAN: http://cran.rstudio.com
+  - R_BUILD_ARGS="--no-build-vignettes --no-manual"
+  - R_CHECK_ARGS="--no-build-vignettes --no-manual --as-cran"
+  - BOOTSTRAP_LATEX=""
+  - NOT_CRAN="true"
 before_install:
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq netcdf-bin libnetcdf-dev
-
+- sudo apt-get update -qq
+- sudo apt-get install -qq netcdf-bin libnetcdf-dev
 r_github_packages:
-  - yihui/printr
-
+- yihui/printr
 branches:
   except:
   - procUsgs
-
 notifications:
   email:
     on_success: change
     on_failure: change
+  slack:
+    secure: KPL84S2BG8i81aJcj4x0cjuoqq6tj92ziOmnqx1Yx5wLKHRSDgjc9N83I98rL/vuhEZLFHKcckJGGNgljDAwhfuH0IDq3DCTdlJ93wKIlRY/lvDVMHVSB6X38efuqtegv88ifyhtggtrU6P0vq+Hm/NWTJYVCNNZZpfVTnV8Hz8=
