@@ -3,7 +3,7 @@
 ## 1: huc2 code: character, a huc two in 01:21
 ## 2: outPath: character, the directory where the output is to be placed.
 ## 3: dateId: character, a date time identifier
-library(rwrfhydro)
+suppressPackageStartupMessages(library(rwrfhydro))
 
 args <- commandArgs(TRUE)
 
@@ -32,7 +32,7 @@ print(outFile)
 print(paste(huc, dateId, sep=': '))
 
 ## pullTime and obSize are also diagnostic
-pullTime<- system.time(data<-GetActiveHucData(huc,parameterCd=c('00060')))
+pullTime<- system.time( data<-GetActiveHucData(huc,parameterCd=c('00060')) )
 obSize <- format(object.size(data), units='MB')
 
 save(data, pullTime, obSize, file=outFile)

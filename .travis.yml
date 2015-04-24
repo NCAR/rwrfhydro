@@ -34,5 +34,6 @@ notifications:
   email:
     on_success: change
     on_failure: change
-  slack: rwrfhydro:gypCLswcjfFuScThqR9rQUZR
+  slack:
+    secure: KPL84S2BG8i81aJcj4x0cjuoqq6tj92ziOmnqx1Yx5wLKHRSDgjc9N83I98rL/vuhEZLFHKcckJGGNgljDAwhfuH0IDq3DCTdlJ93wKIlRY/lvDVMHVSB6X38efuqtegv88ifyhtggtrU6P0vq+Hm/NWTJYVCNNZZpfVTnV8Hz8=
     
