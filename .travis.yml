@@ -3,17 +3,36 @@ sudo: required
 os:
 - linux
 env:
+<<<<<<< HEAD
   global:
   - CRAN: http://cran.rstudio.com
   - R_BUILD_ARGS="--no-build-vignettes --no-manual"
   - R_CHECK_ARGS="--no-build-vignettes --no-manual --as-cran"
   - BOOTSTRAP_LATEX=""
   - NOT_CRAN="true"
+=======
+   global:
+     - CRAN: http://cran.rstudio.com
+     - BOOTSTRAP_LATEX=""
+     - NOT_CRAN="true" 
+
+>>>>>>> 775b3af691e708567d4a1925451997c16e1013bb
 before_install:
 - sudo apt-get update -qq
 - sudo apt-get install -qq netcdf-bin libnetcdf-dev
 r_github_packages:
+<<<<<<< HEAD
 - yihui/printr
+=======
+  - yihui/printr
+
+warnings_are_errors: false
+
+r_check_args: "--no-vignettes --no-manual --no-examples --no-tests"
+
+r_build_args: "--no-build-vignettes --no-manual"
+
+>>>>>>> 775b3af691e708567d4a1925451997c16e1013bb
 branches:
   except:
   - procUsgs
