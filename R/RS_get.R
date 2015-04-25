@@ -27,6 +27,9 @@
 #' date string should follow \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package convention (e.g., "2011.06.01").
 #' @param end Date string for the end date to download/process MODIS tiles. The
 #' date string should follow \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package convention (e.g., "2011.06.01").
+#' @param resampTyp Resampling type. GDAL possible options (depends on version): 'near', 'bilinear', 'cubic', 'cubicspline', 
+#' 'lanczos', 'mode', 'average' (DEFAULT='near'). Note that MODIS nodata values MAY look like real values to GDAL, so use  
+#' caution with any methods other than 'near' and 'mode'. Fix in future version.
 #' @return Empty
 #'
 #' @examples
@@ -45,7 +48,7 @@
 #' @concept MODIS dataGet
 #' @family MODIS
 #' @export
-GetMODIS <- function(geogrdPath, prodName, outDir, begin, end) {
+GetMODIS <- function(geogrdPath, prodName, outDir, begin, end, resampTyp='near') {
     # Check packages
     if (!(require("rgdal") & require("raster") & require("ncdf4") & require("MODIS"))) {
         stop("Required packages not found. Must have R packages: rgdal (requires GDAL system install), raster, ncdf4, and MODIS")
@@ -77,7 +80,7 @@ GetMODIS <- function(geogrdPath, prodName, outDir, begin, end) {
 	  hgt.r <- raster::raster(paste0(locPath, "/geogrid_tmp.tif"))
     system(paste0("rm ", paste0(locPath, "/geogrid_tmp.tif")))
     # Run the download & processing
-    mod.list <- MODIS::runGdal(product=prodName, extent=hgt.r, begin=begin, end=end, collection="005", resamplingType='near', buffer=0.04, job=outDir)
+    mod.list <- MODIS::runGdal(product=prodName, extent=hgt.r, begin=begin, end=end, collection="005", resamplingType=resampTyp, buffer=0.04, job=outDir)
 }
 
 
