@@ -4,7 +4,7 @@
 \alias{GetMODIS}
 \title{Get MODIS data and process to match geogrid}
 \usage{
-GetMODIS(geogrdPath, prodName, outDir, begin, end)
+GetMODIS(geogrdPath, prodName, outDir, begin, end, resampTyp = "near")
 }
 \arguments{
 \item{geogrdPath}{The pathname to the geogrid file (i.e., geo_em.d01.nc).}
@@ -21,6 +21,10 @@ date string should follow \href{http://r-forge.r-project.org/projects/modis/}{MO
 
 \item{end}{Date string for the end date to download/process MODIS tiles. The
 date string should follow \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package convention (e.g., "2011.06.01").}
+
+\item{resampTyp}{Resampling type. GDAL possible options (depends on version): 'near', 'bilinear', 'cubic', 'cubicspline',
+'lanczos', 'mode', 'average' (DEFAULT='near'). Note that MODIS nodata values MAY look like real values to GDAL, so use
+caution with any methods other than 'near' and 'mode'. Fix in future version.}
 }
 \value{
 Empty
@@ -57,8 +61,14 @@ MODISoptions(localArcPath="/d1/WRF_Hydro/RS/MODIS_ARC", outDirPath="/d1/WRF_Hydr
 
 GetMODIS(geogrdPath="/d1/WRF_Hydro/Fourmile_fire/DOMAIN/geo_em.d01.nc", prodName="MOD15A2", outDir="Fourmile_LAI", begin="2011.01.01", end="2011.01.31")
 }
+\seealso{
+Other MODIS: \code{\link{CalcStatsRS}};
+  \code{\link{ConvertRS2Stack}};
+  \code{\link{ConvertStack2NC}}; \code{\link{InsertRS}};
+  \code{\link{SmoothStack}}
+}
 \concept{
-aconcept
+MODIS dataGet
 }
 \keyword{IO}
 

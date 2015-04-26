@@ -500,4 +500,26 @@ FormalsToDf <- function(theFunc, envir=parent.frame()) {
   df  
 }
 
-
+#' Calculate number of days in a month.
+#' 
+#' \code{CalcMonthDays} calculates the number of days in a month.
+#' Calculate the number of days in the month specified
+#' by the given month and year.
+#' @param mo The month.
+#' @param yr The year.
+#' @return The day count.
+#' @keywords internal
+#' @export
+CalcMonthDays <- function(mo, yr) {
+  #m <- format(date, format="%m")
+  res<-c()
+  for (i in 1:length(mo)) {
+    date <- as.Date(paste0(yr[i], "-", mo[i], "-01"), format="%Y-%m-%d")
+    while (as.integer(format(date, format="%m")) == as.integer(mo[i])) {
+      date <- date + 1
+    }
+    res[i] <- as.integer(format(date - 1, format="%d"))
+  }
+  return(res)
+}
+  

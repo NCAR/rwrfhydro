@@ -30,8 +30,12 @@ calculated percent exceedances.
 
 obsStr5min.fc <- CalcFdc(obsStr5min.fc, "q_cms")
 }
+\seealso{
+Other flowDurationCurves: \code{\link{CalcFdcSpline}};
+  \code{\link{PlotFdcCompare}}; \code{\link{PlotFdc}}
+}
 \concept{
-aconcept
+modelEval
 }
 \keyword{univar}
 

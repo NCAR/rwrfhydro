@@ -38,8 +38,13 @@ rwrfhydro tools.
 obsStr5min.fc <- ReadUsgsGage("../OBS/STRFLOW/5min_str_06727500_110401_140810.txt")
 obsStr5min.fc <- ReadUsgsGage("../OBS/STRFLOW/5min_str_06727500_110401_140810.txt, returnEnglish=FALSE")
 }
+\seealso{
+Other obsDataReads: \code{\link{ReadAmerifluxCSV}};
+  \code{\link{ReadAmerifluxNC}};
+  \code{\link{ReadCoDwrGage}}
+}
 \concept{
-aconcept
+dataGet
 }
 \keyword{IO}
 

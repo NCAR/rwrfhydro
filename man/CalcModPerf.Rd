@@ -22,11 +22,11 @@ Also assumes model output and observation both contain POSIXct fields (called "P
 
 \item{flxCol.obs}{The column name for the flux time series for the OBSERVED data (default="q_cms")}
 
-\item{stdate}{Start date for plot/statistics (DEFAULT=NULL, all records will be used).
+\item{stdate}{Start date for statistics (DEFAULT=NULL, all records will be used).
 Date MUST be specified in POSIXct format with appropriate timezone
 (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))}
 
-\item{enddate}{End date for plot/statistics (DEFAULT=NULL, all records will be used).
+\item{enddate}{End date for statistics (DEFAULT=NULL, all records will be used).
 Date MUST be specified in POSIXct format with appropriate timezone
 (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))}
 
@@ -103,8 +103,13 @@ yearly   0.05   0.37 0.36 0.55    41.50  -6.5 0.45  -1.50   -3.38     NA
 max10   -7.50 -15.94 0.19 3.82    38.89 -24.5 0.04     NA      NA     NA
 min10   -2.84  -1.83 0.10 0.05    33.36 -23.7   NA     NA      NA     NA
 }
+\seealso{
+Other modelEvaluation: \code{\link{CalcModPerfMulti}};
+  \code{\link{CalcNoahmpFluxes}};
+  \code{\link{CalcNoahmpWatBudg}}
+}
 \concept{
-aconcept
+modelEval
 }
 \keyword{ts}
 \keyword{univar}

@@ -88,7 +88,7 @@ PlotFluxCompare <- function(strDf.obs, strCol.obs="q_cms",
         }
     else {
         with(strDf, plot(POSIXct, qcomp.mod1, typ='l', col='green2', ylab=paste0(strCol.mod1),
-                                main=ttext, ylim=c(0,maxflow)))
+                                main=ttext, ylim=c(minflow,maxflow)))
         }
     if (!is.null(strDf.mod2)) { with(strDf, lines(POSIXct, qcomp.mod2, col='blue')) }
     with(strDf, lines(POSIXct, qcomp.obs, col='black'))

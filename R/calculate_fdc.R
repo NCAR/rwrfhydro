@@ -18,7 +18,8 @@
 #'
 #' obsStr5min.fc <- CalcFdc(obsStr5min.fc, "q_cms")
 #' @keywords univar
-#' @concept aconcept
+#' @concept modelEval
+#' @family flowDurationCurves
 #' @export
 CalcFdc <- function(strDf, strCol="q_cms") {
     tmp <- rank(-strDf[,strCol],na.last="keep")
@@ -53,7 +54,8 @@ CalcFdc <- function(strDf, strCol="q_cms") {
 #' fdc.obsStr5min.fc(0.2)
 #' > 0.72
 #' @keywords univar
-#' @concept aconcept
+#' @concept modelEval
+#' @family flowDurationCurves
 #' @export
 CalcFdcSpline <- function(strDf, strCol="q_cms") {
     strflowSpline <- splinefun(strDf[,paste0(strCol,".fdc")], strDf[,strCol], method='natural')
@@ -84,7 +86,8 @@ CalcFdcSpline <- function(strDf, strCol="q_cms") {
 #'
 #' PlotFdc(obsStr5min.fc, fdcProb=0.2)
 #' @keywords hplot
-#' @concept aconcept
+#' @concept modelEval plot
+#' @family flowDurationCurves
 #' @export
 PlotFdc <- function(strDf, strCol="q_cms", spline=TRUE, fdcProb=NULL) {
     plot(strDf[,paste0(strCol,".fdc")], strDf[,strCol], log='y', xlab="Probability of Exceedance", ylab=c("Flow (log scale)"), main=c(paste("Flow Duration Curve: ", deparse(substitute(strDf)), ":", deparse(substitute(strCol)), ", n=", sum(!is.na(strDf[,strCol])))))
@@ -138,7 +141,8 @@ PlotFdc <- function(strDf, strCol="q_cms", spline=TRUE, fdcProb=NULL) {
 #'
 #' PlotFdcCompare(obsStr5min.fc, "q_cms", modStrh.allrt.fc, "q_cms", strDf.mod2=modStrh.chrt.fc, strCol.mod2="q_cms", labelObs="Observed Fourmile Creek", labelMod1="All Routing", labelMod2="Channel Routing Only")
 #' @keywords hplot
-#' @concept aconcept
+#' @concept modelEval plot
+#' @family flowDurationCurves
 #' @export
 PlotFdcCompare <- function(strDf.obs, strCol.obs="q_cms",
                             strDf.mod1, strCol.mod1="q_cms",
