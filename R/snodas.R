@@ -12,7 +12,8 @@
 #' @param parallel   Logical Defaults to (foreach::getDoParWorkers>1), so if you've set up parallelization it is automatically used. 
 #' @return Logical was the file "got"?
 #' @examples
-#' snodasGot <- GetSnodasDepthSweDate(as.POSIXct('2015-02-28'))
+#' snodasGot <- GetSnodasDepthSweDate(as.POSIXct('2015-02-28'),
+#'                                    outputDir = path.expand('~'))
 #' @keywords IO
 #' @concept SNODAS
 #' @family SNODAS
@@ -93,8 +94,11 @@ GetSnodasDepthSweDate <- function(datePOSIXct, outputDir='.', overwrite=FALSE,
 #' @param outputDir         The directory where the data are archived.
 #' @return A list with a SWE and a depth matrix. 
 #' @examples
-#' snodasGot <- GetSnodasDepthSweDate(as.POSIXct('2015-02-28'))
-#' if(snodasGot) snodasList <- ReadSnodasDepthSweDate(as.POSIXct('2015-02-28'))
+#' snodasGot <- GetSnodasDepthSweDate(as.POSIXct('2015-02-28'),
+#'                                    outputDir = path.expand('~'))
+#' if(snodasGot) snodasList <- ReadSnodasDepthSweDate(as.POSIXct('2015-02-28'),
+#'                                    outputDir = path.expand('~'))
+#' unlink(path.expand('~/us_ssmv1103*.dat.gz'))
 #' @keywords manip
 #' @concept SNODAS
 #' @family SNODAS
@@ -148,10 +152,12 @@ ReadSnodasDepthSweDate <- function(datePOSIXct, outputDir='.') {
 #' @param snodasList The output of ReadSnodasDepthSweDate. 
 #' @param outputDir Character. The directory path where the output files are to be written. 
 #' @return Success if the filename which is (SNODAS_YYYYMMDD.nc), otherwise NULL.
-#' @examples
+#' @
+#' \dontrun{
 #' snodasGot <- GetSnodasDepthSweDate(as.POSIXct('2015-02-28'))
 #' if(snodasGot) snodasList <- ReadSnodasDepthSweDate(as.POSIXct('2015-02-28'))
 #' PutSnodasNcdf(snodasList)
+#' }
 # @TODO make output, particularly time dim, cf compliant.
 #' @keywords IO
 #' @concept SNODAS
@@ -243,7 +249,9 @@ CalcSnodasCoords <- function() {
 #' \code{PutSnodasCoordsNcdf} Put the output of CalcSnodasCoords into a netcdf file. 
 #' @return Success if the filename (which is SNODAS_Coordinates.nc), otherwise NULL.
 #' @examples
-#' PutSnodasCoordsNcdf()
+#' outFile <- PutSnodasCoordsNcdf()
+#' ncdump(outFile)
+#' unlink(outFile)
 #' @keywords IO
 #' @concept SNODAS
 #' @family SNODAS
@@ -286,5 +294,6 @@ PutSnodasCoordsNcdf <- function() {
   globalAttList <- list()
   globalAttList[[1]] <- list(name='Time',value='Timeless', precision="text")
   
-  MkNcdf( varList, globalAttList, 'SNODAS_Coordinates.nc' )
+  MkNcdf( varList, globalAttList=globalAttList, 
+          filename='SNODAS_Coordinates.nc' )
 }

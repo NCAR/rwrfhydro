@@ -42,8 +42,11 @@
 #' globalAttList <- list()
 #' globalAttList[[1]] <- list(name='Restart_Time',value='2012-07-05_00:00:00', precision="text")
 #' globalAttList[[2]] <- list(name='Some reall atts',value='#$%^!!', precision="text" )
-#' dum <- MkNcdf( varList, globalAttList, '~/test1.nc' )
 #' 
+#' outFile1 <- path.expand('~/test1.nc')
+#' dum <- MkNcdf( varList, globalAttList=globalAttList, filename=outFile1 )
+#' ncdump(outFile1)
+#' unlink(outFile1)
 #' 
 #' #Example 2 - append to an existing file's variable.
 #' varList1 = list()
@@ -83,19 +86,11 @@
 #' globalAttList <- list()
 #' globalAttList[[1]] <- list(name='Some reall atts',value='#$%^!!', precision="text" )
 #' 
-#' dum <- MkNcdf( varList1, globalAttList, '~/test2.nc', over=TRUE )
-#' n<-ncdf4::nc_open('~/test2.nc')
-#' p<-ncdf4::ncvar_get(n,'precipMult22')
-#' y<-ncdf4::ncvar_get(n,'y')
-#' x<-ncdf4::ncvar_get(n,'x')
-#' ncdf4::nc_close(n)
-#' 
-#' dum <- MkNcdf( varList2, globalAttList, '~/test2.nc' )
-#' n<-ncdf4::nc_open('~/test2.nc')
-#' p<-ncdf4::ncvar_get(n,'precipMult22')
-#' y<-ncdf4::ncvar_get(n,'y')
-#' x<-ncdf4::ncvar_get(n,'x')
-#' ncdf4::nc_close(n)
+#' outFile2 <- path.expand('~/test2.nc')
+#' MkNcdf( varList1, globalAttList=globalAttList, 
+#'                filename='~/test2.nc', over=TRUE )
+#' ncdump(outFile2)
+#' unlink(outFile2)
 #' @concept ncdf
 #' @family ncdf
 #' @export
@@ -205,6 +200,7 @@ MkNcdf <- function( varList, filename,
 #' @param quiet Logical, suppress the 'meta' dump?
 #' @return If variable is not set, the meta object \code{ncdf4::nc_open(file)} is returned. If \code{variable}
 #' is set, its values are returned. 
+#' @example See \link{\code{MKNcdf}}.
 #' @concept ncdf 
 #' @family ncdf 
 #' @export
