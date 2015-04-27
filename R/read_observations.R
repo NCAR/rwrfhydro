@@ -117,8 +117,8 @@ ReadUsgsGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, ti
 #' the data time series with standard CO DWR columns.
 #' @param returnEnglish Logical: Return variables in english units (cfs and ft)
 #' @param returnMetric  Logical: Return variables in these units (cms and m)
-#' @param timeZone  (OPTIONAL) The time zone for the gage data. Only necessary if tz code
-#' is NOT provided in the input file (e.g., daily streamflow gage data files).
+#' @param timeZone  (OPTIONAL) The time zone for the gage data (DEFAULT="America/Denver",
+#' which is MST/MDT).
 #' Time zone name must be R-friendly for your current OS. See: \url{http://stat.ethz.ch/R-manual/R-devel/library/base/html/timezones.html}
 #' @return A dataframe containing the flow and/or stage data.
 #'
@@ -127,12 +127,12 @@ ReadUsgsGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, ti
 #' ## and create a dataframe called "obsStr15min.alaterco".
 #'
 #' obsStr15min.alaterco <- ReadCoDwrGage("../OBS/STRFLOW/ALATERCO_41715103512.txt")
-#' obsStr15min.alaterco <- ReadUsgsGage("../OBS/STRFLOW/ALATERCO_41715103512.txt", returnEnglish=FALSE)
+#' obsStr15min.alaterco <- ReadCoDwrGage("../OBS/STRFLOW/ALATERCO_41715103512.txt", returnEnglish=FALSE)
 #' @keywords IO
 #' @concept dataGet
 #' @family obsDataReads
 #' @export
-ReadCoDwrGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, timeZone="MST") {
+ReadCoDwrGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, timeZone="America/Denver") {
   # Manually remove commented lines since cannot automate due to mismatch between column names and column count
   ncomm <- as.integer(system(paste('grep "#"', pathGageData, '| wc -l'), intern=TRUE))
   outDf <- read.table(pathGageData, sep="\t", stringsAsFactors=F, skip=ncomm+1,
@@ -182,7 +182,8 @@ ReadCoDwrGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, t
     "%Y-%m-%d %H:%M" # instantaneous
   } else { "%Y-%m-%d" }  # daily avg
   outDf$POSIXct <- as.POSIXct(as.character(outDf$datetime), format=usgsTimeFmt, tz=timeZone)
-  
+  # Screen out NA times, since CO DWR leaves in null values for the missing daylight savings hour.
+  outDf <- subset(outDf, !is.na(outDf$POSIXct))
   outDf$wy <- CalcWaterYear(outDf$POSIXct)
   
   outDf
