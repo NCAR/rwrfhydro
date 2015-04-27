@@ -5,7 +5,7 @@
 \title{Read standard-format text data table downloaded from CO DWR}
 \usage{
 ReadCoDwrGage(pathGageData, returnMetric = TRUE, returnEnglish = TRUE,
-  timeZone = "MST")
+  timeZone = "America/Denver")
 }
 \arguments{
 \item{pathGageData}{The full pathname to the streamflow/stage time series text file as
@@ -16,8 +16,8 @@ the data time series with standard CO DWR columns.}
 
 \item{returnEnglish}{Logical: Return variables in english units (cfs and ft)}
 
-\item{timeZone}{(OPTIONAL) The time zone for the gage data. Only necessary if tz code
-is NOT provided in the input file (e.g., daily streamflow gage data files).
+\item{timeZone}{(OPTIONAL) The time zone for the gage data (DEFAULT="America/Denver",
+which is MST/MDT).
 Time zone name must be R-friendly for your current OS. See: \url{http://stat.ethz.ch/R-manual/R-devel/library/base/html/timezones.html}}
 }
 \value{
@@ -36,7 +36,7 @@ rwrfhydro tools.
 ## and create a dataframe called "obsStr15min.alaterco".
 
 obsStr15min.alaterco <- ReadCoDwrGage("../OBS/STRFLOW/ALATERCO_41715103512.txt")
-obsStr15min.alaterco <- ReadUsgsGage("../OBS/STRFLOW/ALATERCO_41715103512.txt", returnEnglish=FALSE)
+obsStr15min.alaterco <- ReadCoDwrGage("../OBS/STRFLOW/ALATERCO_41715103512.txt", returnEnglish=FALSE)
 }
 \seealso{
 Other obsDataReads: \code{\link{ReadAmerifluxCSV}};
