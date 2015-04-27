@@ -17,21 +17,25 @@
 #==============================================================================================
 #' Discover USGS stations using huc8 code or lat/lon/radius.
 #' 
-#' \code{FindUsgsStns} wraps \code{dataRetrieval::whatNWISsites} with common options for finding USGS gauges. 
-#' See the dataRetrieval package for more deails on what else could be passed or how this could be modified. 
-#' One improvement here would be to order results by proximity to supplied lat/lon and filter to nClosest.
+#' \code{FindUsgsStns} wraps \code{dataRetrieval::whatNWISsites} with common
+#' options for finding USGS gauges. See the dataRetrieval package for more
+#' deails on what else could be passed or how this could be modified. One
+#' improvement here would be to order results by proximity to supplied lat/lon
+#' and filter to nClosest.
 #' @param stnLon optional
 #' @param stnLat optional
-#' @param within optional, goes with stnLon and stnLat and specifies a search radius in decimal degrees.
-#' @param huc8 optional EIGHT digit HUC code. 
-#' @param siteType the type of USGS site to look for. 
-#' @param hasDataTypeCd the kind of data of interest (iv=instantaneous, dv=daily, etc.)
+#' @param within optional, goes with stnLon and stnLat and specifies a search
+#'   radius in decimal degrees.
+#' @param huc8 optional EIGHT digit HUC code.
+#' @param siteType the type of USGS site to look for.
+#' @param hasDataTypeCd the kind of data of interest (iv=instantaneous,
+#'   dv=daily, etc.)
 #' @keywords IO
 #' @concept dataGet usgsStreamObs
 #' @family streamObs
 #' @examples
-#' stnDf <- FindUsgsStns(huc='10190005')
-#' stnDf <- FindUsgsStns(huc=c('10190005','03160203'))
+#' stnDf <- FindUsgsStns(huc8='10190005')
+#' stnDf <- FindUsgsStns(huc8=c('10190005','03160203'))
 #' stnDf <- FindUsgsStns(stnLon=254.67374999999998408,stnLat=40.018666670000001773,within=.001)
 #' stnDf <- FindUsgsStns(stnLon=c(254.67374999999998408,-87.747224700000004),
 #'                       stnLat=c(40.018666670000001773, 31.864042489999999),within=.001)
@@ -74,19 +78,22 @@ FindUsgsStns <- function(stnLon=NULL, stnLat=NULL, within=NULL,
 }
 
 #==============================================================================================
-#' Get all the USGS streamgage information within a HUC8. 
+#' Get all the USGS streamgage information within a HUC8.
 #' 
-#' \code{GetUsgsHucData} gets all the USGS streamgage information within a HUC8. If an
-#' output path is supplied, an existing database is examined for existing records and
-#' the data retrieved from the USGS only extends the available and is saved in the data base.
-#' Could eventually use startDate and endDate to tweak this for calls which dont care about archival.
-#' @param huc8 Character The eight-digit HUC code. 
+#' \code{GetUsgsHucData} gets all the USGS streamgage information within a HUC8.
+#' If an output path is supplied, an existing database is examined for existing
+#' records and the data retrieved from the USGS only extends the available and
+#' is saved in the data base. Could eventually use startDate and endDate to
+#' tweak this for calls which dont care about archival.
+#' @param huc8 Character The eight-digit HUC code.
 #' @param outPath Character The path to the database directory
 #' @param metaDBFileName Character The name of the database metadata file.
 #' @examples
-#' bldrHucData    <- GetUsgsHucData(huc='10190005')
-#' satilpaHucData <- GetUsgsHucData(huc='03160203')
-#' vansHucData    <- GetUsgsHucData(huc='03020104')
+#' \dontrun{
+#' bldrHucData    <- GetUsgsHucData(huc8='10190005')
+#' satilpaHucData <- GetUsgsHucData(huc8='03160203')
+#' vansHucData    <- GetUsgsHucData(huc8='03020104')
+#' }
 #' @keywords IO
 #' @concept dataGet usgsStreamObs
 #' @family streamObs
@@ -94,7 +101,7 @@ FindUsgsStns <- function(stnLon=NULL, stnLat=NULL, within=NULL,
 GetUsgsHucData <- function(huc8, outPath=NULL, 
                            metaDBFileName='usgsDataRetrieval.metaDatabase.RData' ) {
 
-  stns <- FindUsgsStns(huc=huc8)
+  stns <- FindUsgsStns(huc8=huc8)
   meta <- dataRetrieval::whatNWISdata(stns$site_no, service = "uv")
   meta$tz <- ''  #not currently used
   
@@ -167,18 +174,26 @@ GetUsgsHucData <- function(huc8, outPath=NULL,
 #==============================================================================================
 #' Save the output of GetUsgsHucData to an archive.
 #' 
-#' \code{SaveHucData} take a list returned by \code{GetUsgsHucData}, create or append to an existing archive, and update
-#' metadata file. Input list is grouped by HUC codes where each HUC has data and meta lists. The output files 
-#' are written to outPath with the following format HHHHHHHH.data.RData where HHHHHHHH is the HUC8 code. The 
-#' name of the metadata file is configurable. The metadata file contains metadata for all files in the outPath. 
+#' \code{SaveHucData} take a list returned by \code{GetUsgsHucData}, create or
+#' append to an existing archive, and update metadata file. Input list is
+#' grouped by HUC codes where each HUC has data and meta lists. The output files
+#' are written to outPath with the following format HHHHHHHH.data.RData where
+#' HHHHHHHH is the HUC8 code. The name of the metadata file is configurable. The
+#' metadata file contains metadata for all files in the outPath.
 #' @param hucData List Returned from GetUsgsHucData.
 #' @param outPath Character The path to the database directory
 #' @param metaDBFileName Character The name of the database metadata file.
-#' @param overwriteHucDataFile Logical Replace/overwrite the existing data file for the HUC with the current data.
+#' @param overwriteHucDataFile Logical Replace/overwrite the existing data file
+#'   for the HUC with the current data.
 #' @examples
-#' files <- SaveHucData(GetUsgsHucData(huc='10190005'), outPath='~/wrfHydroTestCases/usgsDb') ##boulder, CO
-#' files <- SaveHucData(GetUsgsHucData(huc='03160203'), outPath='~/wrfHydroTestCases/usgsDb') ##satilpa, AL
-#' files <- SaveHucData(GetUsgsHucData(huc='03020104'), outPath='~/wrfHydroTestCases/usgsDb')  ##vans, NC
+#' \dontrun{
+#' files <- SaveHucData(GetUsgsHucData(huc='10190005'), 
+#'                      outPath='~/wrfHydroTestCases/usgsDb') ##boulder, CO
+#' files <- SaveHucData(GetUsgsHucData(huc='03160203'),
+#'                      outPath='~/wrfHydroTestCases/usgsDb') ##satilpa, AL
+#' files <- SaveHucData(GetUsgsHucData(huc='03020104'),
+#'                      outPath='~/wrfHydroTestCases/usgsDb')  ##vans, NC
+#' }
 #' @keywords IO database
 #' @concept dataGet usgsStreamObs
 #' @family streamObs
@@ -244,13 +259,15 @@ SaveHucData <- function(hucData, outPath,
   
 
 #==============================================================================================
-#' For an indivudal product, Improve site metadata to be stored in the database and file. 
+#' For an indivudal product, Improve site metadata to be stored in the database
+#' and file.
 #' 
-#' \code{ImproveHucMeta} extracts the metadata to stash in a usgsDataRetrieval database for an individual product.
-#' It gathers the attributes returned by \code{dataRetrieval::readNWISuv} , supplements siteInfo with
-#' startTime and endTime for each station in UTC to assist appending the records. 
+#' \code{ImproveHucMeta} extracts the metadata to stash in a usgsDataRetrieval
+#' database for an individual product. It gathers the attributes returned by
+#' \code{dataRetrieval::readNWISuv} , supplements siteInfo with startTime and
+#' endTime for each station in UTC to assist appending the records.
 #' @param hucProdDf dataframe from dataRetrieval::readNWISuv
-#' @return list of metadata for a 
+#' @return list of metadata for a
 #' @keywords IO internal
 #' @concept dataGet usgsStreamObs
 #' @family streamObs
@@ -306,14 +323,19 @@ ImproveHucMeta <- function(hucProdDf) {
 
 
 #==============================================================================================
-#' For a single product, get instantaneous USGS data and separate data and metadata/attributes into a list.
+
+#' For a single product, get instantaneous USGS data and separate data and
+#' metadata/attributes into a list.
 #' 
-#' \code{GetUsgsIvProduct} gets instantaneous USGS data for a single product code
-#' and separates the returned dataframe with attributes from \code{dataRetrieval::readNWISuv} into a list with 
-#' separate data and metadata/attributes. The meta data are updated with startTime and endTime information.
-#' @param prodDf is a dataframe returned by \code{dataRetrieval::whatNWISdata(stns$site_no, service = "uv")}
-#' subet to an individual product code.
-#' @return list(data=,meta=) 
+#' \code{GetUsgsIvProduct} gets instantaneous USGS data for a single product
+#' code and separates the returned dataframe with attributes from
+#' \code{dataRetrieval::readNWISuv} into a list with separate data and
+#' metadata/attributes. The meta data are updated with startTime and endTime
+#' information.
+#' @param prodDf is a dataframe returned by
+#'   \code{dataRetrieval::whatNWISdata(stns$site_no, service = "uv")} subet to
+#'   an individual product code.
+#' @return list(data=,meta=)
 #' @keywords IO internal
 #' @concept dataGet usgsStreamObs
 #' @family streamObs
@@ -330,15 +352,18 @@ GetUsgsIvProduct <- function( prodDf ) {
 
 
 #==============================================================================================
+
 #' Given a USGS site code, return its HUC8.
 #' 
 #' \code{GetSiteHuc} returns a HUC8 given a USGS site name. 
 #' @param site Character USGS site number.
 #' @return character HUC8
 #' @examples
-#' GetSiteHuc(FindUsgsStns(stnLon=254.67374999999998408,stnLat=40.018666670000001773,within=.001)$site_no)
-#' huc <- GetSiteHuc(gages2RefAttr$STAID[1:3])
-#' names(huc)<-gages2RefAttr$STAID[1:3]
+#' GetSiteHuc(FindUsgsStns(stnLon=254.67374999999998408,
+#'                         stnLat=40.018666670000001773,
+#'                         within=.001)$site_no)
+#' huc <- GetSiteHuc(gages2AttrPlus$STAID[1:3])
+#' names(huc)<-gages2AttrPlus$STAID[1:3]
 #' @keywords IO 
 #' @concept dataGet usgsStreamObs
 #' @family streamObs
@@ -354,7 +379,9 @@ GetSiteHuc <- function(site) dataRetrieval::readNWISsite(as.character(site))$huc
 #' @param path Character The path to the database.
 #' @param metaDBFileName Character The name of the metadata file.
 #' @examples
+#' \dontrun{
 #' QuerySiteProd('06730500', '~/streamflow/OBS/')
+#' }
 #' @keywords database
 #' @concept dataMgmt usgsStreamObs
 #' @family streamObs
@@ -367,16 +394,22 @@ QuerySiteProd <- function(site, path='.',
 }
 
 #==============================================================================================
+
 #' General purpose query/get for instantaneous USGS streamflow data.
 #' 
-#' \code{QueryHaveSite} 
+#' \code{QueryHaveSite}
 #' @param site Character USGS site number.
 #' @param path Character The path to the database.
 #' @param metaDBFileName Character The name of the metadata file.
-#' @param get Logical Get the data from NWIS if it is not local? Data are saved to local database.
-#' @param retData Logical OR Character If true return all products, otherwise return the specified product. If get from NWIS, all products are retrieved and saved locally but only specified products are returned. 
+#' @param get Logical Get the data from NWIS if it is not local? Data are saved
+#'   to local database.
+#' @param retData Logical OR Character If true return all products, otherwise
+#'   return the specified product. If get from NWIS, all products are retrieved
+#'   and saved locally but only specified products are returned.
 #' @examples
+#' \dontrun{
 #' haveOro <- QueryHaveSite('06727500', path='~/wrfHydroTestCases/usgsDb', retData=TRUE)
+#' }
 #' @keywords database
 #' @concept dataMgmt usgsStreamObs
 #' @family streamObs
@@ -439,18 +472,22 @@ QueryHaveSite <- function(site, path='.',
 
 
 #==============================================================================================
+
 #' Find the name (site id) for a given site (name)  in the local database.
 #' 
-#' \code{QuerySiteName} returns the name (site id) for a given site ID (name) in the local database.
+#' \code{QuerySiteName} returns the name (site id) for a given site ID (name) in
+#' the local database.
 #' @param site Character USGS site number or name.
 #' @param path Character The path to the database.
-#' @param retSiteId Logical return ID (name if FALSE) This is only exposed in case there are issues, 
-#'        should work by default.
+#' @param retSiteId Logical return ID (name if FALSE) This is only exposed in
+#'   case there are issues, should work by default.
 #' @param metaDBFileName Character The name of the metadata file.
 #' @return Character Site name or number.
 #' @examples
+#' \dontrun{
 #' QuerySiteName('06730500', '~/streamflow/OBS/')
 #' QuerySiteName('BOULDER CREEK AT MOUTH NEAR LONGMONT, CO', '~/streamflow/OBS/')
+#' }
 #' @keywords database
 #' @concept dataMgmt usgsStreamObs
 #' @family streamObs
@@ -473,15 +510,19 @@ QuerySiteName <- function(site, path='.',
 
 
 #==============================================================================================
+
 #' Returns the desired information from the database metadata file.
 #' 
 #' \code{QuerySiteInfo} gets the specified info from the local database.
-#' @param info Character vector, information fields in \code{HUC$prod$meta$SiteInfo$info}.
+#' @param info Character vector, information fields in
+#'   \code{HUC$prod$meta$SiteInfo$info}.
 #' @param path Character The path to the database directory.
 #' @param metaDBFileName Character The name of the metadata file.
 #' @return dataframe of requested info with all available HUC and product codes.
 #' @examples 
+#' \dontrun{
 #' QuerySiteInfo(c('station_nm','site_no'), path='~/streamflow/OBS/')
+#' }
 #' @keywords database
 #' @concept dataMgmt usgsStreamObs
 #' @family streamObs
@@ -511,15 +552,19 @@ QuerySiteInfo <- function(info=NULL, path='.',
 #' @param metaDBFileName Character The name of the metadata file.
 #' @return dataframe of data with pertinent attributes.
 #' @examples 
+#' \dontrun{
 #' p='~/wrfHydroTestCases/usgsDb/'
-#' dataOrodell <- QuerySiteData(QuerySiteName("FOURMILE CREEK AT ORODELL, CO", p), '00060', p)
+#' dataOrodell <- QuerySiteData(QuerySiteName("FOURMILE CREEK AT ORODELL, CO", p), 
+#'                              '00060', p)
 #' siteInfo<-QuerySiteInfo(c('station_nm','site_no','stateCd'), path=p)
-#' dataCO <- QuerySiteData(subset(siteInfo, stateCd=='08' & product=='00060')$site_no, '00060', p)
+#' dataCO <- QuerySiteData(subset(siteInfo, stateCd=='08' & product=='00060')$site_no,
+#'                         '00060', p)
 #' dataMultiHuc <- QuerySiteData(c('06730500','02084557'),'00060',p)
 #' Case with ill-defined variables
 #' dataMultiHuc <- QuerySiteData('06730500','00065',p)
 #' ## This is the multisite multi product case.
 #' dataMultiHuc <- QuerySiteData(c('06730500','02084557'),c('00065','00060'),p)
+#' }
 #' @keywords database
 #' @concept dataMgmt usgsStreamObs
 #' @family streamObs
@@ -529,7 +574,7 @@ QuerySiteData <- function(site, product, path='.',
 
   QuerySiteData.atomic <- function(site, product, path='.',
                                    metaDBFileName='usgsDataRetrieval.metaDatabase.RData'){
-    if(!any(QuerySiteProd(site, path=path, metaDB=metaDBFileName) == product)) {
+    if(!any(QuerySiteProd(site, path=path, metaDBFileName=metaDBFileName) == product)) {
       warning(paste("No product",product,"at site",site,"."))
       return(NULL)
     }
@@ -581,25 +626,31 @@ QuerySiteData <- function(site, product, path='.',
 
 
 #==============================================================================================
+
 #' PrettyUsgs constructs the S3 class prettyUsgs.
 #' 
-#' \code{PrettyUsgs} beautifies data frames of USGS data. This is the S3 constructor for the 
-#' PrettyUsgs object. 
+#' \code{PrettyUsgs} beautifies data frames of USGS data. This is the S3
+#' constructor for the PrettyUsgs object.
 #' @param data Dataframe from QuerySiteData
-#' @param metric Logical. Units are either metric or not (not both). 
-#' @param format character, either 'wide' or 'long'. In wide format there are more columns, one 
-#' for each variable named \code{'variable (units)'}. In long format, there are columns \code{value}, 
-#' \code{variable}, and \code{units}. Switching between long and wide formats can be done with 
-#' \code{Reformat()} (though I've yet to program this...). 
-#' @param tz Character The timezone for the POSIXct dataTime variable to be returned. 
+#' @param metric Logical. Units are either metric or not (not both).
+#' @param format character, either 'wide' or 'long'. In wide format there are
+#'   more columns, one for each variable named \code{'variable (units)'}. In
+#'   long format, there are columns \code{value}, \code{variable}, and
+#'   \code{units}. Switching between long and wide formats can be done with 
+#'   \code{Reformat()} (though I've yet to program this...).
+#' @param tz Character The timezone for the POSIXct dataTime variable to be
+#'   returned.
 #' @param na.rm Logical Remove all missing observations?
-#' @return dataframe similar to input with improved names and/or metric variables.
+#' @return dataframe similar to input with improved names and/or metric
+#'   variables.
 #' @examples 
+#' \dontrun{
 #' p='~/wrfHydroTestCases/usgsDb/'
 #' dataOrodell <- PrettyUsgs(QuerySiteData(QuerySiteName("FOURMILE CREEK AT ORODELL, CO", p), 
 #'                                             '00060', p), metric=TRUE)
 #' ## multisite and multiproduct case
 #' dataMultiHuc <- PrettyUsgs(QuerySiteData(c('06730500','02470072'),c('00065','00060'),p))
+#' }
 #' @keywords manip
 #' @concept dataMgmt usgsStreamObs
 #' @family streamObs
@@ -660,12 +711,13 @@ PrettyUsgs <- function(data, tz='UTC',
 
 
 ##============================================================================================
+
 #' Load the metadata for the USGS streamflow database.
 #' 
 #' \code{LoadMetaDB} Load the metadata for the USGS streamflow database.
-#' @param path Character path to the meta DB. 
-#' @param metaDBFileName Character name of the meta DB. 
-#' @param envir Envrionment where it is to be loaded. 
+#' @param path Character path to the meta DB.
+#' @param metaDBFileName Character name of the meta DB.
+#' @param envir Envrionment where it is to be loaded.
 #' @return Character the name of the variables loaded with the file (invisible).
 #' @keywords internal database
 #' @concept dataMgmt usgsStreamObs
@@ -679,15 +731,16 @@ LoadMetaDB <- function(path='.',
 
 
 ##============================================================================================
+
 #' Translate USGS product/stat codes to something readable (and vice versa).
 #' 
-#' \code{TransUsgsProdStat} Translate USGS product/stat codes to something readable (and vice versa) 
-#' using a lookup table. 
-#' @param names Character product_stat codes (e.g. 'X_00060_00011') or their translation 
-#' (e.g. 'Discharge (cfs)') separated with an underscore. 
+#' \code{TransUsgsProdStat} Translate USGS product/stat codes to something
+#' readable (and vice versa) using a lookup table.
+#' @param names Character product_stat codes (e.g. 'X_00060_00011') or their
+#'   translation (e.g. 'Discharge (cfs)') separated with an underscore.
 #' @param whichIn Logical
-#' @return if whichIn==FALSE : Character of the translation.
-#'         if whichIn==TRUE  : Integer index which passed names are in the table. 
+#' @return if whichIn==FALSE : Character of the translation. if whichIn==TRUE  :
+#'   Integer index which passed names are in the table.
 #' @keywords database internal
 #' @concept dataMgmt usgsStreamObs
 TransUsgsProdStat <- function(names, whichIn=FALSE) {
@@ -729,16 +782,20 @@ TransUsgsProdStat <- function(names, whichIn=FALSE) {
 
 
 ##============================================================================================
+
 #' Plot USGS site data which has been prettied with PrettyUsgs.
 #' 
-#' \code{PlotPrettyData} plots USGS site data which has been prettied with \code{PrettyUsgs}.
+#' \code{PlotPrettyData} plots USGS site data which has been prettied with
+#' \code{PrettyUsgs}.
 #' @param prettyUsgs dataframe returned from PrettyUsgs
 #' @param plot Logical to plot before returning or not.
-#' @param errInnerQntl The inner quantile of the error estimate to be plotted with error bars. For example, 
-#'        the "68-95-99.7 rule" where specifying these as the errInnerQntl would display 1, 2, and 3 
-#'        standard deviations, respectively.
-#' @return A function(closure) with arguments controlling the look of its graphical output. It's actual
-#'         return value is a list of ggplot2 object which can be custom manipulated. 
+#' @param errInnerQntl The inner quantile of the error estimate to be plotted
+#'   with error bars. For example, the "68-95-99.7 rule" where specifying these
+#'   as the errInnerQntl would display 1, 2, and 3 standard deviations,
+#'   respectively.
+#' @return A function(closure) with arguments controlling the look of its
+#'   graphical output. It's actual return value is a list of ggplot2 object
+#'   which can be custom manipulated.
 #' @examples
 #' # See vignette "Collect USGS stream observations and build a local database" for examples.
 #' @keywords hplot
@@ -811,13 +868,16 @@ PlotPrettyData <- function(prettyUsgs, plot=TRUE, errInnerQntl=.995) {
 }
 
 ##============================================================================================
+
 #' Subset prettyUsgs objects.
 #' 
-#' \code{subset.prettyUsgs} subsets prettyUsgs objects and retains their attributes.
-#' @param prettyUsgs A dataframe of class \code{c("prettyUsgs", "data.frame")} returned from \code{PrettyUsgs}
+#' \code{subset.prettyUsgs} subsets prettyUsgs objects and retains their
+#' attributes.
+#' @param prettyUsgs A dataframe of class \code{c("prettyUsgs", "data.frame")}
+#'   returned from \code{PrettyUsgs}
 #' @param ... additional arguments to subset.data.frame
-#' @return A dataframe of class c("prettyUsgs", "data.frame")
-#' # See vignette "Collect USGS stream observations and build a local database" for examples.
+#' @return A dataframe of class c("prettyUsgs", "data.frame") # See vignette
+#'   "Collect USGS stream observations and build a local database" for examples.
 #' @keywords manip
 #' @concept dataMgmt usgsStreamObs
 #' @family streamObs

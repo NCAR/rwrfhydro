@@ -85,10 +85,12 @@
 #'
 #' globalAttList <- list()
 #' globalAttList[[1]] <- list(name='Some reall atts',value='#$%^!!', precision="text" )
-#' 
 #' outFile2 <- path.expand('~/test2.nc')
 #' MkNcdf( varList1, globalAttList=globalAttList, 
-#'                filename='~/test2.nc', over=TRUE )
+#'         filename=outFile2)
+#' ncdump(outFile2)
+#' MkNcdf( varList2, globalAttList=globalAttList, 
+#'         filename=outFile2 )
 #' ncdump(outFile2)
 #' unlink(outFile2)
 #' @concept ncdf
@@ -200,7 +202,8 @@ MkNcdf <- function( varList, filename,
 #' @param quiet Logical, suppress the 'meta' dump?
 #' @return If variable is not set, the meta object \code{ncdf4::nc_open(file)} is returned. If \code{variable}
 #' is set, its values are returned. 
-#' @example See \link{\code{MKNcdf}}.
+#' @examples
+#' # See \code{\link{MkNcdf}}.
 #' @concept ncdf 
 #' @family ncdf 
 #' @export

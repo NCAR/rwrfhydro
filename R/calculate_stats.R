@@ -1,19 +1,22 @@
 #' Calculate water fluxes from NoahMP output
-#'
-#' \code{CalcNoahmpFluxes} calculates water balance fluxes from accumulated water terms.
-#'
-#' Read a dataframe derived from NoahMP LDASOUT output (i.e., using \code{\link{GetMultiNcdf}}) and
-#' calculate water budget component fluxes from accumulated water variables.
-#' NOTE: Currently only works for runs using NoahMP as the LSM.
+#' 
+#' \code{CalcNoahmpFluxes} calculates water balance fluxes from accumulated
+#' water terms.
+#' 
+#' Read a dataframe derived from NoahMP LDASOUT output (i.e., using
+#' \code{\link{GetMultiNcdf}}) and calculate water budget component fluxes from
+#' accumulated water variables. NOTE: Currently only works for runs using NoahMP
+#' as the LSM.
 #' 
 #' @param ldasoutDf The LDASOUT dataframe
 #' @return The input dataframe with new water flux columns added.
-#'
+#'   
 #' @examples
 #' ## Take a NoahMP LDASOUT dataframe for a model run of Fourmile Creek
 #' ## and generate a dataframe with water fluxes added.
-#'
+#' \dontrun{
 #' modLDASOUT1d.nort.fc <- CalcNoahmpFluxes(modLDASOUT1d.nort.fc)
+#' }
 #' @keywords manip
 #' @concept dataMgmt
 #' @family modelEvaluation
@@ -31,60 +34,66 @@ CalcNoahmpFluxes <- function(ldasoutDf) {
 
 
 #' Calculate water balance from WRF-Hydro (w/NoahMP) output
-#'
-#' \code{CalcNoahmpWatBudg} calculates water budget components from WRF-Hydro (w/NoahMP) model output.
-#'
-#' \code{CalcNoahmpWatBudg} reads dataframes derived from WRF-Hydro output (i.e., using \code{\link{GetMultiNcdf}})
-#' and calculates water budget partitioning (e.g., surface runoff, evaporation, groundwater). Assumes WRF-Hydro
-#' output dataframes have already been masked to the desired basin. See \code{\link{GetMultiNcdf}} documentation
-#' for examples of how to do this. NOTE: Currently only works for model runs using NoahMP as the LSM.
-#'
-#' REQUIRED variables (these terms must be in your input dataframes):
-#' \itemize{
-#'    \item LDASOUT: ACCPRCP, ACCECAN, ACCETRAN, ACCEDIR, SFCRNOFF, UGDRNOFF, SOIL_M (all layers),
-#'           SNEQV, CANICE, CANLIQ
-#'    \item RTOUT (optional, use if overland or subsurface routing were activated): QSTRMVOLRT, SFCHEADSUBRT, QBDRY
-#'    \item GWOUT (optional, use if groundwater bucket model was activated): q_cms, POSIXct
-#' }
-#'
-#' OUTPUT water budget terms (may vary depending on model configuration):
-#' \itemize{
-#'    \item LSM_PRCP: Total precipitation (mm)
-#'    \item LSM_ECAN: Total canopy evaporation (mm)
-#'    \item LSM_ETRAN: Total transpiration (mm)
-#'    \item LSM_EDIR: Total surface evaporation (mm)
-#'    \item LSM_DELSWE: Change in snowpack snow water equivalent (mm)
-#'    \item LSM_DELCANWAT: Change in canopy water storage (liquid + ice) (mm)
-#'    \item LSM_SFCRNOFF: Surface runoff from LSM \emph{(for an LSM-only run)} (mm)
-#'    \item LSM_UGDRNOFF: Subsurface runoff from LSM \emph{(for an LSM-only run)} (mm)
-#'    \item LSM_DELSOILM: Change in total soil moisture storage (mm)
-#'    \item HYD_QSTRMVOL: Total runoff into channel from land \emph{(routing model only)}  (mm)
-#'    \item HYD_DELSFCHEAD: Change in surface storage \emph{(routing model only)} (mm)
-#'    \item HYD_QBDRY: Total flow outside of domain \emph{(routing model only)} (mm)
-#'    \item HYD_GWOUT: Total groundwater outflow \emph{(routing model only)} (mm)
-#'    \item HYD_DELGWSTOR: Change in groundwater storage \emph{(routing model only)} (mm)
-#'    \item WB_SFCRNOFF: Total surface runoff used in the water budget calculation (\emph{either} LSM_SFCRNOFF or HYD_QSTRMVOL) (mm)
-#'    \item WB_GWOUT: Total groundwater outflow used in the water budget calculation (\emph{either} LSM_UGDRNOFF or HYD_GWOUT) (mm)
-#'    \item ERROR: Remainder in water budget (mm)
-#'    \item RUN_FRAC: Runoff fraction, runoff/precipitation
-#'    \item EVAP_FRAC: Evaporative fraction, evapotranspiration/precipitation
-#'    \item STOR_FRAC: Change in storage fraction, storagechange/precipitation
-#' }
+#' 
+#' \code{CalcNoahmpWatBudg} calculates water budget components from WRF-Hydro 
+#' (w/NoahMP) model output.
+#' 
+#' \code{CalcNoahmpWatBudg} reads dataframes derived from WRF-Hydro output 
+#' (i.e., using \code{\link{GetMultiNcdf}}) and calculates water budget 
+#' partitioning (e.g., surface runoff, evaporation, groundwater). Assumes 
+#' WRF-Hydro output dataframes have already been masked to the desired basin. 
+#' See \code{\link{GetMultiNcdf}} documentation for examples of how to do this. 
+#' NOTE: Currently only works for model runs using NoahMP as the LSM.
+#' 
+#' REQUIRED variables (these terms must be in your input dataframes): \itemize{ 
+#' \item LDASOUT: ACCPRCP, ACCECAN, ACCETRAN, ACCEDIR, SFCRNOFF, UGDRNOFF, 
+#' SOIL_M (all layers), SNEQV, CANICE, CANLIQ \item RTOUT (optional, use if 
+#' overland or subsurface routing were activated): QSTRMVOLRT, SFCHEADSUBRT, 
+#' QBDRY \item GWOUT (optional, use if groundwater bucket model was activated): 
+#' q_cms, POSIXct }
+#' 
+#' OUTPUT water budget terms (may vary depending on model configuration): 
+#' \itemize{ \item LSM_PRCP: Total precipitation (mm) \item LSM_ECAN: Total 
+#' canopy evaporation (mm) \item LSM_ETRAN: Total transpiration (mm) \item 
+#' LSM_EDIR: Total surface evaporation (mm) \item LSM_DELSWE: Change in snowpack
+#' snow water equivalent (mm) \item LSM_DELCANWAT: Change in canopy water 
+#' storage (liquid + ice) (mm) \item LSM_SFCRNOFF: Surface runoff from LSM 
+#' \emph{(for an LSM-only run)} (mm) \item LSM_UGDRNOFF: Subsurface runoff from 
+#' LSM \emph{(for an LSM-only run)} (mm) \item LSM_DELSOILM: Change in total 
+#' soil moisture storage (mm) \item HYD_QSTRMVOL: Total runoff into channel from
+#' land \emph{(routing model only)}  (mm) \item HYD_DELSFCHEAD: Change in 
+#' surface storage \emph{(routing model only)} (mm) \item HYD_QBDRY: Total flow 
+#' outside of domain \emph{(routing model only)} (mm) \item HYD_GWOUT: Total 
+#' groundwater outflow \emph{(routing model only)} (mm) \item HYD_DELGWSTOR: 
+#' Change in groundwater storage \emph{(routing model only)} (mm) \item 
+#' WB_SFCRNOFF: Total surface runoff used in the water budget calculation 
+#' (\emph{either} LSM_SFCRNOFF or HYD_QSTRMVOL) (mm) \item WB_GWOUT: Total 
+#' groundwater outflow used in the water budget calculation (\emph{either} 
+#' LSM_UGDRNOFF or HYD_GWOUT) (mm) \item ERROR: Remainder in water budget (mm) 
+#' \item RUN_FRAC: Runoff fraction, runoff/precipitation \item EVAP_FRAC: 
+#' Evaporative fraction, evapotranspiration/precipitation \item STOR_FRAC: 
+#' Change in storage fraction, storagechange/precipitation }
 #' 
 #' @param ldasoutDf The LDASOUT dataframe (required)
-#' @param rtoutDf The RTOUT dataframe, if overland or subsurface routing was turned on (default=NULL)
-#' @param gwoutDf The GW_OUT dataframe, if groundwater model was turned on (default=NULL)
-#' @param sfcrt A flag whether surface overland flow routing was active. All other routing
-#' options are determined based on the input dataframes, as needed (e.g., if gwoutDf is provided,
-#' it is assumed that the groundwater model was active). (default=FALSE)
-#' @param soildeps A list of soil layer depths in mm (top to bottom, default=c(100, 300, 600, 1000))
-#' @param basarea The basin area in square km (necessary only if gwoutDf is provided)
+#' @param rtoutDf The RTOUT dataframe, if overland or subsurface routing was 
+#'   turned on (default=NULL)
+#' @param gwoutDf The GW_OUT dataframe, if groundwater model was turned on 
+#'   (default=NULL)
+#' @param sfcrt A flag whether surface overland flow routing was active. All 
+#'   other routing options are determined based on the input dataframes, as 
+#'   needed (e.g., if gwoutDf is provided, it is assumed that the groundwater 
+#'   model was active). (default=FALSE)
+#' @param soildeps A list of soil layer depths in mm (top to bottom, 
+#'   default=c(100, 300, 600, 1000))
+#' @param basarea The basin area in square km (necessary only if gwoutDf is 
+#'   provided)
 #' @return A new dataframe containing the water budget components in mm.
-#'
+#'   
 #' @examples
 #' ## Take a NoahMP LDASOUT dataframe for a model run of Fourmile Creek with no routing
 #' ## options turned on and return a water budget summary.
-#'
+#' 
+#' \dontrun{
 #' wb.nort.fc <- CalcNoahmpWatBudg(modLDASOUT1d.nort.fc)
 #' wb.nort.fc
 #' ##
@@ -93,9 +102,13 @@ CalcNoahmpFluxes <- function(ldasoutDf) {
 #' ## turned on and return a water budget summary. The default soil depths were used
 #' ## and the basin is 63.1 km2. NOTE: We MUST specify with the sfcrt flag that overland
 #' ## flow routing was turned on. Otherwise the LSM surface runoff term is used.
-#'
-#' wb.allrt.fc <- CalcNoahmpWatBudg(modLDASOUT1d.allrt.fc, modRTOUT1h.allrt.fc, modGWOUT1h.allrt.fc, sfcrt=TRUE, basarea=63.1)
+#' 
+#' wb.allrt.fc <- CalcNoahmpWatBudg(modLDASOUT1d.allrt.fc, 
+#'                                  modRTOUT1h.allrt.fc, 
+#'                                  modGWOUT1h.allrt.fc, 
+#'                                  sfcrt=TRUE, basarea=63.1)
 #' wb.allrt.fc
+#' }
 #' @keywords manip
 #' @concept modelEval
 #' @family modelEvaluation
@@ -178,82 +191,81 @@ CalcNoahmpWatBudg <- function(ldasoutDf, rtoutDf=NULL, gwoutDf=NULL, sfcrt=FALSE
 
 
 #' Computes model performance statistics for WRF-Hydro flux output
-#'
+#' 
 #' \code{CalcModPerf} calculates model performance statistics for flux output.
-#'
-#' \code{CalcModPerf} reads a model flux time series (i.e., created using \code{\link{ReadFrxstPts}}) and
-#' an observation time series (i.e., created using \code{\link{ReadUsgsGage}}) and calculates model performance
-#' statistics (Nash-Sutcliffe Efficiency, Rmse, etc.) at various time scales and for low
-#' and high fluxes. The tool will subset data to matching time periods (e.g., if the
-#' observed data is at 5-min increments and modelled data is at 1-hr increments, the tool
-#' will subset the observed data to select only observations on the matching hour break).
-#'
-#' Performance Statistics:
-#' \cr (mod = model output, obs = observations, n = sample size)
-#' \itemize{
-#' \item n: sample size
-#' \item nse: Nash-Sutcliffe Efficiency
-#' \deqn{nse = 1 - ( sum((obs - mod)^2) / sum((obs - mean(obs))^2) ) }
-#' \item nselog: log-transformed Nash-Sutcliffe Efficiency
-#' \deqn{nselog = 1 - ( sum((log(obs) - log(mod))^2) / sum((log(obs) - mean(log(obs)))^2) ) }
-#' \item cor: correlation coefficient
-#' \deqn{cor = cor(mod, obs) }
-#' \item rmse: root mean squared error
-#' \deqn{rmse = sqrt( sum((mod - obs)^2) / n ) }
-#' \item rmsenorm: normalized root mean squared error
-#' \deqn{rmsenorm = rmse / (max(obs) - min(obs)) }
-#' \item bias: percent bias
-#' \deqn{bias = sum(mod - obs) / sum(obs) * 100 }
-#' \item mae: mean absolute error
-#' \deqn{mae = mean(abs(mod - obs)) }
-#' \item errcom: error in the center-of-mass of the flux, where center-of-mass is the
-#' hour/day when 50\% of daily/monthly/water-year flux has occurred. Reported as number of hours for
-#' daily time scale and number of days for monthly and yearly time scales.
-#' \item errmaxt: Error in the time of maximum flux. Reported as number of hours for daily time scale
-#' and number of days for monthly and yearly time scales).
-#' \item errfdc: Error in the integrated flow duration curve between 0.05 and 0.95 exceedance thresholds
-#' (in native flow units).
-#' }
-#'
-#' Time scales/Flux types:
-#' \itemize{
-#' \item ts = native model/observation time step (e.g., hourly)
-#' \item daily = daily time step
-#' \item monthly = monthly time step
-#' \item yearly = water-year time step
-#' \item max10 = high flows; restricted to the portion of the time series where the observed flux 
-#' is in the highest 10\% (native time step)
-#' \item min10 = low flows; restricted to the portion of the time series where the observed flux 
-#' is in the lowest 10\% (native time step)
-#' }
-#'
-#' @param flxDf.mod The flux output dataframe (required). Assumes only one forecast
-#' point per file, so if you have multiple forecast points in your output dataframe, use
-#' subset to isolate a single forecast point's data. Also assumes model output and observation
-#' both contain POSIXct fields (called "POSIXct").
-#' @param flxDf.obs The observed flux dataframe. Assumes only one observation point per file, so if
-#' you have multiple observation points in your dataframe, use subset to isolate a single point's data.
-#' Also assumes model output and observation both contain POSIXct fields (called "POSIXct").
-#' @param flxCol.mod The column name for the flux time series for the MODEL data (default="q_cms")
-#' @param flxCol.obs The column name for the flux time series for the OBSERVED data (default="q_cms")
-#' @param stdate Start date for statistics (DEFAULT=NULL, all records will be used).
-#' Date MUST be specified in POSIXct format with appropriate timezone
-#' (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))
-#' @param enddate End date for statistics (DEFAULT=NULL, all records will be used).
-#' Date MUST be specified in POSIXct format with appropriate timezone
-#' (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))
-#' @param subdivisions Number of subdivisions used in flow duration curve integration
-#' (DEFAULT=1000); increase value if integrate function throws an error.
+#' 
+#' \code{CalcModPerf} reads a model flux time series (i.e., created using
+#' \code{\link{ReadFrxstPts}}) and an observation time series (i.e., created
+#' using \code{\link{ReadUsgsGage}}) and calculates model performance statistics
+#' (Nash-Sutcliffe Efficiency, Rmse, etc.) at various time scales and for low 
+#' and high fluxes. The tool will subset data to matching time periods (e.g., if
+#' the observed data is at 5-min increments and modelled data is at 1-hr
+#' increments, the tool will subset the observed data to select only
+#' observations on the matching hour break).
+#' 
+#' Performance Statistics: \cr (mod = model output, obs = observations, n =
+#' sample size) \itemize{ \item n: sample size \item nse: Nash-Sutcliffe
+#' Efficiency \deqn{nse = 1 - ( sum((obs - mod)^2) / sum((obs - mean(obs))^2) )
+#' } \item nselog: log-transformed Nash-Sutcliffe Efficiency \deqn{nselog = 1 -
+#' ( sum((log(obs) - log(mod))^2) / sum((log(obs) - mean(log(obs)))^2) ) } \item
+#' cor: correlation coefficient \deqn{cor = cor(mod, obs) } \item rmse: root
+#' mean squared error \deqn{rmse = sqrt( sum((mod - obs)^2) / n ) } \item
+#' rmsenorm: normalized root mean squared error \deqn{rmsenorm = rmse /
+#' (max(obs) - min(obs)) } \item bias: percent bias \deqn{bias = sum(mod - obs)
+#' / sum(obs) * 100 } \item mae: mean absolute error \deqn{mae = mean(abs(mod -
+#' obs)) } \item errcom: error in the center-of-mass of the flux, where
+#' center-of-mass is the hour/day when 50\% of daily/monthly/water-year flux has
+#' occurred. Reported as number of hours for daily time scale and number of days
+#' for monthly and yearly time scales. \item errmaxt: Error in the time of
+#' maximum flux. Reported as number of hours for daily time scale and number of
+#' days for monthly and yearly time scales). \item errfdc: Error in the
+#' integrated flow duration curve between 0.05 and 0.95 exceedance thresholds 
+#' (in native flow units). }
+#' 
+#' Time scales/Flux types: \itemize{ \item ts = native model/observation time
+#' step (e.g., hourly) \item daily = daily time step \item monthly = monthly
+#' time step \item yearly = water-year time step \item max10 = high flows;
+#' restricted to the portion of the time series where the observed flux is in
+#' the highest 10\% (native time step) \item min10 = low flows; restricted to
+#' the portion of the time series where the observed flux is in the lowest 10\%
+#' (native time step) }
+#' 
+#' @param flxDf.mod The flux output dataframe (required). Assumes only one
+#'   forecast point per file, so if you have multiple forecast points in your
+#'   output dataframe, use subset to isolate a single forecast point's data.
+#'   Also assumes model output and observation both contain POSIXct fields
+#'   (called "POSIXct").
+#' @param flxDf.obs The observed flux dataframe. Assumes only one observation
+#'   point per file, so if you have multiple observation points in your
+#'   dataframe, use subset to isolate a single point's data. Also assumes model
+#'   output and observation both contain POSIXct fields (called "POSIXct").
+#' @param flxCol.mod The column name for the flux time series for the MODEL data
+#'   (default="q_cms")
+#' @param flxCol.obs The column name for the flux time series for the OBSERVED
+#'   data (default="q_cms")
+#' @param stdate Start date for statistics (DEFAULT=NULL, all records will be
+#'   used). Date MUST be specified in POSIXct format with appropriate timezone 
+#'   (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S",
+#'   tz="UTC"))
+#' @param enddate End date for statistics (DEFAULT=NULL, all records will be
+#'   used). Date MUST be specified in POSIXct format with appropriate timezone 
+#'   (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S",
+#'   tz="UTC"))
+#' @param subdivisions Number of subdivisions used in flow duration curve
+#'   integration (DEFAULT=1000); increase value if integrate function throws an
+#'   error.
 #' @return A new dataframe containing the model performance statistics.
-#'
+#'   
 #' @examples
 #' ## Take forecast point model output for Fourmile Creek (modStrh.mod1.fc) and a corresponding
 #' ## USGS gage observation file (obsStrh.fc), both at an hourly time step, and calculate
 #' ## model performance statistics. The model forecast point data was imported using ReadFrxstPts
 #' ## and the gage observation data was imported using ReadUsgsGage.
-#'
+#' 
+#' 
+#' \dontrun{
 #' CalcModPerf(modStr1h.allrt.fc, obsStr5min.fc)
-#'
+#' 
 #' > Output:
 #'           nse nselog  cor rmse rmsenorm  bias  mae errcom errmaxt errfdc
 #' ts       0.57   0.61 0.79 1.43     9.48 -28.0 0.70     NA      NA  -0.42
@@ -262,6 +274,7 @@ CalcNoahmpWatBudg <- function(ldasoutDf, rtoutDf=NULL, gwoutDf=NULL, sfcrt=FALSE
 #' yearly   0.05   0.37 0.36 0.55    41.50  -6.5 0.45  -1.50   -3.38     NA
 #' max10   -7.50 -15.94 0.19 3.82    38.89 -24.5 0.04     NA      NA     NA
 #' min10   -2.84  -1.83 0.10 0.05    33.36 -23.7   NA     NA      NA     NA
+#' }
 #' @keywords univar ts
 #' @concept modelEval
 #' @family modelEvaluation
@@ -429,84 +442,84 @@ CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q
 
 
 #' Computes model performance statistics for WRF-Hydro flux output
-#'
-#' \code{CalcModPerfMulti} calculates model performance statistics for flux output.
-#'
-#' \code{CalcModPerfMulti} reads a model flux time series (i.e., created using \code{\link{ReadFrxstPts}}) and
-#' an observation time series (i.e., created using \code{\link{ReadUsgsGage}}) and calculates model performance
-#' statistics (Nash-Sutcliffe Efficiency, Rmse, etc.) at various time scales and for low
-#' and high fluxes. The tool will subset data to matching time periods (e.g., if the
-#' observed data is at 5-min increments and modelled data is at 1-hr increments, the tool
-#' will subset the observed data to select only observations on the matching hour break).
-#'
-#' \code{CalcModPerfMulti} calculates the same statistics as \code{\link{CalcModPerf}}) but returns
-#' results as a single-row vs. multi-row dataframe. This is intended to streamline compiling statistics
-#' for multiple data runs or multiple sites.
-#'
-#' Performance Statistics:
-#' \cr (mod = model output, obs = observations, n = sample size)
-#' \itemize{
-#' \item n: sample size
-#' \item nse: Nash-Sutcliffe Efficiency
-#' \deqn{nse = 1 - ( sum((obs - mod)^2) / sum((obs - mean(obs))^2) ) }
-#' \item nselog: log-transformed Nash-Sutcliffe Efficiency
-#' \deqn{nselog = 1 - ( sum((log(obs) - log(mod))^2) / sum((log(obs) - mean(log(obs)))^2) ) }
-#' \item cor: correlation coefficient
-#' \deqn{cor = cor(mod, obs) }
-#' \item rmse: root mean squared error
-#' \deqn{rmse = sqrt( sum((mod - obs)^2) / n ) }
-#' \item rmsenorm: normalized root mean squared error
-#' \deqn{rmsenorm = rmse / (max(obs) - min(obs)) }
-#' \item bias: percent bias
-#' \deqn{bias = sum(mod - obs) / sum(obs) * 100 }
-#' \item mae: mean absolute error
-#' \deqn{mae = mean(abs(mod - obs)) }
-#' \item errcom: error in the center-of-mass of the flux, where center-of-mass is the
-#' hour/day when 50\% of daily/monthly/water-year flux has occurred. Reported as number of hours for
-#' daily time scale and number of days for monthly and yearly time scales.
-#' \item errmaxt: Error in the time of maximum flux. Reported as number of hours for daily time scale
-#' and number of days for monthly and yearly time scales).
-#' \item errfdc: Error in the integrated flow duration curve between 0.05 and 0.95 exceedance thresholds
-#' (in native flow units).
+#' 
+#' \code{CalcModPerfMulti} calculates model performance statistics for flux
+#' output.
+#' 
+#' \code{CalcModPerfMulti} reads a model flux time series (i.e., created using
+#' \code{\link{ReadFrxstPts}}) and an observation time series (i.e., created
+#' using \code{\link{ReadUsgsGage}}) and calculates model performance statistics
+#' (Nash-Sutcliffe Efficiency, Rmse, etc.) at various time scales and for low 
+#' and high fluxes. The tool will subset data to matching time periods (e.g., if
+#' the observed data is at 5-min increments and modelled data is at 1-hr
+#' increments, the tool will subset the observed data to select only
+#' observations on the matching hour break).
+#' 
+#' \code{CalcModPerfMulti} calculates the same statistics as
+#' \code{\link{CalcModPerf}}) but returns results as a single-row vs. multi-row
+#' dataframe. This is intended to streamline compiling statistics for multiple
+#' data runs or multiple sites.
+#' 
+#' Performance Statistics: \cr (mod = model output, obs = observations, n =
+#' sample size) \itemize{ \item n: sample size \item nse: Nash-Sutcliffe
+#' Efficiency \deqn{nse = 1 - ( sum((obs - mod)^2) / sum((obs - mean(obs))^2) )
+#' } \item nselog: log-transformed Nash-Sutcliffe Efficiency \deqn{nselog = 1 -
+#' ( sum((log(obs) - log(mod))^2) / sum((log(obs) - mean(log(obs)))^2) ) } \item
+#' cor: correlation coefficient \deqn{cor = cor(mod, obs) } \item rmse: root
+#' mean squared error \deqn{rmse = sqrt( sum((mod - obs)^2) / n ) } \item
+#' rmsenorm: normalized root mean squared error \deqn{rmsenorm = rmse /
+#' (max(obs) - min(obs)) } \item bias: percent bias \deqn{bias = sum(mod - obs)
+#' / sum(obs) * 100 } \item mae: mean absolute error \deqn{mae = mean(abs(mod -
+#' obs)) } \item errcom: error in the center-of-mass of the flux, where
+#' center-of-mass is the hour/day when 50\% of daily/monthly/water-year flux has
+#' occurred. Reported as number of hours for daily time scale and number of days
+#' for monthly and yearly time scales. \item errmaxt: Error in the time of
+#' maximum flux. Reported as number of hours for daily time scale and number of
+#' days for monthly and yearly time scales). \item errfdc: Error in the
+#' integrated flow duration curve between 0.05 and 0.95 exceedance thresholds 
+#' (in native flow units). }
+#' 
+#' Time scales/Flux types: \itemize{ \item t = native model/observation time
+#' step (e.g., hourly) \item dy = daily time step \item mo = monthly time step 
+#' \item yr = water-year time step \item max10 = high flows; restricted to the
+#' portion of the time series where the observed flux is in the highest 10\%
+#' (native time step) \item min10 = low flows; restricted to the portion of the
+#' time series where the observed flux is in the lowest 10\% (native time step) 
 #' }
-#'
-#' Time scales/Flux types:
-#' \itemize{
-#' \item t = native model/observation time step (e.g., hourly)
-#' \item dy = daily time step
-#' \item mo = monthly time step
-#' \item yr = water-year time step
-#' \item max10 = high flows; restricted to the portion of the time series where the observed flux 
-#' is in the highest 10\% (native time step)
-#' \item min10 = low flows; restricted to the portion of the time series where the observed flux 
-#' is in the lowest 10\% (native time step)
-#' }
-#'
-#' @param flxDf.mod The flux output dataframe (required). Assumes only one forecast
-#' point per file, so if you have multiple forecast points in your output dataframe, use
-#' subset to isolate a single forecast point's data. Also assumes model output and observation
-#' both contain POSIXct fields (called "POSIXct").
-#' @param flxDf.obs The observed flux dataframe. Assumes only one observation point per file, so if
-#' you have multiple observation points in your dataframe, use subset to isolate a single point's data.
-#' Also assumes model output and observation both contain POSIXct fields (called "POSIXct").
-#' @param flxCol.mod The column name for the flux time series for the MODEL data (default="q_cms")
-#' @param flxCol.obs The column name for the flux time series for the OBSERVED data (default="q_cms")
-#' @param stdate Start date for statistics (DEFAULT=NULL, all records will be used).
-#' Date MUST be specified in POSIXct format with appropriate timezone
-#' (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))
-#' @param enddate End date for statistics (DEFAULT=NULL, all records will be used).
-#' Date MUST be specified in POSIXct format with appropriate timezone
-#' (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))
+#' 
+#' @param flxDf.mod The flux output dataframe (required). Assumes only one
+#'   forecast point per file, so if you have multiple forecast points in your
+#'   output dataframe, use subset to isolate a single forecast point's data.
+#'   Also assumes model output and observation both contain POSIXct fields
+#'   (called "POSIXct").
+#' @param flxDf.obs The observed flux dataframe. Assumes only one observation
+#'   point per file, so if you have multiple observation points in your
+#'   dataframe, use subset to isolate a single point's data. Also assumes model
+#'   output and observation both contain POSIXct fields (called "POSIXct").
+#' @param flxCol.mod The column name for the flux time series for the MODEL data
+#'   (default="q_cms")
+#' @param flxCol.obs The column name for the flux time series for the OBSERVED
+#'   data (default="q_cms")
+#' @param stdate Start date for statistics (DEFAULT=NULL, all records will be
+#'   used). Date MUST be specified in POSIXct format with appropriate timezone 
+#'   (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S",
+#'   tz="UTC"))
+#' @param enddate End date for statistics (DEFAULT=NULL, all records will be
+#'   used). Date MUST be specified in POSIXct format with appropriate timezone 
+#'   (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S",
+#'   tz="UTC"))
 #' @return A new dataframe containing the model performance statistics.
-#'
+#'   
 #' @examples
 #' ## Take forecast point model output for Fourmile Creek (modStrh.mod1.fc) and a corresponding
 #' ## USGS gage observation file (obsStrh.fc), both at an hourly time step, and calculate
 #' ## model performance statistics. The model forecast point data was imported using ReadFrxstPts
 #' ## and the gage observation data was imported using ReadUsgsGage.
-#'
+#' 
+#' 
+#' \dontrun{
 #' CalcModPerfMulti(modStr1h.allrt.fc, obsStr5min.fc)
-#'
+#' 
 #' > Output:
 #' t_n t_nse t_nselog t_cor t_rmse t_rmsenorm t_bias t_mae t_errfdc dy_n dy_nse dy_nselog  
 #' 744  0.63     0.66   0.8   0.29      13.29    0.7  0.19     0.04   32   0.69      0.74   
@@ -520,6 +533,7 @@ CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q
 #'       0.72          80.01      -27.9       0.6     138     -2.64        -2.43
 #' min10_cor min10_rmse min10_rmsenorm min10_bias min10_mae
 #'      0.59       0.11          53.89       -7.3      0.09
+#' }
 #' @keywords univar ts
 #' @concept modelEval
 #' @family modelEvaluation
@@ -706,50 +720,60 @@ CalcModPerfMulti <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.o
 
 
 #' Computes flow duration curve statistics for WRF-Hydro streamflow output
-#'
-#' \code{CalcFdcPerf} calculates flow duration curve statistics for streamflow output.
-#'
-#' \code{CalcFdcPerf} reads a model forecast point streamflow timeseries (i.e., created using \code{\link{ReadFrxstPts}}) and
-#' a streamflow observation timeseries (i.e., created using \code{\link{ReadUsgsGage}}) and calculates flow duration curve
-#' statistics at various exceedance thresholds (e.g., 10\%, 20\%, etc.). The tool will subset data to matching time periods
-#' (e.g., if the observed data is at 5-min increments and modelled data is at 1-hr increments, the tool
-#' will subset the observed data to select only observations on the matching hour break).
-#'
-#' Flow Duration Curve Statistics:
-#' \cr (mod = model output, obs = observations)
-#' \itemize{
-#' \item p.exceed: exceedance threshold (e.g., 0.2 means a flow value that is exceeded 20\% of the time)
-#' \item q.mod: MODEL flow value at specified exceedance threshold (in native flow units)
-#' \item q.obs: OBSERVED flow value at specified exceedance threshold (in native flow units)
-#' \item q.err: difference between model and observed flow values [mod-obs] (in native flow units)
-#' \item q.perr: percent error in model flow [(mod-obs)/obs]
-#' }
-#'
-#' @param strDf.mod The forecast point output dataframe (required). Assumes only one forecast
-#' point per file, so if you have multiple forecast points in your output dataframe, use
-#' subset to isolate a single forecast point's data. Also assumes model output and observation
-#' both contain POSIXct fields (called "POSIXct").
-#' @param strDf.obs The observed streamflow dataframe. Assumes only one gage per file, so if
-#' you have multiple gages in your dataframe, use subset to isolate a single gage's data.
-#' Also assumes model output and observation both contain POSIXct fields (called "POSIXct").
-#' @param strCol.mod The column name for the streamflow time series for the MODEL data (default="q_cms")
-#' @param strCol.obs The column name for the streamflow time series for the OBSERVED data (default="q_cms")
-#' @param stdate Start date for statistics (DEFAULT=NULL, all records will be used).
-#' Date MUST be specified in POSIXct format with appropriate timezone
-#' (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))
-#' @param enddate End date for statistics (DEFAULT=NULL, all records will be used).
-#' Date MUST be specified in POSIXct format with appropriate timezone
-#' (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))
+#' 
+#' \code{CalcFdcPerf} calculates flow duration curve statistics for streamflow
+#' output.
+#' 
+#' \code{CalcFdcPerf} reads a model forecast point streamflow timeseries (i.e.,
+#' created using \code{\link{ReadFrxstPts}}) and a streamflow observation
+#' timeseries (i.e., created using \code{\link{ReadUsgsGage}}) and calculates
+#' flow duration curve statistics at various exceedance thresholds (e.g., 10\%,
+#' 20\%, etc.). The tool will subset data to matching time periods (e.g., if the
+#' observed data is at 5-min increments and modelled data is at 1-hr increments,
+#' the tool will subset the observed data to select only observations on the
+#' matching hour break).
+#' 
+#' Flow Duration Curve Statistics: \cr (mod = model output, obs = observations) 
+#' \itemize{ \item p.exceed: exceedance threshold (e.g., 0.2 means a flow value
+#' that is exceeded 20\% of the time) \item q.mod: MODEL flow value at specified
+#' exceedance threshold (in native flow units) \item q.obs: OBSERVED flow value
+#' at specified exceedance threshold (in native flow units) \item q.err:
+#' difference between model and observed flow values [mod-obs] (in native flow
+#' units) \item q.perr: percent error in model flow [(mod-obs)/obs] }
+#' 
+#' @param strDf.mod The forecast point output dataframe (required). Assumes only
+#'   one forecast point per file, so if you have multiple forecast points in
+#'   your output dataframe, use subset to isolate a single forecast point's
+#'   data. Also assumes model output and observation both contain POSIXct fields
+#'   (called "POSIXct").
+#' @param strDf.obs The observed streamflow dataframe. Assumes only one gage per
+#'   file, so if you have multiple gages in your dataframe, use subset to
+#'   isolate a single gage's data. Also assumes model output and observation
+#'   both contain POSIXct fields (called "POSIXct").
+#' @param strCol.mod The column name for the streamflow time series for the
+#'   MODEL data (default="q_cms")
+#' @param strCol.obs The column name for the streamflow time series for the
+#'   OBSERVED data (default="q_cms")
+#' @param stdate Start date for statistics (DEFAULT=NULL, all records will be
+#'   used). Date MUST be specified in POSIXct format with appropriate timezone 
+#'   (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S",
+#'   tz="UTC"))
+#' @param enddate End date for statistics (DEFAULT=NULL, all records will be
+#'   used). Date MUST be specified in POSIXct format with appropriate timezone 
+#'   (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S",
+#'   tz="UTC"))
 #' @return A new dataframe containing the flow duration curve statistics.
-#'
+#'   
 #' @examples
-#' ## Take forecast point model output for Fourmile Creek (modStrh.mod1.fc) and a corresponding
-#' ## USGS gage observation file (obsStrh.fc), both at an hourly time step, and calculate
-#' ## flow duration curve statistics. The model forecast point data was imported using ReadFrxstPts
-#' ## and the gage observation data was imported using ReadUsgsGage.
-#'
+#' ## Take forecast point model output for Fourmile Creek (modStrh.mod1.fc) 
+#' ## and a corresponding USGS gage observation file (obsStrh.fc), both at an 
+#' ## hourly time step, and calculate flow duration curve statistics. The 
+#' ## model forecast point data was imported using ReadFrxstPts and the gage
+#' ## observation data was imported using ReadUsgsGage.
+#' 
+#' \dontrun{
 #' CalcFdcPerf(modStr1h.allrt.fc, obsStr5min.fc)
-#'
+#' 
 #' Output:
 #'  p.exceed    q.mod   q.obs
 #'  0.1         3.07    5.25
@@ -761,6 +785,7 @@ CalcModPerfMulti <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.o
 #'  0.7         0.14    0.25
 #'  0.8         0.11    0.19
 #'  0.9         0.08    0.16
+#' }
 #' @keywords univar ts
 #' @concept modelEval
 #' @family modelEvaluation flowDurationCurves
@@ -794,5 +819,4 @@ CalcFdcPerf <- function (strDf.mod, strDf.obs, strCol.mod="q_cms", strCol.obs="q
         }
     results
  }
-
 

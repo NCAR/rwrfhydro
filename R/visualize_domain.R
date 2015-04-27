@@ -16,6 +16,7 @@
 #' @examples
 #' ## See the vignette "WRF Hydro Domain and Channel Visualization", for details. 
 #' ## set your test case path
+#' \dontrun{
 #' tcPath <- '~/wrfHydroTestCases/'
 #' fcPath <- paste0(tcPath,'Fourmile_Creek/')
 #' hydroFile<-paste0(fcPath,'/DOMAIN/hydro_OrodellBasin_100m.nc')
@@ -32,6 +33,7 @@
 #' ggMap2 + geom_point(data=orodellLonLat, aes(x=lon,y=lat, shape=gauge)) +
 #'          scale_x_continuous(limits=rev(orodellLonLat$lon+c( .01 ,-.01 ))) +
 #'          scale_y_continuous(limits=rev(orodellLonLat$lat+c( .005,-.005))) 
+#' }
 #' @concept plot DART
 #' @keywords hplot
 #' @family domain

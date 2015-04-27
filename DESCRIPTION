@@ -27,7 +27,6 @@ Imports:
     raster (>= 2.3)
 LazyData: true
 Suggests: testthat,
-    knitr,
-    printr
+    knitr
 BuildVignettes: false
 VignetteBuilder: knitr

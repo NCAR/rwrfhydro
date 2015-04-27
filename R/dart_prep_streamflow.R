@@ -12,12 +12,16 @@
 ## [[[ type, location, time, expected error, and optionally a data value and/or a quality control indicator]]]
 
 #=============================================================================================
-#' Three-sigma errors specified as percent of observed plus some quantile of historical flows.
+
+#' Three-sigma errors specified as percent of observed plus some quantile of
+#' historical flows.
 #' 
-#' \code{Model3SdErrPctErrPlusQntlIncpt} models three sigma (standard deviation) errors (same 
-#' units as input) as percent of observed plus some quantile of historical record. 
+#' \code{Model3SdErrPctErrPlusQntlIncpt} models three sigma (standard deviation)
+#' errors (same units as input) as percent of observed plus some quantile of
+#' historical record.
 #' @param data, Numeric the values for which errors are to be modeled.
-#' @param qntlIncpt Numeric the quantile of historical observations to be used as minimum error.
+#' @param qntlIncpt Numeric the quantile of historical observations to be used
+#'   as minimum error.
 #' @param pctErr Numeric the percent error associated with the observations.
 #' @export
 Model3SdErrPctErrPlusQntlIncpt <- function(data, qntlIncpt=.005, pctErr=.1) {
@@ -26,17 +30,21 @@ Model3SdErrPctErrPlusQntlIncpt <- function(data, qntlIncpt=.005, pctErr=.1) {
 }
 
 #=============================================================================================
-#' Three-sigma error specification assuming errors are smaller near climatological median (or other 
-#' quantile).
+
+#' Three-sigma error specification assuming errors are smaller near
+#' climatological median (or other quantile).
 #' 
-#' \code{Model3SdErrClimTaper} models three-sigma errors (same units as input) as 
-#' smallest (\code{qntlIncpt} intercept is some climatological quantile) at 
-#' "climatological" observations (\code{qntlClim}, e.g. median = .5) and grow to some maximum 
-#' percent error (\code{pctErr}). This is expressed by
-#' \code{quantile(data, qntlIncpt) + pmin( pctErr*data, pctErr*abs(data-quantile(data, qntlClim)) )}
+#' \code{Model3SdErrClimTaper} models three-sigma errors (same units as input)
+#' as smallest (\code{qntlIncpt} intercept is some climatological quantile) at 
+#' "climatological" observations (\code{qntlClim}, e.g. median = .5) and grow to
+#' some maximum percent error (\code{pctErr}). This is expressed by \cr
+#' \code{quantile(data, qntlIncpt) + pmin( pctErr*data,
+#' pctErr*abs(data-quantile(data, qntlClim)) )}
 #' @param data Numeric The values for which errors are to be modeled.
-#' @param qntlIncpt Numeric The quantile of historical observations to be used as minimum error or intercept.
-#' @param qntlClim Numeric The quantile of historical observations to be used as observation value of minimum error.
+#' @param qntlIncpt Numeric The quantile of historical observations to be used
+#'   as minimum error or intercept.
+#' @param qntlClim Numeric The quantile of historical observations to be used as
+#'   observation value of minimum error.
 #' @param pctErr Numeric The percent error associated with the observations.
 #' @export
 Model3SdErrClimTaper <- function(data, qntlIncpt=.05, qntlClim=.5, pctErr=.15) {  
@@ -46,18 +54,25 @@ Model3SdErrClimTaper <- function(data, qntlIncpt=.05, qntlClim=.5, pctErr=.15) {
 
 
 #=============================================================================================
-#' Make variances for prettyUsgs discharge observations. 
+
+#' Make variances for prettyUsgs discharge observations.
 #' 
-#' \code{MkDischargeVariance} makes variances fr prettyUsgs discharge observations. The formulation 
-#' of the variances is subjective. Assuming zero-mean Gaussian observation errors, the approach 
-#' here is to supply a function which estimates the 3-sigma (inner 99.5% error quantiles) around 
-#' the observations. This amount seems somewhat easier to conceptualize than 1-sigma, hence here
-#' we are. This function divides the error amounts by 3 and either returns the standard deviation
-#' or squares the result to return the variance (default).
-#' @param prettyUsgs The prettyUsgs discharge observations to which variances are to be added. 
-#' @param error3SdFunc Function which accepts the data and returns 3-sigma error estimates.
-#' @param retVariance Logical Returns variance if TRUE, else returns 1-sigma error.
+#' \code{MkDischargeVariance} makes variances fr prettyUsgs discharge
+#' observations. The formulation of the variances is subjective. Assuming
+#' zero-mean Gaussian observation errors, the approach here is to supply a
+#' function which estimates the 3-sigma (inner 99.5% error quantiles) around the
+#' observations. This amount seems somewhat easier to conceptualize than
+#' 1-sigma, hence here we are. This function divides the error amounts by 3 and
+#' either returns the standard deviation or squares the result to return the
+#' variance (default).
+#' @param prettyUsgs The prettyUsgs discharge observations to which variances
+#'   are to be added.
+#' @param error3SdFunc Function which accepts the data and returns 3-sigma error
+#'   estimates.
+#' @param retVariance Logical Returns variance if TRUE, else returns 1-sigma
+#'   error.
 #' @examples
+#' \dontrun{
 #' dbPath <- '~/usgsDb/'
 #' prettyOrodell <- 
 #'  PrettySiteData(QuerySiteData(QuerySiteName("FOURMILE CREEK AT ORODELL, CO", path=dbPath), 
@@ -65,6 +80,7 @@ Model3SdErrClimTaper <- function(data, qntlIncpt=.05, qntlClim=.5, pctErr=.15) {
 #' prettyOro <- MkDischargeVariance(prettyOrodell, Model3SdErrClimTaper)
 #' prettyO <- subset(prettyOro, dateTime < as.POSIXct('2012-01-01'))
 #' oroPlot <- PlotPrettyData(prettyO)
+#' }
 #' @keywords manip
 #' @concept DART dataMgmt
 #' @export
@@ -129,9 +145,11 @@ MkDischargeVariance <- function(prettyUsgs, error3SdFunc, retVariance=TRUE) {
 #'                              DART/obs_kind/DEFAULT_obs_kind_mod.F90
 #' @examples
 #' #Following on examples for MkDischargeVariance
+#' \dontrun{
 #' WriteDischargeObsSeq(prettyOro, '~/.', 'orodell', 'climTaperDefault')
 #mkGaugeObsSeq( loganData, '~/boulderCreek/', 'loganMill' )
 #mkGaugeObsSeq( sunshineData, '~/boulderCreek/', 'sunshine' ) 
+#' }
 #' @keywords manip
 #' @concept DART dataMgmt
 #' @family dartObs

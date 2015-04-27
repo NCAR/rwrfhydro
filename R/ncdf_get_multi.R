@@ -1,11 +1,3 @@
-# This code was pulled from
-# ~/R/jlm_lib/general/timeseriesMultiNcdf.r
-# /home/jamesmcc/R/jlm_lib/general/parseIndexArg.r
-# on hydro-c1 where there may remain other relevant code.
-
-## the premise is that the timeseries is strewn over multiple files and the 
-## time is either a global attribute or in the variable 'Times'
-
 #=====================================================================
 ParseIndexArg <- function( index, dimSize ) {
 
@@ -68,24 +60,25 @@ ParseIndexArg <- function( index, dimSize ) {
   list(dataStart=dataStart, dataEnd=dataEnd,
        statFunc=statFunc, statChar=statChar )
 }
-#=====================================================================
 
 
 ##=====================================================================
-#' Open a netcdf file, extract specified indices for a variable, optionally apply a specified statistic.
-#'
-#' \code{GetFileStat} opens a netcdf file, extracts specified indices for
-#' a variable, and may apply a specified statistic. 
-#'
-#' @param theFile The file to open. 
+
+#' Open a netcdf file, extract specified indices for a variable, optionally
+#' apply a specified statistic.
+#' 
+#' \code{GetFileStat} opens a netcdf file, extracts specified indices for a
+#' variable, and may apply a specified statistic.
+#' 
+#' @param theFile The file to open.
 #' @param variable TODO
-#' @param index TODO 
+#' @param index TODO
 #' @param env The environment where the stat function lives
-#' @param ... Further arguments to be passsed to a statistic. 
+#' @param ... Further arguments to be passsed to a statistic.
 #' @return A dataframe with columns TODO
 
 #' @examples
-#' This is to do.
+#' #This is to do.
 #' @keywords internal
 #' @concept dataGet
 #' @family getMultiNcdf
@@ -228,29 +221,34 @@ GetMultiNcdfFile <- function(filesInd, filesList,
 #=====================================================================
 
 #=====================================================================
+
 #' Get WRF Hydro output/restart (scalar) timeseries spread over multiple files.
-#'
-#' \code{GetMultiNcdf} is designed to get *all* your output/restart data which
-#' are spread over multiple files. Three collated lists specify
-#' 1) file groups, 2) variables for each file group, and 3) indices or statistics
-#' for each variable in each file group. The names of the lists must match. See 
-#' examples for details. While the routine can read and summarize raster data at
-#' each time via specificied statistics, it only returns scalar timeseries. (It
-#' may be possible to extend to return both scalar and raster data if there's
+#' 
+#' \code{GetMultiNcdf} is designed to get *all* your output/restart data which 
+#' are spread over multiple files. Three collated lists specify 1) file groups,
+#' 2) variables for each file group, and 3) indices or statistics for each
+#' variable in each file group. The names of the lists must match. See examples
+#' for details. While the routine can read and summarize raster data at each
+#' time via specificied statistics, it only returns scalar timeseries. (It may
+#' be possible to extend to return both scalar and raster data if there's 
 #' demand.)
-#'
-#' @param filesList The list of file groups. Names must match those in the other lists. 
-#' @param variableList The list of variables for each file group. Names must match filesList.
-#' @param indexList The list of indices or statistics to be applied to each variable.
+#' 
+#' @param filesList The list of file groups. Names must match those in the other
+#'   lists.
+#' @param variableList The list of variables for each file group. Names must
+#'   match filesList.
+#' @param indexList The list of indices or statistics to be applied to each
+#'   variable.
 #' @param env The environment where the stat function lives
-#' @param parallel Logical, this is the .parallel argument of plyr functions.
-#' Parallelization is at the file level (not file group).Typcially we achieve
-#' parallelization using the DoMC package. See examples. 
+#' @param parallel Logical, this is the .parallel argument of plyr functions. 
+#'   Parallelization is at the file level (not file group).Typcially we achieve 
+#'   parallelization using the DoMC package. See examples.
 #' @return A dataframe (in an awesome format).
-#'
+#'   
 #' @examples
 #' # This example only shows data for 3 dates, because of limitation of package data.
 #' # Find the package data directory on your machine
+#' \dontrun{
 #' tcPath <- '~/wrfHydroTestCases/'
 #' fcPath <- paste0(tcPath,'Fourmile_Creek/')
 #' dataPath <- paste0(fcPath,'/RUN.RTTESTS/OUTPUT_CHRT_DAILY/')
@@ -262,12 +260,14 @@ GetMultiNcdfFile <- function(filesInd, filesList,
 #' # varList - Define which variables are desired for each file group.
 #' lsmVars   <- list(TRAD='TRAD', SWE='SNEQV')
 #' ## smc1-4 will correspond to the vertical layers.
-#' hydroVars <- list(streamflow='qlink1', smc1='sh2ox', smc2='sh2ox', smc3='sh2ox', smc4='sh2ox')
+#' hydroVars <- list(streamflow='qlink1', smc1='sh2ox', smc2='sh2ox', 
+#'                   smc3='sh2ox', smc4='sh2ox')
 #' # Note that the outer names collate with fileList.
 #' variableList <- list(lsm=lsmVars, hydro=hydroVars)
 #' 
 #' # indexList - Define what indices/stats are desired for each variable.
-#' # Note that only scalars can be returned for each entry. Spatial fields can be summarized via statistics. 
+#' # Note that only scalars can be returned for each entry. Spatial fields can 
+#' # be summarized via statistics. 
 #' # Show how to define your own useful stats to use.
 #' # For basin average and max we need the basin mask (this is a non-standard
 #' # field in the fine grid file).
@@ -304,7 +304,7 @@ GetMultiNcdfFile <- function(filesInd, filesList,
 #'   geom_line() + geom_point() +
 #'   facet_wrap(~variableGroup, scales='free_y', ncol=1) +
 #'   scale_x_datetime(breaks = date_breaks("5 days")) + theme_bw()
-#' 
+#' }
 #' @export
 GetMultiNcdf <- function(filesList, variableList, indexList, env=parent.frame(), parallel=FALSE) {
   ## Only do collated lists. Collation check at the file-variable level. 
