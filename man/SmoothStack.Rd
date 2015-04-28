@@ -73,8 +73,9 @@ match and the smoothed brick can be used in other tools. The
 TIFs, so also specify an output file directory.
 }
 \examples{
-## Take the raster stack of LAI images created through ConvertRS2Stack and apply a smoothing filter that
-## also removes outliers, which we specify to be more than 0.5 LAI from the smoothed value.
+## Take the raster stack of LAI images created through ConvertRS2Stack and
+## apply a smoothing filter that also removes outliers, which we specify
+## to be more than 0.5 LAI from the smoothed value.
 
 \dontrun{
 lai.b.sm <-

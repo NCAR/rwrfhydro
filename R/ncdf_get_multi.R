@@ -271,9 +271,8 @@ GetMultiNcdfFile <- function(filesInd, filesList,
 #' # Show how to define your own useful stats to use.
 #' # For basin average and max we need the basin mask (this is a non-standard
 #' # field in the fine grid file).
-#' library(ncdf4)
-#' fineGridNc <- nc_open(paste0(fcPath,'DOMAIN/hydro_OrodellBasin_100m.nc'))
-#' basinMask <- ncvar_get(fineGridNc, 'basn_msk_geogrid')
+#' basinMask <- ncdump(paste0(fcPath,'DOMAIN/hydro_OrodellBasin_100m.nc'), 
+#'                     'basn_msk_geogrid')
 #' nc_close(fineGridNc)
 #' basAvg <- function(var) sum(basinMask*var)/sum(basinMask)
 #' basMax <- function(var) max(ceiling(basinMask)*var)
