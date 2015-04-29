@@ -374,13 +374,16 @@ SmoothStack <- function(inStack, w=NULL, t=NULL, groupYears=FALSE,
                         lambda = 5000, nIter= 3, collapse=FALSE, outDirPath = "./",
                         removeOutlier=FALSE, threshold=NULL, mergeDoyFun="max", ...) {
 	timeInfo <- MODIS::orgTime(inStack, pos1 = 3, pos2 = 13, format = "%Y.%m.%d", pillow=0)
-    resultList <- MODIS::whittaker.raster(inStack, w, t, timeInfo, groupYears, lambda, nIter, collapse, outDirPath, removeOutlier, threshold, mergeDoyFun, ...)
+  resultList <- MODIS::whittaker.raster(vi=inStack, w=w, t=t, timeInfo=timeInfo, 
+                                          outputAs='one', 
+                                          lambda=lambda, nIter=nIter, collapse=collapse, 
+                                          outDirPath=outDirPath, 
+                                          removeOutlier=removeOutlier, 
+                                          outlierThreshold=threshold, mergeDoyFun=mergeDoyFun, ...)
     resultBrick <- resultList[[1]]
     names(resultBrick) <- names(inStack)
     resultBrick
     }
-
-
 
 #' Inserts pre-processed images into appropriate forcing NetCDF files by date.
 #' 

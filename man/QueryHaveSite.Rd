@@ -22,6 +22,9 @@ to local database.}
 return the specified product. If get from NWIS, all products are retrieved
 and saved locally but only specified products are returned.}
 }
+\value{
+See retData argument.
+}
 \description{
 \code{QueryHaveSite}
 }
@@ -35,10 +38,10 @@ Other streamObs: \code{\link{FindUsgsStns}};
   \code{\link{GetSiteHuc}}; \code{\link{GetUsgsHucData}};
   \code{\link{GetUsgsIvProduct}};
   \code{\link{ImproveHucMeta}}; \code{\link{LoadMetaDB}};
-  \code{\link{PlotPrettyData}}; \code{\link{PrettyUsgs}};
+  \code{\link{PlotPrettyUsgs}}; \code{\link{PrettyUsgs}};
   \code{\link{QuerySiteData}}; \code{\link{QuerySiteInfo}};
   \code{\link{QuerySiteName}}; \code{\link{QuerySiteProd}};
-  \code{\link{SaveHucData}};
+  \code{\link{SaveHucData}}; \code{\link{[.prettyUsgs}};
   \code{\link{subset.prettyUsgs}}
 }
 \concept{

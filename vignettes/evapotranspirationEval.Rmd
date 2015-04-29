@@ -244,7 +244,7 @@ We do a few calculations to get the net wind speed.
 modForc.allrt.may.niw$Wind <- with(modForc.allrt.may.niw, sqrt(U2D^2 + V2D^2))
 ```
 
-Plot & compare the time series of wind speeds.
+Plot & compare the time series of wind speeds. (This throws a warning, however the POSIXct timezones are handled correctly.)
 
 ```{r mayWindFluxes, fig.width = 12, fig.height = 6, out.width='700', out.height='350'}
 PlotFluxCompare(subset(obsFlux30min.usnr1, POSIXct>=as.POSIXct("2013-05-01 00:00:00", format="%Y-%m-%d %H:%M:%S", tz="UTC") 
@@ -259,7 +259,7 @@ Now we convert specific humidity to relative humidity to compare to the flow tow
 modForc.allrt.may.niw$RH <- with(modForc.allrt.may.niw, 0.263*PSFC*Q2D*(exp((17.67*(T2D-273.16))/(T2D-29.65)))^(-1))
 ```
 
-Plot & compare the time series of relative humidity.
+Plot & compare the time series of relative humidity. (Again, timzones are correctly handled.)
 
 ```{r mayRelHum, fig.width = 12, fig.height = 6, out.width='700', out.height='350'}
 PlotFluxCompare(subset(obsFlux30min.usnr1, POSIXct>=as.POSIXct("2013-05-01 00:00:00", format="%Y-%m-%d %H:%M:%S", tz="UTC") 

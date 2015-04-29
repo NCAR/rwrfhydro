@@ -11,11 +11,7 @@ env:
 before_install:
 - sudo apt-get update -qq
 - sudo apt-get install -qq netcdf-bin libnetcdf-dev
-- sudo apt-get install r-cran-rgdal 
-#- sudo apt-get install -qq aptitude
-#- sudo aptitude install -q -y libgdal-dev
-#- sudo aptitude install -q -y libproj-dev 
-#- sudo apt-get install -y libhdf5-dev libhdf5-serial-dev gdal-bin libgdal-dev libgdal1-dev netcdf-bin libproj-dev libgdal1h
+- sudo apt-get install r-cran-rgdal ## this is 0.8.6, i believe.
 
 r_github_packages:
   - yihui/printr

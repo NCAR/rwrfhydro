@@ -30,6 +30,8 @@ Imports:
 LazyData: true
 Suggests: testthat,
     knitr, 
-    rgdal
+    rgdal, 
+    pander, 
+    ptw
 BuildVignettes: false
 VignetteBuilder: knitr

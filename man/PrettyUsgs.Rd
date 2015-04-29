@@ -4,8 +4,7 @@
 \alias{PrettyUsgs}
 \title{PrettyUsgs constructs the S3 class prettyUsgs.}
 \usage{
-PrettyUsgs(data, tz = "UTC", metric = TRUE, na.rm = TRUE,
-  format = "long")
+PrettyUsgs(data, tz = "UTC", metric = TRUE, na.rm = TRUE)
 }
 \arguments{
 \item{data}{Dataframe from QuerySiteData}
@@ -16,12 +15,6 @@ returned.}
 \item{metric}{Logical. Units are either metric or not (not both).}
 
 \item{na.rm}{Logical Remove all missing observations?}
-
-\item{format}{character, either 'wide' or 'long'. In wide format there are
-more columns, one for each variable named \code{'variable (units)'}. In
-long format, there are columns \code{value}, \code{variable}, and
-\code{units}. Switching between long and wide formats can be done with
-\code{Reformat()} (though I've yet to program this...).}
 }
 \value{
 dataframe similar to input with improved names and/or metric
@@ -45,10 +38,11 @@ Other streamObs: \code{\link{FindUsgsStns}};
   \code{\link{GetSiteHuc}}; \code{\link{GetUsgsHucData}};
   \code{\link{GetUsgsIvProduct}};
   \code{\link{ImproveHucMeta}}; \code{\link{LoadMetaDB}};
-  \code{\link{PlotPrettyData}};
+  \code{\link{PlotPrettyUsgs}};
   \code{\link{QueryHaveSite}}; \code{\link{QuerySiteData}};
   \code{\link{QuerySiteInfo}}; \code{\link{QuerySiteName}};
   \code{\link{QuerySiteProd}}; \code{\link{SaveHucData}};
+  \code{\link{[.prettyUsgs}};
   \code{\link{subset.prettyUsgs}}
 }
 \concept{

@@ -1,15 +1,20 @@
 #' Get and unpack the SNODAS snow depth and SWE tarball for given dates.
-#'
-#' \code{GetSnodasDepthSweDate} Get and unpack the SNODAS snow depth and SWE tarball for a given date. 
 #' 
-#' @param datePOSIXct The date in POSIXct format for which data is desired. Only whole days matter. 
-#' @param outputDir   The directory where the data are to be archived. This directory is checked to see if the
-#'                    data exist when overwrite=FALSE
-#' @param overwrite   When false: If the depth and SWE files exist on disk, dont grab the tarball. \cr
-#'                    When false: If the tarball exists on disk but depth and SWE files dont, just unpack the tarball. \cr
-#'                    When true: Pull new tarball and overwrite any existing files with the same date.
-#' @param quiet       Passed to curl, to show it's progress (typcially too fast to matter).
-#' @param parallel    Logical Defaults to (foreach::getDoParWorkers>1), so if you've set up parallelization it is automatically used. 
+#' \code{GetSnodasDepthSweDate} Get and unpack the SNODAS snow depth and SWE
+#' tarball for a given date.
+#' 
+#' @param datePOSIXct The date in POSIXct format for which data is desired. Only
+#'   whole days matter.
+#' @param outputDir   The directory where the data are to be archived. This
+#'   directory is checked to see if the data exist when overwrite=FALSE
+#' @param overwrite   When false: If the depth and SWE files exist on disk, dont
+#'   grab the tarball. \cr When false: If the tarball exists on disk but depth
+#'   and SWE files dont, just unpack the tarball. \cr When true: Pull new
+#'   tarball and overwrite any existing files with the same date.
+#' @param quiet       Passed to curl, to show it's progress (typcially too fast
+#'   to matter).
+#' @param parallel    Logical Defaults to (foreach::getDoParWorkers>1), so if
+#'   you've set up parallelization it is automatically used.
 #' @return Logical was the file "got"?
 #' @examples
 #' snodasGot <- GetSnodasDepthSweDate(as.POSIXct('2015-02-28'),
@@ -210,7 +215,7 @@ PutSnodasNcdf <- function(snodasList, outputDir='.') {
   globalAttList[[2]] <- list(name='POSIXct Origin',value='1970-01-01 00:00.00 UTC', precision="text")
   
   outFile <- paste0(outputDir,'/','SNODAS_',format(snodasList$datePOSIXct,'%Y%m%d'),'.nc')
-  MkNcdf( varList, globalAttList, outFile )
+  MkNcdf( varList, globalAttList=globalAttList, filename=outFile )
 }  
 
 

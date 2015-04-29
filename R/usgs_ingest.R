@@ -88,6 +88,7 @@ FindUsgsStns <- function(stnLon=NULL, stnLat=NULL, within=NULL,
 #' @param huc8 Character The eight-digit HUC code.
 #' @param outPath Character The path to the database directory
 #' @param metaDBFileName Character The name of the database metadata file.
+#' @param update Logical, If huc exists on disk, update it byt getting new data from NWIS?
 #' @examples
 #' \dontrun{
 #' bldrHucData    <- GetUsgsHucData(huc8='10190005')
@@ -99,28 +100,40 @@ FindUsgsStns <- function(stnLon=NULL, stnLat=NULL, within=NULL,
 #' @family streamObs
 #' @export
 GetUsgsHucData <- function(huc8, outPath=NULL, 
-                           metaDBFileName='usgsDataRetrieval.metaDatabase.RData' ) {
+                           metaDBFileName='usgsDataRetrieval.metaDatabase.RData', 
+                           update=FALSE ) {
 
+  if(!is.null(outPath)) {
+    metaFilePath <- list.files(outPath, pattern=metaDBFileName, full.names=TRUE) 
+    dataFileName <- paste0(huc8,'.data.RData')
+    dataFilePath <- list.files(outPath, pattern=dataFileName, full.names=TRUE)
+  }
+
+  ## update means only pull the data if we dont have it.
+  ## check if we have it.
+  if(!update & !(is.null(outPath))) {
+    if(length(metaFilePath) & length(dataFilePath)) {
+      return(get(load(dataFilePath)))
+    }
+  }
+  
   stns <- FindUsgsStns(huc8=huc8)
   meta <- dataRetrieval::whatNWISdata(stns$site_no, service = "uv")
   meta$tz <- ''  #not currently used
   
   ## are we outputting or not?
   if(!is.null(outPath)) {
-    metaFilePath <- list.files(outPath, pattern=metaDBFileName) 
-    dataFileName <- paste0(huc8,'.data.RData')
-    dataFilePath <- list.files(outPath, pattern=dataFileName)
     if(!length(metaFilePath) & length(dataFilePath))
       warning( paste0('A data file exists (',dataFilePath,') but cannoth find the metadata (',
                      metaFilePath,'). Please investigate.'), immediate.=TRUE )
   } else {  
     ## is.null(outPath), not writing to a database
     meta$startDate <- meta$endDate <- ''    
-    metaFilePath <- dataFilePath <- ''
+    metaFilePath <- dataFilePath <- NULL
   }
-  
+
   ## Both files exist: identify existing data at each station and only get data past those dates
-  if(metaFilePath != "" & dataFilePath != "") {        
+  if(length(metaFilePath) & length(dataFilePath) )  {        
     warning('this case has not been fully programmed yet', immediate.=TRUE)
     LoadMetaDB(path=metaFilePath, metaDBFileName=metaDBFileName)
     ## if so, what are the stations and what are their end dates?
@@ -166,7 +179,7 @@ GetUsgsHucData <- function(huc8, outPath=NULL,
    out <- list(data=outData, meta=outMeta)
   }
 
-  if(!is.null(outPath)) SaveHuc(out,path=outPath)
+  if(!is.null(outPath)) SaveHucData(out,outPath=outPath)
   out ## this should be the full record?  
 }
 
@@ -406,6 +419,7 @@ QuerySiteProd <- function(site, path='.',
 #' @param retData Logical OR Character If true return all products, otherwise
 #'   return the specified product. If get from NWIS, all products are retrieved
 #'   and saved locally but only specified products are returned.
+#' @return See retData argument.
 #' @examples
 #' \dontrun{
 #' haveOro <- QueryHaveSite('06727500', path='~/wrfHydroTestCases/usgsDb', retData=TRUE)
@@ -633,11 +647,6 @@ QuerySiteData <- function(site, product, path='.',
 #' constructor for the PrettyUsgs object.
 #' @param data Dataframe from QuerySiteData
 #' @param metric Logical. Units are either metric or not (not both).
-#' @param format character, either 'wide' or 'long'. In wide format there are
-#'   more columns, one for each variable named \code{'variable (units)'}. In
-#'   long format, there are columns \code{value}, \code{variable}, and
-#'   \code{units}. Switching between long and wide formats can be done with 
-#'   \code{Reformat()} (though I've yet to program this...).
 #' @param tz Character The timezone for the POSIXct dataTime variable to be
 #'   returned.
 #' @param na.rm Logical Remove all missing observations?
@@ -657,12 +666,12 @@ QuerySiteData <- function(site, product, path='.',
 #' @export
 PrettyUsgs <- function(data, tz='UTC', 
                        metric=TRUE, 
-                       na.rm=TRUE, format='long') {
+                       na.rm=TRUE) {
   
   
   PrettyUsgs.df <- function(data, tz='UTC', 
                             metric=TRUE, 
-                            na.rm=TRUE, format='long') {
+                            na.rm=TRUE) {
     
     ## rename the variables
     varUnits <- TransUsgsProdStat(data$variable)
@@ -697,15 +706,22 @@ PrettyUsgs <- function(data, tz='UTC',
     attr(data,'variableInfo') <- attr(data,'statisticInfo') <- NULL
     
     ## attributes / object information. 
-    structure(data, format = 'wide',
-                    class  = c('prettyUsgs', 'data.frame'))
+    ## siteInfo is already an attribute of data
+    structure(data, class  = c('prettyUsgs', 'data.frame'))
   }
 
   if(class(data)[1]=='data.frame')
     return(PrettyUsgs.df(data, tz='UTC', metric=metric, na.rm=na.rm))
-  if(class(data)[1]=='list')
-    stop('foooooo')
-    #return(plyr::llply(data, PrettyUsgs.df, tz='UTC', metric=metric, metricOnly=metricOnly, na.rm=na.rm))
+  
+  if(class(data)[1]=='list') {
+    prettyList<-plyr::llply(data, PrettyUsgs.df, tz='UTC', metric=metric, na.rm=na.rm)
+    prettyDf <- plyr::ldply(prettyList, function(ll) as.data.frame(ll))[,-1]
+    prettyInfo <- plyr::ldply(prettyList, function(ll) attr(ll,'siteInfo'))
+    #names(attributes(prettyList[[1]]))
+    attr(prettyDf,'class') <- attr(prettyList[[1]],'class')
+    attr(prettyDf,'siteInfo') <- prettyInfo
+    return(prettyDf)
+  }
   
 }
 
@@ -725,7 +741,7 @@ PrettyUsgs <- function(data, tz='UTC',
 #' @export
 LoadMetaDB <- function(path='.', 
                        metaDBFileName='usgsDataRetrieval.metaDatabase.RData', 
-                       envir=globalenv()) {
+                       envir=parent.frame()) {
   load(paste0(path,'/',metaDBFileName), envir=envir)  
 }
 
@@ -785,7 +801,7 @@ TransUsgsProdStat <- function(names, whichIn=FALSE) {
 
 #' Plot USGS site data which has been prettied with PrettyUsgs.
 #' 
-#' \code{PlotPrettyData} plots USGS site data which has been prettied with
+#' \code{PlotPrettyUsgs} plots USGS site data which has been prettied with
 #' \code{PrettyUsgs}.
 #' @param prettyUsgs dataframe returned from PrettyUsgs
 #' @param plot Logical to plot before returning or not.
@@ -802,19 +818,15 @@ TransUsgsProdStat <- function(names, whichIn=FALSE) {
 #' @concept plot usgsStreamObs
 #' @family streamObs
 #' @export
-PlotPrettyData <- function(prettyUsgs, plot=TRUE, errInnerQntl=.995) {
+PlotPrettyUsgs <- function(prettyUsgs, plot=TRUE, errInnerQntl=.995) {
   if(!('prettyUsgs' %in% class(prettyUsgs))) {
-      warning('The data argument to PlotPrettyData is not of class prettyUsgs. Returning.')
+      warning('The data argument to PlotPrettyUsgs is not of class prettyUsgs. Returning.')
       return(NULL)
   }
-  variables <- attr(prettyUsgs,'variables')
-  codes     <- attr(prettyUsgs,'codes')
-  variances <- attr(prettyUsgs,'variances')
-  stDevs    <- attr(prettyUsgs,'st.devs.')
-  errVars   <- c(variances,stDevs)
   
   ## if there are errVars, only plot a single variable with errors. 
-  if(length(variables)>1 && length(errVars)) {
+  ## THis is broken and to be revisited later. 
+  if(FALSE) {
     errUnits <- plyr::laply(strsplit(errVars,'[(^)]'), '[[', 2)
     if(length(errVars)==1) {
       theVar <- variables[grep(errUnits,variables)]
@@ -829,10 +841,8 @@ PlotPrettyData <- function(prettyUsgs, plot=TRUE, errInnerQntl=.995) {
     prettyUsgs <- prettyUsgs[,c("dateTime","site_no", codes, theVar, theErr)]
     variables <- theVar
     errVars   <- theErr
-  }
-    
-  plotData  <- reshape2::melt(prettyUsgs, id=c("dateTime","site_no", codes, errVars))
   
+    
   if (length(errVars)) {
     ## x==qnorm(pnorm(x,0,1),0,1) ## my reminder i wish were in the R documentation.
     obsSd <- plotData[[theErr]]
@@ -840,25 +850,33 @@ PlotPrettyData <- function(prettyUsgs, plot=TRUE, errInnerQntl=.995) {
     plotData$err <- -1*qnorm( ((1-errInnerQntl)/2), mean=0, sd=obsSd )
     timePlot <- ggplot2::ggplot(plotData, ggplot2::aes(x=dateTime, y=value, 
                                                        ymin=value-err, ymax=value+err) )
-  } else {
-    timePlot <- ggplot2::ggplot(plotData, ggplot2::aes(x=dateTime, y=value))
+    
+    }
   }
-  timePlot <- timePlot + ggplot2::theme_bw()
   
-  multiSite <- if(length(unique(plotData$site_no))>1) TRUE else FALSE
-  multiVar  <- if(length(variables)>1)                TRUE else FALSE
+  ## the pretty object could have 
+  ## sites*variables
+  
+  timePlot <- 
+    ggplot2::ggplot(prettyUsgs, ggplot2::aes(x=POSIXct, y=value)) + 
+    ggplot2::theme_bw() 
+  
+  multiSite <- length(unique(prettyUsgs$site_no))  > 1
+  multiVar  <- length(unique(prettyUsgs$variable)) > 1 
+  
   if( multiSite &  multiVar) 
-    timePlot <- timePlot + ggplot2::facet_grid(site_no~variable, scale='free_xy')
+    timePlot <- timePlot + ggplot2::facet_grid(site_no~variable, scale='free_y')
   if( multiSite & !multiVar) 
-    timePlot <- timePlot + ggplot2::facet_wrap(site_no~variable, scale='fixed', ncol=1)
+    timePlot <- timePlot + ggplot2::facet_wrap(~site_no, scale='fixed', ncol=1)
   if(!multiSite &  multiVar) 
-    timePlot <- timePlot + ggplot2::facet_wrap(site_no~variable, scale='free_y', ncol=length(variables))
+    timePlot <- timePlot + ggplot2::facet_wrap(~variable, scale='free_y', ncol=length(variables))
   
   ## more stuff to be added here.
-  OutFunc <- function(plot=TRUE, yLog=FALSE, pointSize=1, pointColor='black', errColor='red') {
+  OutFunc <- function(plot=TRUE, yLog=FALSE, pointSize=1, pointColor='black') {   
+    # , errColor='red') {
     if(yLog) timePlot <- timePlot + ggplot2::scale_y_log10()
     timePlot <- timePlot + ggplot2::geom_point(size=pointSize, color=pointColor) 
-    if (length(errVars)) timePlot <- timePlot + ggplot2::geom_errorbar(color=errColor)
+    #if (length(errVars)) timePlot <- timePlot + ggplot2::geom_errorbar(color=errColor)
     if(plot) print(timePlot)
     invisible(timePlot)
   }
@@ -878,51 +896,74 @@ PlotPrettyData <- function(prettyUsgs, plot=TRUE, errInnerQntl=.995) {
 #' @param ... additional arguments to subset.data.frame
 #' @return A dataframe of class c("prettyUsgs", "data.frame") # See vignette
 #'   "Collect USGS stream observations and build a local database" for examples.
-#' @keywords manip
+#' @examples 
+#' \dontrun{
+#' dbPath <- '~/wrfHydroTestCases/usgsDb/'
+#' threeSites <- QuerySiteInfo(path = dbPath, info = c("site_no"))[1:3,]$site_no
+#' obs <- PrettyUsgs(QueryHaveSite(threeSites, path=dbPath, ret='00060', get=TRUE))
+#' length(unique(obs$site_no))
+#' df0 <- subset(obs,site_no==threeSites[1])
+#' length(unique(df0$site_no))
+#' ggplot2::ggplot(obs, ggplot2::aes(x=value,color=site_no)) + 
+#'   ggplot2::geom_density() + ggplot2::scale_x_continuous(limits=c(0,7))
+#' df1 <- subset(obs,value < 2)
+#' length(unique(df1$site_no))
+#' length(attr(df1,'siteInfo')$site_no)
+#' plyr::ddply(obs, plyr::.(site_no), plyr::summarize, max=max(value))
+#' df2 <- subset(obs,value > 9)
+#' length(unique(df2$site_no))
+#' length(attr(df2,'siteInfo')$site_no)
+#' }
+#' @keywords manip internal
 #' @concept dataMgmt usgsStreamObs
 #' @family streamObs
 #' @export
 subset.prettyUsgs <- function(prettyUsgs, ... ) {
- class     <- attr(prettyUsgs, 'class')
- variables <- attr(prettyUsgs, 'variables')
- codes     <- attr(prettyUsgs, 'codes')
- variances  <- attr(prettyUsgs, 'variances')
- stDevs     <- attr(prettyUsgs, 'st.devs.')
- attr(prettyUsgs, 'class') <- 'data.frame'
- cond <- substitute(...)
  ## some non-standard eval.
+ cond <- substitute(...)
  env <- list2env(prettyUsgs, parent=parent.frame())
  subPretty <- prettyUsgs[eval(cond, env),]
- attr(subPretty, 'class')      <- class
- attr(subPretty, 'variables')  <- variables
- attr(subPretty, 'codes')      <- codes
- attr(subPretty, 'variances')  <- variances
- attr(subPretty, 'st.devs.')   <- stDevs
+ class(subPretty) <- class(prettyUsgs)
+ attr(subPretty,'siteInfo') <- subset(attr(prettyUsgs,'siteInfo'), site_no %in% subPretty$site_no)
  subPretty
 }
 
 
-#' @keywords internal
+#' Extract or replace parts of prettyUsgs objects.
+#' 
+#' \code{`[.prettyUsgs`} extracts or replaces parts prettyUsgs objects and retains appropriate
+#' attributes.
+#' @param prettyUsgs A dataframe of class \code{c("prettyUsgs", "data.frame")}
+#'   returned from \code{PrettyUsgs}
+#' @return A dataframe of class c("prettyUsgs", "data.frame") or numeric 
+#' @examples 
+#' \dontrun{
+#' ## these should be made formal tests
+#' dbPath <- '~/wrfHydroTestCases/usgsDb/'
+#' threeSites <- QuerySiteInfo(path = dbPath, info = c("site_no"))[1:3,]$site_no
+#' obs <- PrettyUsgs(QueryHaveSite(threeSites, path=dbPath, ret='00060', get=TRUE))
+#' length(unique(obs$site_no))
+#' atomicV <- obs[,'value']
+#' str(atomicV)
+#' atomicS <- obs[1,'value']
+#' str(atomicS)
+#' df0 <- obs[,c('value','POSIXct','site_no')]
+#' df1 <- obs[,c('value','POSIXct')]
+#' df2 <- obs[1,c('value','POSIXct','site_no')]
+#' }
+#' @keywords manip internal
+#' @concept dataMgmt usgsStreamObs
+#' @family streamObs
 #' @export
-`[.prettyUsgs` <- function(prettyUsgs, ... ) {
-  class      <- attr(prettyUsgs, 'class')
-  variables  <- attr(prettyUsgs, 'variables')
-  codes      <- attr(prettyUsgs, 'codes')
-  variances  <- attr(prettyUsgs, 'variances')
-  stDevs     <- attr(prettyUsgs, 'st.devs.')
-  attr(prettyUsgs, 'class') <- 'data.frame'
-  cond <- substitute(...)
-  ## some non-standard eval.
-  env <- list2env(prettyUsgs, parent=parent.frame())
-  subPretty <- `[.data.frame`(prettyUsgs, ...)
-  attr(subPretty, 'class')      <- class
-  attr(subPretty, 'variables')  <- variables
-  attr(subPretty, 'codes')      <- codes
-  attr(subPretty, 'variances')  <- variances
-  attr(subPretty, 'st.devs.')   <- stDevs
-  subPretty
+`[.prettyUsgs` <- function(x,i,...) {
+  r <- NextMethod("[")
+  if(is.data.frame(r) & all(names(r) %in% c("site_no", "POSIXct", "code", "value", "variable"))) {
+    ## if there's no site info, it's basically not a pretty object anymore.
+    if('site_no' %in% names(r)) 
+      class(r) <- class(x)
+      attr(r,'siteInfo') <- subset(attr(x,'siteInfo'), site_no %in% r$site_no)
+  } 
+  r
 }
-
-
 
 

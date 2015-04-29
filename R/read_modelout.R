@@ -161,7 +161,7 @@ ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, a
     # Run GetMultiNcdf
     ldasoutFilesList <- list( ldasout = list.files(path=pathOutdir, pattern=glob2rx('*LDASOUT_DOMAIN*'), full.names=TRUE))
     if (ncores > 1) {
-        ldasoutDF <- GetMultiNcdf(indexLIst=ldasoutIndexList, 
+        ldasoutDF <- GetMultiNcdf(indexList=ldasoutIndexList, 
                                   variableList=ldasoutVariableList, 
                                   filesList=ldasoutFilesList, parallel=TRUE )
         }

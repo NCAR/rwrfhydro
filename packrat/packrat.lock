@@ -67,10 +67,14 @@ Version: 0.5
 Hash: 6b3d62cb5f5ec2674978f22d00aa919f
 
 Package: dataRetrieval
-Source: CRAN
-Version: 2.2.0
-Hash: 542c1385f32123bbfdd64d16806820ad
+Source: github
+Version: 2.1.4
+Hash: 30a1252b4271eb5be3bc8ea5071464a19058561e
 Requires: RCurl, XML, lubridate, plyr, reshape2
+GithubRepo: dataRetrieval
+GithubUsername: mccreigh
+GithubRef: master
+GithubSha1: 30a1252b4271eb5be3bc8ea5071464a19058561e
 
 Package: devtools
 Source: github
@@ -233,6 +237,11 @@ Source: CRAN
 Version: 0.4.2-1
 Hash: 085f944cec9b56e8a280222b5174c76e
 
+Package: pander
+Source: CRAN
+Version: 0.5.1
+Requires: Rcpp, digest
+
 Package: plyr
 Source: CRAN
 Version: 1.8.2
@@ -260,6 +269,11 @@ Source: CRAN
 Version: 1.4.1
 Hash: d3d77b083fd5485f674487aa23011ea7
 Requires: Rcpp, plyr, stringr
+
+Package: rgdal
+Source: CRAN
+Version: 0.9-2
+Requires: sp
 
 Package: rjson
 Source: CRAN

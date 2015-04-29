@@ -8,24 +8,29 @@ GetSnodasDepthSweDate(datePOSIXct, outputDir = ".", overwrite = FALSE,
   quiet = TRUE, parallel = (foreach::getDoParWorkers() > 1))
 }
 \arguments{
-\item{datePOSIXct}{The date in POSIXct format for which data is desired. Only whole days matter.}
+\item{datePOSIXct}{The date in POSIXct format for which data is desired. Only
+whole days matter.}
 
-\item{outputDir}{The directory where the data are to be archived. This directory is checked to see if the
-data exist when overwrite=FALSE}
+\item{outputDir}{The directory where the data are to be archived. This
+directory is checked to see if the data exist when overwrite=FALSE}
 
-\item{overwrite}{When false: If the depth and SWE files exist on disk, dont grab the tarball. \cr
-When false: If the tarball exists on disk but depth and SWE files dont, just unpack the tarball. \cr
-When true: Pull new tarball and overwrite any existing files with the same date.}
+\item{overwrite}{When false: If the depth and SWE files exist on disk, dont
+grab the tarball. \cr When false: If the tarball exists on disk but depth
+and SWE files dont, just unpack the tarball. \cr When true: Pull new
+tarball and overwrite any existing files with the same date.}
 
-\item{quiet}{Passed to curl, to show it's progress (typcially too fast to matter).}
+\item{quiet}{Passed to curl, to show it's progress (typcially too fast
+to matter).}
 
-\item{parallel}{Logical Defaults to (foreach::getDoParWorkers>1), so if you've set up parallelization it is automatically used.}
+\item{parallel}{Logical Defaults to (foreach::getDoParWorkers>1), so if
+you've set up parallelization it is automatically used.}
 }
 \value{
 Logical was the file "got"?
 }
 \description{
-\code{GetSnodasDepthSweDate} Get and unpack the SNODAS snow depth and SWE tarball for a given date.
+\code{GetSnodasDepthSweDate} Get and unpack the SNODAS snow depth and SWE
+tarball for a given date.
 }
 \examples{
 snodasGot <- GetSnodasDepthSweDate(as.POSIXct('2015-02-28'),

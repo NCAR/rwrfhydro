@@ -5,7 +5,7 @@
 \title{Get all the USGS streamgage information within a HUC8.}
 \usage{
 GetUsgsHucData(huc8, outPath = NULL,
-  metaDBFileName = "usgsDataRetrieval.metaDatabase.RData")
+  metaDBFileName = "usgsDataRetrieval.metaDatabase.RData", update = FALSE)
 }
 \arguments{
 \item{huc8}{Character The eight-digit HUC code.}
@@ -13,6 +13,8 @@ GetUsgsHucData(huc8, outPath = NULL,
 \item{outPath}{Character The path to the database directory}
 
 \item{metaDBFileName}{Character The name of the database metadata file.}
+
+\item{update}{Logical, If huc exists on disk, update it byt getting new data from NWIS?}
 }
 \description{
 \code{GetUsgsHucData} gets all the USGS streamgage information within a HUC8.
@@ -32,10 +34,11 @@ vansHucData    <- GetUsgsHucData(huc8='03020104')
 Other streamObs: \code{\link{FindUsgsStns}};
   \code{\link{GetSiteHuc}}; \code{\link{GetUsgsIvProduct}};
   \code{\link{ImproveHucMeta}}; \code{\link{LoadMetaDB}};
-  \code{\link{PlotPrettyData}}; \code{\link{PrettyUsgs}};
+  \code{\link{PlotPrettyUsgs}}; \code{\link{PrettyUsgs}};
   \code{\link{QueryHaveSite}}; \code{\link{QuerySiteData}};
   \code{\link{QuerySiteInfo}}; \code{\link{QuerySiteName}};
   \code{\link{QuerySiteProd}}; \code{\link{SaveHucData}};
+  \code{\link{[.prettyUsgs}};
   \code{\link{subset.prettyUsgs}}
 }
 \concept{

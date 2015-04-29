@@ -41,10 +41,11 @@ Other streamObs: \code{\link{GetSiteHuc}};
   \code{\link{GetUsgsHucData}};
   \code{\link{GetUsgsIvProduct}};
   \code{\link{ImproveHucMeta}}; \code{\link{LoadMetaDB}};
-  \code{\link{PlotPrettyData}}; \code{\link{PrettyUsgs}};
+  \code{\link{PlotPrettyUsgs}}; \code{\link{PrettyUsgs}};
   \code{\link{QueryHaveSite}}; \code{\link{QuerySiteData}};
   \code{\link{QuerySiteInfo}}; \code{\link{QuerySiteName}};
   \code{\link{QuerySiteProd}}; \code{\link{SaveHucData}};
+  \code{\link{[.prettyUsgs}};
   \code{\link{subset.prettyUsgs}}
 }
 \concept{

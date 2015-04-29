@@ -85,7 +85,7 @@ PlotFluxCompare <- function(strDf.obs, strCol.obs="q_cms",
     if (!is.null(strDf.mod2)) {
         strDf.mod2$qcomp.mod2 <- strDf.mod2[,strCol.mod2]
     }
-    strDf <- merge(strDf.obs[c("POSIXct","qcomp.obs")], strDf.mod1[c("POSIXct","qcomp.mod1")], by<-c("POSIXct"))
+    strDf <- merge(strDf.obs[c("POSIXct","qcomp.obs")], strDf.mod1[c("POSIXct","qcomp.mod1")], by=c("POSIXct"))
     if (!is.null(strDf.mod2)) {
         strDf <- merge(strDf, strDf.mod2[c("POSIXct","qcomp.mod2")], by<-c("POSIXct"))
         }
