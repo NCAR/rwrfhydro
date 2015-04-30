@@ -78,7 +78,7 @@ at http://www.ral.ucar.edu/projects/wrf_hydro/rwrfhydro.php.</em>
   <td style="vertical-align: top;"> Package&nbsp;source: </td>
   <td>
     Git repositry available on github at <a href="https://github.com/mccreigh/rwrfhydro/">https://github.com/mccreigh/rwrfhydro.</a> <br />
-    See the <a href="https://github.com/mccreigh/rwrfhydro/blob/master/README.Rmd#developing">  README </a> to contribute to the source code.
+    See the <a href="https://github.com/mccreigh/rwrfhydro/blob/master/README.Rmd#developing-and-bug-reports">  README </a> to contribute to the source code.
   </td>
 </table>
 </tr>
