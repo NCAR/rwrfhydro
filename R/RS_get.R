@@ -373,7 +373,7 @@ ConvertStack2NC <- function(inStack, outFile=NULL, varName=NULL, varUnit=NULL,
 #'          outDirPath="/Volumes/d1/adugger/RS/MODIS_ARC/PROCESSED/FRNTRNG_LAI_SMOOTHED", 
 #'          outputAs="one", removeOutlier=TRUE, outlierThreshold=0.5, lambda=1000, 
 #'          overwrite=TRUE)
-#'          }
+#' }
 #' @keywords smooth
 #' @concept MODIS dataAnalysis
 #' @family MODIS
@@ -393,6 +393,7 @@ SmoothStack <- function(inStack, w=NULL, t=NULL, lambda = 5000, nIter= 3,
     names(resultBrick) <- names(inStack)
     resultBrick
     }
+
 
 #' Inserts pre-processed images into appropriate forcing NetCDF files by date.
 #' 
