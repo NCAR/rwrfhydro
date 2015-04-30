@@ -1,7 +1,7 @@
 [![Travis-CI Build Status](https://travis-ci.org/mccreigh/rwrfhydro.png?branch=master)](https://travis-ci.org/mccreigh/rwrfhydro)
 
 # rwrfhydro
-(CRAN-like overview)
+## A CRAN-like overview
 
 <h4 style="color: rgb(40%, 40%, 40%); font-family: monospace; font-size: large;">rwrfhydro: R tools for the WRF Hydro Model</h4>
 <p>A community-contributed tool box for managing, analyzing, and visualizing WRF Hydro input and output files in R. See the <a href="https://github.com/mccreigh/rwrfhydro/blob/master/README.Rmd">github repository README file</a> for more information. </p>
@@ -222,7 +222,7 @@ We maintain two main branches: master and devBranch. You should never work on th
 ### Not using Github.
 This may be possible for small amounts of codes over long periods of time. It is really only the "hub" part of github which may give pause, interfacing a git repo with github is described here and maybe an alternative if necessary: http://stackoverflow.com/questions/4728432/git-forking-without-github
 
-## Travis-CI and `R CMD check`
+### Travis-CI and `R CMD check`
 The rwrfhydro repo is configured to build on a third-party virtual linux machine with every push or pull request to the master or devBranch branches. This service is known as Travis-CI (continuous integration). This means your pull requests are automatically checked by `R CMD check`, this keeps errors from creeping into the upstream code. There are a variety of hurdles to getting code to build on Travis-CI, including installing requisite system and R packages, which can be challenging but worth it for the debugging provided by automated builds in conjunction with `R CMD check`.
 
 `R CMD check` accepts a variety of arguments. Ultimately, it 1) checks the source for consistency including across platforms (Windows, OSX, linux), 2) runs all specified code tests, essentially regression tests, 3) runs all the examples provided in the documentation, and 4) builds all the vignettes. Currently, we are skipping vignette building until we can streamline several of these. 
