@@ -1,15 +1,20 @@
+##=============================================================================
+
 #' Simplifed loading of rwrfhydro data included with the package.
 #' 
-#' \code{GetPkgRawDataPath} is a simplified wrapper (for system.file) for loading external 
-#' rwrfhydro data included with the package.
-#' @param theFile The external data file to load (this is in dirrefent places before, 
-#'        rwrfhydro/inst/extdata, and after build, rwrfhydro/). 
+#' \code{GetPkgRawDataPath} is a simplified wrapper (for system.file) for
+#' loading external rwrfhydro data included with the package.
+#' @param theFile The external data file to load (this is in dirrefent places
+#'   before, rwrfhydro/inst/extdata, and after build, rwrfhydro/).
 #' @return The full path to the file.
 #' @examples
-#' GetPkgDataPath('Fourmile_test_case_AD.hydro_OrodellBasin_100m_8.nc')
+#' GetPkgRawDataPath('gagesII_all.csv')
 #' @keywords internal
 #' @export
 GetPkgRawDataPath <- function(theFile='') system.file("extdata", theFile, package = "rwrfhydro")
+
+##=============================================================================
+
 #' Standardize lon to (-180,180].
 #' 
 #' \code{StdLon} Standardizes longitude to (-180,180]
@@ -27,10 +32,12 @@ StdLon <- function(x) {
 
 #' Expand limits by some amount or proportionally to their difference.
 #' 
-#' \code{PadRange} Takes limits and expands them by some amount or proportionally to their difference.
+#' \code{PadRange} Takes limits and expands them by some amount or
+#' proportionally to their difference.
 #' @param limits A vector of length 2, an initial range, to be expanded.
 #' @param delta An amount to add(subtract) from the upper(lower) limit.
-#' @param diffMult A fraction of the passed range (\code{limits}) to use as \code{delta}.
+#' @param diffMult A fraction of the passed range (\code{limits}) to use as
+#'   \code{delta}.
 #' @examples
 #' PadRange(c(0,100))
 #' PadRange(c(0,100), delta=.1)
@@ -70,17 +77,20 @@ RotateCw <- function(matrix) t(apply(matrix, 2, rev))
 RotateCcw <- function(matrix) apply(matrix, 1, rev)
 
 
-#' Translate (i.e. invert) timezones to the so calle Olson names used by POSIXct. 
+#' Translate (i.e. invert) timezones to the so calle Olson names used by
+#' POSIXct.
 #' 
-#' Translate formatted timezones codes to the so-called "Olson names" used by POSIXct.
-#' \code{TransTz} translates the formatted timezone codes (incl those from USGS) to Olson Names.
+#' Translate formatted timezones codes to the so-called "Olson names" used by
+#' POSIXct. \code{TransTz} translates the formatted timezone codes (incl those
+#' from USGS) to Olson Names.
 #' @param tz The timezone to be translated.
 #' @examples
 #' as.POSIXct('2012-01-01')
 #' as.POSIXct('2012-01-01', tz='US/Pacific')
 #' format(as.POSIXct('2012-01-01', tz='US/Pacific'),'%Z')
 #' TransTz(format(as.POSIXct('2012-01-01', tz='US/Pacific'),'%Z'))
-#' lubridate::with_tz(as.POSIXct('2012-01-01'),TransTz(format(as.POSIXct('2012-01-01', tz='US/Pacific'),'%Z')))
+#' lubridate::with_tz(as.POSIXct('2012-01-01'),
+#'                    TransTz(format(as.POSIXct('2012-01-01', tz='US/Pacific'),'%Z')))
 #' @keywords internal
 #' @export
 TransTz <- function(tz) {
@@ -103,9 +113,11 @@ TransTz <- function(tz) {
 
 #' Returns the water year or the day of water year for a given POSIXct.
 #' 
-#' \code{CalcWaterYear} Returns the water year or the day of water year for a given POSIXct.  
+#' \code{CalcWaterYear} Returns the water year or the day of water year for a
+#' given POSIXct.
 #' @param POSIXct is a POSIXct variable.
-#' @param dayOf signals if you want to get back the day of the water year instead of the water year.
+#' @param dayOf signals if you want to get back the day of the water year
+#'   instead of the water year.
 #' @examples
 #' CalcWaterYear(as.POSIXct(c("2011-09-30", "2011-10-01"), tz='US/Pacific'))
 #' CalcWaterYear(as.POSIXct(c("2011-09-30", "2011-10-01"), tz='US/Pacific'), dayOf=TRUE)
@@ -337,15 +349,19 @@ feet2meters <- 0.30480
 
 #' Get a package's metadata fields and associated entries.
 #' 
-#' \code{GetPkgMeta} Get metadata fields and associated entries from a package's documentation (e.g. "keyword" or "concepts".)
+#' \code{GetPkgMeta} Get metadata fields and associated entries from a package's
+#' documentation (e.g. "keyword" or "concepts".)
 #' @param meta Character the metadata field.
 #' @param package Character The package to query for metadata.
 #' @param quiet Logical Do not print summary to screen.
-#' @param keyword Character A specific keyword to look for. 
+#' @param keyword Character A specific keyword to look for.
 #' @param concept Character A specific concept to look for.
-#' @param listMetaOnly Logical Just return the meta categories (without functons)?
-#' @param byFunction Character Vector of functions for which concepts and keywords are desired.
-#' @return List of metadata fields in alphabetical order with corresponding entries.
+#' @param listMetaOnly Logical Just return the meta categories (without
+#'   functons)?
+#' @param byFunction Character Vector of functions for which concepts and
+#'   keywords are desired.
+#' @return List of metadata fields in alphabetical order with corresponding
+#'   entries.
 #' @examples 
 #' GetPkgMeta()
 #' GetPkgMeta('keyword', package='ggplot2')
@@ -474,7 +490,6 @@ print.pkgMeta  <- function(pkgMeta) {
 #'   }
 #' myF.atomic(x=11:13,y=1:3)
 #' myF(x=11:13,y=1:3)
-#' myF(x=11:13,y=1:2,z=NULL)
 #' @keywords utilities internal
 #' @export
 FormalsToDf <- function(theFunc, envir=parent.frame()) {
@@ -490,7 +505,7 @@ FormalsToDf <- function(theFunc, envir=parent.frame()) {
   }
   theFormals <- theFormals[which(formalLens!=0)]
   formalLens <- formalLens[which(formalLens!=0)]
-  sortFormals <- theFormals[sort(formalLens, index=TRUE, dec=TRUE)$ix]
+  sortFormals <- theFormals[sort(formalLens, index=TRUE, decreasing=TRUE)$ix]
   for (ff in sortFormals) {
     if (ff==sortFormals[1]) {
       df <- data.frame(get(ff, envir=envir))
