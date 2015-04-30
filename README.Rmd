@@ -1,9 +1,139 @@
-[![Travis-CI Build Status](https://travis-ci.org/mccreigh/rwrfhydro.png?branch=devBranch)](https://travis-ci.org/mccreigh/rwrfhydro)
+[![Travis-CI Build Status](https://travis-ci.org/mccreigh/rwrfhydro.png?branch=master)](https://travis-ci.org/mccreigh/rwrfhydro)
 
 # rwrfhydro
-A community-contributed tool box for managing, analyzing, and visualizing WRF Hydro (and HydroDART) input and output files in R.
+(CRAN-like overview)
+
+<h4 style="color: rgb(40%, 40%, 40%); font-family: monospace; font-size: large;">rwrfhydro: R tools for the WRF Hydro Model</h4>
+<p>A community-contributed tool box for managing, analyzing, and visualizing WRF Hydro input and output files in R. See the <a href="https://github.com/mccreigh/rwrfhydro/blob/master/README.Rmd">github repository README file</a> for more information. </p>
+<table summary="Package rwrfhydro summary">
+<tr>
+<td style="vertical-align: top;">Version:</td>
+<td>1.0.0</td>
+</tr>
+<tr>
+<td style="vertical-align: top;">Depends:</td>
+<td>R (&ge; 3.1.0), stats, methods</td>
+</tr>
+<tr>
+<td style="vertical-align: top;">Imports:</td>
+<td> plyr (>= 1.8.1), grid (>= 3.1.2), lubridate (>= 1.3.3), ncdf4
+        (>= 1.13), ggplot2 (>= 1.0.0), ggmap (>= 2.3), reshape2 (>=
+        1.4.1), doMC (>= 1.3.3), foreach (>= 1.4.2), curl (>= 0.5),
+        dataRetrieval (>= 2.1.2), raster (>= 2.3), httr (>= 0.6.1),
+        devtools (>= 1.7.0), jsonlite (>= 0.9.14)
+</td>
+</tr>
+<tr>
+<td style="vertical-align: top;">Suggests:</td>
+<td>testthat, knitr, rgdal, pander, ptw</td>
+</tr>
+<tr>
+<td style="vertical-align: top;">Published:</td>
+<td>2015-05-01</td>
+</tr>
+<tr>
+<td style="vertical-align: top;">Author:</td>
+<td>James McCreight [aut, cre],
+Aubrey Dugger[aut]</td>
+</tr>
+<tr>
+<td style="vertical-align: top;">Maintainer:</td>
+<td>James McCreight</td>
+</tr>
+<tr>
+<td style="vertical-align: top;">BugReports:</td>
+<td><a href="https://github.com/mccreigh/rwrfhydro/issues">https://github.com/mccreigh/rwrfhydro/issues</a></td>
+</tr>
+<tr>
+<td style="vertical-align: top;">License:</td>
+<td><a href="https://github.com/mccreigh/rwrfhydro/blob/master/LICENSE.md">Terms of use.</a></td>
+</tr>
+<tr>
+<td style="vertical-align: top;">URL:</td>
+<td><a href="https://github.com/mccreigh/rwrfhydro">https://github.com/mccreigh/rwrfhydro</a>, <a href="http://www.ral.ucar.edu/projects/wrf_hydro/download.php">http://www.ral.ucar.edu/projects/wrf_hydro/download.php</a></td>
+</tr>
+<tr>
+<td style="vertical-align: top;">NeedsCompilation:</td>
+<td>no</td>
+</tr>
+<tr>
+<td style="vertical-align: top;">Citation:</td>
+<td><em>McCreight, J.L., Dugger, A., Gochis, D.J., 2015: The rwrfhydro R package. Available
+at http://www.ral.ucar.edu/projects/wrf_hydro/rwrfhydro.php.</em>
+</a> </td>
+</tr>
+<tr>
+<td style="vertical-align: top;">Materials:</td>
+<td><a href="https://github.com/mccreigh/rwrfhydro/blob/master/README.Rmd">README</a> <a href="https://github.com/mccreigh/rwrfhydro/blob/master/NEWS.Rmd">NEWS</a> </td>
+</tr>
+</table>
+
+
+<h4 style="color: rgb(40%, 40%, 40%); font-family: monospace;">Downloads:</h4>
+<table summary="Package rwrfydro downloads", width="80%">
+  
+<table width="100%">
+  <col style="width: 6%;" />
+  <col style="width: 94%;" />
+  <td style="vertical-align: top;"> Package&nbsp;source: </td>
+  <td>
+    Git repositry available on github at <a href="https://github.com/mccreigh/rwrfhydro/">https://github.com/mccreigh/rwrfhydro.</a> <br />
+    See the <a href="https://github.com/mccreigh/rwrfhydro/blob/master/README.Rmd#developing">  README </a> to contribute to the source code.
+  </td>
+</table>
+</tr>
+
+<table width="100%">
+  <col style="width: 6%;" />
+  <col style="width: 94%;" />
+  <td style="vertical-align: top;"> Installation: </td>
+  <td>
+    <a href="https://github.com/mccreigh/rwrfhydro/blob/master/README.Rmd#installing"> See installation instructions. </a>
+  </td>
+</table>
+</tr>
+
+  
+<tr>
+<table width="100%">
+  <col style="width: 6%;" />
+  <col style="width: 94%;" />
+  <td style="vertical-align: top;"> Reference&nbsp;manual: </td>
+  <td>
+    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/rwrfhydro.pdf">rwrfhydro.pdf </a>
+  </td>
+</table>
+</tr>
+
+<tr>
+<table width="100%">
+  <col style="width: 6%;" />
+  <col style="width: 94%;" />
+  <td style="vertical-align: top;">Vignettes:</td>
+  
+  <td style="text-align: left; vertical-align: top;">
+    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/overview.html">An overview of rwrfhydro functionality</a> <br>
+    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/streamflowEval.html">Streamflow Evaluation</a> <br>
+    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/domainChannelVis.html">WRF Hydro Domain and Channel Visualization</a> <br>
+    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/getMultiNetcdf.html">Get data from multiple netcdf files</a> <br>
+    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/usgsObsDb.html">Collect USGS stream observations and build a local database</a> <br>
+    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/waterBudget.html">Water Budget</a> <br>
+    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/evapotranspirationEval.html">ET Evaluation</a> <br>
+    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/streamflowEvalMulti.html">Streamflow Evaluation - Multi-Basin</a> <br>
+    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/modisProcessing.html">MODIS Processing</a> <br>
+    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/snodas.html">Collect the SNODAS product and build a local database</a> <br>
+  </td>
+
+</table>
+</tr>
+
+</div>
+
+
 
 # Purpose
+A community-contributed tool box for managing, analyzing, and visualizing WRF Hydro (and HydroDART) input and output files in R.
+
 Intentionally, “rwrfhydro” can be read as “our wrf hydro”. The purpose of this R package is to focus community development of 
 tools for working with and analyzing data related to the WRF Hydro model. These tools are both free and open-source, just like
 R, which should help make them accessible and popular. For users new to R, several introductory resources are listed below. 
