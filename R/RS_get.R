@@ -89,7 +89,9 @@ GetMODIS <- function(geogrdPath, prodName, outDir, begin, end, resampTyp='near')
     truelat1 <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="TRUELAT1")$value
     truelat2 <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="TRUELAT2")$value
     if (map_proj==1) {
-         geogrd.crs <- paste0("+proj=lcc +lat_1=", truelat1, " +lat_2=", truelat2, " +lat_0=", cen_lat, " +lon_0=", cen_lon, " +x_0=0 +y_0=0 +a=6370000 +b=6370000 +units=m +no_defs")
+         geogrd.crs <- paste0("+proj=lcc +lat_1=", truelat1, " +lat_2=", truelat2, 
+                              " +lat_0=", cen_lat, " +lon_0=", cen_lon, 
+                              " +x_0=0 +y_0=0 +a=6370000 +b=6370000 +units=m +no_defs")
         } else {
         stop('Error: Projection type not supported (currently this tool only works for Lambert Conformal Conic projections).')
         }
@@ -194,12 +196,14 @@ GetMODIS <- function(geogrdPath, prodName, outDir, begin, end, resampTyp='near')
 #' @export
 ConvertRS2Stack <- function(inPath, matchStr, begin=NULL, end=NULL,
                             noData=NULL, noDataQual="exact", valScale=1, valAdd=0,
-                            outFile=NULL, varName=NULL, varUnit=NULL, varLong=NULL, varNA=-1.e+36) {
+                            outFile=NULL, varName=NULL, varUnit=NULL, varLong=NULL, 
+                            varNA=-1.e+36) {
     # Get file list
     if (!is.null(begin) & !is.null(end)) {
         beginDt <- format(as.POSIXct(begin, format="%Y.%m.%d", tz="UTC"), "%Y%j", tz="UTC")
         endDt <- format(as.POSIXct(end, format="%Y.%m.%d", tz="UTC"), "%Y%j", tz="UTC")
-        timeInfo <- MODIS::orgTime(MODIS::preStack(path=inPath, pattern=matchStr), begin=beginDt, end=endDt, pillow=0)
+        timeInfo <- MODIS::orgTime(MODIS::preStack(path=inPath, pattern=matchStr), 
+                                   begin=beginDt, end=endDt, pillow=0)
     } else {
         timeInfo <- MODIS::orgTime(MODIS::preStack(path=inPath, pattern=matchStr), pillow=0)
         }
@@ -236,8 +240,10 @@ ConvertRS2Stack <- function(inPath, matchStr, begin=NULL, end=NULL,
                 }
             # Track dates
             dtInts[n] <- as.integer(difftime(as.POSIXct(dtStr, format="%Y%j", tz="UTC"), 
-                                             as.POSIXct("198001", format="%Y%j", tz="UTC", units="days")))
-            dtNames[n] <- paste0("DT", format(as.POSIXct(dtStr, format="%Y%j", tz="UTC"), "%Y.%m.%d"))
+                                             as.POSIXct("198001", format="%Y%j", tz="UTC", 
+                                                        units="days")))
+            dtNames[n] <- paste0("DT", format(as.POSIXct(dtStr, format="%Y%j", tz="UTC"), 
+                                              "%Y.%m.%d"))
             if (n==1) {
                 rsStack <- raster::stack(rsRast)
             } else {
@@ -285,19 +291,22 @@ ConvertRS2Stack <- function(inPath, matchStr, begin=NULL, end=NULL,
 #' @concept MODIS dataMgmt
 #' @family MODIS
 #' @export
-ConvertStack2NC <- function(inStack, outFile=NULL, varName=NULL, varUnit=NULL, varLong=NULL, varNA=-1.e+36) {
+ConvertStack2NC <- function(inStack, outFile=NULL, varName=NULL, varUnit=NULL, 
+                            varLong=NULL, varNA=-1.e+36) {
     # Get dates
     dtInts <- c()
     dtNames <- names(inStack)
     for (i in 1:length(dtNames)) {
         dtStr <- sub("DT", dtNames[i], replacement="")
         dtInts[i] <- as.integer(difftime(as.POSIXct(dtStr, format="%Y.%m.%d", tz="UTC"), 
-                                         as.POSIXct("198001", format="%Y%j", tz="UTC", units="days")))
+                                         as.POSIXct("198001", format="%Y%j", tz="UTC", 
+                                                    units="days")))
         }
     # Output NetCDF file
     raster::writeRaster(inStack, outFile, "CDF", overwrite=TRUE,
             varname=varName, varunit=varUnit, longname=varLong,
-            xname="west_east", yname="south_north", zname="Time", zunit="days since 1980-01-01", bylayer=FALSE, NAflag=varNA)
+            xname="west_east", yname="south_north", zname="Time", zunit="days since 1980-01-01", 
+            bylayer=FALSE, NAflag=varNA)
     # Set the time variable
     ncFile <- ncdf4::nc_open(outFile, write=TRUE)
     ncdf4::ncvar_put(ncFile, "Time", dtInts)
@@ -327,24 +336,24 @@ ConvertStack2NC <- function(inStack, outFile=NULL, varName=NULL, varUnit=NULL, v
 #' @param t FROM \code{\link[MODIS]{whittaker.raster}}: In case of MODIS
 #'   composite the 'composite_day_of_the_year' raster-Brick, Stack or filenames.
 #'   Use preStack functionality to ensure the right input.
-#' @param groupYears FROM \code{\link[MODIS]{whittaker.raster}}: Default TRUE,
-#'   rasterBrick files separated by years as result. If FALSE a single
-#'   rasterBrick file for the entire period.
 #' @param lambda FROM \code{\link[MODIS]{whittaker.raster}}: _Yearly_ lambda
 #'   value passed to ?ptw:::wit2. If set as character (i.e. lambda="600"), it is
 #'   not adapted to the time serie length but used as a fixed value (see
 #'   details). High values = stiff/rigid spline
+#' @param nIter FROM \code{\link[MODIS]{whittaker.raster}}: Number of iteration
+#'   for the upper envelope fitting.
+#' @param outputAs FROM \code{\link[MODIS]{whittaker.raster}}: Character.
+#'   Organisation of output files: single each date one RasterLayer, yearly a
+#'   RasterBrick for each year, one one RasterBrick for the entire time-serie.
 #' @param collapse FROM \code{\link[MODIS]{whittaker.raster}}: logical, if TRUE
 #'   the input data is treated as _1_single_Year_ collapsing the data using the
 #'   Julian date information without the year.
-#' @param nIter FROM \code{\link[MODIS]{whittaker.raster}}: Number of iteration
-#'   for the upper envelope fitting.
 #' @param outDirPath FROM \code{\link[MODIS]{whittaker.raster}}: Output path
 #'   default is the current directory.
 #' @param removeOutlier FROM \code{\link[MODIS]{whittaker.raster}}: Logical. See
 #'   details
-#' @param threshold nFROM \code{\link[MODIS]{whittaker.raster}}: Numerical in
-#'   the same unit as vi, used for outliers removal. See details
+#' @param outlierThreshold FROM \code{\link[MODIS]{whittaker.raster}}: Numerical
+#'   in the same unit as vi, used for outliers removal. See details
 #' @param mergeDoyFun FROM \code{\link[MODIS]{whittaker.raster}}: Especially
 #'   when using argument collapse=TRUE, multiple measurements for one day can be
 #'   present, here you can choose how those values are merged to one single
@@ -356,30 +365,30 @@ ConvertStack2NC <- function(inStack, outFile=NULL, varName=NULL, varUnit=NULL, v
 #' @return raster brick of smoothed images
 #'   
 #' @examples
-#' ## Take the raster stack of LAI images created through ConvertRS2Stack and
-#' ## apply a smoothing filter that also removes outliers, which we specify 
-#' ## to be more than 0.5 LAI from the smoothed value.
-#' 
+#' ## Take the raster stack of LAI images created through ConvertRS2Stack and 
+#' ## apply a smoothing filter that also removes outliers, which we specify to 
+#' ## be more than 0.5 LAI from the smoothed value.
 #' \dontrun{
-#' lai.b.sm <- 
-#' SmoothStack(lai.b, 
-#'             outDirPath="/Volumes/d1/adugger/RS/MODIS_ARC/PROCESSED/FRNTRNG_LAI_SMOOTHED", 
-#'             groupYears=F, removeOutlier=T, threshold=0.5, lambda=1000, overwrite=TRUE)
-#' }
+#' lai.b.sm <- SmoothStack(lai.b, 
+#'          outDirPath="/Volumes/d1/adugger/RS/MODIS_ARC/PROCESSED/FRNTRNG_LAI_SMOOTHED", 
+#'          outputAs="one", removeOutlier=TRUE, outlierThreshold=0.5, lambda=1000, 
+#'          overwrite=TRUE)
+#'          }
 #' @keywords smooth
 #' @concept MODIS dataAnalysis
 #' @family MODIS
 #' @export
-SmoothStack <- function(inStack, w=NULL, t=NULL, groupYears=FALSE,
-                        lambda = 5000, nIter= 3, collapse=FALSE, outDirPath = "./",
-                        removeOutlier=FALSE, threshold=NULL, mergeDoyFun="max", ...) {
-	timeInfo <- MODIS::orgTime(inStack, pos1 = 3, pos2 = 13, format = "%Y.%m.%d", pillow=0)
-  resultList <- MODIS::whittaker.raster(vi=inStack, w=w, t=t, timeInfo=timeInfo, 
-                                          outputAs='one', 
-                                          lambda=lambda, nIter=nIter, collapse=collapse, 
+SmoothStack <- function(inStack, w=NULL, t=NULL, lambda = 5000, nIter= 3, 
+                        outputAs="one", collapse=FALSE, outDirPath = "./",
+                        removeOutlier=FALSE, outlierThreshold=NULL, 
+                        mergeDoyFun="max", ...) {
+    timeInfo <- MODIS::orgTime(inStack, pos1 = 3, pos2 = 13, format = "%Y.%m.%d", pillow=0)
+    resultList <- MODIS::whittaker.raster(vi=inStack, w=w, t=t, timeInfo=timeInfo, lambda=lambda, 
+                                          nIter=nIter, outputAs=outputAs, collapse=collapse, 
                                           outDirPath=outDirPath, 
                                           removeOutlier=removeOutlier, 
-                                          outlierThreshold=threshold, mergeDoyFun=mergeDoyFun, ...)
+                                          outlierThreshold=outlierThreshold, 
+                                          mergeDoyFun=mergeDoyFun, ...)
     resultBrick <- resultList[[1]]
     names(resultBrick) <- names(inStack)
     resultBrick
@@ -428,9 +437,11 @@ SmoothStack <- function(inStack, w=NULL, t=NULL, groupYears=FALSE,
 #' InsertRS(lai.b, forcPath="FORCING", forcName="LDASIN_DOMAIN3",
 #'          varName="LAI", varUnit="(m^2)/(m^2)", varLong="Leaf area index")
 #' 
-#' ## Export the NetCDF of LAI images created through ConvertStack2NC to the forcing data.
+#' ## Export the NetCDF of LAI images created through ConvertStack2NC to the 
+#' ## forcing data.
 #' 
-#' InsertRS("BCNED_LAI.nc", forcPath="FORCING", forcName="LDASIN_DOMAIN3", varName="LAI")
+#' InsertRS("BCNED_LAI.nc", forcPath="FORCING", forcName="LDASIN_DOMAIN3", 
+#'          varName="LAI")
 #' }
 #' @keywords IO
 #' @concept MODIS dataMgmt
