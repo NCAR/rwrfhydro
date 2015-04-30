@@ -35,7 +35,8 @@ library(MODIS)
 library(ncdf4)
 
 gdalPath <- sub("gdalinfo", replacement="", system("which gdalinfo", intern=TRUE))
-MODISoptions(localArcPath="~/wrfHydroTestCases/MODIS_ARC", outDirPath="~/wrfHydroTestCases/MODIS_ARC/PROCESSED", gdalPath=gdalPath)
+MODISoptions(localArcPath="~/wrfHydroTestCases/MODIS_ARC", 
+             outDirPath="~/wrfHydroTestCases/MODIS_ARC/PROCESSED", gdalPath=gdalPath)
 ```
 
 
@@ -44,12 +45,15 @@ MODISoptions(localArcPath="~/wrfHydroTestCases/MODIS_ARC", outDirPath="~/wrfHydr
 Here we download the relevant MODIS tiles and resample to the Fourmile Creek geogrid. The GetMODIS tool calls the MODIS-R runGdal tool to identify the required MODIS tiles to cover the domain, download the appropriate product tiles, mosaic them, and clip/resample (nearest neighbor) to the geogrid extent and resolution. The result will be a directory of processed TIF images in the outDirPath specified in MODISoptions. We specify the geogrid, a start and end date, and the MOD15A2 (FPAR/LAI) MODIS product name.
 
 ```{r}
-GetMODIS(geogrdPath=paste0(dataPath, '/DOMAIN/geo_em.d01_1km.nc'), prodName="MOD15A2", outDir="FOURMILE_LAI", begin="2013.03.01", end="2013.07.31")
+GetMODIS(geogrdPath=paste0(dataPath, '/DOMAIN/geo_em.d01_1km.nc'), prodName="MOD15A2", 
+         outDir="FOURMILE_LAI", begin="2013.03.01", end="2013.07.31")
 ```
 
 Create a raster stack of the downloaded and processed MODIS LAI images. This tool does some additional processing of the images to get them into a more usable format. Specifically, it removes "no data" values (in this case, any value over 100) and applies product-specific scale factors (in this case, 0.1). See the <a href="https://lpdaac.usgs.gov/products/modis_products_table">MODIS data page</a> for specifics on valid value ranges and scale factors.
 ```{r}
-lai.b <- ConvertRS2Stack(paste0(options("MODIS_outDirPath"), '/FOURMILE_LAI'), "*Lai_1km.tif$", begin="2013.03.01", end="2013.07.31", noData=100, noDataQual="max", valScale=0.1, valAdd=0)
+lai.b <- ConvertRS2Stack(paste0(options("MODIS_outDirPath"), '/FOURMILE_LAI'), "*Lai_1km.tif$", 
+                         begin="2013.03.01", end="2013.07.31", noData=100, 
+                         noDataQual="max", valScale=0.1, valAdd=0)
 ```
 
 See the help on ConvertRS2Stack for more details on the processing options.
@@ -69,7 +73,8 @@ library(printr)
 <br>
 We can export the processed raster stack to a NetCDF file for use outside of R.
 ```{r}
-ConvertStack2NC(lai.b, outFile=paste0(dataPath, '/ANALYSIS/FOURMILE_LAI_SUM13.nc'), varName="LAI", varUnit="(m^2)/(m^2)", varLong="Leaf area index", varNA=-1.e+36)
+ConvertStack2NC(lai.b, outFile=paste0(dataPath, '/ANALYSIS/FOURMILE_LAI_SUM13.nc'), 
+                varName="LAI", varUnit="(m^2)/(m^2)", varLong="Leaf area index", varNA=-1.e+36)
 ```
 
 Let's take a look at the raster stack we created. List the available layers (labelled by date).
@@ -93,12 +98,17 @@ Apply a whittaker filter to smooth the LAI time series. This is generally not ne
 
 Try a highly smoothed filter.
 ```{r}
-lai.b.sm1 <- SmoothStack(lai.b, outDirPath=paste0(options("MODIS_outDirPath"), '/FOURMILE_LAI_SMOOTH1'), groupYears=FALSE, removeOutlier=TRUE, threshold=0.5, lambda=1000, overwrite=TRUE)
+lai.b.sm1 <- SmoothStack(lai.b, 
+                         outDirPath=paste0(options("MODIS_outDirPath"), '/FOURMILE_LAI_SMOOTH1'), 
+                         outputAs="one", removeOutlier=TRUE, outlierThreshold=0.5, 
+                         lambda=1000, overwrite=TRUE)
 ```
 
 Try a less aggressive filter.
 ```{r}
-lai.b.sm2 <- SmoothStack(lai.b, outDirPath=paste0(options("MODIS_outDirPath"), '/FOURMILE_LAI_SMOOTH2'), groupYears=FALSE, lambda=20, overwrite=TRUE)
+lai.b.sm2 <- SmoothStack(lai.b, 
+                         outDirPath=paste0(options("MODIS_outDirPath"), '/FOURMILE_LAI_SMOOTH2'), 
+                         outputAs="one", lambda=20, overwrite=TRUE)
 ```
 
 Calculate statistics and plot the domain means over time.
@@ -121,7 +131,8 @@ pander::pandoc.table(head(stats.lai.b))
 with(stats.lai.b, plot(POSIXct, mean, typ='l'))
 with(stats.lai.b.sm1, lines(POSIXct, mean, col='red'))
 with(stats.lai.b.sm2, lines(POSIXct, mean, col='blue'))
-legend("topleft", c("MODIS Raw", "Smooth Filter 1", "Smooth Filter 2"), col=c("black", "red", "blue"), lty=c(1,1,1))
+legend("topleft", c("MODIS Raw", "Smooth Filter 1", "Smooth Filter 2"), 
+       col=c("black", "red", "blue"), lty=c(1,1,1))
 ```
 
 
@@ -129,7 +140,8 @@ legend("topleft", c("MODIS Raw", "Smooth Filter 1", "Smooth Filter 2"), col=c("b
 
 Export the second smoothed time series to the forcing data for use in future model runs.
 ```{r}
-InsertRS(lai.b.sm2, forcPath=paste0(dataPath, '/FORCING'), forcName="LDASIN_DOMAIN1", varName="LAI", varUnit="(m^2)/(m^2)", varLong="Leaf area index", overwrite=TRUE)
+InsertRS(lai.b.sm2, forcPath=paste0(dataPath, '/FORCING'), forcName="LDASIN_DOMAIN1", 
+         varName="LAI", varUnit="(m^2)/(m^2)", varLong="Leaf area index", overwrite=TRUE)
 ```
 <br><br>
 

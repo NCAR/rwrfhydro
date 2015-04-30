@@ -253,41 +253,65 @@ ConvertStack2NC <- function(inStack, outFile=NULL, varName=NULL, varUnit=NULL, v
 #' raster brick over the same time period.
 #'
 #' \code{SmoothStack} converts a raster stack of RS images (as processed through
-#' \code{\link{ConvertRS2Stack}}) and calls the MODIS-R \code{\link[MODIS]{whittaker.raster}} smoothing
-#' function to generate a smoothed raster brick over the same time series as the
+#' \code{\link{ConvertRS2Stack}}) and calls the MODIS-R \code{\link[MODIS]{whittaker.raster}} 
+#' smoothing function to generate a smoothed raster brick over the same time series as the
 #' input. All function parameters are per the \code{\link[MODIS]{whittaker.raster}} function except
 #' we force the timeInfo to be derived from the input raster stack so the names match
-#' and the smoothed brick can be used in other tools. The \code{\link[MODIS]{whittaker.raster}} tool also exports
-#' a set of smoothed TIFs, so also specify an output file directory.
+#' and the smoothed brick can be used in other tools. The \code{\link[MODIS]{whittaker.raster}} 
+#' tool also exports a set of smoothed TIFs, so also specify an output file directory.
 #'
 #' @param inStack The name of the raster stack to smooth.
-#' @param w FROM \code{\link[MODIS]{whittaker.raster}}: In case of MODIS composite the 'VI_Quality' raster-Brick, Stack or filenames. Use preStack functionality to ensure the right input.
-#' @param t FROM \code{\link[MODIS]{whittaker.raster}}: In case of MODIS composite the 'composite_day_of_the_year' raster-Brick, Stack or filenames. Use preStack functionality to ensure the right input.
-#' @param groupYears FROM \code{\link[MODIS]{whittaker.raster}}: Default TRUE, rasterBrick files separated by years as result. If FALSE a single rasterBrick file for the entire period.
-#' @param lambda FROM \code{\link[MODIS]{whittaker.raster}}: _Yearly_ lambda value passed to ?ptw:::wit2. If set as character (i.e. lambda="600"), it is not adapted to the time serie length but used as a fixed value (see details). High values = stiff/rigid spline
-#' @param collapse FROM \code{\link[MODIS]{whittaker.raster}}: logical, if TRUE the input data is treated as _1_single_Year_ collapsing the data using the Julian date information without the year.
-#' @param nIter FROM \code{\link[MODIS]{whittaker.raster}}: Number of iteration for the upper envelope fitting.
-#' @param outDirPath FROM \code{\link[MODIS]{whittaker.raster}}: Output path default is the current directory.
+#' @param w FROM \code{\link[MODIS]{whittaker.raster}}: In case of MODIS composite the 'VI_Quality' 
+#' raster-Brick, Stack or filenames. Use preStack functionality to ensure the right input.
+#' @param t FROM \code{\link[MODIS]{whittaker.raster}}: In case of MODIS composite the 
+#' 'composite_day_of_the_year' raster-Brick, Stack or filenames. Use preStack functionality to 
+#' ensure the right input.
+#' @param lambda FROM \code{\link[MODIS]{whittaker.raster}}: _Yearly_ lambda value passed to 
+#' ?ptw:::wit2. If set as character (i.e. lambda="600"), it is not adapted to the time serie length 
+#' but used as a fixed value (see details). High values = stiff/rigid spline
+#' @param nIter FROM \code{\link[MODIS]{whittaker.raster}}: Number of iteration for the upper 
+#' envelope fitting.
+#' @param outputAs FROM \code{\link[MODIS]{whittaker.raster}}: Character. Organisation of output 
+#' files: single each date one RasterLayer, yearly a RasterBrick for each year, one one RasterBrick 
+#' for the entire time-serie.
+#' @param collapse FROM \code{\link[MODIS]{whittaker.raster}}: logical, if TRUE the input data is 
+#' treated as _1_single_Year_ collapsing the data using the Julian date information without the 
+#' year.
+#' @param outDirPath FROM \code{\link[MODIS]{whittaker.raster}}: Output path default is the current 
+#' directory.
 #' @param removeOutlier FROM \code{\link[MODIS]{whittaker.raster}}: Logical. See details
-#' @param threshold nFROM \code{\link[MODIS]{whittaker.raster}}: Numerical in the same unit as vi, used for outliers removal. See details
-#' @param mergeDoyFun FROM \code{\link[MODIS]{whittaker.raster}}: Especially when using argument collapse=TRUE, multiple measurements for one day can be present, here you can choose how those values are merged to one single value: "max" use the highest value, "mean" or "weighted.mean" use the mean if no weighting "w" is available and weighted.mean if it is.
-#' @param ... nFROM \code{\link[MODIS]{whittaker.raster}}: Arguments passed to ?writeRaster (except filename is automatic), NAflag, datatype, overwrite,...
+#' @param outlierThreshold FROM \code{\link[MODIS]{whittaker.raster}}: Numerical in the same unit 
+#' as vi, used for outliers removal. See details
+#' @param mergeDoyFun FROM \code{\link[MODIS]{whittaker.raster}}: Especially when using argument 
+#' collapse=TRUE, multiple measurements for one day can be present, here you can choose how those 
+#' values are merged to one single value: "max" use the highest value, "mean" or "weighted.mean" 
+#' use the mean if no weighting "w" is available and weighted.mean if it is.
+#' @param ... nFROM \code{\link[MODIS]{whittaker.raster}}: Arguments passed to ?writeRaster (except 
+#' filename is automatic), NAflag, datatype, overwrite,...
 #' @return raster brick of smoothed images
 #'
 #' @examples
-#' ## Take the raster stack of LAI images created through ConvertRS2Stack and apply a smoothing filter that
-#' ## also removes outliers, which we specify to be more than 0.5 LAI from the smoothed value.
+#' ## Take the raster stack of LAI images created through ConvertRS2Stack and apply a smoothing 
+#' ## filter that also removes outliers, which we specify to be more than 0.5 LAI from the smoothed 
+#' ## value.
 #'
-#' lai.b.sm <- SmoothStack(lai.b, outDirPath="/Volumes/d1/adugger/RS/MODIS_ARC/PROCESSED/FRNTRNG_LAI_SMOOTHED", groupYears=F, removeOutlier=T, threshold=0.5, lambda=1000, overwrite=TRUE)
+#' lai.b.sm <- SmoothStack(lai.b, 
+#'          outDirPath="/Volumes/d1/adugger/RS/MODIS_ARC/PROCESSED/FRNTRNG_LAI_SMOOTHED", 
+#'          outputAs="one", removeOutlier=TRUE, outlierThreshold=0.5, lambda=1000, overwrite=TRUE)
 #' @keywords smooth
 #' @concept MODIS dataAnalysis
 #' @family MODIS
 #' @export
-SmoothStack <- function(inStack, w=NULL, t=NULL, groupYears=FALSE,
-                        lambda = 5000, nIter= 3, collapse=FALSE, outDirPath = "./",
-                        removeOutlier=FALSE, threshold=NULL, mergeDoyFun="max", ...) {
-	timeInfo <- MODIS::orgTime(inStack, pos1 = 3, pos2 = 13, format = "%Y.%m.%d", pillow=0)
-    resultList <- MODIS::whittaker.raster(inStack, w, t, timeInfo, groupYears, lambda, nIter, collapse, outDirPath, removeOutlier, threshold, mergeDoyFun, ...)
+SmoothStack <- function(inStack, w=NULL, t=NULL, lambda = 5000, nIter= 3, 
+                        outputAs="one", collapse=FALSE, outDirPath = "./",
+                        removeOutlier=FALSE, outlierThreshold=NULL, mergeDoyFun="max", ...) {
+    timeInfo <- MODIS::orgTime(inStack, pos1 = 3, pos2 = 13, format = "%Y.%m.%d", pillow=0)
+    resultList <- MODIS::whittaker.raster(vi=inStack, w=w, t=t, timeInfo=timeInfo, lambda=lambda, 
+                                          nIter=nIter, outputAs=outputAs, collapse=collapse, 
+                                          outDirPath=outDirPath, 
+                                          removeOutlier=removeOutlier, 
+                                          outlierThreshold=outlierThreshold, 
+                                          mergeDoyFun=mergeDoyFun, ...)
     resultBrick <- resultList[[1]]
     names(resultBrick) <- names(inStack)
     resultBrick
