@@ -15,6 +15,7 @@ before_install:
 
 r_github_packages:
   - yihui/printr
+  - aubreyd/modis4rwrfhydro
 
 warnings_are_errors: false
 

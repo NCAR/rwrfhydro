@@ -82,7 +82,7 @@ lai.b.sm <- SmoothStack(lai.b,
          outDirPath="/Volumes/d1/adugger/RS/MODIS_ARC/PROCESSED/FRNTRNG_LAI_SMOOTHED",
          outputAs="one", removeOutlier=TRUE, outlierThreshold=0.5, lambda=1000,
          overwrite=TRUE)
-         }
+}
 }
 \seealso{
 Other MODIS: \code{\link{CalcStatsRS}};
