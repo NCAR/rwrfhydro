@@ -1,0 +1,85 @@
+---
+title: rwrfhydro introduction
+author: James & Aubrey
+---
+
+[https://github.com/mccreigh/rwrfhydro/](https://github.com/mccreigh/rwrfhydro/)
+
+# Install
+The [installation instructions](https://github.com/mccreigh/rwrfhydro/#installation) require a minor detour for 2 reasons: 1) ncdf4 in a non-standard location, 2) there is no local R library yet. First we'll install devtools.
+
+
+In the terminal:
+```{bash, eval=FALSE}
+R
+install.packages("devtools", repos="http://cran.at.r-project.org/")
+q()
+```
+On a clean R install, the above will ask the user to create a new, writable Library path. This will be the first in the R path (`.libPath()`).
+
+
+Next, we'll return to the shell and install the `ncdf4` package against the correct-for-R (gcc) build on the system. Again, in the terminal:
+```{bash, eval=FALSE}
+wget http://cran.r-project.org/src/contrib/ncdf4_1.13.tar.gz
+R CMD INSTALL \\
+--configure-args="--with-nc-config=/usr/local/netcdf-4.3.2-gcc/bin/nc-config" ncdf4_1.13.tar.gz
+```
+
+
+Now we will install `rwrfhydro`. The remainder of its dependencies install without issue. Again in the terminal:
+```{bash, eval=FALSE}
+R
+library(ncdf4)
+devtools::install_github('mccreigh/rwrfhydro')
+library(rwrfhydro)
+```
+
+# R Basics: Functions, Lists, & Data Frames
+A basic R function looks like this:
+```{r}
+BasicFunc <- function(x) {
+  y=x^2
+  y
+}
+xx <- 3
+yy <- BasicFunc(xx)
+print(yy)
+yy
+```
+Note that the last line in the function is the return value and the print method is invoked on an object when that object is entered by itself, as in the very last line. 
+
+Nearly everything in R is a function. Indeed, functions are "first-class". A more complicated example illustrates passing a named function to another function.
+```{r}
+Function1 <- function(x,f) list(arg=x, result=f(x), func=f)
+result1 <- Function1(xx, BasicFunc)
+result1
+str(result1)
+```
+More importantly, the result of this function is not a scalar or vector, it is possibly an arbitrary collection of things in a `list`. The `str()` function reveal the structure of objects, it helps structure such complicated, hierarchical items. 
+
+How to get the contents from a list?
+```{r, results='hold'}
+names(result1)
+result1['arg']     ## returns a sub-list
+result1[['arg']]   ## returns the item requested
+result1$arg        ## dollar acts like the "[[" function.
+result1$func(2)    ## function evaluation.
+result1[['func']](2)    ## function evaluation, same as previous.
+names(result1) <- paste0('names.',c("a","b","--c"))
+result1$names.a
+result1$`names.--c`(2)
+```
+
+This demonstrates a basic primciple in R that you can forget about indices and **call it by name**.
+
+Data frames are special kinds of lists that are "regular". 
+```{r}
+str(mtcars)
+ecoCars<-subset(mtcars, mpg > 25)  ## non-standard evaluation of the column name
+str(ecoCars)
+
+```
+
+
+
+
