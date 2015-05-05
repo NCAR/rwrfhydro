@@ -5,7 +5,7 @@ author: James & Aubrey
 
 [https://github.com/mccreigh/rwrfhydro/](https://github.com/mccreigh/rwrfhydro/)
 
-# Outline
+# Lecture Outline
 * [Install](#Install)
 * [R Basics](#R-Basics)
 * [rwrfhydro overview]()
@@ -19,7 +19,7 @@ author: James & Aubrey
 <a id="Install"></a>
 
 # Install
-The [installation instructions](https://github.com/mccreigh/rwrfhydro/#installation) require a minor detour for 2 reasons: 1) ncdf4 in a non-standard location, 2) there is no local R library yet. First we'll install devtools.
+The [installation instructions](https://github.com/mccreigh/rwrfhydro/#installation) require a minor detour for 2 reasons: 1) ncdf4 in a non-standard location, 2) there is no local R library yet. First we'll install `devtools`.
 
 
 In the terminal:
@@ -49,9 +49,36 @@ library(rwrfhydro)
 
 <a id="R-Basics"></a>
 
-# R Basics: Functions, Lists, & Data Frames
+# R Basics
+The goal is to *demistify* R and get you less confused when using it. The examples here are not deep but give a view into some basic ways that R might be different than whatever language you are used to. One you absorb this, you could graduate to more sophisticated resources like [Advanced R](http://adv-r.had.co.nz/) or [R Packages] (http://r-pkgs.had.co.nz/) with a solid foundation. Please see the rwrfhydro home page for more references.
 
-## A function
+One note is that R was developed as an open source project which did no apparently impose much coding standards at the outset. Hence, there is really no standard code style (e.g. `function.name` or `function_name` or `functionName` or `FunctionName` or `functionname` might all be used for different functions). 
+
+If you are used to including a library of functions in your path in another language, this notion is replaced by the "package" in R. This is a somewhat advanced way to use R but it is well worth learning the fundamentals. R also possesses advanced and powerful documentation and markup features which are worth learning. 
+
+None of this is to mention the availablilty of packages and interfaces to other open-source software which extend the power of the R language.
+
+## Table of Contents
+* [Setup](#Setup)
+* [Functions](#Functions)
+
+## Setup
+You might benefit from setting `options(warn=2)` which turns all warnings into errors. It's useful to stop or discover unintended mis-use of R as it starts. A debugging in R can be turned on by `options(error=utils::recover)`. Debugging is more advanced but good to be aware of, see [this resource](http://www.biostat.jhsph.edu/~rpeng/docs/R-debug-tools.pdf) for more information.
+
+The above is also to illustrate the two things which have remained in my "startup" file to date. Here's how that startup file is configured by use of your ~/.Renviron file.
+```{bash, eval=FALSE}
+james@orographic:~> more .Renviron 
+R_LIBS=~/R/Libraries/R3.2/
+R_PROFILE=/Users/james/R/startup_jlm.r
+
+james@orographic:~> more /Users/james/R/startup_jlm.r 
+options(warn=1)
+options(error=utils::recover)
+```
+
+The first line of .Renviron specifies the R libraries path (`R_LIBS`), which is unix-like in searching for read and write. The second line specifies the `R_PROFILE` or startup file location. Below the contents of that file are shown to be the options mentioned previously. 
+
+## Functions
 A basic R function looks like this:
 ```{r}
 BasicFunc <- function(x) {   ## define the function 
@@ -65,7 +92,7 @@ yy
 ```
 Note that the last line in the function is the return value. Also, the print method is invoked on an object when that object is entered by itself, as in the very last line. 
 
-Nearly everything in R is a function. Indeed, functions are "first-class". A more complicated example illustrates passing a named function to another function.
+Remember that nearly everything in R is a function (otherwise it's an object). Indeed, functions are "first-class". A more complicated example illustrates passing a named function to another function. (In the [scoping](#Scoping) section below, we illustrate a function returning a function, which is then called a closure).
 ```{r}
 ## Note named arguments. Args can be passed by name or position.
 Function1 <- function(x=x,f=f) list(arg=x, result=f(x), func=f)
@@ -136,7 +163,7 @@ str(plyr::llply(varUnits, function(vv) ncid$var[[vv]]$size ))
 nc_close(ncid)
 ```
 
-# Methods and classes
+## Methods and classes
 It's also good to have a basic awareness of methods and classes in R. This is how the same generic function can appear to give a variety of different behaviors, these are methods conditioned on the class of the input. 
 
 ```{r}
@@ -153,4 +180,102 @@ class(mtcars) <- append('foo',class(mtcars))
 print(mtcars)
 ```
 
+<a id="Scoping"></a>
 
+## Scoping
+Scoping: what variables are available where? R has *Lexical scoping*: variables in enclosing environments/functions are available to a given environment/function. For assignment: when assigning to a name the name is searched for in enclosing functions until it is found, if not found in the global environment it is created there. Lastly, functions can be returned with their own environment, these are called closures. Here are some examples. 
+
+The variable `a` is in the global environment and is found by the function `f`
+because `f` is enclosed in the global enc.
+```{r}
+a <- 10  
+f <- function(x) a*x   
+f(2)
+```
+
+Now `g` contains a variable `b` which `f2` cannot find because `g` does not enclose `f2`.
+```{r}
+options(warn=1)
+g <- function(x) {b <- 10; 1/x}   
+f2 <- function(x)  b*x 
+print(try(f2(.1)))
+
+## the following lexical assignment is frowned upon by most guRus.
+g2 <- function(x) {b <<- 100; 1/x}   
+print(try(b)) # whoa, isnt it supposed to be assigned?
+g2(2)
+b # R is lazy, so b isnt assigned until the function is called.
+f2(.1)
+```
+
+A closure is a function with data, that data is arbitrary. 
+```{r}
+fOuter <- function(x) {qqq <- 2*x; function() qqq }
+fInner <- fOuter(4)
+fInner()
+print(try(qqq))
+get('qqq',envir = environment(fInner))
+```
+
+Or maybe more informatively:
+```{r}
+vvv <- 123
+gOuter <- function(x) {
+  ttt <- 2*x
+  junk <- rwrfhydro::NamedList(letters[1:4])
+  function(getVar) get(getVar) 
+}
+gInner <- gOuter(4)
+print(try(ttt))
+gInner('junk')
+gOuter(c(1,2,4))('ttt')
+gInner('vvv')
+```
+
+
+## Getting help
+Getting information on functions is key. Getting the source code of a function is as easy as calling a function without parentheses (i.e., invoking the print method on the function!) and reading functions is a great way to pickup R programming
+```{r}
+lm
+```
+Beyond reading the body of the text, note that the arguments are listed at the top with default values following `=`. The `...` argument is for passing arguments to "low-level" regression functions (described in `?lm`). We also see that the function belongs to the `stats` namespace. 
+
+See also (not run here):
+```{r, eval=FALSE}
+formals(lm)
+?lm
+?'%in%'
+?'['
+## the following are help on help
+?help
+?`?`
+?`??`
+```
+
+
+## Packages and namespaces
+R packages are like toolboxes for specific purposes.Namespaces for packages make their functions available and managing namespaces is how one can open an entire toolbox or just pull a specific tool out of a specific toolbox. Namespaces can be made entirely available by attaching a package using `library()`, e.g. the whole toolbox is available in the global environment:
+```{r}
+sessionInfo()
+library(rwrfhydro)
+sessionInfo()
+PlotFdc
+```
+Now all the functions in the rwrfhydro namespace are available because it is attached. 
+
+Now we grab a specific tool (`melt`) from the "reshape2" package, but this dosent make the whole toolbox available, though we see it's namespace is 
+```{r}
+mtcars$model <- rownames(mtcars)
+reshape2::melt(mtcars[,c("mpg","cyl","disp","model")], id='model')
+sessionInfo() ## attaches plyr, reshape2, Rcpp,  & stringr (some already attached.)
+print(try(melt))
+```
+
+
+## Bonus: 
+R is an extremely flexible language, here's one example showing a few useful functions.
+```{r}
+assign('one',1)
+two <- eval(parse(text='one+one'))
+get('two')
+```
