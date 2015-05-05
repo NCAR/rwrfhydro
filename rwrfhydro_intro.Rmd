@@ -5,6 +5,19 @@ author: James & Aubrey
 
 [https://github.com/mccreigh/rwrfhydro/](https://github.com/mccreigh/rwrfhydro/)
 
+# Outline
+* [Install](#Install)
+* [R Basics](#R-Basics)
+* [rwrfhydro overview]()
+* [USGS historical data]()
+* [Multi-ncdf grabs]()
+* [Streamflow evaluation]()
+* [Water balance]()
+* [MODIS]()
+* Free-for-all
+
+<a id="Install"></a>
+
 # Install
 The [installation instructions](https://github.com/mccreigh/rwrfhydro/#installation) require a minor detour for 2 reasons: 1) ncdf4 in a non-standard location, 2) there is no local R library yet. First we'll install devtools.
 
@@ -34,52 +47,110 @@ devtools::install_github('mccreigh/rwrfhydro')
 library(rwrfhydro)
 ```
 
+<a id="R-Basics"></a>
+
 # R Basics: Functions, Lists, & Data Frames
+
+## A function
 A basic R function looks like this:
 ```{r}
-BasicFunc <- function(x) {
-  y=x^2
-  y
+BasicFunc <- function(x) {   ## define the function 
+  y=x^2                      ## square the argument
+  y                          ## return the square
 }
 xx <- 3
 yy <- BasicFunc(xx)
 print(yy)
 yy
 ```
-Note that the last line in the function is the return value and the print method is invoked on an object when that object is entered by itself, as in the very last line. 
+Note that the last line in the function is the return value. Also, the print method is invoked on an object when that object is entered by itself, as in the very last line. 
 
 Nearly everything in R is a function. Indeed, functions are "first-class". A more complicated example illustrates passing a named function to another function.
 ```{r}
-Function1 <- function(x,f) list(arg=x, result=f(x), func=f)
+## Note named arguments. Args can be passed by name or position.
+Function1 <- function(x=x,f=f) list(arg=x, result=f(x), func=f)
 result1 <- Function1(xx, BasicFunc)
+result2 <- Function1(f=BasicFunc, x=xx)
+identical(result1,result2)
 result1
 str(result1)
 ```
-More importantly, the result of this function is not a scalar or vector, it is possibly an arbitrary collection of things in a `list`. The `str()` function reveal the structure of objects, it helps structure such complicated, hierarchical items. 
+The result of this function is not a scalar or vector, it is a `list` object which contains a possibly arbitrary collection of things. The `str()` function reveals the structure of objects. It helps structure complicated, hierarchical items as we'll see later. It also provides object type and class information.
 
-How to get the contents from a list?
-```{r, results='hold'}
-names(result1)
-result1['arg']     ## returns a sub-list
-result1[['arg']]   ## returns the item requested
-result1$arg        ## dollar acts like the "[[" function.
-result1$func(2)    ## function evaluation.
-result1[['func']](2)    ## function evaluation, same as previous.
-names(result1) <- paste0('names.',c("a","b","--c"))
-result1$names.a
-result1$`names.--c`(2)
-```
-
-This demonstrates a basic primciple in R that you can forget about indices and **call it by name**.
-
-Data frames are special kinds of lists that are "regular". 
+## Lists (how to get more stuff out of a function)
+Above we saw that functions can return multiple items from a function. Then how do we get the contents out of a returned list? For simple lists... 
 ```{r}
-str(mtcars)
-ecoCars<-subset(mtcars, mpg > 25)  ## non-standard evaluation of the column name
-str(ecoCars)
-
+names(result1)
+str(result1['arg'])     ## returns a sub-list
+str(result1[['arg']])   ## returns the item requested
+str(result1$arg)        ## dollar acts like the "[[" function.
+str(result1$func(2))    ## function evaluation.
+result1[['func']](2)    ## function evaluation, same as previous.
+names(result1)[2:3] <- paste0('names.',c("b","(c)"))  ## change some names
+str(result1)
+result1$names.b
+result1$`names.(c)`(2)   ## backquote can handle illegal names 
 ```
 
+This demonstrates a basic principle in R that you can forget about indices and **call it by name**.
 
+## Data frames (regular lists)
+Before showing complicated lists, lets look at data frames. Data frames are special kinds of lists that are "regular". 
+```{r}
+mtcars             ## data packaged with R typically comes in data frames.
+str(mtcars)         
+rownames(mtcars)
+colnames(mtcars)
+?mtcars
+## subset is on rows
+ecoCars<-subset(mtcars, mpg > 25)  ## non-standard evaluation of the column name
+ecoCars      
+ecoCars$hp    ## $ gives columns by name
+mtcars[mtcars$wt<3,c('wt','mpg','cyl','disp')]  ## rows and cols can be referenced 
+mtcars$names <- rownames(mtcars)           ## new col with names, mixed types in df
+mtcars$names <- NULL                       ## remove a column
+```
+The regular collation of data allows many special operations to be performed on data frames to summarize, subset, and etc the data. We dont have time to cover this important aspect directly. 
+
+
+## Serious list example
+One example of a very complicated list is all the netcdf meta data. 
+```{r}
+ncFile <- '~/wrfHydroTestCases/Fourmile_Creek/RUN.RTTESTS/OUTPUT_CHRT/201305160400.LSMOUT_DOMAIN1'
+library(ncdf4)
+ncid <- nc_open(ncFile)
+ncid
+rwrfhydro::ncdump(ncFile)  ## something more visually akin to unix ncdump
+```
+
+Detailed inspection of the ncid object makes it obvious that automating information extraction is going to be key.
+```{r}
+str(ncid)
+names(ncid) ## drill down by name into the object
+names(ncid$var)  ## var looks like it describes the variables
+names(ncid$var$stc)  ## indeed, and each variables has these names
+varUnits <- rwrfhydro::NamedList(names(ncid$var))  ## for all variables
+## use an anonymous function to return "size" information. note that the
+## output references the input. indices are not involved. 
+str(plyr::llply(varUnits, function(vv) ncid$var[[vv]]$size )) 
+nc_close(ncid)
+```
+
+# Methods and classes
+It's also good to have a basic awareness of methods and classes in R. This is how the same generic function can appear to give a variety of different behaviors, these are methods conditioned on the class of the input. 
+
+```{r}
+class(mtcars)
+print(head(mtcars))
+print.data.frame(head(mtcars))
+print.default(head(mtcars))
+
+print.foo <- function(x){
+  print(names(x))
+  print('foo!!!!!!!!!!!')
+}
+class(mtcars) <- append('foo',class(mtcars))
+print(mtcars)
+```
 
 
