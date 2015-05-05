@@ -48,15 +48,27 @@ MODISoptions(localArcPath="~/wrfHydroTestCases/MODIS_ARC",
 Here we download the relevant MODIS tiles and resample to the Fourmile Creek geogrid. The GetMODIS tool calls the MODIS-R runGdal tool to identify the required MODIS tiles to cover the domain, download the appropriate product tiles, mosaic them, and clip/resample (nearest neighbor) to the geogrid extent and resolution. The result will be a directory of processed TIF images in the outDirPath specified in MODISoptions. We specify the geogrid, a start and end date, and the MOD15A2 (FPAR/LAI) MODIS product name.
 
 ```{r}
-GetMODIS(geogrdPath=paste0(dataPath, '/DOMAIN/geo_em.d01_1km.nc'), prodName="MOD15A2", 
-         outDir="FOURMILE_LAI", begin="2013.03.01", end="2013.07.31")
+GetMODIS(geogrdPath=paste0(dataPath, '/DOMAIN/geo_em.d01_1km_nlcd11.nc'), prodName="MOD15A2",  
+         outDir="FOURMILE_LAI", begin="2013.03.01", end="2013.07.31",
+         exclList=list("Fpar_1km"="gt 100", 
+                       "Lai_1km"="gt 100", 
+                       "FparLai_QC"="255", 
+                       "FparExtra_QC"="255", 
+                       "FparStdDev_1km"="gt 100", 
+                       "LaiStdDev_1km"="gt 100"), 
+         resampList=list("Fpar_1km"="bilinear", 
+                       "Lai_1km"="bilinear", 
+                       "FparLai_QC"="mode", 
+                       "FparExtra_QC"="mode", 
+                       "FparStdDev_1km"="bilinear", 
+                       "LaiStdDev_1km"="bilinear"))
 ```
 
-Create a raster stack of the downloaded and processed MODIS LAI images. This tool does some additional processing of the images to get them into a more usable format. Specifically, it removes "no data" values (in this case, any value over 100) and applies product-specific scale factors (in this case, 0.1). See the <a href="https://lpdaac.usgs.gov/products/modis_products_table">MODIS data page</a> for specifics on valid value ranges and scale factors.
+Create a raster stack of the downloaded and processed MODIS LAI images. This tool does some additional processing of the images to get them into a more usable format. Specifically, it can remove "no data" values (in this case, we already excluded those before reasmpling in the step above) and can apply product-specific scale factors (in this case, 0.1). See the <a href="https://lpdaac.usgs.gov/products/modis_products_table">MODIS data page</a> for specifics on valid value ranges and scale factors.
 ```{r}
 lai.b <- ConvertRS2Stack(paste0(options("MODIS_outDirPath"), '/FOURMILE_LAI'), "*Lai_1km.tif$", 
-                         begin="2013.03.01", end="2013.07.31", noData=100, 
-                         noDataQual="max", valScale=0.1, valAdd=0)
+                         begin="2013.03.01", end="2013.07.31", 
+                         valScale=0.1, valAdd=0)
 ```
 
 See the help on ConvertRS2Stack for more details on the processing options.
