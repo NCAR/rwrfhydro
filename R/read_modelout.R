@@ -13,8 +13,9 @@
 #' @examples
 #' ## Take a forecast point output text file for an hourly model run of Fourmile Creek
 #' ## and return a dataframe.
-#'
+#' \dontrun{
 #' modStr1h.mod1.fc <- ReadFrxstPts("../OUTPUT/frxst_pts_out.txt")
+#' }
 #' @keywords IO
 #' @concept dataGet
 #' @family modelDataReads
@@ -43,8 +44,9 @@ myobj
 #' @examples
 #' ## Take a groundwater outflow text file for an hourly model run of Fourmile Creek
 #' ## and return a dataframe.
-#'
+#' \dontrun{
 #' modGWout1h.mod1.fc <- ReadGwOut("../OUTPUT/GW_outflow.txt")
+#' }
 #' @keywords IO
 #' @concept dataGet
 #' @family modelDataReads
@@ -82,7 +84,7 @@ ReadGwOut <- function(pathOutfile) {
 #'    \item CANLIQ: Mean canopy liquid water storage (mm)
 #'    \item SFCRNOFF: Mean surface runoff from LSM \emph{(meaningful for an LSM-only run)} (mm)
 #'    \item SNEQV: Mean snowpack snow water equivalent (mm)
-#'    \item UGDRNOFF: Mean subsurface runoff from LSM \emph{(meaningful for an LSM-only run)} (mm)
+#'    \item UGDRNOFF: Mean subsurface runoff from LSM \cr \emph{(meaningful for an LSM-only run)} (mm)
 #'    \item SOIL_M1: Mean soil moisture storage in soil layer 1 (top) (mm)
 #'    \item SOIL_M2: Mean soil moisture storage in soil layer 2 (mm)
 #'    \item SOIL_M3: Mean soil moisture storage in soil layer 3 (mm)
@@ -105,7 +107,11 @@ ReadGwOut <- function(pathOutfile) {
 #' ## create a new dataframe containing the basin-wide mean values for the major water budget
 #' ## components over the time series.
 #'
-#' modLdasoutWb1d.mod1.fc <- ReadLdasoutWb("../RUN.MOD1/OUTPUT", "../DOMAIN/Fulldom_hires_hydrofile_4mile.nc", ncores=16)
+#' \dontrun{
+#' modLdasoutWb1d.mod1.fc <- 
+#'   ReadLdasoutWb("../RUN.MOD1/OUTPUT", "../DOMAIN/Fulldom_hires_hydrofile_4mile.nc", 
+#'                 ncores=16)
+#' }
 #' @keywords IO univar ts
 #' @concept dataGet
 #' @family modelDataReads
@@ -155,10 +161,14 @@ ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, a
     # Run GetMultiNcdf
     ldasoutFilesList <- list( ldasout = list.files(path=pathOutdir, pattern=glob2rx('*LDASOUT_DOMAIN*'), full.names=TRUE))
     if (ncores > 1) {
-        ldasoutDF <- GetMultiNcdf(ind=ldasoutIndexList, var=ldasoutVariableList, files=ldasoutFilesList, parallel=T )
+        ldasoutDF <- GetMultiNcdf(indexList=ldasoutIndexList, 
+                                  variableList=ldasoutVariableList, 
+                                  filesList=ldasoutFilesList, parallel=TRUE )
         }
     else {
-        ldasoutDF <- GetMultiNcdf(ind=ldasoutIndexList, var=ldasoutVariableList, files=ldasoutFilesList, parallel=F )
+        ldasoutDF <- GetMultiNcdf(indexList=ldasoutIndexList, 
+                                  variableList=ldasoutVariableList, 
+                                  filesList=ldasoutFilesList, parallel=FALSE )
         }
     outDf <- ReshapeMultiNcdf(ldasoutDF)
     outDf <- CalcNoahmpFluxes(outDf)
@@ -196,7 +206,11 @@ ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, a
 #' ## and create a new dataframe containing the basin-wide mean values for the major water budget
 #' ## components over the time series.
 #'
-#' modRtout1h.mod1.fc <- ReadRtout("../RUN.MOD1/OUTPUT", "../DOMAIN/Fulldom_hires_hydrofile_4mile.nc", basid=1, ncores=16)
+#' \dontrun{
+#' modRtout1h.mod1.fc <- 
+#'   ReadRtout("../RUN.MOD1/OUTPUT", "../DOMAIN/Fulldom_hires_hydrofile_4mile.nc", 
+#'             basid=1, ncores=16)
+#' }
 #' @keywords IO univar ts
 #' @concept dataGet
 #' @family modelDataReads
@@ -232,10 +246,14 @@ ReadRtout <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, ncore
     # Run GetMultiNcdf
     chrtoutFilesList <- list( chrtout = list.files(path=pathOutdir, pattern=glob2rx('*.RTOUT_DOMAIN*'), full.names=TRUE))
     if (ncores > 1) {
-        chrtoutDF <- GetMultiNcdf(ind=chrtoutIndexList, var=chrtoutVariableList, files=chrtoutFilesList, parallel=T )
+        chrtoutDF <- GetMultiNcdf(indexList=chrtoutIndexList, 
+                                  variableList=chrtoutVariableList, 
+                                  filesList=chrtoutFilesList, parallel=TRUE )
         }
     else {
-        chrtoutDF <- GetMultiNcdf(ind=chrtoutIndexList, var=chrtoutVariableList, files=chrtoutFilesList, parallel=F )
+        chrtoutDF <- GetMultiNcdf(indexList=chrtoutIndexList, 
+                                  variableList=chrtoutVariableList, 
+                                  filesList=chrtoutFilesList, parallel=FALSE )
         }
     outDf <- ReshapeMultiNcdf(chrtoutDF)
     outDf

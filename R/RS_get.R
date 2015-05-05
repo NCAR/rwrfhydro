@@ -1,49 +1,72 @@
 #' Get MODIS data and process to match geogrid
-#'
-#' \code{GetMODIS} downloads, mosaics, and resamples MODIS data to match input geogrid.
-#'
-#' \code{GetMODIS} reads a geogrid file and parameters on MODIS product and data range
-#' and downloads MODIS tiles where they do not exist (using the R
-#' \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package), mosaics
-#' where necessary, clips, reprojects, and resamples (using nearest neighbor) to match
-#' the geogrid. Results in a set of TIF files per the
-#' \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package specifications.
-#'
-#' Please see documentation on the R \href{http://r-forge.r-project.org/projects/modis/}{MODIS}
-#' package for details on required installs and workspace setup. This tool builds off
-#' of the \href{http://r-forge.r-project.org/projects/modis/}{MODIS} \code{\link[MODIS]{runGdal}} tool, so follows
-#' \href{http://r-forge.r-project.org/projects/modis/}{MODIS} file directory structure (see \code{\link[MODIS]{MODISoptions}}).
-#' This tool requires a local \href{http://www.gdal.org/}{GDAL} installation in addition to the required R packages.
-#'
-#' NOTE: This tool currently only works for geogrid files in Lambert Conformal Conic projection.
+#' 
+#' \code{GetMODIS} downloads, mosaics, and resamples MODIS data to match input
+#' geogrid.
+#' 
+#' \code{GetMODIS} reads a geogrid file and parameters on MODIS product and data
+#' range and downloads MODIS tiles where they do not exist (using the R 
+#' \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package), mosaics 
+#' where necessary, clips, reprojects, and resamples (using nearest neighbor) to
+#' match the geogrid. Results in a set of TIF files per the 
+#' \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package
+#' specifications.
+#' 
+#' Please see documentation on the R
+#' \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package for
+#' details on required installs and workspace setup. This tool builds off of the
+#' \href{http://r-forge.r-project.org/projects/modis/}{MODIS}
+#' \code{\link[MODIS]{runGdal}} tool, so follows 
+#' \href{http://r-forge.r-project.org/projects/modis/}{MODIS} file directory
+#' structure (see \code{\link[MODIS]{MODISoptions}}). This tool requires a local
+#' \href{http://www.gdal.org/}{GDAL} installation in addition to the required R
+#' packages.
+#' 
+#' NOTE: This tool currently only works for geogrid files in Lambert Conformal
+#' Conic projection.
 #' 
 #' @param geogrdPath The pathname to the geogrid file (i.e., geo_em.d01.nc).
-#' @param prodName The MODIS product name to download/process. Run the \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package
-#' getProducts() for a complete list of supported products.
-#' @param outDir Directory name to store processed TIF files. This is the equivalent
-#' to the \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package's "job" name. This is a directory name only and NOT a full
-#' path. The directory will be created in the preset \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package outDirPath.
-#' @param begin Date string for the start date to download/process MODIS tiles. The
-#' date string should follow \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package convention (e.g., "2011.06.01").
-#' @param end Date string for the end date to download/process MODIS tiles. The
-#' date string should follow \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package convention (e.g., "2011.06.01").
-#' @param resampTyp Resampling type. GDAL possible options (depends on version): 'near', 'bilinear', 'cubic', 'cubicspline', 
-#' 'lanczos', 'mode', 'average' (DEFAULT='near'). Note that MODIS nodata values MAY look like real values to GDAL, so use  
-#' caution with any methods other than 'near' and 'mode'. Fix in future version.
+#' @param prodName The MODIS product name to download/process. Run the
+#'   \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package 
+#'   getProducts() for a complete list of supported products.
+#' @param outDir Directory name to store processed TIF files. This is the
+#'   equivalent to the
+#'   \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package's "job"
+#'   name. This is a directory name only and NOT a full path. The directory will
+#'   be created in the preset
+#'   \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package
+#'   outDirPath.
+#' @param begin Date string for the start date to download/process MODIS tiles.
+#'   The date string should follow
+#'   \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package
+#'   convention (e.g., "2011.06.01").
+#' @param end Date string for the end date to download/process MODIS tiles. The 
+#'   date string should follow
+#'   \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package
+#'   convention (e.g., "2011.06.01").
+#' @param resampTyp Resampling type. GDAL possible options (depends on version):
+#'   'near', 'bilinear', 'cubic', 'cubicspline', 'lanczos', 'mode', 'average'
+#'   (DEFAULT='near'). Note that MODIS nodata values MAY look like real values
+#'   to GDAL, so use caution with any methods other than 'near' and 'mode'. Fix
+#'   in future version.
 #' @return Empty
-#'
+#'   
 #' @examples
 #' ## First, specify the target directories for the MODIS package.
-#'
-#' MODISoptions(localArcPath="/d1/WRF_Hydro/RS/MODIS_ARC", outDirPath="/d1/WRF_Hydro/RS/MODIS_ARC/PROCESSED")
-#'
-#' ## Then, use GetMODIS to download the MODIS MOD15A2 (FPAR/LAI) product for all tiles that
-#' ## overlap our Fourmile Creek domain (as specified by the geo_em.d01.nc file), mosaic if
-#' ## multiple tiles, clip to the domain extent, and resample to the domain grid cells.
-#' ## The raw HDF files will be stored in /d1/WRF_Hydro/RS/MODIS_ARC/ and the final processed
-#' ## TIF files will be stored in /d1/WRF_Hydro/RS/MODIS_ARC/PROCESSED/Fourmile_LAI/.
-#'
-#' GetMODIS(geogrdPath="/d1/WRF_Hydro/Fourmile_fire/DOMAIN/geo_em.d01.nc", prodName="MOD15A2", outDir="Fourmile_LAI", begin="2011.01.01", end="2011.01.31")
+#' \dontrun{
+#' MODISoptions(localArcPath="/d1/WRF_Hydro/RS/MODIS_ARC", 
+#'              outDirPath="/d1/WRF_Hydro/RS/MODIS_ARC/PROCESSED")
+#' 
+#' ## Then, use GetMODIS to download the MODIS MOD15A2 (FPAR/LAI) product for 
+#' ## all tiles that overlap our Fourmile Creek domain (as specified by the 
+#' ## geo_em.d01.nc file), mosaic if multiple tiles, clip to the domain extent,
+#' ## and resample to the domain grid cells. The raw HDF files will be stored in
+#' ## /d1/WRF_Hydro/RS/MODIS_ARC/ and the final processed TIF files will be 
+#' ## stored in /d1/WRF_Hydro/RS/MODIS_ARC/PROCESSED/Fourmile_LAI/.
+#' 
+#' GetMODIS(geogrdPath="/d1/WRF_Hydro/Fourmile_fire/DOMAIN/geo_em.d01.nc", 
+#'          prodName="MOD15A2", outDir="Fourmile_LAI", 
+#'          begin="2011.01.01", end="2011.01.31")
+#' }
 #' @keywords IO
 #' @concept MODIS dataGet
 #' @family MODIS
@@ -66,7 +89,9 @@ GetMODIS <- function(geogrdPath, prodName, outDir, begin, end, resampTyp='near')
     truelat1 <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="TRUELAT1")$value
     truelat2 <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="TRUELAT2")$value
     if (map_proj==1) {
-         geogrd.crs <- paste0("+proj=lcc +lat_1=", truelat1, " +lat_2=", truelat2, " +lat_0=", cen_lat, " +lon_0=", cen_lon, " +x_0=0 +y_0=0 +a=6370000 +b=6370000 +units=m +no_defs")
+         geogrd.crs <- paste0("+proj=lcc +lat_1=", truelat1, " +lat_2=", truelat2, 
+                              " +lat_0=", cen_lat, " +lon_0=", cen_lon, 
+                              " +x_0=0 +y_0=0 +a=6370000 +b=6370000 +units=m +no_defs")
         } else {
         stop('Error: Projection type not supported (currently this tool only works for Lambert Conformal Conic projections).')
         }
@@ -80,77 +105,105 @@ GetMODIS <- function(geogrdPath, prodName, outDir, begin, end, resampTyp='near')
 	  hgt.r <- raster::raster(paste0(locPath, "/geogrid_tmp.tif"))
     system(paste0("rm ", paste0(locPath, "/geogrid_tmp.tif")))
     # Run the download & processing
-    mod.list <- MODIS::runGdal(product=prodName, extent=hgt.r, begin=begin, end=end, collection="005", resamplingType=resampTyp, buffer=0.04, job=outDir)
+    mod.list <- MODIS::runGdal(product=prodName, extent=hgt.r, 
+                               begin=begin, end=end, collection="005",
+                               resamplingType=resampTyp, buffer=0.04, job=outDir)
 }
 
 
 
-#' Convert a set of MODIS images to a raster stack and, optionally, a NetCDF file.
-#'
-#' \code{ConvertRS2Stack} takes a set of pre-processed MODIS TIF files and creates
-#' a raster stack and, optionally, a NetCDF file.
-#'
-#' \code{ConvertRS2Stack} scans the specified directory and imports pre-processed
-#' MODIS TIF files matching the specified expression and combines them into an R raster
-#' stack object and, optionally, an output NetCDF file. Files in the input directory
-#' should be already processed through the \code{\link{GetMODIS}} tool or follow the
-#' same file naming convention used by the MODIS \code{\link[MODIS]{runGdal}} tool.
-#' See the R \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package for
-#' more on those specifications.
-#'
-#' @param inPath The path to the directory that holds the already processed MODIS TIF files.
-#' @param matchStr The regular expression for filename matching (e.g., "*Lai_1km.tif").
-#' @param begin Date string for the start date to include. The
-#' date string should follow \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package convention (e.g., "2011.06.01").
-#' (DEFAULT=NULL, all files are processed).
-#' @param end Date string for the end date to include. The
-#' date string should follow \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package convention (e.g., "2011.06.01").
-#' (DEFAULT=NULL, all files are processed).
-#' @param noData Value for specifying "no data" per the MODIS product. Should be combined
-#' with a qualifier. For example, for the MOD15A2 (LAI) product, valid value range is 0-100.
-#' So the noData value should be set to 100 and the noDataQual to "max". (DEFAULT=NULL, no
-#' additional "no data" screening is applied)
-#' @param noDataQual Qualifier for specifying "no data" per the MODIS product. Should be combined
-#' with a nodata value. For example, for the MOD15A2 LAI product, valid value range is 0-100.
-#' So the noData value should be set to 100 and the noDataQual to "max".
-#' Options are: "exact" (value == noData are converted to NA), "min" (value < noData are converted to NA),
-#' "max" (value > noData are converted to NA). (DEFAULT="exact", only exact matches are converted to NA)
-#' @param valScale The scale factor to apply to the image values per the MODIS product. The
-#' adjustment is applied as VALUE * valScale + valAdd. For example, for the MOD15A2 LAI product,
-#' the scale factor is 0.1. (DEFAULT = 1)
-#' @param valAdd The addition value to apply to the image values per the MODIS product. The
-#' adjustment is applied as VALUE * valScale + valAdd. (DEFAULT = 0)
-#' @param outFile OPTIONAL name for an output NetCDF file. A NetCDF file will only be created if
-#' this file name is provided. Images will be exported after the
-#' "no data" and scale adjustments are made. If you want to do smoothing or other time series
-#' processing, do not export a NetCDF file here but do processing on the raster stack and then
-#' use ConvertStack2NC to export the processed brick to a NetCDF file.
-#' @param varName Name for the NetCDF export variable. Only required if outFile is provided.
-#' @param varUnit Units for the NetCDF export variable. Only required if outFile is provided.
-#' @param varLong Long name for the NetCDF export variable. Only required if outFile is provided.
-#' @param varNA Value to set for "NA" or "no data". Default is -1.e+36. Only required if outFile is provided.
+#' Convert a set of MODIS images to a raster stack and, optionally, a NetCDF
+#' file.
+#' 
+#' \code{ConvertRS2Stack} takes a set of pre-processed MODIS TIF files and
+#' creates a raster stack and, optionally, a NetCDF file.
+#' 
+#' \code{ConvertRS2Stack} scans the specified directory and imports
+#' pre-processed MODIS TIF files matching the specified expression and combines
+#' them into an R raster stack object and, optionally, an output NetCDF file.
+#' Files in the input directory should be already processed through the
+#' \code{\link{GetMODIS}} tool or follow the same file naming convention used by
+#' the MODIS \code{\link[MODIS]{runGdal}} tool. See the R
+#' \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package for more
+#' on those specifications.
+#' 
+#' @param inPath The path to the directory that holds the already processed
+#'   MODIS TIF files.
+#' @param matchStr The regular expression for filename matching (e.g.,
+#'   "*Lai_1km.tif").
+#' @param begin Date string for the start date to include. The date string
+#'   should follow \href{http://r-forge.r-project.org/projects/modis/}{MODIS}
+#'   package convention (e.g., "2011.06.01"). (DEFAULT=NULL, all files are
+#'   processed).
+#' @param end Date string for the end date to include. The date string should
+#'   follow \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package
+#'   convention (e.g., "2011.06.01"). (DEFAULT=NULL, all files are processed).
+#' @param noData Value for specifying "no data" per the MODIS product. Should be
+#'   combined with a qualifier. For example, for the MOD15A2 (LAI) product,
+#'   valid value range is 0-100. So the noData value should be set to 100 and
+#'   the noDataQual to "max". (DEFAULT=NULL, no additional "no data" screening
+#'   is applied)
+#' @param noDataQual Qualifier for specifying "no data" per the MODIS product.
+#'   Should be combined with a nodata value. For example, for the MOD15A2 LAI
+#'   product, valid value range is 0-100. So the noData value should be set to
+#'   100 and the noDataQual to "max". Options are: "exact" (value == noData are
+#'   converted to NA), "min" (value < noData are converted to NA), "max" (value
+#'   > noData are converted to NA). (DEFAULT="exact", only exact matches are
+#'   converted to NA)
+#' @param valScale The scale factor to apply to the image values per the MODIS
+#'   product. The adjustment is applied as VALUE * valScale + valAdd. For
+#'   example, for the MOD15A2 LAI product, the scale factor is 0.1. (DEFAULT =
+#'   1)
+#' @param valAdd The addition value to apply to the image values per the MODIS
+#'   product. The adjustment is applied as VALUE * valScale + valAdd. (DEFAULT =
+#'   0)
+#' @param outFile OPTIONAL name for an output NetCDF file. A NetCDF file will
+#'   only be created if this file name is provided. Images will be exported
+#'   after the "no data" and scale adjustments are made. If you want to do
+#'   smoothing or other time series processing, do not export a NetCDF file here
+#'   but do processing on the raster stack and then use ConvertStack2NC to
+#'   export the processed brick to a NetCDF file.
+#' @param varName Name for the NetCDF export variable. Only required if outFile
+#'   is provided.
+#' @param varUnit Units for the NetCDF export variable. Only required if outFile
+#'   is provided.
+#' @param varLong Long name for the NetCDF export variable. Only required if
+#'   outFile is provided.
+#' @param varNA Value to set for "NA" or "no data". Default is -1.e+36. Only
+#'   required if outFile is provided.
 #' @return A raster stack.
-#'
+#'   
 #' @examples
-#' ## Import the already processed LAI TIF images into a raster stack. Use the full time series of images.
-#'
-#' lai.b <- ConvertRS2Stack("/d6/adugger/WRF_Hydro/RS/MODIS_ARC/PROCESSED/BCNED_LAI", "*Lai_1km.tif", noData=100, noDataQual="max", valScale=0.1, valAdd=0)
-#'
+#' ## Import the already processed LAI TIF images into a raster stack. Use 
+#' ## the full time series of images.
+#' 
+#' \dontrun{
+#' lai.b <- ConvertRS2Stack("/d6/adugger/WRF_Hydro/RS/MODIS_ARC/PROCESSED/BCNED_LAI",
+#'                          "*Lai_1km.tif", noData=100, noDataQual="max", 
+#'                          valScale=0.1, valAdd=0)
+#' 
 #' ## Export a subset of the already processed LAI TIF images into an output netcdf file
-#'
-#' lai.b <- ConvertRS2Stack("/d6/adugger/WRF_Hydro/RS/MODIS_ARC/PROCESSED/BCNED_LAI", "*Lai_1km.tif", begin=c("2011.06.01", end="2011.06.30", noData=100, noDataQual="max", valScale=0.1, valAdd=0, outFile="BCNED_LAI.nc", varName="LAI", varUnit="(m^2)/(m^2)", varLong="Leaf area index")
+#' 
+#' lai.b <- ConvertRS2Stack("/d6/adugger/WRF_Hydro/RS/MODIS_ARC/PROCESSED/BCNED_LAI", 
+#'                          "*Lai_1km.tif", begin=c("2011.06.01", end="2011.06.30", 
+#'                          noData=100, noDataQual="max", valScale=0.1, valAdd=0, 
+#'                          outFile="BCNED_LAI.nc", varName="LAI",
+#'                          varUnit="(m^2)/(m^2)", varLong="Leaf area index")
+#' }
 #' @keywords IO
 #' @concept MODIS dataMgmt
 #' @family MODIS
 #' @export
 ConvertRS2Stack <- function(inPath, matchStr, begin=NULL, end=NULL,
                             noData=NULL, noDataQual="exact", valScale=1, valAdd=0,
-                            outFile=NULL, varName=NULL, varUnit=NULL, varLong=NULL, varNA=-1.e+36) {
+                            outFile=NULL, varName=NULL, varUnit=NULL, varLong=NULL, 
+                            varNA=-1.e+36) {
     # Get file list
     if (!is.null(begin) & !is.null(end)) {
         beginDt <- format(as.POSIXct(begin, format="%Y.%m.%d", tz="UTC"), "%Y%j", tz="UTC")
         endDt <- format(as.POSIXct(end, format="%Y.%m.%d", tz="UTC"), "%Y%j", tz="UTC")
-        timeInfo <- MODIS::orgTime(MODIS::preStack(path=inPath, pattern=matchStr), begin=beginDt, end=endDt, pillow=0)
+        timeInfo <- MODIS::orgTime(MODIS::preStack(path=inPath, pattern=matchStr), 
+                                   begin=beginDt, end=endDt, pillow=0)
     } else {
         timeInfo <- MODIS::orgTime(MODIS::preStack(path=inPath, pattern=matchStr), pillow=0)
         }
@@ -163,7 +216,9 @@ ConvertRS2Stack <- function(inPath, matchStr, begin=NULL, end=NULL,
     for (rsFile in rsFilelist) {
         # Check dates
         fileStr <- sub(inPath, rsFile, replacement="")
-        dtStr <- substr(unlist(strsplit(fileStr,"[.]"))[2], nchar(unlist(strsplit(fileStr,"[.]"))[2])-(7-1), nchar(unlist(strsplit(fileStr,"[.]"))[2]))
+        dtStr <- substr(unlist(strsplit(fileStr,"[.]"))[2], 
+                        nchar(unlist(strsplit(fileStr,"[.]"))[2])-(7-1), 
+                        nchar(unlist(strsplit(fileStr,"[.]"))[2]))
         #dtPOSIXct <- as.POSIXct(dtStr, format="%Y%j", tz="UTC")
         #begPOSIXct <- if(is.null(begin)) { dtPOSIXct } else { as.POSIXct(begin, format="%Y.%m.%d", tz="UTC") }
         #endPOSIXct <- if(is.null(end)) { dtPOSIXct } else { as.POSIXct(end, format="%Y.%m.%d", tz="UTC") }
@@ -184,8 +239,11 @@ ConvertRS2Stack <- function(inPath, matchStr, begin=NULL, end=NULL,
                 rsRast <- rsRast * valScale + valAdd
                 }
             # Track dates
-            dtInts[n] <- as.integer(difftime(as.POSIXct(dtStr, format="%Y%j", tz="UTC"), as.POSIXct("198001", format="%Y%j", tz="UTC", units="days")))
-            dtNames[n] <- paste0("DT", format(as.POSIXct(dtStr, format="%Y%j", tz="UTC"), "%Y.%m.%d"))
+            dtInts[n] <- as.integer(difftime(as.POSIXct(dtStr, format="%Y%j", tz="UTC"), 
+                                             as.POSIXct("198001", format="%Y%j", tz="UTC", 
+                                                        units="days")))
+            dtNames[n] <- paste0("DT", format(as.POSIXct(dtStr, format="%Y%j", tz="UTC"), 
+                                              "%Y.%m.%d"))
             if (n==1) {
                 rsStack <- raster::stack(rsRast)
             } else {
@@ -204,14 +262,15 @@ ConvertRS2Stack <- function(inPath, matchStr, begin=NULL, end=NULL,
 
 
 #' Convert a raster stack to a NetCDF file.
-#'
-#' \code{ConvertStack2NC} takes a raster stack of RS images and outputs a NetCDF file
-#' with a time dimension and specified variable name & metadata.
-#'
-#' \code{ConvertStack2NC} converts a raster stack to an output NetCDF file. The raster stack
-#' should be already processed through the \code{\link{ConvertRS2Stack}} tool or follow the
-#' same layer (date) naming convention.
-#'
+#' 
+#' \code{ConvertStack2NC} takes a raster stack of RS images and outputs a NetCDF
+#' file with a time dimension and specified variable name & metadata.
+#' 
+#' \code{ConvertStack2NC} converts a raster stack to an output NetCDF file. The
+#' raster stack should be already processed through the
+#' \code{\link{ConvertRS2Stack}} tool or follow the same layer (date) naming
+#' convention.
+#' 
 #' @param inStack The name of the raster stack to export.
 #' @param outFile Name for an output NetCDF file.
 #' @param varName Name for the NetCDF export variable.
@@ -219,27 +278,35 @@ ConvertRS2Stack <- function(inPath, matchStr, begin=NULL, end=NULL,
 #' @param varLong Long name for the NetCDF export variable.
 #' @param varNA Value to set for "NA" or "no data". Default is -1.e+36.
 #' @return NULL
-#'
+#'   
 #' @examples
-#' ## Export the raster stack of LAI images created through ConvertRS2Stack to a NetCDF file. Use the full time series of images.
-#'
-#' ConvertStack2NC(lai.b, outFile="BCNED_LAI.nc", varName="LAI", varUnit="(m^2)/(m^2)", varLong="Leaf area index")
+#' ## Export the raster stack of LAI images created through ConvertRS2Stack
+#' ## to a NetCDF file. Use the full time series of images.
+#' 
+#' \dontrun{
+#' ConvertStack2NC(lai.b, outFile="BCNED_LAI.nc", varName="LAI", 
+#'                 varUnit="(m^2)/(m^2)", varLong="Leaf area index")
+#' }
 #' @keywords IO
 #' @concept MODIS dataMgmt
 #' @family MODIS
 #' @export
-ConvertStack2NC <- function(inStack, outFile=NULL, varName=NULL, varUnit=NULL, varLong=NULL, varNA=-1.e+36) {
+ConvertStack2NC <- function(inStack, outFile=NULL, varName=NULL, varUnit=NULL, 
+                            varLong=NULL, varNA=-1.e+36) {
     # Get dates
     dtInts <- c()
     dtNames <- names(inStack)
     for (i in 1:length(dtNames)) {
         dtStr <- sub("DT", dtNames[i], replacement="")
-        dtInts[i] <- as.integer(difftime(as.POSIXct(dtStr, format="%Y.%m.%d", tz="UTC"), as.POSIXct("198001", format="%Y%j", tz="UTC", units="days")))
+        dtInts[i] <- as.integer(difftime(as.POSIXct(dtStr, format="%Y.%m.%d", tz="UTC"), 
+                                         as.POSIXct("198001", format="%Y%j", tz="UTC", 
+                                                    units="days")))
         }
     # Output NetCDF file
     raster::writeRaster(inStack, outFile, "CDF", overwrite=TRUE,
             varname=varName, varunit=varUnit, longname=varLong,
-            xname="west_east", yname="south_north", zname="Time", zunit="days since 1980-01-01", bylayer=FALSE, NAflag=varNA)
+            xname="west_east", yname="south_north", zname="Time", zunit="days since 1980-01-01", 
+            bylayer=FALSE, NAflag=varNA)
     # Set the time variable
     ncFile <- ncdf4::nc_open(outFile, write=TRUE)
     ncdf4::ncvar_put(ncFile, "Time", dtInts)
@@ -248,88 +315,135 @@ ConvertStack2NC <- function(inStack, outFile=NULL, varName=NULL, varUnit=NULL, v
 
 
 #' Run MODIS-R Whittaker smoothing over pre-processed raster stack.
-#'
-#' \code{SmoothStack} takes a raster stack of RS images and outputs a smoothed
+#' 
+#' \code{SmoothStack} takes a raster stack of RS images and outputs a smoothed 
 #' raster brick over the same time period.
-#'
+#' 
 #' \code{SmoothStack} converts a raster stack of RS images (as processed through
-#' \code{\link{ConvertRS2Stack}}) and calls the MODIS-R \code{\link[MODIS]{whittaker.raster}} smoothing
-#' function to generate a smoothed raster brick over the same time series as the
-#' input. All function parameters are per the \code{\link[MODIS]{whittaker.raster}} function except
-#' we force the timeInfo to be derived from the input raster stack so the names match
-#' and the smoothed brick can be used in other tools. The \code{\link[MODIS]{whittaker.raster}} tool also exports
-#' a set of smoothed TIFs, so also specify an output file directory.
-#'
+#' \code{\link{ConvertRS2Stack}}) and calls the MODIS-R
+#' \code{\link[MODIS]{whittaker.raster}} smoothing function to generate a
+#' smoothed raster brick over the same time series as the input. All function
+#' parameters are per the \code{\link[MODIS]{whittaker.raster}} function except 
+#' we force the timeInfo to be derived from the input raster stack so the names
+#' match and the smoothed brick can be used in other tools. The
+#' \code{\link[MODIS]{whittaker.raster}} tool also exports a set of smoothed
+#' TIFs, so also specify an output file directory.
+#' 
 #' @param inStack The name of the raster stack to smooth.
-#' @param w FROM \code{\link[MODIS]{whittaker.raster}}: In case of MODIS composite the 'VI_Quality' raster-Brick, Stack or filenames. Use preStack functionality to ensure the right input.
-#' @param t FROM \code{\link[MODIS]{whittaker.raster}}: In case of MODIS composite the 'composite_day_of_the_year' raster-Brick, Stack or filenames. Use preStack functionality to ensure the right input.
-#' @param groupYears FROM \code{\link[MODIS]{whittaker.raster}}: Default TRUE, rasterBrick files separated by years as result. If FALSE a single rasterBrick file for the entire period.
-#' @param lambda FROM \code{\link[MODIS]{whittaker.raster}}: _Yearly_ lambda value passed to ?ptw:::wit2. If set as character (i.e. lambda="600"), it is not adapted to the time serie length but used as a fixed value (see details). High values = stiff/rigid spline
-#' @param collapse FROM \code{\link[MODIS]{whittaker.raster}}: logical, if TRUE the input data is treated as _1_single_Year_ collapsing the data using the Julian date information without the year.
-#' @param nIter FROM \code{\link[MODIS]{whittaker.raster}}: Number of iteration for the upper envelope fitting.
-#' @param outDirPath FROM \code{\link[MODIS]{whittaker.raster}}: Output path default is the current directory.
-#' @param removeOutlier FROM \code{\link[MODIS]{whittaker.raster}}: Logical. See details
-#' @param threshold nFROM \code{\link[MODIS]{whittaker.raster}}: Numerical in the same unit as vi, used for outliers removal. See details
-#' @param mergeDoyFun FROM \code{\link[MODIS]{whittaker.raster}}: Especially when using argument collapse=TRUE, multiple measurements for one day can be present, here you can choose how those values are merged to one single value: "max" use the highest value, "mean" or "weighted.mean" use the mean if no weighting "w" is available and weighted.mean if it is.
-#' @param ... nFROM \code{\link[MODIS]{whittaker.raster}}: Arguments passed to ?writeRaster (except filename is automatic), NAflag, datatype, overwrite,...
+#' @param w FROM \code{\link[MODIS]{whittaker.raster}}: In case of MODIS
+#'   composite the 'VI_Quality' raster-Brick, Stack or filenames. Use preStack
+#'   functionality to ensure the right input.
+#' @param t FROM \code{\link[MODIS]{whittaker.raster}}: In case of MODIS
+#'   composite the 'composite_day_of_the_year' raster-Brick, Stack or filenames.
+#'   Use preStack functionality to ensure the right input.
+#' @param lambda FROM \code{\link[MODIS]{whittaker.raster}}: _Yearly_ lambda
+#'   value passed to ?ptw:::wit2. If set as character (i.e. lambda="600"), it is
+#'   not adapted to the time serie length but used as a fixed value (see
+#'   details). High values = stiff/rigid spline
+#' @param nIter FROM \code{\link[MODIS]{whittaker.raster}}: Number of iteration
+#'   for the upper envelope fitting.
+#' @param outputAs FROM \code{\link[MODIS]{whittaker.raster}}: Character.
+#'   Organisation of output files: single each date one RasterLayer, yearly a
+#'   RasterBrick for each year, one one RasterBrick for the entire time-serie.
+#' @param collapse FROM \code{\link[MODIS]{whittaker.raster}}: logical, if TRUE
+#'   the input data is treated as _1_single_Year_ collapsing the data using the
+#'   Julian date information without the year.
+#' @param outDirPath FROM \code{\link[MODIS]{whittaker.raster}}: Output path
+#'   default is the current directory.
+#' @param removeOutlier FROM \code{\link[MODIS]{whittaker.raster}}: Logical. See
+#'   details
+#' @param outlierThreshold FROM \code{\link[MODIS]{whittaker.raster}}: Numerical
+#'   in the same unit as vi, used for outliers removal. See details
+#' @param mergeDoyFun FROM \code{\link[MODIS]{whittaker.raster}}: Especially
+#'   when using argument collapse=TRUE, multiple measurements for one day can be
+#'   present, here you can choose how those values are merged to one single
+#'   value: "max" use the highest value, "mean" or "weighted.mean" use the mean
+#'   if no weighting "w" is available and weighted.mean if it is.
+#' @param ... nFROM \code{\link[MODIS]{whittaker.raster}}: Arguments passed to
+#'   ?writeRaster (except filename is automatic), NAflag, datatype,
+#'   overwrite,...
 #' @return raster brick of smoothed images
-#'
+#'   
 #' @examples
-#' ## Take the raster stack of LAI images created through ConvertRS2Stack and apply a smoothing filter that
-#' ## also removes outliers, which we specify to be more than 0.5 LAI from the smoothed value.
-#'
-#' lai.b.sm <- SmoothStack(lai.b, outDirPath="/Volumes/d1/adugger/RS/MODIS_ARC/PROCESSED/FRNTRNG_LAI_SMOOTHED", groupYears=F, removeOutlier=T, threshold=0.5, lambda=1000, overwrite=TRUE)
+#' ## Take the raster stack of LAI images created through ConvertRS2Stack and 
+#' ## apply a smoothing filter that also removes outliers, which we specify to 
+#' ## be more than 0.5 LAI from the smoothed value.
+#' \dontrun{
+#' lai.b.sm <- SmoothStack(lai.b, 
+#'          outDirPath="/Volumes/d1/adugger/RS/MODIS_ARC/PROCESSED/FRNTRNG_LAI_SMOOTHED", 
+#'          outputAs="one", removeOutlier=TRUE, outlierThreshold=0.5, lambda=1000, 
+#'          overwrite=TRUE)
+#' }
 #' @keywords smooth
 #' @concept MODIS dataAnalysis
 #' @family MODIS
 #' @export
-SmoothStack <- function(inStack, w=NULL, t=NULL, groupYears=FALSE,
-                        lambda = 5000, nIter= 3, collapse=FALSE, outDirPath = "./",
-                        removeOutlier=FALSE, threshold=NULL, mergeDoyFun="max", ...) {
-	timeInfo <- MODIS::orgTime(inStack, pos1 = 3, pos2 = 13, format = "%Y.%m.%d", pillow=0)
-    resultList <- MODIS::whittaker.raster(inStack, w, t, timeInfo, groupYears, lambda, nIter, collapse, outDirPath, removeOutlier, threshold, mergeDoyFun, ...)
+SmoothStack <- function(inStack, w=NULL, t=NULL, lambda = 5000, nIter= 3, 
+                        outputAs="one", collapse=FALSE, outDirPath = "./",
+                        removeOutlier=FALSE, outlierThreshold=NULL, 
+                        mergeDoyFun="max", ...) {
+    timeInfo <- MODIS::orgTime(inStack, pos1 = 3, pos2 = 13, format = "%Y.%m.%d", pillow=0)
+    resultList <- MODIS::whittaker.raster(vi=inStack, w=w, t=t, timeInfo=timeInfo, lambda=lambda, 
+                                          nIter=nIter, outputAs=outputAs, collapse=collapse, 
+                                          outDirPath=outDirPath, 
+                                          removeOutlier=removeOutlier, 
+                                          outlierThreshold=outlierThreshold, 
+                                          mergeDoyFun=mergeDoyFun, ...)
     resultBrick <- resultList[[1]]
     names(resultBrick) <- names(inStack)
     resultBrick
     }
 
 
-
 #' Inserts pre-processed images into appropriate forcing NetCDF files by date.
-#'
-#' \code{InsertRS} takes a raster stack or brick of RS images and exports individual
-#' images to matching (by date) forcing NetCDF files.
-#'
-#' \code{InsertRS} takes a raster stack or brick  (as created by \code{\link{ConvertRS2Stack}} or \code{\link{SmoothStack}})
-#' or a NetCDF file (as created by \code{\link{ConvertStack2NC}}) of RS images and
-#' exports each layer (time step) to the appropriate time step forcing file.
-#' Only looks for the date (not time) and inserts at the 00:00 hour on that date.
-#' The input stack, brick, or file should be already processed through the \code{\link{ConvertRS2Stack}}, \code{\link{SmoothStack}},
-#' or \code{\link{ConvertStack2NC}} tools or follow the same layer (date) naming convention.
-#'
-#' @param inFile The name of the raster stack/brick or NetCDF file (full pathname) to export.
-#' @param forcPath Path to the forcing data you want to modify. Forcing data files MUST
-#' match the size/resolution of the images in the inFile.
-#' @param forcName The suffix for the forcing data files to modify (DEFAULT="LDASIN_DOMAIN1")
-#' @param varName Name for the NetCDF variable to export. The varibale will be copied as-is,
-#' so make sure it matches the variable name needed in the forcing data.
-#' @param varUnit Units for the NetCDF export variable. Only required if the inFile
-#' is a raster stack/brick. If the inFile is a NetCDF file, the units will carry over.
-#' @param varLong Long name for the NetCDF export variable. Only required if the inFile
-#' is a raster stack/brick. If the inFile is a NetCDF file, the longname will carry over.
+#' 
+#' \code{InsertRS} takes a raster stack or brick of RS images and exports
+#' individual images to matching (by date) forcing NetCDF files.
+#' 
+#' \code{InsertRS} takes a raster stack or brick  (as created by
+#' \code{\link{ConvertRS2Stack}} or \code{\link{SmoothStack}}) or a NetCDF file
+#' (as created by \code{\link{ConvertStack2NC}}) of RS images and exports each
+#' layer (time step) to the appropriate time step forcing file. Only looks for
+#' the date (not time) and inserts at the 00:00 hour on that date. The input
+#' stack, brick, or file should be already processed through the
+#' \code{\link{ConvertRS2Stack}}, \code{\link{SmoothStack}}, or
+#' \code{\link{ConvertStack2NC}} tools or follow the same layer (date) naming
+#' convention.
+#' 
+#' @param inFile The name of the raster stack/brick or NetCDF file (full
+#'   pathname) to export.
+#' @param forcPath Path to the forcing data you want to modify. Forcing data
+#'   files MUST match the size/resolution of the images in the inFile.
+#' @param forcName The suffix for the forcing data files to modify
+#'   (DEFAULT="LDASIN_DOMAIN1")
+#' @param varName Name for the NetCDF variable to export. The varibale will be
+#'   copied as-is, so make sure it matches the variable name needed in the
+#'   forcing data.
+#' @param varUnit Units for the NetCDF export variable. Only required if the
+#'   inFile is a raster stack/brick. If the inFile is a NetCDF file, the units
+#'   will carry over.
+#' @param varLong Long name for the NetCDF export variable. Only required if the
+#'   inFile is a raster stack/brick. If the inFile is a NetCDF file, the
+#'   longname will carry over.
 #' @param varNA Value to set for "NA" or "no data". Default is -1.e+36.
-#' @param overwrite Boolean to allow the tool to overwrite existing variables if found in
-#' the forcing data. (DEFAULT=TRUE)
+#' @param overwrite Boolean to allow the tool to overwrite existing variables if
+#'   found in the forcing data. (DEFAULT=TRUE)
 #' @return NULL
-#'
+#'   
 #' @examples
-#' ## Export the raster stack of LAI images created through ConvertRS2Stack to the forcing data.
-#'
-#' InsertRS(lai.b, forcPath="FORCING", forcName="LDASIN_DOMAIN3", varName="LAI", varUnit="(m^2)/(m^2)", varLong="Leaf area index")
-#'
-#' ## Export the NetCDF of LAI images created through ConvertStack2NC to the forcing data.
-#'
-#' InsertRS("BCNED_LAI.nc", forcPath="FORCING", forcName="LDASIN_DOMAIN3", varName="LAI")
+#' ## Export the raster stack of LAI images created through ConvertRS2Stack to 
+#' ## the forcing data.
+#' 
+#' \dontrun{
+#' InsertRS(lai.b, forcPath="FORCING", forcName="LDASIN_DOMAIN3",
+#'          varName="LAI", varUnit="(m^2)/(m^2)", varLong="Leaf area index")
+#' 
+#' ## Export the NetCDF of LAI images created through ConvertStack2NC to the 
+#' ## forcing data.
+#' 
+#' InsertRS("BCNED_LAI.nc", forcPath="FORCING", forcName="LDASIN_DOMAIN3", 
+#'          varName="LAI")
+#' }
 #' @keywords IO
 #' @concept MODIS dataMgmt
 #' @family MODIS
@@ -386,25 +500,29 @@ InsertRS <- function(inFile, forcPath, forcName="LDASIN_DOMAIN1",
 
 
 #' Calculates summary statistics from a remote sensing time series
-#'
-#' \code{CalcStatsRS} takes a raster stack/brick of RS images and generates a time series
-#' dataframe of summary statistics across the domain for each time step.
-#'
-#' \code{CalcStatsRS} takes a raster stack or brick of remote sensing images over a time period
-#' (as created by \code{\link{ConvertRS2Stack}} or \code{\link{SmoothStack}})
-#' and generates a dataframe object that summarizes all cells in the RS image at each
-#' time step. The statistics calculated are mean, min, max, and standard deviation.
-#' This tool is useful for evaluating how a smoothing function is impacting the
-#' time series of images.
-#'
-#' @param inStack The name of the raster stack or brick to calculate statistics on.
+#' 
+#' \code{CalcStatsRS} takes a raster stack/brick of RS images and generates a
+#' time series dataframe of summary statistics across the domain for each time
+#' step.
+#' 
+#' \code{CalcStatsRS} takes a raster stack or brick of remote sensing images
+#' over a time period (as created by \code{\link{ConvertRS2Stack}} or
+#' \code{\link{SmoothStack}}) and generates a dataframe object that summarizes
+#' all cells in the RS image at each time step. The statistics calculated are
+#' mean, min, max, and standard deviation. This tool is useful for evaluating
+#' how a smoothing function is impacting the time series of images.
+#' 
+#' @param inStack The name of the raster stack or brick to calculate statistics
+#'   on.
 #' @return A dataframe of statistics by time period (date).
-#'
+#'   
 #' @examples
 #' ## Calculate domain statistics and plot the mean.
-#'
+#' 
+#' \dontrun{
 #' stats.lai.b <- CalcStatsRS(lai.b)
 #' with(stats.lai.b, plot(POSIXct, mean, typ='l'))
+#' }
 #' @keywords univar
 #' @concept MODIS dataAnalysis
 #' @family MODIS
@@ -443,7 +561,9 @@ CalcStatsRS <- function(inStack) {
 #' ## Export the HGT_M field from the geogrid file geo_em.d01_1km.nc
 #' ## to a geoTiff called geogrid_hgt.tif.
 #'
+#' \dontrun{
 #' ExportGeogrid("geo_em.d01_1km.nc", "HGT_M", "geogrid_hgt.tif")
+#' }
 #' @keywords IO
 #' @concept dataMgmt
 #' @export
