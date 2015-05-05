@@ -16,10 +16,11 @@ author: James & Aubrey
 * [MODIS]()
 * Free-for-all
 
+*** 
 <a id="Install"></a>
 
 # Install
-The [installation instructions](https://github.com/mccreigh/rwrfhydro/#installation) require a minor detour for 2 reasons: 1) ncdf4 in a non-standard location, 2) there is no local R library yet. First we'll install `devtools`.
+The [installation instructions](https://github.com/mccreigh/rwrfhydro/blob/master/README.Rmd#installing) require a minor detour for 2 reasons: 1) ncdf4 in a non-standard location, 2) there is no local R library yet. First we'll install `devtools`.
 
 
 In the terminal:
@@ -47,10 +48,11 @@ devtools::install_github('mccreigh/rwrfhydro')
 library(rwrfhydro)
 ```
 
+***
 <a id="R-Basics"></a>
 
 # R Basics
-The goal is to *demistify* R and get you less confused when using it. The examples here are not deep but give a view into some basic ways that R might be different than whatever language you are used to. One you absorb this, you could graduate to more sophisticated resources like [Advanced R](http://adv-r.had.co.nz/) or [R Packages] (http://r-pkgs.had.co.nz/) with a solid foundation. Please see the rwrfhydro home page for more references.
+The goal is to *demistify* R and get you less confused when using it. The examples here are not deep but give a view into some basic ways that R might be different than whatever language you are used to. Once you absorb this, you can graduate to more sophisticated resources like [Advanced R](http://adv-r.had.co.nz/) or [R Packages](http://r-pkgs.had.co.nz/) with a solid foundation. Please see the rwrfhydro home page for more references.
 
 One note is that R was developed as an open source project which did no apparently impose much coding standards at the outset. Hence, there is really no standard code style (e.g. `function.name` or `function_name` or `functionName` or `FunctionName` or `functionname` might all be used for different functions). 
 
@@ -61,9 +63,23 @@ None of this is to mention the availablilty of packages and interfaces to other 
 ## Table of Contents
 * [Setup](#Setup)
 * [Functions](#Functions)
+* [Lists](#Lists)
+* [Data Frames](#DataFrames)
+* [Serious List Example](#SeriousListEx)
+* [Methods & Classes](#MethodsClasses)
+* [Scoping](#Scoping)
+* [Getting Help](#Help)
+* [Packages & Namespaces](#PackagesNamespaces)
+* [Bonus: Computing on the language](#COL)
+
+<a id="Setup"></a>
 
 ## Setup
-You might benefit from setting `options(warn=2)` which turns all warnings into errors. It's useful to stop or discover unintended mis-use of R as it starts. A debugging in R can be turned on by `options(error=utils::recover)`. Debugging is more advanced but good to be aware of, see [this resource](http://www.biostat.jhsph.edu/~rpeng/docs/R-debug-tools.pdf) for more information.
+
+While intefacing with R on command line is an option, using a more integrated editor will help you be more efficient. Rstudio provides a very good and free IDE (Integraged Development Environment) for R. The only competitor is ESS for Emacs. Both are highly recommended with RStudio having several advantages. 
+
+
+When running R, you might benefit from setting `options(warn=2)` which turns all warnings into errors. It's useful to stop or discover unintended mis-use of R as it starts. A debugging in R can be turned on by `options(error=utils::recover)`. Debugging is more advanced but good to be aware of, see [this resource](http://www.biostat.jhsph.edu/~rpeng/docs/R-debug-tools.pdf) for more information.
 
 The above is also to illustrate the two things which have remained in my "startup" file to date. Here's how that startup file is configured by use of your ~/.Renviron file.
 ```{bash, eval=FALSE}
@@ -77,6 +93,8 @@ options(error=utils::recover)
 ```
 
 The first line of .Renviron specifies the R libraries path (`R_LIBS`), which is unix-like in searching for read and write. The second line specifies the `R_PROFILE` or startup file location. Below the contents of that file are shown to be the options mentioned previously. 
+
+<a id="Functions"></a>
 
 ## Functions
 A basic R function looks like this:
@@ -92,7 +110,7 @@ yy
 ```
 Note that the last line in the function is the return value. Also, the print method is invoked on an object when that object is entered by itself, as in the very last line. 
 
-Remember that nearly everything in R is a function (otherwise it's an object). Indeed, functions are "first-class". A more complicated example illustrates passing a named function to another function. (In the [scoping](#Scoping) section below, we illustrate a function returning a function, which is then called a closure).
+Remember that nearly everything in R is a function object. Indeed, functions are "first-class". A more complicated example illustrates passing a named function to another function. (In the [scoping](#Scoping) section below, we illustrate a function returning a function, which is then called a closure).
 ```{r}
 ## Note named arguments. Args can be passed by name or position.
 Function1 <- function(x=x,f=f) list(arg=x, result=f(x), func=f)
@@ -104,22 +122,33 @@ str(result1)
 ```
 The result of this function is not a scalar or vector, it is a `list` object which contains a possibly arbitrary collection of things. The `str()` function reveals the structure of objects. It helps structure complicated, hierarchical items as we'll see later. It also provides object type and class information.
 
+<a id="Lists"></a>
+
 ## Lists (how to get more stuff out of a function)
-Above we saw that functions can return multiple items from a function. Then how do we get the contents out of a returned list? For simple lists... 
+Above we saw that functions can return multiple items from a function. Then how do we get the contents out of a returned list? For simple lists, this can be done, by hand. Note that `str()` is wrapping many of the commands below to give a more informative view what the output actually is.
 ```{r}
-names(result1)
+names(result1)          ## returns a character vector, hence the [1]
 str(result1['arg'])     ## returns a sub-list
-str(result1[['arg']])   ## returns the item requested
+str(result1[['arg']])   ## returns the item requested, a numeric scalar 
 str(result1$arg)        ## dollar acts like the "[[" function.
 str(result1$func(2))    ## function evaluation.
 result1[['func']](2)    ## function evaluation, same as previous.
-names(result1)[2:3] <- paste0('names.',c("b","(c)"))  ## change some names
+## The easiest way to rename is by name using plyr::rename
+renames <- paste0('names.',c("b","(c)"))  ## the new names are the vector entries
+names(renames) <- c('result','func')      ## the old names are the names of the new names
+## This kind of translation vector is very handy, note that
+## value=rename[name] and name=names(rename)[which(rename == value)]
+str(renames)
+print(renames)  ## the top line is the names
+result1 <- plyr::rename(result1, renames)
 str(result1)
 result1$names.b
 result1$`names.(c)`(2)   ## backquote can handle illegal names 
 ```
 
-This demonstrates a basic principle in R that you can forget about indices and **call it by name**.
+This demonstrates a basic principle in R that you can forget about indices and **call it by name**. NO indices were used above, the number two is a value passed to a function.
+
+<a id="DataFrames"></a>
 
 ## Data frames (regular lists)
 Before showing complicated lists, lets look at data frames. Data frames are special kinds of lists that are "regular". 
@@ -139,11 +168,12 @@ mtcars$names <- NULL                       ## remove a column
 ```
 The regular collation of data allows many special operations to be performed on data frames to summarize, subset, and etc the data. We dont have time to cover this important aspect directly. 
 
+<a id="SeriousListEx"></a>
 
 ## Serious list example
 One example of a very complicated list is all the netcdf meta data. 
 ```{r}
-ncFile <- '~/wrfHydroTestCases/Fourmile_Creek/RUN.RTTESTS/OUTPUT_CHRT/201305160400.LSMOUT_DOMAIN1'
+ncFile <- '~/wrfHydroTestCases/Fourmile_Creek/RUN.RTTESTS/OUTPUT_CHRT_DAILY/201305160000.LSMOUT_DOMAIN1'
 library(ncdf4)
 ncid <- nc_open(ncFile)
 ncid
@@ -156,15 +186,20 @@ str(ncid)
 names(ncid) ## drill down by name into the object
 names(ncid$var)  ## var looks like it describes the variables
 names(ncid$var$stc)  ## indeed, and each variables has these names
-varUnits <- rwrfhydro::NamedList(names(ncid$var))  ## for all variables
+varList <- rwrfhydro::NamedList(names(ncid$var))  ## for all variables
+varList   ## NamedList simply names a list by its entries
 ## use an anonymous function to return "size" information. note that the
 ## output references the input. indices are not involved. 
-str(plyr::llply(varUnits, function(vv) ncid$var[[vv]]$size )) 
+str(plyr::llply(varList, function(vv) ncid$var[[vv]]$size )) 
 nc_close(ncid)
 ```
+In the above, the `llply` function from the `plyr` package applies a function (anonymously specified in-line) to a list (`varList`) and returns a list. Note that the names on the returned list are the names which were iterated over.
+
+
+<a id="MethodsClasses"></a>
 
 ## Methods and classes
-It's also good to have a basic awareness of methods and classes in R. This is how the same generic function can appear to give a variety of different behaviors, these are methods conditioned on the class of the input. 
+It's also good to have a basic awareness of methods and classes in R, this can be particularly mystifying to new users. This is how the same generic function can appear to give a variety of different behaviors, these are methods conditioned on the class of the input. It's also worth noting that the common S3 object system used in R is very "lightweight" (e.g. see setting the class below) and easy to use. For those who shudder at such an informal system there are [other object approaches in R](http://adv-r.had.co.nz/OO-essentials.html).
 
 ```{r}
 class(mtcars)
@@ -174,26 +209,25 @@ print.default(head(mtcars))
 
 print.foo <- function(x){
   print(names(x))
-  print('foo!!!!!!!!!!!')
+  print('foo!!!!!!!!!!!')  ## really not helpful!
 }
 class(mtcars) <- append('foo',class(mtcars))
 print(mtcars)
 ```
-
 <a id="Scoping"></a>
 
 ## Scoping
 Scoping: what variables are available where? R has *Lexical scoping*: variables in enclosing environments/functions are available to a given environment/function. For assignment: when assigning to a name the name is searched for in enclosing functions until it is found, if not found in the global environment it is created there. Lastly, functions can be returned with their own environment, these are called closures. Here are some examples. 
 
 The variable `a` is in the global environment and is found by the function `f`
-because `f` is enclosed in the global enc.
+because `f` is enclosed in the global environment.
 ```{r}
 a <- 10  
 f <- function(x) a*x   
 f(2)
 ```
 
-Now `g` contains a variable `b` which `f2` cannot find because `g` does not enclose `f2`.
+Now `g` contains a variable `b` which `f2` cannot find because `g` does not enclose `f2`. I wrap failing evaluations in `print(try())` so that this document compiles. Note that `try()` is a very vaulable function for fault tolerance. Also, examination of `try()` shows that it returns it's agument wrapped in `invisible()`, to see that object `print()` has to be explicitly called on `try()`.
 ```{r}
 options(warn=1)
 g <- function(x) {b <- 10; 1/x}   
@@ -232,9 +266,12 @@ gOuter(c(1,2,4))('ttt')
 gInner('vvv')
 ```
 
+The caveat emptor with scoping is that, while functions which reference variables in enclosing envrionments are plug-and-play, unintended changes to variables in enclosing environments are vunerabilities/liabilities to function accuracy! Be careful and declare all variables in a function when saftey is needed.
+
+<a id="Help"></a>
 
 ## Getting help
-Getting information on functions is key. Getting the source code of a function is as easy as calling a function without parentheses (i.e., invoking the print method on the function!) and reading functions is a great way to pickup R programming
+Getting information on functions is key. Getting the source code of a function is as easy as calling a function without parentheses (i.e., invoking the print method on the function!) and reading functions is a great way to pickup R programming tips:
 ```{r}
 lm
 ```
@@ -252,28 +289,32 @@ formals(lm)
 ?`??`
 ```
 
+<a id="PackagesNamespaces"></a>
 
 ## Packages and namespaces
 R packages are like toolboxes for specific purposes.Namespaces for packages make their functions available and managing namespaces is how one can open an entire toolbox or just pull a specific tool out of a specific toolbox. Namespaces can be made entirely available by attaching a package using `library()`, e.g. the whole toolbox is available in the global environment:
 ```{r}
 sessionInfo()
-library(rwrfhydro)
+library(rwrfhydro)  ## this adds rwrfhydro to the 'other attached packages' list
 sessionInfo()
-PlotFdc
+PlotFdc  ## this function is available in the global environment.
 ```
 Now all the functions in the rwrfhydro namespace are available because it is attached. 
 
 Now we grab a specific tool (`melt`) from the "reshape2" package, but this dosent make the whole toolbox available, though we see it's namespace is 
 ```{r}
 mtcars$model <- rownames(mtcars)
-reshape2::melt(mtcars[,c("mpg","cyl","disp","model")], id='model')
+head(reshape2::melt(mtcars[,c("mpg","cyl","disp","model")], id='model')) ## use a function in plyr without attaching it
 sessionInfo() ## attaches plyr, reshape2, Rcpp,  & stringr (some already attached.)
-print(try(melt))
+print(try(melt))  ## since plyr is not attached, the melt function is not available.
 ```
 
+The namespace of a package is the set of exported objects. Internal (non-exported objects) in a package can be accessed via `:::` though this is often frowned upon.
 
-## Bonus: 
-R is an extremely flexible language, here's one example showing a few useful functions.
+<a id="COL"></a>
+
+## Bonus: Computing on the language
+R is an extremely flexible language. The non-standard evaluation mechanisms allow for a variety of powerful behaviours. These can be confusing to new users. Here's one simple example showing a few useful functions.
 ```{r}
 assign('one',1)
 two <- eval(parse(text='one+one'))
