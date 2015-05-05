@@ -1,6 +1,6 @@
 #' Get MODIS data and process to match geogrid
 #' 
-#' \code{GetMODIS} downloads, mosaics, and resamples MODIS data to match input
+#' \code{GetMODIS} downloads, mosaics, and resamples MODIS data to match input 
 #' geogrid.
 #' 
 #' \code{GetMODIS} reads a geogrid file and parameters on MODIS product and data
@@ -8,46 +8,67 @@
 #' \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package), mosaics 
 #' where necessary, clips, reprojects, and resamples (using nearest neighbor) to
 #' match the geogrid. Results in a set of TIF files per the 
-#' \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package
+#' \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package 
 #' specifications.
 #' 
-#' Please see documentation on the R
-#' \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package for
+#' Please see documentation on the R 
+#' \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package for 
 #' details on required installs and workspace setup. This tool builds off of the
-#' \href{http://r-forge.r-project.org/projects/modis/}{MODIS}
+#' \href{http://r-forge.r-project.org/projects/modis/}{MODIS} 
 #' \code{\link[MODIS]{runGdal}} tool, so follows 
-#' \href{http://r-forge.r-project.org/projects/modis/}{MODIS} file directory
+#' \href{http://r-forge.r-project.org/projects/modis/}{MODIS} file directory 
 #' structure (see \code{\link[MODIS]{MODISoptions}}). This tool requires a local
-#' \href{http://www.gdal.org/}{GDAL} installation in addition to the required R
+#' \href{http://www.gdal.org/}{GDAL} installation in addition to the required R 
 #' packages.
 #' 
-#' NOTE: This tool currently only works for geogrid files in Lambert Conformal
+#' NOTE: This tool currently only works for geogrid files in Lambert Conformal 
 #' Conic projection.
 #' 
 #' @param geogrdPath The pathname to the geogrid file (i.e., geo_em.d01.nc).
-#' @param prodName The MODIS product name to download/process. Run the
+#' @param prodName The MODIS product name to download/process. Run the 
 #'   \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package 
 #'   getProducts() for a complete list of supported products.
-#' @param outDir Directory name to store processed TIF files. This is the
-#'   equivalent to the
-#'   \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package's "job"
+#' @param outDir Directory name to store processed TIF files. This is the 
+#'   equivalent to the 
+#'   \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package's "job" 
 #'   name. This is a directory name only and NOT a full path. The directory will
-#'   be created in the preset
-#'   \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package
+#'   be created in the preset 
+#'   \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package 
 #'   outDirPath.
-#' @param begin Date string for the start date to download/process MODIS tiles.
-#'   The date string should follow
-#'   \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package
+#' @param begin Date string for the start date to download/process MODIS tiles. 
+#'   The date string should follow 
+#'   \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package 
 #'   convention (e.g., "2011.06.01").
 #' @param end Date string for the end date to download/process MODIS tiles. The 
-#'   date string should follow
-#'   \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package
+#'   date string should follow 
+#'   \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package 
 #'   convention (e.g., "2011.06.01").
-#' @param resampTyp Resampling type. GDAL possible options (depends on version):
-#'   'near', 'bilinear', 'cubic', 'cubicspline', 'lanczos', 'mode', 'average'
-#'   (DEFAULT='near'). Note that MODIS nodata values MAY look like real values
-#'   to GDAL, so use caution with any methods other than 'near' and 'mode'. Fix
-#'   in future version.
+#' @param collection From MODIS::runGdal help: "Default is to download most
+#'   recent collection version. See: ?getCollection"
+#' @param buffer From MODIS::runGdal help: "Numeric. Buffer [in units of the
+#'   'outProj'] around the specified extent. See: ?getTile" (DEFAULT=0.04, which
+#'   seems to cover MODIS tile corners sufficiently)
+#' @param SDSstring From MODIS::runGdal help: "Default is extract all SDS
+#'   (layers). See: ?getSds."
+#' @param exclList List pairing SDS name (e.g., "Lai_1km", "FparLai_QC") with 
+#'   values to exclude from interpolation (i.e., convert to "nodata"). For 
+#'   example, for the Lai_1km product, valid range is 0-100, values 249-255 are 
+#'   fill values, but only one value (255) is reported as _FillValue in the HDF 
+#'   metadata. The exclude list should specify value ranges to exclude, and 
+#'   should be in the form: \deqn{list("SDS name"="exclude range", ...)} where 
+#'   "exclude range" can be a single number (e.g., 254), "gt <somenumber>" to 
+#'   exclude all values over some threshold (e.g., "gt 100"), or "lt 
+#'   <somenumber>" to exclude all values less than some threshold (e.g., "lt 
+#'   0").
+#' @param resampList List pairing SDS name (e.g., "Lai_1km", "FparLai_QC") with 
+#'   reasmpling method to use. GDAL possible options (depends on version): 
+#'   'near', 'bilinear', 'cubic', 'cubicspline', 'lanczos', 'mode', 'average' 
+#'   (DEFAULT='near', unless otherwise specified in 
+#'   \code{MODISoptions(resamplingType="<somemethod>")}). The resampling list 
+#'   should be in the form: \deqn{list("SDS name"="method", ...)} where "method"
+#'   is one of the GDAL methods listed above.
+#' @param quiet From MODIS::runGdal help: Logical, Default FALSE. Some progress 
+#'   informations.
 #' @return Empty
 #'   
 #' @examples
@@ -65,13 +86,28 @@
 #' 
 #' GetMODIS(geogrdPath="/d1/WRF_Hydro/Fourmile_fire/DOMAIN/geo_em.d01.nc", 
 #'          prodName="MOD15A2", outDir="Fourmile_LAI", 
-#'          begin="2011.01.01", end="2011.01.31")
+#'          begin="2011.01.01", end="2011.01.31",
+#'          exclList=list("Fpar_1km"="gt 100", 
+#'                        "Lai_1km"="gt 100", 
+#'                        "FparLai_QC"="255", 
+#'                        "FparExtra_QC"="255", 
+#'                        "FparStdDev_1km"="gt 100", 
+#'                        "LaiStdDev_1km"="gt 100"), 
+#'          resampList=list("Fpar_1km"="bilinear", 
+#'                        "Lai_1km"="bilinear", 
+#'                        "FparLai_QC"="mode", 
+#'                        "FparExtra_QC"="mode", 
+#'                        "FparStdDev_1km"="bilinear", 
+#'                        "LaiStdDev_1km"="bilinear"))
 #' }
 #' @keywords IO
 #' @concept MODIS dataGet
 #' @family MODIS
 #' @export
-GetMODIS <- function(geogrdPath, prodName, outDir, begin, end, resampTyp='near') {
+GetMODIS <- function(geogrdPath, prodName, outDir, begin=NULL, end=NULL, 
+                     collection=NULL, buffer=0.04,
+                     SDSstring=NULL, 
+                     exclList=NULL, resampList=NULL, quiet=FALSE) {
     # Check packages
     if (!(require("rgdal") & require("raster") & require("ncdf4") & require("MODIS"))) {
         stop("Required packages not found. Must have R packages: rgdal (requires GDAL system install), raster, ncdf4, and MODIS")
@@ -105,9 +141,12 @@ GetMODIS <- function(geogrdPath, prodName, outDir, begin, end, resampTyp='near')
 	  hgt.r <- raster::raster(paste0(locPath, "/geogrid_tmp.tif"))
     system(paste0("rm ", paste0(locPath, "/geogrid_tmp.tif")))
     # Run the download & processing
-    mod.list <- MODIS::runGdal(product=prodName, extent=hgt.r, 
-                               begin=begin, end=end, collection="005",
-                               resamplingType=resampTyp, buffer=0.04, job=outDir)
+    mod.list <- MODIS::runGdal(product=prodName, collection=collection, 
+                               begin=begin, end=end,
+                               extent=hgt.r, buffer=buffer, 
+                               SDSstring=SDSstring, job=outDir, 
+                               exclList=exclList, resampList=resampList,
+                               quiet=quiet)
 }
 
 
@@ -305,7 +344,8 @@ ConvertStack2NC <- function(inStack, outFile=NULL, varName=NULL, varUnit=NULL,
     # Output NetCDF file
     raster::writeRaster(inStack, outFile, "CDF", overwrite=TRUE,
             varname=varName, varunit=varUnit, longname=varLong,
-            xname="west_east", yname="south_north", zname="Time", zunit="days since 1980-01-01", 
+            xname="west_east", yname="south_north", zname="Time", 
+            zunit="days since 1980-01-01", 
             bylayer=FALSE, NAflag=varNA)
     # Set the time variable
     ncFile <- ncdf4::nc_open(outFile, write=TRUE)
@@ -382,8 +422,12 @@ SmoothStack <- function(inStack, w=NULL, t=NULL, lambda = 5000, nIter= 3,
                         outputAs="one", collapse=FALSE, outDirPath = "./",
                         removeOutlier=FALSE, outlierThreshold=NULL, 
                         mergeDoyFun="max", ...) {
+    if (!file.exists(outDirPath)) {
+      dir.create(outDirPath, showWarnings = FALSE)
+    }
     timeInfo <- MODIS::orgTime(inStack, pos1 = 3, pos2 = 13, format = "%Y.%m.%d", pillow=0)
-    resultList <- MODIS::whittaker.raster(vi=inStack, w=w, t=t, timeInfo=timeInfo, lambda=lambda, 
+    resultList <- MODIS::whittaker.raster(vi=inStack, w=w, t=t, 
+                                          timeInfo=timeInfo, lambda=lambda, 
                                           nIter=nIter, outputAs=outputAs, collapse=collapse, 
                                           outDirPath=outDirPath, 
                                           removeOutlier=removeOutlier, 
@@ -456,18 +500,24 @@ InsertRS <- function(inFile, forcPath, forcName="LDASIN_DOMAIN1",
         dtNames <- names(inFile)
         for (i in dtNames) {
             dtStr <- sub("DT", i, replacement="")
-            dtStrForc <- paste0(unlist(strsplit(dtStr,"[.]"))[1], unlist(strsplit(dtStr,"[.]"))[2], unlist(strsplit(dtStr,"[.]"))[3], "00")
+            dtStrForc <- paste0(unlist(strsplit(dtStr,"[.]"))[1], 
+                                unlist(strsplit(dtStr,"[.]"))[2], 
+                                unlist(strsplit(dtStr,"[.]"))[3], "00")
             ncFile <- ncdf4::nc_open(paste0(forcPath,"/",dtStrForc,".",forcName), write=TRUE)
             dimT <- ncdf4::ncdim_def( "Time", "", 1, unlim=TRUE, create_dimvar=T)
             dimY <- ncdf4::ncdim_def( "south_north", "", 1:dim(inFile)[1], create_dimvar=T)
             dimX <- ncdf4::ncdim_def( "west_east", "", 1:dim(inFile)[2], create_dimvar=T)
             # NOTE: ncdf4 reads dimensions in reverse order from ncdump!
-            varNew <- ncdf4::ncvar_def(name=varName, units=varUnit, dim=list(dimX, dimY, dimT), missval=varNA, longname=varLong)
+            varNew <- ncdf4::ncvar_def(name=varName, units=varUnit, dim=list(dimX, dimY, dimT), 
+                                       missval=varNA, longname=varLong)
             if ( (varName %in% names(ncFile$var)) ) {
                 if (overwrite) {
                     ncdf4::nc_close(ncFile)
-                    system(paste0('ncks -O -x -v ', varName, ' ', paste0(forcPath,"/",dtStrForc,".",forcName), ' ', paste0(forcPath,"/",dtStrForc,".",forcName)))
-                    ncFile <- ncdf4::nc_open(paste0(forcPath,"/",dtStrForc,".",forcName), write=TRUE)
+                    system(paste0('ncks -O -x -v ', varName, ' ', 
+                                  paste0(forcPath,"/",dtStrForc,".",forcName), ' ', 
+                                  paste0(forcPath,"/",dtStrForc,".",forcName)))
+                    ncFile <- ncdf4::nc_open(paste0(forcPath,"/",dtStrForc,".",forcName), 
+                                             write=TRUE)
                 } else {
                     stop(paste0('Error: Variable ', varName, ' exists but overwite is set to FALSE. Exiting.'))
                     }
@@ -489,7 +539,8 @@ InsertRS <- function(inFile, forcPath, forcName="LDASIN_DOMAIN1",
             dtStr$mday <- dtStr$mday + dtNum
             dtStrForc <- paste0(format(dtStr, "%Y%m%d"), "00")
             if (overwrite) {
-                system(paste0("ncks -A -v ", varName, " -d Time,", i-1, ",", i-1, " ", inFile , " ", paste0(forcPath,"/",dtStrForc,".",forcName)))
+                system(paste0("ncks -A -v ", varName, " -d Time,", i-1, ",", i-1, " ", 
+                              inFile , " ", paste0(forcPath,"/",dtStrForc,".",forcName)))
             } else {
                 stop('Error: The NetCDF insert option uses ncks append which does NOT check for duplicate variables. Existing variables will automatically be overwritten. To OK this option, please set overwrite=TRUE.')
                 }
@@ -535,7 +586,8 @@ CalcStatsRS <- function(inStack) {
     statDf <- cbind(meanDf, minDf, maxDf, sdDf)
     statDf$POSIXct <- as.POSIXct("1980-01-01", format="%Y-%m-%d", tz="UTC")
     for (i in 1:nrow(statDf)) {
-	statDf$POSIXct[i] <- as.POSIXct(sub("DT",row.names(statDf)[i], replacement=""), "%Y.%m.%d", tz="UTC")
+	statDf$POSIXct[i] <- as.POSIXct(sub("DT",row.names(statDf)[i], replacement=""), 
+                                  format="%Y.%m.%d", tz="UTC")
         }
     colnames(statDf) <- c("mean","min","max","sd","POSIXct")
     rownames(statDf) <- NULL
@@ -615,7 +667,10 @@ ExportGeogrid <- function(inFile, inVar, outFile) {
 	truelat1 <- ncdf4::ncatt_get(inNC, varid=0, attname="TRUELAT1")$value
 	truelat2 <- ncdf4::ncatt_get(inNC, varid=0, attname="TRUELAT2")$value
 	if (map_proj==1) {
-		geogrd.proj <- paste0("+proj=lcc +lat_1=", truelat1, " +lat_2=", truelat2, " +lat_0=", cen_lat, " +lon_0=", cen_lon, " +x_0=0 +y_0=0 +a=6370000 +b=6370000 +units=m +no_defs")
+		geogrd.proj <- paste0("+proj=lcc +lat_1=", 
+                          truelat1, " +lat_2=", truelat2, " +lat_0=", 
+                          cen_lat, " +lon_0=", cen_lon, 
+                          " +x_0=0 +y_0=0 +a=6370000 +b=6370000 +units=m +no_defs")
 	#geogrd.crs <- CRS(geogrd.proj)
     } else {
 		stop('Error: Projection type not supported (currently this tool only works for Lambert Conformal Conic projections).')
