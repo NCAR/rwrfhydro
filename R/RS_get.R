@@ -67,6 +67,8 @@
 #'   \code{MODISoptions(resamplingType="<somemethod>")}). The resampling list 
 #'   should be in the form: \deqn{list("SDS name"="method", ...)} where "method"
 #'   is one of the GDAL methods listed above.
+#' @param quiet From MODIS::runGdal help: Logical, Default FALSE. Some progress 
+#'   informations.
 #' @return Empty
 #'   
 #' @examples
@@ -105,7 +107,7 @@
 GetMODIS <- function(geogrdPath, prodName, outDir, begin=NULL, end=NULL, 
                      collection=NULL, buffer=0.04,
                      SDSstring=NULL, 
-                     exclList=NULL, resampList=NULL) {
+                     exclList=NULL, resampList=NULL, quiet=FALSE) {
     # Check packages
     if (!(require("rgdal") & require("raster") & require("ncdf4") & require("MODIS"))) {
         stop("Required packages not found. Must have R packages: rgdal (requires GDAL system install), raster, ncdf4, and MODIS")
@@ -143,7 +145,8 @@ GetMODIS <- function(geogrdPath, prodName, outDir, begin=NULL, end=NULL,
                                begin=begin, end=end,
                                extent=hgt.r, buffer=buffer, 
                                SDSstring=SDSstring, job=outDir, 
-                               exclList=exclList, resampList=resampList )
+                               exclList=exclList, resampList=resampList,
+                               quiet=quiet)
 }
 
 

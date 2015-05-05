@@ -6,7 +6,7 @@
 \usage{
 GetMODIS(geogrdPath, prodName, outDir, begin = NULL, end = NULL,
   collection = NULL, buffer = 0.04, SDSstring = NULL, exclList = NULL,
-  resampList = NULL)
+  resampList = NULL, quiet = FALSE)
 }
 \arguments{
 \item{geogrdPath}{The pathname to the geogrid file (i.e., geo_em.d01.nc).}
@@ -61,6 +61,9 @@ reasmpling method to use. GDAL possible options (depends on version):
 \code{MODISoptions(resamplingType="<somemethod>")}). The resampling list
 should be in the form: \deqn{list("SDS name"="method", ...)} where "method"
 is one of the GDAL methods listed above.}
+
+\item{quiet}{From MODIS::runGdal help: Logical, Default FALSE. Some progress
+informations.}
 }
 \value{
 Empty
