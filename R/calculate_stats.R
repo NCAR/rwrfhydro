@@ -64,12 +64,13 @@ CalcNoahmpFluxes <- function(ldasoutDf) {
 #' land \emph{(routing model only)}  (mm) \item HYD_DELSFCHEAD: Change in 
 #' surface storage \emph{(routing model only)} (mm) \item HYD_QBDRY: Total flow 
 #' outside of domain \emph{(routing model only)} (mm) \item HYD_GWOUT: Total 
-#' groundwater outflow \emph{(routing model only)} (mm) \item HYD_DELGWSTOR: 
-#' Change in groundwater storage \emph{(routing model only)} (mm) \item 
+#' groundwater outflow \emph{(routing model only)} (mm) \item 
 #' WB_SFCRNOFF: Total surface runoff used in the water budget calculation 
 #' (\emph{either} LSM_SFCRNOFF or HYD_QSTRMVOL) (mm) \item WB_GWOUT: Total 
 #' groundwater outflow used in the water budget calculation (\emph{either} 
-#' LSM_UGDRNOFF or HYD_GWOUT) (mm) \item ERROR: Remainder in water budget (mm) 
+#' LSM_UGDRNOFF or HYD_GWOUT) (mm) \item WB_DELGWSTOR: Change in groundwater 
+#' storage (adjusted by surface runoff when no surface routing active) (mm) 
+#' \item ERROR: Remainder in water budget (mm) 
 #' \item RUN_FRAC: Runoff fraction, runoff/precipitation \item EVAP_FRAC: 
 #' Evaporative fraction, evapotranspiration/precipitation \item STOR_FRAC: 
 #' Change in storage fraction, storagechange/precipitation }
@@ -113,7 +114,8 @@ CalcNoahmpFluxes <- function(ldasoutDf) {
 #' @concept modelEval
 #' @family modelEvaluation
 #' @export
-CalcNoahmpWatBudg <- function(ldasoutDf, rtoutDf=NULL, gwoutDf=NULL, sfcrt=FALSE, soildeps=c(100,300,600,1000), basarea=NULL) {
+CalcNoahmpWatBudg <- function(ldasoutDf, rtoutDf=NULL, gwoutDf=NULL, sfcrt=FALSE, 
+                              soildeps=c(100,300,600,1000), basarea=NULL) {
     wbDf <- as.data.frame(t(as.matrix(rep(0, 6))))
     colnames(wbDf) <- c("LSM_PRCP","LSM_ECAN","LSM_ETRAN","LSM_EDIR","LSM_DELSWE","LSM_DELCANWAT")
     # LSM water fluxes for all model cases
@@ -130,7 +132,8 @@ CalcNoahmpWatBudg <- function(ldasoutDf, rtoutDf=NULL, gwoutDf=NULL, sfcrt=FALSE
     numsoil <- length(soildeps)
     soilm <- 0.0
     for (i in 1:numsoil) {
-        soilm <- soilm + (ldasoutDf[nrow(ldasoutDf),paste0("SOIL_M",i)]-ldasoutDf[1,paste0("SOIL_M",i)])*soildeps[i]
+        soilm <- soilm + (ldasoutDf[nrow(ldasoutDf),paste0("SOIL_M",i)]-
+                            ldasoutDf[1,paste0("SOIL_M",i)])*soildeps[i]
         }
     wbDf[1,"LSM_DELSOILM"] <- soilm
     # HYDRO surface/subsurface water fluxes
@@ -150,14 +153,15 @@ CalcNoahmpWatBudg <- function(ldasoutDf, rtoutDf=NULL, gwoutDf=NULL, sfcrt=FALSE
         if (!is.null(basarea)) {
             dt <- as.integer(difftime(gwoutDf$POSIXct[2],gwoutDf$POSIXct[1],units="secs"))
             wbDf[1,"HYD_GWOUT"] <- sum(gwoutDf$q_cms/(basarea*1000*1000)*1000*dt, na.rm=T)
-            wbDf[1,"HYD_DELGWSTOR"] <- (ldasoutDf$UGDRNOFF[nrow(ldasoutDf)]-ldasoutDf$UGDRNOFF[1]) - wbDf$HYD_GWOUT
+#            wbDf[1,"HYD_DELGWSTOR"] <- (ldasoutDf$UGDRNOFF[nrow(ldasoutDf)]-ldasoutDf$UGDRNOFF[1]) - 
+#                                        wbDf$HYD_GWOUT
             }
         else { stop('Error: Groundwater outflow dataframe (gwoutDf) provided but no basin area (basarea). Please provide the basin area.') }
         }
     else {
         message('Message: No groundwater outflow dataframe (gwoutDf) was provided. Proceeding using LSM underground runoff.')
         wbDf[1,"HYD_GWOUT"] <- NA
-        wbDf[1,"HYD_DELGWSTOR"] <- NA
+#        wbDf[1,"HYD_DELGWSTOR"] <- NA
         }
     # Overland routing check
     if ( sfcrt & is.null(rtoutDf)) {
@@ -168,7 +172,12 @@ CalcNoahmpWatBudg <- function(ldasoutDf, rtoutDf=NULL, gwoutDf=NULL, sfcrt=FALSE
         }
     wbDf[1,"WB_SFCRNOFF"] <- if (sfcrt) { wbDf[1, "HYD_QSTRMVOL"] } else { wbDf[1, "LSM_SFCRNOFF"] }
     # Groundwater routing check
-    wbDf[1,"WB_GWOUT"] <- if (!is.null(gwoutDf)) { wbDf[1, "HYD_GWOUT"] } else { wbDf[1, "LSM_UGDRNOFF"] }
+    wbDf[1,"WB_GWOUT"] <- if (!is.null(gwoutDf)) { 
+                                if (!sfcrt) { wbDf[1, "HYD_GWOUT"] - wbDf[1, "LSM_SFCRNOFF"] } 
+                                else { wbDf[1, "HYD_GWOUT"] } 
+                                } 
+                          else { wbDf[1, "LSM_UGDRNOFF"] }
+    wbDf[1,"WB_DELGWSTOR"] <- (ldasoutDf$UGDRNOFF[nrow(ldasoutDf)]-ldasoutDf$UGDRNOFF[1]) - wbDf$WB_GWOUT
     # Water budget error
     wbDf[1,"ERROR"] <- with( wbDf, LSM_PRCP - LSM_ECAN - LSM_ETRAN - LSM_EDIR -
                                  WB_SFCRNOFF -
@@ -176,14 +185,14 @@ CalcNoahmpWatBudg <- function(ldasoutDf, rtoutDf=NULL, gwoutDf=NULL, sfcrt=FALSE
                                  WB_GWOUT - LSM_DELSOILM -
                                  LSM_DELSWE - LSM_DELCANWAT -
                                  ifelse(is.na(HYD_DELSFCHEAD), 0.0, HYD_DELSFCHEAD) -
-                                 ifelse(is.na(HYD_DELGWSTOR), 0.0, HYD_DELGWSTOR) )
+                                 ifelse(is.na(WB_DELGWSTOR), 0.0, WB_DELGWSTOR) )
     # Calculate various fractions
     wbDf[1,"RUN_FRAC"] <- with( wbDf, (WB_SFCRNOFF + ifelse(is.na(HYD_QBDRY), 0.0, HYD_QBDRY) +
                                         WB_GWOUT) / LSM_PRCP )
     wbDf[1,"EVAP_FRAC"] <- with( wbDf, (LSM_ECAN + LSM_ETRAN + LSM_EDIR) / LSM_PRCP )
     wbDf[1,"STOR_FRAC"] <- with( wbDf, (LSM_DELSOILM + LSM_DELSWE + LSM_DELCANWAT +
                                         ifelse(is.na(HYD_DELSFCHEAD), 0.0, HYD_DELSFCHEAD) +
-                                        ifelse(is.na(HYD_DELGWSTOR), 0.0, HYD_DELGWSTOR) ) /
+                                        ifelse(is.na(WB_DELGWSTOR), 0.0, WB_DELGWSTOR) ) /
                                         LSM_PRCP )
     wbDf
 }
@@ -279,7 +288,8 @@ CalcNoahmpWatBudg <- function(ldasoutDf, rtoutDf=NULL, gwoutDf=NULL, sfcrt=FALSE
 #' @concept modelEval
 #' @family modelEvaluation
 #' @export
-CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q_cms", stdate=NULL, enddate=NULL, subdivisions=1000) {
+CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q_cms", 
+                         stdate=NULL, enddate=NULL, subdivisions=1000) {
     # Internal functions
     which.max.dt <- function(dd, qcol, dtcol) { dd[which.max(dd[,qcol]), dtcol] }
     CalcCOM.dt <- function(dd, qcol, dtcol) { dd[CalcCOM(dd[,qcol]), dtcol] }
@@ -292,20 +302,24 @@ CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q
     flxDf.obs$qcomp <- flxDf.obs[,flxCol.obs]
     modT <- as.integer(flxDf.mod$POSIXct[2])-as.integer(flxDf.mod$POSIXct[1]) # model timestep in secs
     #if (as.integer(flxDf.obs$POSIXct[2])-as.integer(flxDf.obs$POSIXct[1]) >= 86400) {flxDf.obs$POSIXct=as.POSIXct(round(flxDf.obs$POSIXct,"days"), tz="UTC")}
-    flxDf.mod <- merge(flxDf.mod[c("POSIXct","qcomp")], flxDf.obs[c("POSIXct","qcomp")], by<-c("POSIXct"), suffixes=c(".mod",".obs"))
+    flxDf.mod <- merge(flxDf.mod[c("POSIXct","qcomp")], flxDf.obs[c("POSIXct","qcomp")], 
+                       by<-c("POSIXct"), suffixes=c(".mod",".obs"))
     flxDf.mod <- subset(flxDf.mod, !is.na(flxDf.mod$qcomp.mod) & !is.na(flxDf.mod$qcomp.obs))
     flxDf.mod <- CalcDates(flxDf.mod)
     flxDf.mod$date <- as.POSIXct(trunc(flxDf.mod$POSIXct, "days"))
     results <- as.data.frame(matrix(nrow = 7, ncol = 11))
-    colnames(results) = c("n", "nse", "nselog", "cor", "rmse", "rmsenorm", "bias", "mae", "errcom", "errmaxt", "errfdc")
+    colnames(results) = c("n", "nse", "nselog", "cor", "rmse", "rmsenorm", "bias", "mae", 
+                          "errcom", "errmaxt", "errfdc")
     rownames(results) = c("units", "t", "daily", "monthly", "yearly", "max10", "min10")
     exclvars <- names(flxDf.mod) %in% c("POSIXct", "secs", "timest", "date", "stat")
     
     # Base aggregations
     flxDf.mod.d <- aggregate(flxDf.mod[!exclvars], by = list(flxDf.mod$date), CalcMeanNarm)
     flxDf.mod.d$mwy <- paste0(flxDf.mod.d$month, "-", flxDf.mod.d$wy)
-    flxDf.mod.mwy <- aggregate(flxDf.mod[c("qcomp.mod","qcomp.obs")], by = list(flxDf.mod$month, flxDf.mod$wy), CalcMeanNarm)
-    flxDf.mod.wy <- aggregate(flxDf.mod[c("qcomp.mod","qcomp.obs")], by = list(flxDf.mod$wy), CalcMeanNarm)
+    flxDf.mod.mwy <- aggregate(flxDf.mod[c("qcomp.mod","qcomp.obs")], 
+                               by = list(flxDf.mod$month, flxDf.mod$wy), CalcMeanNarm)
+    flxDf.mod.wy <- aggregate(flxDf.mod[c("qcomp.mod","qcomp.obs")], 
+                              by = list(flxDf.mod$wy), CalcMeanNarm)
     
     # Time of center of mass aggregations
     tmp.mod <- plyr::ddply(flxDf.mod, plyr::.(date), CalcCOM.dt, qcol="qcomp.mod", dtcol="POSIXct")
@@ -313,29 +327,39 @@ CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q
     flxDf.mod.dcom <- merge(tmp.mod, tmp.obs, by=c("date"))
     colnames(flxDf.mod.dcom) <- c("date", "qcomp.mod", "qcomp.obs")
     
-    tmp.mod <- plyr::ddply(flxDf.mod.d, plyr::.(month, wy), CalcCOM.dt, qcol="qcomp.mod", dtcol="Group.1")
-    tmp.obs <- plyr::ddply(flxDf.mod.d, plyr::.(month, wy), CalcCOM.dt, qcol="qcomp.obs", dtcol="Group.1")
+    tmp.mod <- plyr::ddply(flxDf.mod.d, plyr::.(month, wy), 
+                           CalcCOM.dt, qcol="qcomp.mod", dtcol="Group.1")
+    tmp.obs <- plyr::ddply(flxDf.mod.d, plyr::.(month, wy), 
+                           CalcCOM.dt, qcol="qcomp.obs", dtcol="Group.1")
     flxDf.mod.mwycom <- merge(tmp.mod, tmp.obs, by=c("month", "wy"))
     colnames(flxDf.mod.mwycom) <- c("month", "wy", "qcomp.mod", "qcomp.obs")
     
-    tmp.mod <- plyr::ddply(flxDf.mod.d, plyr::.(wy), CalcCOM.dt, qcol="qcomp.mod", dtcol="Group.1")
-    tmp.obs <- plyr::ddply(flxDf.mod.d, plyr::.(wy), CalcCOM.dt, qcol="qcomp.obs", dtcol="Group.1")
+    tmp.mod <- plyr::ddply(flxDf.mod.d, plyr::.(wy), 
+                           CalcCOM.dt, qcol="qcomp.mod", dtcol="Group.1")
+    tmp.obs <- plyr::ddply(flxDf.mod.d, plyr::.(wy), 
+                           CalcCOM.dt, qcol="qcomp.obs", dtcol="Group.1")
     flxDf.mod.wycom <- merge(tmp.mod, tmp.obs, by=c("wy"))
     colnames(flxDf.mod.wycom) <- c("wy", "qcomp.mod", "qcomp.obs")
     
     # Time of max aggregations
-    tmp.mod <- plyr::ddply(flxDf.mod, plyr::.(date), which.max.dt, qcol="qcomp.mod", dtcol="POSIXct")
-    tmp.obs <- plyr::ddply(flxDf.mod, plyr::.(date), which.max.dt, qcol="qcomp.obs", dtcol="POSIXct")
+    tmp.mod <- plyr::ddply(flxDf.mod, plyr::.(date), 
+                           which.max.dt, qcol="qcomp.mod", dtcol="POSIXct")
+    tmp.obs <- plyr::ddply(flxDf.mod, plyr::.(date), 
+                           which.max.dt, qcol="qcomp.obs", dtcol="POSIXct")
     flxDf.mod.dmax <- merge(tmp.mod, tmp.obs, by=c("date"))
     colnames(flxDf.mod.dmax) <- c("date", "qcomp.mod", "qcomp.obs")
     
-    tmp.mod <- plyr::ddply(flxDf.mod.d, plyr::.(month, wy), which.max.dt, qcol="qcomp.mod", dtcol="Group.1")
-    tmp.obs <- plyr::ddply(flxDf.mod.d, plyr::.(month, wy), which.max.dt, qcol="qcomp.obs", dtcol="Group.1")
+    tmp.mod <- plyr::ddply(flxDf.mod.d, plyr::.(month, wy), 
+                           which.max.dt, qcol="qcomp.mod", dtcol="Group.1")
+    tmp.obs <- plyr::ddply(flxDf.mod.d, plyr::.(month, wy), 
+                           which.max.dt, qcol="qcomp.obs", dtcol="Group.1")
     flxDf.mod.mwymax <- merge(tmp.mod, tmp.obs, by=c("month", "wy"))
     colnames(flxDf.mod.mwymax) <- c("month", "wy", "qcomp.mod", "qcomp.obs")
     
-    tmp.mod <- plyr::ddply(flxDf.mod.d, plyr::.(wy), which.max.dt, qcol="qcomp.mod", dtcol="Group.1")
-    tmp.obs <- plyr::ddply(flxDf.mod.d, plyr::.(wy), which.max.dt, qcol="qcomp.obs", dtcol="Group.1")
+    tmp.mod <- plyr::ddply(flxDf.mod.d, plyr::.(wy), 
+                           which.max.dt, qcol="qcomp.mod", dtcol="Group.1")
+    tmp.obs <- plyr::ddply(flxDf.mod.d, plyr::.(wy), 
+                           which.max.dt, qcol="qcomp.obs", dtcol="Group.1")
     flxDf.mod.wymax <- merge(tmp.mod, tmp.obs, by=c("wy"))
     colnames(flxDf.mod.wymax) <- c("wy", "qcomp.mod", "qcomp.obs")
     
@@ -348,8 +372,10 @@ CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q
     #flxDf.mod.wymax$qcomp.obs <- as.integer(flxDf.mod.wymax$qcomp.obs)
     
     # Mins and Maxes
-    flxDf.mod.max10 <- subset(flxDf.mod, flxDf.mod$qcomp.obs>=quantile(flxDf.mod$qcomp.obs, 0.90, na.rm=TRUE))
-    flxDf.mod.min10 <- subset(flxDf.mod, flxDf.mod$qcomp.obs<=quantile(flxDf.mod$qcomp.obs, 0.10, na.rm=TRUE))
+    flxDf.mod.max10 <- subset(flxDf.mod, flxDf.mod$qcomp.obs >= 
+                                quantile(flxDf.mod$qcomp.obs, 0.90, na.rm=TRUE))
+    flxDf.mod.min10 <- subset(flxDf.mod, flxDf.mod$qcomp.obs <= 
+                                quantile(flxDf.mod$qcomp.obs, 0.10, na.rm=TRUE))
     # FDCs
     flxDf.mod <- CalcFdc(flxDf.mod, "qcomp.mod")
     flxDf.mod <- CalcFdc(flxDf.mod, "qcomp.obs")
@@ -360,39 +386,67 @@ CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q
     results["t", "n"] <- length(flxDf.mod$qcomp.mod)
     results["t", "nse"] <- round(Nse(flxDf.mod$qcomp.mod, flxDf.mod$qcomp.obs), 2)
     results["t", "nselog"] <- round(NseLog(flxDf.mod$qcomp.mod, flxDf.mod$qcomp.obs), 2)
-    results["t", "cor"] <- round(cor(flxDf.mod$qcomp.mod, flxDf.mod$qcomp.obs, use="na.or.complete"), 2)
+    results["t", "cor"] <- round(cor(flxDf.mod$qcomp.mod, flxDf.mod$qcomp.obs, 
+                                     use="na.or.complete"), 2)
     results["t", "rmse"] <- round(Rmse(flxDf.mod$qcomp.mod, flxDf.mod$qcomp.obs), 2)
     results["t", "rmsenorm"] <- round(RmseNorm(flxDf.mod$qcomp.mod, flxDf.mod$qcomp.obs), 2)
-    results["t", "bias"] <- round(sum(flxDf.mod$qcomp.mod-flxDf.mod$qcomp.obs, na.rm=T)/sum(flxDf.mod$qcomp.obs, na.rm=TRUE) * 100, 1)
+    results["t", "bias"] <- round(sum(flxDf.mod$qcomp.mod-flxDf.mod$qcomp.obs, na.rm=T)/
+                                    sum(flxDf.mod$qcomp.obs, na.rm=TRUE) * 100, 1)
     results["t", "mae"] <- round(mean(abs(flxDf.mod$qcomp.mod-flxDf.mod$qcomp.obs), na.rm=T), 2)
     results["t", "errcom"] <- NA
     results["t", "errmaxt"] <- NA
-    results["t", "errfdc"] <- round(integrate(splinefun(flxDf.mod[,"qcomp.mod.fdc"], flxDf.mod[,"qcomp.mod"], method='natural'), 0.05, 0.95, subdivisions=subdivisions)$value -
-                                integrate(splinefun(flxDf.mod[,"qcomp.obs.fdc"], flxDf.mod[,"qcomp.obs"], method='natural'), 0.05, 0.95, subdivisions=subdivisions)$value, 2 )
+    results["t", "errfdc"] <- round(integrate(splinefun(flxDf.mod[,"qcomp.mod.fdc"], 
+                                                        flxDf.mod[,"qcomp.mod"], method='natural'), 
+                                              0.05, 0.95, subdivisions=subdivisions)$value -
+                                integrate(splinefun(flxDf.mod[,"qcomp.obs.fdc"], 
+                                                    flxDf.mod[,"qcomp.obs"], method='natural'), 
+                                          0.05, 0.95, subdivisions=subdivisions)$value, 2 )
 
     results["daily", "n"] <- length(flxDf.mod.d$qcomp.mod)
     results["daily", "nse"] <- round(Nse(flxDf.mod.d$qcomp.mod, flxDf.mod.d$qcomp.obs), 2)
     results["daily", "nselog"] <- round(NseLog(flxDf.mod.d$qcomp.mod, flxDf.mod.d$qcomp.obs), 2)
-    results["daily", "cor"] <- round(cor(flxDf.mod.d$qcomp.mod, flxDf.mod.d$qcomp.obs, use="na.or.complete"), 2)
+    results["daily", "cor"] <- round(cor(flxDf.mod.d$qcomp.mod, flxDf.mod.d$qcomp.obs, 
+                                         use="na.or.complete"), 2)
     results["daily", "rmse"] <- round(Rmse(flxDf.mod.d$qcomp.mod, flxDf.mod.d$qcomp.obs), 2)
     results["daily", "rmsenorm"] <- round(RmseNorm(flxDf.mod.d$qcomp.mod, flxDf.mod.d$qcomp.obs), 2)
-    results["daily", "bias"] <- round(sum(flxDf.mod.d$qcomp.mod-flxDf.mod.d$qcomp.obs, na.rm=T)/sum(flxDf.mod.d$qcomp.obs, na.rm=TRUE) * 100, 1)
+    results["daily", "bias"] <- round(sum(flxDf.mod.d$qcomp.mod-flxDf.mod.d$qcomp.obs, na.rm=T)/
+                                        sum(flxDf.mod.d$qcomp.obs, na.rm=TRUE) * 100, 1)
     results["daily", "mae"] <- round(mean(abs(flxDf.mod.d$qcomp.mod-flxDf.mod.d$qcomp.obs), na.rm=T), 2)
-    results["daily", "errcom"] <- round(mean(as.numeric(difftime(flxDf.mod.dcom$qcomp.mod,flxDf.mod.dcom$qcomp.obs, units="hours")), na.rm=T), 2)
-    results["daily", "errmaxt"] <- round(mean(as.numeric(difftime(flxDf.mod.dmax$qcomp.mod,flxDf.mod.dmax$qcomp.obs, units="hours")), na.rm=T), 2)
-    results["daily", "errfdc"] <- round(integrate(splinefun(flxDf.mod.d[,"qcomp.mod.fdc"], flxDf.mod.d[,"qcomp.mod"], method='natural'), 0.05, 0.95, subdivisions=subdivisions)$value -
-                                    integrate(splinefun(flxDf.mod.d[,"qcomp.obs.fdc"], flxDf.mod.d[,"qcomp.obs"], method='natural'), 0.05, 0.95, subdivisions=subdivisions)$value, 2 )
+    results["daily", "errcom"] <- round(mean(as.numeric(difftime(flxDf.mod.dcom$qcomp.mod,
+                                                                 flxDf.mod.dcom$qcomp.obs, 
+                                                                 units="hours")), na.rm=T), 2)
+    results["daily", "errmaxt"] <- round(mean(as.numeric(difftime(flxDf.mod.dmax$qcomp.mod,
+                                                                  flxDf.mod.dmax$qcomp.obs, 
+                                                                  units="hours")), na.rm=T), 2)
+    results["daily", "errfdc"] <- round(integrate(splinefun(flxDf.mod.d[,"qcomp.mod.fdc"], 
+                                                            flxDf.mod.d[,"qcomp.mod"], 
+                                                            method='natural'), 0.05, 0.95, 
+                                                  subdivisions=subdivisions)$value -
+                                    integrate(splinefun(flxDf.mod.d[,"qcomp.obs.fdc"], 
+                                                        flxDf.mod.d[,"qcomp.obs"], 
+                                                        method='natural'), 0.05, 0.95, 
+                                              subdivisions=subdivisions)$value, 2 )
 
     results["monthly", "n"] <- length(flxDf.mod.mwy$qcomp.mod)
     results["monthly", "nse"] <- round(Nse(flxDf.mod.mwy$qcomp.mod, flxDf.mod.mwy$qcomp.obs), 2)
-    results["monthly", "nselog"] <- round(NseLog(flxDf.mod.mwy$qcomp.mod, flxDf.mod.mwy$qcomp.obs), 2)
-    results["monthly", "cor"] <- round(cor(flxDf.mod.mwy$qcomp.mod, flxDf.mod.mwy$qcomp.obs, use="na.or.complete"), 2)
+    results["monthly", "nselog"] <- round(NseLog(flxDf.mod.mwy$qcomp.mod, 
+                                                 flxDf.mod.mwy$qcomp.obs), 2)
+    results["monthly", "cor"] <- round(cor(flxDf.mod.mwy$qcomp.mod, flxDf.mod.mwy$qcomp.obs, 
+                                           use="na.or.complete"), 2)
     results["monthly", "rmse"] <- round(Rmse(flxDf.mod.mwy$qcomp.mod, flxDf.mod.mwy$qcomp.obs), 2)
-    results["monthly", "rmsenorm"] <- round(RmseNorm(flxDf.mod.mwy$qcomp.mod, flxDf.mod.mwy$qcomp.obs), 2)
-    results["monthly", "bias"] <- round(sum(flxDf.mod.mwy$qcomp.mod-flxDf.mod.mwy$qcomp.obs, na.rm=T)/sum(flxDf.mod.mwy$qcomp.obs, na.rm=TRUE) * 100, 1)
-    results["monthly", "mae"] <- round(mean(abs(flxDf.mod.mwy$qcomp.mod-flxDf.mod.mwy$qcomp.obs), na.rm=T), 2)
-    results["monthly", "errcom"] <- round(mean(as.numeric(difftime(flxDf.mod.mwycom$qcomp.mod,flxDf.mod.mwycom$qcomp.obs, units="days")), na.rm=T), 2)
-    results["monthly", "errmaxt"] <- round(mean(as.numeric(difftime(flxDf.mod.mwymax$qcomp.mod,flxDf.mod.mwymax$qcomp.obs, units="days")), na.rm=T), 2)
+    results["monthly", "rmsenorm"] <- round(RmseNorm(flxDf.mod.mwy$qcomp.mod, 
+                                                     flxDf.mod.mwy$qcomp.obs), 2)
+    results["monthly", "bias"] <- round(sum(flxDf.mod.mwy$qcomp.mod-flxDf.mod.mwy$qcomp.obs, 
+                                            na.rm=T)/
+                                          sum(flxDf.mod.mwy$qcomp.obs, na.rm=TRUE) * 100, 1)
+    results["monthly", "mae"] <- round(mean(abs(flxDf.mod.mwy$qcomp.mod-flxDf.mod.mwy$qcomp.obs), 
+                                            na.rm=T), 2)
+    results["monthly", "errcom"] <- round(mean(as.numeric(difftime(flxDf.mod.mwycom$qcomp.mod,
+                                                                   flxDf.mod.mwycom$qcomp.obs, 
+                                                                   units="days")), na.rm=T), 2)
+    results["monthly", "errmaxt"] <- round(mean(as.numeric(difftime(flxDf.mod.mwymax$qcomp.mod,
+                                                                    flxDf.mod.mwymax$qcomp.obs, 
+                                                                    units="days")), na.rm=T), 2)
     results["monthly", "errfdc"] <- NA
 
     results["yearly", "n"] <- length(flxDf.mod.wy$qcomp.mod)
@@ -401,32 +455,48 @@ CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q
     results["yearly", "cor"] <- NA  #round(cor(flxDf.mod.wy$qcomp.mod, flxDf.mod.wy$qcomp.obs, use="na.or.complete"), 2)
     results["yearly", "rmse"] <- NA  #round(Rmse(flxDf.mod.wy$qcomp.mod, flxDf.mod.wy$qcomp.obs), 2)
     results["yearly", "rmsenorm"] <- NA  #round(RmseNorm(flxDf.mod.wy$qcomp.mod, flxDf.mod.wy$qcomp.obs), 2)
-    results["yearly", "bias"] <- round(sum(flxDf.mod.wy$qcomp.mod-flxDf.mod.wy$qcomp.obs, na.rm=T)/sum(flxDf.mod.wy$qcomp.obs, na.rm=TRUE) * 100, 1)
-    results["yearly", "mae"] <- round(mean(abs(flxDf.mod.wy$qcomp.mod-flxDf.mod.wy$qcomp.obs), na.rm=T), 2)
-    results["yearly", "errcom"] <- round(mean(as.numeric(difftime(flxDf.mod.wycom$qcomp.mod,flxDf.mod.wycom$qcomp.obs, units="days")), na.rm=T), 2)
-    results["yearly", "errmaxt"] <- round(mean(as.numeric(difftime(flxDf.mod.wymax$qcomp.mod,flxDf.mod.wymax$qcomp.obs, units="days")), na.rm=T), 2)
+    results["yearly", "bias"] <- round(sum(flxDf.mod.wy$qcomp.mod-flxDf.mod.wy$qcomp.obs, na.rm=T)/
+                                         sum(flxDf.mod.wy$qcomp.obs, na.rm=TRUE) * 100, 1)
+    results["yearly", "mae"] <- round(mean(abs(flxDf.mod.wy$qcomp.mod-flxDf.mod.wy$qcomp.obs), 
+                                           na.rm=T), 2)
+    results["yearly", "errcom"] <- round(mean(as.numeric(difftime(flxDf.mod.wycom$qcomp.mod,
+                                                                  flxDf.mod.wycom$qcomp.obs, 
+                                                                  units="days")), na.rm=T), 2)
+    results["yearly", "errmaxt"] <- round(mean(as.numeric(difftime(flxDf.mod.wymax$qcomp.mod,
+                                                                   flxDf.mod.wymax$qcomp.obs, 
+                                                                   units="days")), na.rm=T), 2)
     results["yearly", "errfdc"] <- NA
     
     results["max10", "n"] <- length(flxDf.mod.max10$qcomp.mod)
     results["max10", "nse"] <- round(Nse(flxDf.mod.max10$qcomp.mod, flxDf.mod.max10$qcomp.obs), 2)
-    results["max10", "nselog"] <- round(NseLog(flxDf.mod.max10$qcomp.mod, flxDf.mod.max10$qcomp.obs), 2)
-    results["max10", "cor"] <- round(cor(flxDf.mod.max10$qcomp.mod, flxDf.mod.max10$qcomp.obs, use="na.or.complete"), 2)
+    results["max10", "nselog"] <- round(NseLog(flxDf.mod.max10$qcomp.mod, 
+                                               flxDf.mod.max10$qcomp.obs), 2)
+    results["max10", "cor"] <- round(cor(flxDf.mod.max10$qcomp.mod, flxDf.mod.max10$qcomp.obs, 
+                                         use="na.or.complete"), 2)
     results["max10", "rmse"] <- round(Rmse(flxDf.mod.max10$qcomp.mod, flxDf.mod.max10$qcomp.obs), 2)
-    results["max10", "rmsenorm"] <- round(RmseNorm(flxDf.mod.max10$qcomp.mod, flxDf.mod.max10$qcomp.obs), 2)
-    results["max10", "bias"] <- round(sum(flxDf.mod.max10$qcomp.mod-flxDf.mod.max10$qcomp.obs, na.rm=T)/sum(flxDf.mod.max10$qcomp.obs, na.rm=TRUE) * 100, 1)
-    results["max10", "mae"] <- round(mean(abs(flxDf.mod.max10$qcomp.mod-flxDf.mod.max10$qcomp.obs), na.rm=T), 2)
+    results["max10", "rmsenorm"] <- round(RmseNorm(flxDf.mod.max10$qcomp.mod, 
+                                                   flxDf.mod.max10$qcomp.obs), 2)
+    results["max10", "bias"] <- round(sum(flxDf.mod.max10$qcomp.mod-flxDf.mod.max10$qcomp.obs, na.rm=T)/
+                                        sum(flxDf.mod.max10$qcomp.obs, na.rm=TRUE) * 100, 1)
+    results["max10", "mae"] <- round(mean(abs(flxDf.mod.max10$qcomp.mod-flxDf.mod.max10$qcomp.obs), 
+                                          na.rm=T), 2)
     results["max10", "errcom"] <- NA
     results["max10", "errmaxt"] <- NA
     results["max10", "errfdc"] <- NA
     
     results["min10", "n"] <- length(flxDf.mod.min10$qcomp.mod)
     results["min10", "nse"] <- round(Nse(flxDf.mod.min10$qcomp.mod, flxDf.mod.min10$qcomp.obs), 2)
-    results["min10", "nselog"] <- round(NseLog(flxDf.mod.min10$qcomp.mod, flxDf.mod.min10$qcomp.obs), 2)
-    results["min10", "cor"] <- round(cor(flxDf.mod.min10$qcomp.mod, flxDf.mod.min10$qcomp.obs, use="na.or.complete"), 2)
+    results["min10", "nselog"] <- round(NseLog(flxDf.mod.min10$qcomp.mod, 
+                                               flxDf.mod.min10$qcomp.obs), 2)
+    results["min10", "cor"] <- round(cor(flxDf.mod.min10$qcomp.mod, flxDf.mod.min10$qcomp.obs, 
+                                         use="na.or.complete"), 2)
     results["min10", "rmse"] <- round(Rmse(flxDf.mod.min10$qcomp.mod, flxDf.mod.min10$qcomp.obs), 2)
-    results["min10", "rmsenorm"] <- round(RmseNorm(flxDf.mod.min10$qcomp.mod, flxDf.mod.min10$qcomp.obs), 2)
-    results["min10", "bias"] <- round(sum(flxDf.mod.min10$qcomp.mod-flxDf.mod.min10$qcomp.obs, na.rm=T)/sum(flxDf.mod.min10$qcomp.obs, na.rm=TRUE) * 100, 1)
-    results["min10", "mae"] <- round(mean(abs(flxDf.mod.min10$qcomp.mod-flxDf.mod.min10$qcomp.obs), na.rm=T), 2)
+    results["min10", "rmsenorm"] <- round(RmseNorm(flxDf.mod.min10$qcomp.mod, 
+                                                   flxDf.mod.min10$qcomp.obs), 2)
+    results["min10", "bias"] <- round(sum(flxDf.mod.min10$qcomp.mod-flxDf.mod.min10$qcomp.obs, na.rm=T)/
+                                        sum(flxDf.mod.min10$qcomp.obs, na.rm=TRUE) * 100, 1)
+    results["min10", "mae"] <- round(mean(abs(flxDf.mod.min10$qcomp.mod-flxDf.mod.min10$qcomp.obs), 
+                                          na.rm=T), 2)
     results["min10", "errcom"] <- NA
     results["min10", "errmaxt"] <- NA
     results["min10", "errfdc"] <- NA
@@ -538,7 +608,8 @@ CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q
 #' @concept modelEval
 #' @family modelEvaluation
 #' @export
-CalcModPerfMulti <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q_cms", stdate=NULL, enddate=NULL) {
+CalcModPerfMulti <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q_cms", 
+                              stdate=NULL, enddate=NULL) {
   # Internal functions
   which.max.dt <- function(dd, qcol, dtcol) { dd[which.max(dd[,qcol]), dtcol] }
   CalcCOM.dt <- function(dd, qcol, dtcol) { dd[CalcCOM(dd[,qcol]), dtcol] }

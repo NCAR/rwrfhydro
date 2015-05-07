@@ -164,12 +164,12 @@ PlotWatBudg <- function(wbDf, plottyp="pie") {
             lbls_pcts[length(lbls_pcts)+1] <- paste0("Change in\nStorage", "\n",
                                                 round( with( wbDf, (LSM_DELSOILM + LSM_DELSWE + LSM_DELCANWAT +
                                                 ifelse(is.na(HYD_DELSFCHEAD), 0.0, HYD_DELSFCHEAD) +
-                                                ifelse(is.na(HYD_DELGWSTOR), 0.0, HYD_DELGWSTOR)) / LSM_PRCP * 100), 1), "%")
+                                                ifelse(is.na(WB_DELGWSTOR), 0.0, WB_DELGWSTOR)) / LSM_PRCP * 100), 1), "%")
             pie(as.matrix(with(wbDf, c(LSM_ECAN, LSM_ETRAN, LSM_EDIR,
                                         (WB_SFCRNOFF + ifelse(is.na(HYD_QBDRY), 0.0, HYD_QBDRY)),
                                         WB_GWOUT, LSM_DELSOILM + LSM_DELSWE + LSM_DELCANWAT +
                                         ifelse(is.na(HYD_DELSFCHEAD), 0.0, HYD_DELSFCHEAD) +
-                                        ifelse(is.na(HYD_DELGWSTOR), 0.0, HYD_DELGWSTOR)))),
+                                        ifelse(is.na(WB_DELGWSTOR), 0.0, WB_DELGWSTOR)))),
                 col=c("chartreuse3","darkgreen","darkgoldenrod2","cornflowerblue","darkblue","grey30"),
                 main=c("Water Budget"), labels=lbls_pcts)
             }
@@ -182,7 +182,7 @@ PlotWatBudg <- function(wbDf, plottyp="pie") {
             text(0,-1, paste0("*Storage Loss: ",
                         round( with( wbDf, (LSM_DELSOILM + LSM_DELSWE + LSM_DELCANWAT +
                                         ifelse(is.na(HYD_DELSFCHEAD), 0.0, HYD_DELSFCHEAD) +
-                                        ifelse(is.na(HYD_DELGWSTOR), 0.0, HYD_DELGWSTOR)) /
+                                        ifelse(is.na(WB_DELGWSTOR), 0.0, WB_DELGWSTOR)) /
                                         LSM_PRCP * 100), 1),"%"))
             } # end storage fraction split
         } # end pie
@@ -190,11 +190,11 @@ PlotWatBudg <- function(wbDf, plottyp="pie") {
         lbls_pcts[length(lbls_pcts)+1] <- paste0("Change in Storage", "\n",
                                 round( with( wbDf, (LSM_DELSOILM + LSM_DELSWE + LSM_DELCANWAT +
                                         ifelse(is.na(HYD_DELSFCHEAD), 0.0, HYD_DELSFCHEAD) +
-                                        ifelse(is.na(HYD_DELGWSTOR), 0.0, HYD_DELGWSTOR)) /
+                                        ifelse(is.na(WB_DELGWSTOR), 0.0, WB_DELGWSTOR)) /
                                         LSM_PRCP * 100), 1), "%")
         plotDf <- with(wbDf,c(LSM_DELSOILM + LSM_DELSWE + LSM_DELCANWAT +
                                         ifelse(is.na(HYD_DELSFCHEAD), 0.0, HYD_DELSFCHEAD) +
-                                        ifelse(is.na(HYD_DELGWSTOR), 0.0, HYD_DELGWSTOR),
+                                        ifelse(is.na(WB_DELGWSTOR), 0.0, WB_DELGWSTOR),
                                         LSM_ECAN, LSM_ETRAN, LSM_EDIR,
                                         (WB_SFCRNOFF + ifelse(is.na(HYD_QBDRY), 0.0, HYD_QBDRY)),
                                         WB_GWOUT))
