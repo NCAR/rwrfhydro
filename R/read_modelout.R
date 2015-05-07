@@ -100,6 +100,7 @@ ReadGwOut <- function(pathOutfile) {
 #' routing grid and a 1-km LSM grid, aggfact = 10)
 #' @param ncores If multi-core processing is available, the number of cores to use (DEFAULT=1).
 #' Must have doMC installed if ncores is more than 1.
+#' @param pattern Pattern to match in the model output (DEFAULT=glob2rx('*LDASOUT_DOMAIN*'))
 #' @return A dataframe containing a time series of basin-wide mean water budget variables.
 #'
 #' @examples
@@ -116,7 +117,9 @@ ReadGwOut <- function(pathOutfile) {
 #' @concept dataGet
 #' @family modelDataReads
 #' @export
-ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, aggfact=10, ncores=1) {
+ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk", 
+                          basid=1, aggfact=10, ncores=1, 
+                          pattern=glob2rx('*LDASOUT_DOMAIN*')) {
     if (ncores > 1) {
         doMC::registerDoMC(ncores)
         }
@@ -159,7 +162,7 @@ ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, a
     names(ldasoutInd) <- names(ldasoutVars)
     ldasoutIndexList <- list( ldasout = ldasoutInd )
     # Run GetMultiNcdf
-    ldasoutFilesList <- list( ldasout = list.files(path=pathOutdir, pattern=glob2rx('*LDASOUT_DOMAIN*'), full.names=TRUE))
+    ldasoutFilesList <- list( ldasout = list.files(path=pathOutdir, pattern=pattern, full.names=TRUE))
     if (ncores > 1) {
         ldasoutDF <- GetMultiNcdf(indexList=ldasoutIndexList, 
                                   variableList=ldasoutVariableList, 
