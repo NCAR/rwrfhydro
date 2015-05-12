@@ -68,19 +68,32 @@ str(FindUsgsStns(huc=huc8))
 FindUsgsStns is a wrapper on dataRetrieval::whatNWISsites which has been written to focus on instantaneous values. (It is worth noting the flexibility and generality of the underlying function.)
 
 Now pull the data for this HUC8. Currently, this grabs all available products for the HUC. Note that the HUC data are organized by product code (e.g. `00060`) then by `data` and `meta` in the returned list. (Also note that this command sometimes fails on the remote end and may need to be rerun.) In `meta`, siteInfo is the meta that we use in querying the local data base in commands shown below.
-```{r, results='hold'}
+
+
+```{r, echo=FALSE} 
+## this block gets the data locally instead of over the inter-webs: for speed in building vignettes.
+dataName <- load(paste0("~/wrfHydroTestCases/usgsDb/",huc8,".data.RData"))
+coData <- get(dataName); rm(list=c(dataName))
+```
+
+```{r, results='hold', eval=FALSE}
 coData <- GetUsgsHucData(huc=huc8)
 str(coData)
 ```
 
+```{r}
+str(coData)
+```
+
+
 Now save this data to the local database. Note that this also could have been achieved by specifying the `outPath` argument to `GetUsgsHucData`.
-```{r, results='hold'}
+```{r, results='hold', eval=FALSE}
 coFiles <- SaveHucData(coData, outPath=dbPath)
 coFiles
 ```
 
 For a little more variety of HUCs in the database, let's also grab the following HUC. 
-```{r}
+```{r, eval=FALSE}
 filesAL <- GetUsgsHucData(huc='03160203', outPath=dbPath) ## Satilpa, AL
 ```
 

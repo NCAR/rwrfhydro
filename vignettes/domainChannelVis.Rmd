@@ -30,7 +30,7 @@ This is the path to the directory of WRF Hydro test cases that we recommend, but
 Setup: The specific test case and files should be the same once the above is set. 
 ```{r}
  fcPath <- paste0(tcPath,'Fourmile_Creek/')
- hydroFile<-paste0(fcPath,'/DOMAIN/hydro_OrodellBasin_100m.nc')
+ hydroFile<-paste0(fcPath,'/DOMAIN/Fulldom_hydro_OrodellBasin_100m.nc')
 ```
  
 The following function plots the selected variable in the hydro file. 
@@ -101,9 +101,8 @@ LocLinkFun<-VisualizeChanNtwk(chrtFile, exclude=350)
 LocLinkFun(click=TRUE) 
 ## Please click on plot to select nearest point to your click...
 ## Selected point (in cyan on plot) data:
-##  ind            lon           lat               q
-##    1 -105.327774048 40.0193214417 0.0500022508204
-
+## ind            lon           lat               q
+##   1 -105.327774048 40.0193214417 0.0453463643789
 ```
 
 We want to add the real-life gauge points and find the nearest stream channel grid cells. You can supply gage points in the following format to the `VisualizeChanNtwk` function and the nearest neighbors on the channel network are returned. 
