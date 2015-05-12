@@ -13,7 +13,9 @@ Success if the filename (which is SNODAS_Coordinates.nc), otherwise NULL.
 \code{PutSnodasCoordsNcdf} Put the output of CalcSnodasCoords into a netcdf file.
 }
 \examples{
-PutSnodasCoordsNcdf()
+outFile <- PutSnodasCoordsNcdf()
+ncdump(outFile)
+unlink(outFile)
 }
 \seealso{
 Other SNODAS: \code{\link{CalcSnodasCoords}};

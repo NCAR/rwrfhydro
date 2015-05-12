@@ -14,8 +14,10 @@ This is kind of the inverse of WriteNcTimeSlice to be used in extending existing
 timeslices on file.
 }
 \examples{
+\dontrun{
 sliceFiles <- list.files('~/usgsStreamData/timeSliceData/','.*', full.names=TRUE)
 ReadNcTimeSlice(tail(sliceFiles,1))
+}
 }
 \keyword{internal}
 

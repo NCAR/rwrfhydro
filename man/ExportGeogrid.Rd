@@ -26,10 +26,12 @@ in standard GIS tools.
 ## Export the HGT_M field from the geogrid file geo_em.d01_1km.nc
 ## to a geoTiff called geogrid_hgt.tif.
 
+\dontrun{
 ExportGeogrid("geo_em.d01_1km.nc", "HGT_M", "geogrid_hgt.tif")
 }
+}
 \concept{
-aconcept
+dataMgmt
 }
 \keyword{IO}
 

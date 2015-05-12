@@ -14,8 +14,8 @@ QuerySiteName(site, path = ".",
 
 \item{path}{Character The path to the database.}
 
-\item{retSiteId}{Logical return ID (name if FALSE) This is only exposed in case there are issues,
-should work by default.}
+\item{retSiteId}{Logical return ID (name if FALSE) This is only exposed in
+case there are issues, should work by default.}
 
 \item{metaDBFileName}{Character The name of the metadata file.}
 }
@@ -23,21 +23,24 @@ should work by default.}
 Character Site name or number.
 }
 \description{
-\code{QuerySiteName} returns the name (site id) for a given site ID (name) in the local database.
+\code{QuerySiteName} returns the name (site id) for a given site ID (name) in
+the local database.
 }
 \examples{
+\dontrun{
 QuerySiteName('06730500', '~/streamflow/OBS/')
 QuerySiteName('BOULDER CREEK AT MOUTH NEAR LONGMONT, CO', '~/streamflow/OBS/')
+}
 }
 \seealso{
 Other streamObs: \code{\link{FindUsgsStns}};
   \code{\link{GetSiteHuc}}; \code{\link{GetUsgsHucData}};
   \code{\link{GetUsgsIvProduct}};
   \code{\link{ImproveHucMeta}}; \code{\link{LoadMetaDB}};
-  \code{\link{PlotPrettyData}}; \code{\link{PrettyUsgs}};
+  \code{\link{PlotPrettyUsgs}}; \code{\link{PrettyUsgs}};
   \code{\link{QueryHaveSite}}; \code{\link{QuerySiteData}};
   \code{\link{QuerySiteInfo}}; \code{\link{QuerySiteProd}};
-  \code{\link{SaveHucData}};
+  \code{\link{SaveHucData}}; \code{\link{[.prettyUsgs}};
   \code{\link{subset.prettyUsgs}}
 }
 \concept{

@@ -24,11 +24,16 @@ date and data columns for use with other rwrfhydro tools.
 \examples{
 ## Take a groundwater outflow text file for an hourly model run of Fourmile Creek
 ## and return a dataframe.
-
+\dontrun{
 modGWout1h.mod1.fc <- ReadGwOut("../OUTPUT/GW_outflow.txt")
 }
+}
+\seealso{
+Other modelDataReads: \code{\link{ReadFrxstPts}};
+  \code{\link{ReadLdasoutWb}}; \code{\link{ReadRtout}}
+}
 \concept{
-aconcept
+dataGet
 }
 \keyword{IO}
 

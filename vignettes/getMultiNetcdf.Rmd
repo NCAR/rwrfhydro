@@ -49,7 +49,7 @@ Note that the output and restart frequencies are different from the number of fi
 All three lists are collated by name. Now we define which variables are desired for each file group. From the land surface model (LSM) output files, we want the surface radiative temperature (TRAD) and the snow water equivalent (SNEQV). For the  hydro restart files, we want streamflow and soil moisture on the four vertical soil layers. The layers are differentiated, for now, only by the names we give them (smc1-4). 
 ```{r}
 lsmVars   <- list(TRAD='TRAD', SWE='SNEQV')
-hydroVars <- list(streamflow='qlink1', smc1='sh2ox', smc2='sh2ox', smc3='sh2ox', smc4='sh2ox')
+hydroVars <- list(streamflow='qlink1', smc1='sh2ox1', smc2='sh2ox2', smc3='sh2ox3', smc4='sh2ox4')
 varList <- list(lsm=lsmVars, hydro=hydroVars)
 ```
 
@@ -59,7 +59,7 @@ The indexList defines what indices/stats are desired for each variable in each f
 Only a scalar can be returned for each entry specified index. However, spatial fields (a range of indices) can be summarized using arbitrary statistics. We show how to define your own useful statistics which can be used when specifying the indexList. (Note that the envir argument may be needed to get your function inside of GetMultiNcdf in special circumstances.) Our statistic example is to calculate basin-average and basin-maximum soil moisture on each layer. To do this we need the basin mask (a non-standard field in the hydro grid file) to define the grid indices in the basin and the fraction of each within the basin. 
 ```{r}
 library(ncdf4)
-fineGridNc <- nc_open(paste0(fcPath,'DOMAIN/hydro_OrodellBasin_100m.nc'))
+fineGridNc <- nc_open(paste0(fcPath,'DOMAIN/Fulldom_hydro_OrodellBasin_100m_geogrd.nc'))
 basinMask <- ncvar_get(fineGridNc, 'basn_msk_geogrid')
 nc_close(fineGridNc)
 basAvg <- function(var) sum(basinMask*var)/sum(basinMask)
@@ -78,10 +78,10 @@ Statistic lists are also specified for the individual soil moisture layers, 1-4,
 lsmInds   <- list(TRAD=list(start=c(1,1,1), end=c(21,7,1), stat='basAvg'),
                   SNEQV=list(start=c(1,1,1), end=c(21,7,1), stat='basMax'))
 hydroInds <- list(qlink1=1,
-                  smc1=list(start=c(1,1,1), end=c(21,7,1), stat='basAvg'),
-                  smc2=list(start=c(1,1,2), end=c(21,7,2), stat='basAvg'),
-                  smc3=list(start=c(1,1,3), end=c(21,7,3), stat='basAvg'),
-                  smc4=list(start=c(1,1,4), end=c(21,7,4), stat='basAvg') )
+                  smc1=list(start=c(1,1), end=c(21,7), stat='basAvg'),
+                  smc2=list(start=c(1,1), end=c(21,7), stat='basAvg'),
+                  smc3=list(start=c(1,1), end=c(21,7), stat='basAvg'),
+                  smc4=list(start=c(1,1), end=c(21,7), stat='basAvg') )
 indList <- list(lsm=lsmInds, hydro=hydroInds)
 ```
 
@@ -90,7 +90,7 @@ All the work is really in setting up the lists. Now we just pass these to `GetMu
 ```{r}
 library(doMC)   ## Showing parallelization, which is at the file level within
 registerDoMC(3) ## each file groups; pointless to be longer than your timeseries.
-fileData <- GetMultiNcdf(file=flList,var=varList, ind=indList, parallel=TRUE)
+fileData <- GetMultiNcdf(file=flList,var=varList, ind=indList, parallel=FALSE)
 ```
 
 What did we get?

@@ -11,10 +11,12 @@ PadRange(limits, delta = diffMult * diff(limits), diffMult = 0.05)
 
 \item{delta}{An amount to add(subtract) from the upper(lower) limit.}
 
-\item{diffMult}{A fraction of the passed range (\code{limits}) to use as \code{delta}.}
+\item{diffMult}{A fraction of the passed range (\code{limits}) to use as
+\code{delta}.}
 }
 \description{
-\code{PadRange} Takes limits and expands them by some amount or proportionally to their difference.
+\code{PadRange} Takes limits and expands them by some amount or
+proportionally to their difference.
 }
 \examples{
 PadRange(c(0,100))

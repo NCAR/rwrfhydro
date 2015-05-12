@@ -1,5 +1,10 @@
 #' @export
 GetActiveHucData <- function(huc, parameterCd=c('00060','00065')) {
+
+  if(!try(class(dataRetrieval::importWaterML2Jlm)) == 'function') {
+    devtools::install_github("mccreigh/dataRetrieval")
+    warning('must restart to access the newly installed mccreigh/dataRetrieval.', immediate. = TRUE)
+  }
   dataRetrieval::readNWISdata(service='iv', huc=huc, siteStatus='active', 
                               parameterCd=parameterCd)
                               #period='PT4H')
@@ -7,6 +12,8 @@ GetActiveHucData <- function(huc, parameterCd=c('00060','00065')) {
 #system.time(for(i in 1:10) dum<-GetActiveHucData('10',parameterCd = '00060'))
 ##averaged over 10 pulls, pulling only 00060 using "period='PT4H"' took 
 ## huc06: 130% longer, huc14: 146% longer, huc10: 221% longer. 
+
+
 
 #' @export
 PlotCollectStats <- function(path='/home/jamesmcc/usgsStreamData/realTimeData/', 

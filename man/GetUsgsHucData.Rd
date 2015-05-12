@@ -5,7 +5,7 @@
 \title{Get all the USGS streamgage information within a HUC8.}
 \usage{
 GetUsgsHucData(huc8, outPath = NULL,
-  metaDBFileName = "usgsDataRetrieval.metaDatabase.RData")
+  metaDBFileName = "usgsDataRetrieval.metaDatabase.RData", update = FALSE)
 }
 \arguments{
 \item{huc8}{Character The eight-digit HUC code.}
@@ -13,26 +13,32 @@ GetUsgsHucData(huc8, outPath = NULL,
 \item{outPath}{Character The path to the database directory}
 
 \item{metaDBFileName}{Character The name of the database metadata file.}
+
+\item{update}{Logical, If huc exists on disk, update it byt getting new data from NWIS?}
 }
 \description{
-\code{GetUsgsHucData} gets all the USGS streamgage information within a HUC8. If an
-output path is supplied, an existing database is examined for existing records and
-the data retrieved from the USGS only extends the available and is saved in the data base.
-Could eventually use startDate and endDate to tweak this for calls which dont care about archival.
+\code{GetUsgsHucData} gets all the USGS streamgage information within a HUC8.
+If an output path is supplied, an existing database is examined for existing
+records and the data retrieved from the USGS only extends the available and
+is saved in the data base. Could eventually use startDate and endDate to
+tweak this for calls which dont care about archival.
 }
 \examples{
-bldrHucData    <- GetUsgsHucData(huc='10190005')
-satilpaHucData <- GetUsgsHucData(huc='03160203')
-vansHucData    <- GetUsgsHucData(huc='03020104')
+\dontrun{
+bldrHucData    <- GetUsgsHucData(huc8='10190005')
+satilpaHucData <- GetUsgsHucData(huc8='03160203')
+vansHucData    <- GetUsgsHucData(huc8='03020104')
+}
 }
 \seealso{
 Other streamObs: \code{\link{FindUsgsStns}};
   \code{\link{GetSiteHuc}}; \code{\link{GetUsgsIvProduct}};
   \code{\link{ImproveHucMeta}}; \code{\link{LoadMetaDB}};
-  \code{\link{PlotPrettyData}}; \code{\link{PrettyUsgs}};
+  \code{\link{PlotPrettyUsgs}}; \code{\link{PrettyUsgs}};
   \code{\link{QueryHaveSite}}; \code{\link{QuerySiteData}};
   \code{\link{QuerySiteInfo}}; \code{\link{QuerySiteName}};
   \code{\link{QuerySiteProd}}; \code{\link{SaveHucData}};
+  \code{\link{[.prettyUsgs}};
   \code{\link{subset.prettyUsgs}}
 }
 \concept{

@@ -2,19 +2,22 @@
 % Please edit documentation in R/dart_prep_streamflow.R
 \name{Model3SdErrPctErrPlusQntlIncpt}
 \alias{Model3SdErrPctErrPlusQntlIncpt}
-\title{Three-sigma errors specified as percent of observed plus some quantile of historical flows.}
+\title{Three-sigma errors specified as percent of observed plus some quantile of
+historical flows.}
 \usage{
 Model3SdErrPctErrPlusQntlIncpt(data, qntlIncpt = 0.005, pctErr = 0.1)
 }
 \arguments{
 \item{data,}{Numeric the values for which errors are to be modeled.}
 
-\item{qntlIncpt}{Numeric the quantile of historical observations to be used as minimum error.}
+\item{qntlIncpt}{Numeric the quantile of historical observations to be used
+as minimum error.}
 
 \item{pctErr}{Numeric the percent error associated with the observations.}
 }
 \description{
-\code{Model3SdErrPctErrPlusQntlIncpt} models three sigma (standard deviation) errors (same
-units as input) as percent of observed plus some quantile of historical record.
+\code{Model3SdErrPctErrPlusQntlIncpt} models three sigma (standard deviation)
+errors (same units as input) as percent of observed plus some quantile of
+historical record.
 }
 

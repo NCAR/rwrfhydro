@@ -40,7 +40,7 @@ Model 2: All WRF-Hydro routing options turned on (hourly model run).
 modStrd.allrt.fc <- ReadFrxstPts(paste0(dataPath, '/RUN.RTTESTS/OUTPUT_ALLRT_DAILY/frxst_pts_out.txt'))
 ```
 
-USGS gage observed data at 5-minute intervals. Find the nearest gage to the forecast point in the above files. (The following approach can be used when multiple forecast points are output by the model.)
+USGS gage observed data at 5-minute intervals. Find the nearest gage to the forecast point in the above files. (The following approach can be used when multiple forecast points are output by the model. The ddply function essentially performs a loop over unique st_id passing the corresponding subset of the data frame modStrd.chrt.fc to the function which just returns the first row's lon and lat.)
 ```{r, , results='asis'}
 library(plyr)
 fcLocation <- ddply(modStrd.chrt.fc, .(st_id), function(df) df[1,c('st_lon','st_lat')])
@@ -52,8 +52,8 @@ The following checks to see if the data are local and gets them if not. The '000
 ```{r}
 dbPath <- '~/wrfHydroTestCases/usgsDb/'
 obsStr5min.fc <- 
-  PrettySiteData(QueryHaveSite(near$site_no, path=dbPath, ret='00060', get=TRUE))
-names(obsStr5min.fc)[c(2,4)] <- c('POSIXct','q_cms')
+  PrettyUsgs(QueryHaveSite(near$site_no, path=dbPath, ret='00060', get=TRUE))
+names(obsStr5min.fc)[4] <- 'q_cms'
 ```
 
 

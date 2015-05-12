@@ -55,6 +55,7 @@ The arguments of the returned function are:
 }
 \examples{
 ## See the vignette "WRF Hydro Domain and Channel Visualization", for details.
+\dontrun{
 tcPath <- '~/wrfHydroTestCases/'
 fcPath <- paste0(tcPath,'Fourmile_Creek/')
 chrtFile <- paste0(fcPath,'/RUN.RTTESTS/OUTPUT_CHRT_DAILY/201308010000.CHRTOUT_DOMAIN1')
@@ -91,6 +92,7 @@ LocLinkFun(zoom=14, gaugeShape=16, gaugeZoom='orodell', pad=15)
 ## Zoom to logan mill gauge
 LocLinkFun(zoom=15, gaugeShape=16, gaugeZoom='loganMill', pad=15)
 LocLinkFun(zoom=15, gaugeShape=16, gaugeZoom='loganMill', pad=15, click=TRUE)
+}
 }
 \seealso{
 Other domain: \code{\link{VisualizeDomain}}

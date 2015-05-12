@@ -2,8 +2,8 @@
 % Please edit documentation in R/dart_prep_streamflow.R
 \name{Model3SdErrClimTaper}
 \alias{Model3SdErrClimTaper}
-\title{Three-sigma error specification assuming errors are smaller near climatological median (or other
-quantile).}
+\title{Three-sigma error specification assuming errors are smaller near
+climatological median (or other quantile).}
 \usage{
 Model3SdErrClimTaper(data, qntlIncpt = 0.05, qntlClim = 0.5,
   pctErr = 0.15)
@@ -11,17 +11,20 @@ Model3SdErrClimTaper(data, qntlIncpt = 0.05, qntlClim = 0.5,
 \arguments{
 \item{data}{Numeric The values for which errors are to be modeled.}
 
-\item{qntlIncpt}{Numeric The quantile of historical observations to be used as minimum error or intercept.}
+\item{qntlIncpt}{Numeric The quantile of historical observations to be used
+as minimum error or intercept.}
 
-\item{qntlClim}{Numeric The quantile of historical observations to be used as observation value of minimum error.}
+\item{qntlClim}{Numeric The quantile of historical observations to be used as
+observation value of minimum error.}
 
 \item{pctErr}{Numeric The percent error associated with the observations.}
 }
 \description{
-\code{Model3SdErrClimTaper} models three-sigma errors (same units as input) as
-smallest (\code{qntlIncpt} intercept is some climatological quantile) at
-"climatological" observations (\code{qntlClim}, e.g. median = .5) and grow to some maximum
-percent error (\code{pctErr}). This is expressed by
-\code{quantile(data, qntlIncpt) + pmin( pctErr*data, pctErr*abs(data-quantile(data, qntlClim)) )}
+\code{Model3SdErrClimTaper} models three-sigma errors (same units as input)
+as smallest (\code{qntlIncpt} intercept is some climatological quantile) at
+"climatological" observations (\code{qntlClim}, e.g. median = .5) and grow to
+some maximum percent error (\code{pctErr}). This is expressed by \cr
+\code{quantile(data, qntlIncpt) + pmin( pctErr*data,
+pctErr*abs(data-quantile(data, qntlClim)) )}
 }
 

@@ -7,18 +7,18 @@
 TransUsgsProdStat(names, whichIn = FALSE)
 }
 \arguments{
-\item{names}{Character product_stat codes (e.g. 'X_00060_00011') or their translation
-(e.g. 'Discharge (cfs)') separated with an underscore.}
+\item{names}{Character product_stat codes (e.g. 'X_00060_00011') or their
+translation (e.g. 'Discharge (cfs)') separated with an underscore.}
 
 \item{whichIn}{Logical}
 }
 \value{
-if whichIn==FALSE : Character of the translation.
-        if whichIn==TRUE  : Integer index which passed names are in the table.
+if whichIn==FALSE : Character of the translation. if whichIn==TRUE  :
+  Integer index which passed names are in the table.
 }
 \description{
-\code{TransUsgsProdStat} Translate USGS product/stat codes to something readable (and vice versa)
-using a lookup table.
+\code{TransUsgsProdStat} Translate USGS product/stat codes to something
+readable (and vice versa) using a lookup table.
 }
 \concept{
 dataMgmt usgsStreamObs

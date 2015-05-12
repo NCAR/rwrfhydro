@@ -13,21 +13,29 @@ CalcNoahmpFluxes(ldasoutDf)
 The input dataframe with new water flux columns added.
 }
 \description{
-\code{CalcNoahmpFluxes} calculates water balance fluxes from accumulated water terms.
+\code{CalcNoahmpFluxes} calculates water balance fluxes from accumulated
+water terms.
 }
 \details{
-Read a dataframe derived from NoahMP LDASOUT output (i.e., using \code{\link{GetMultiNcdf}}) and
-calculate water budget component fluxes from accumulated water variables.
-NOTE: Currently only works for runs using NoahMP as the LSM.
+Read a dataframe derived from NoahMP LDASOUT output (i.e., using
+\code{\link{GetMultiNcdf}}) and calculate water budget component fluxes from
+accumulated water variables. NOTE: Currently only works for runs using NoahMP
+as the LSM.
 }
 \examples{
 ## Take a NoahMP LDASOUT dataframe for a model run of Fourmile Creek
 ## and generate a dataframe with water fluxes added.
-
+\dontrun{
 modLDASOUT1d.nort.fc <- CalcNoahmpFluxes(modLDASOUT1d.nort.fc)
 }
+}
+\seealso{
+Other modelEvaluation: \code{\link{CalcModPerfMulti}};
+  \code{\link{CalcModPerf}};
+  \code{\link{CalcNoahmpWatBudg}}
+}
 \concept{
-aconcept
+dataMgmt
 }
 \keyword{manip}
 

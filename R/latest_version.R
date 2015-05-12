@@ -83,6 +83,10 @@ GetRemoteMetadata <- function(x, bundle = NULL, source = NULL) UseMethod("GetRem
 CheckMasterSha <- function() {
   ## Static remote variable for rwrfhydro repo master.
   localRef <- packageDescription('rwrfhydro')$RemoteRef
+  if(!length(localRef)) {
+    cat('\n*** NOTE: You loaded your own, local development branch. \n    Switch to a different install to check for updates.')
+    return(invisible(FALSE))
+  }
   if(localRef != 'master')
     cat('\n*** NOTE: You are using branch "',localRef,'" ***\n\n', sep='')
   remote <-

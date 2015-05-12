@@ -17,7 +17,7 @@ and \code{variance} where dateTime is the same for the entire dataframe.}
 Write a USGS discharge timeslice to a netcdf file.
 }
 \examples{
-See \\link{MkUsgsTimeSlice}.
+## See \\link{MkUsgsTimeSlice}.
 }
 \keyword{internal}
 

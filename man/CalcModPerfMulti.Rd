@@ -8,82 +8,80 @@ CalcModPerfMulti(flxDf.mod, flxDf.obs, flxCol.mod = "q_cms",
   flxCol.obs = "q_cms", stdate = NULL, enddate = NULL)
 }
 \arguments{
-\item{flxDf.mod}{The flux output dataframe (required). Assumes only one forecast
-point per file, so if you have multiple forecast points in your output dataframe, use
-subset to isolate a single forecast point's data. Also assumes model output and observation
-both contain POSIXct fields (called "POSIXct").}
+\item{flxDf.mod}{The flux output dataframe (required). Assumes only one
+forecast point per file, so if you have multiple forecast points in your
+output dataframe, use subset to isolate a single forecast point's data.
+Also assumes model output and observation both contain POSIXct fields
+(called "POSIXct").}
 
-\item{flxDf.obs}{The observed flux dataframe. Assumes only one observation point per file, so if
-you have multiple observation points in your dataframe, use subset to isolate a single point's data.
-Also assumes model output and observation both contain POSIXct fields (called "POSIXct").}
+\item{flxDf.obs}{The observed flux dataframe. Assumes only one observation
+point per file, so if you have multiple observation points in your
+dataframe, use subset to isolate a single point's data. Also assumes model
+output and observation both contain POSIXct fields (called "POSIXct").}
 
-\item{flxCol.mod}{The column name for the flux time series for the MODEL data (default="q_cms")}
+\item{flxCol.mod}{The column name for the flux time series for the MODEL data
+(default="q_cms")}
 
-\item{flxCol.obs}{The column name for the flux time series for the OBSERVED data (default="q_cms")}
+\item{flxCol.obs}{The column name for the flux time series for the OBSERVED
+data (default="q_cms")}
 
-\item{stdate}{Start date for plot/statistics (DEFAULT=NULL, all records will be used).
-Date MUST be specified in POSIXct format with appropriate timezone
-(e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))}
+\item{stdate}{Start date for statistics (DEFAULT=NULL, all records will be
+used). Date MUST be specified in POSIXct format with appropriate timezone
+(e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S",
+tz="UTC"))}
 
-\item{enddate}{End date for plot/statistics (DEFAULT=NULL, all records will be used).
-Date MUST be specified in POSIXct format with appropriate timezone
-(e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))}
+\item{enddate}{End date for statistics (DEFAULT=NULL, all records will be
+used). Date MUST be specified in POSIXct format with appropriate timezone
+(e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S",
+tz="UTC"))}
 }
 \value{
 A new dataframe containing the model performance statistics.
 }
 \description{
-\code{CalcModPerfMulti} calculates model performance statistics for flux output.
+\code{CalcModPerfMulti} calculates model performance statistics for flux
+output.
 }
 \details{
-\code{CalcModPerfMulti} reads a model flux time series (i.e., created using \code{\link{ReadFrxstPts}}) and
-an observation time series (i.e., created using \code{\link{ReadUsgsGage}}) and calculates model performance
-statistics (Nash-Sutcliffe Efficiency, Rmse, etc.) at various time scales and for low
-and high fluxes. The tool will subset data to matching time periods (e.g., if the
-observed data is at 5-min increments and modelled data is at 1-hr increments, the tool
-will subset the observed data to select only observations on the matching hour break).
+\code{CalcModPerfMulti} reads a model flux time series (i.e., created using
+\code{\link{ReadFrxstPts}}) and an observation time series (i.e., created
+using \code{\link{ReadUsgsGage}}) and calculates model performance statistics
+(Nash-Sutcliffe Efficiency, Rmse, etc.) at various time scales and for low
+and high fluxes. The tool will subset data to matching time periods (e.g., if
+the observed data is at 5-min increments and modelled data is at 1-hr
+increments, the tool will subset the observed data to select only
+observations on the matching hour break).
 
-\code{CalcModPerfMulti} calculates the same statistics as \code{\link{CalcModPerf}}) but returns
-results as a single-row vs. multi-row dataframe. This is intended to streamline compiling statistics
-for multiple data runs or multiple sites.
+\code{CalcModPerfMulti} calculates the same statistics as
+\code{\link{CalcModPerf}}) but returns results as a single-row vs. multi-row
+dataframe. This is intended to streamline compiling statistics for multiple
+data runs or multiple sites.
 
-Performance Statistics:
-\cr (mod = model output, obs = observations, n = sample size)
-\itemize{
-\item n: sample size
-\item nse: Nash-Sutcliffe Efficiency
-\deqn{nse = 1 - ( sum((obs - mod)^2) / sum((obs - mean(obs))^2) ) }
-\item nselog: log-transformed Nash-Sutcliffe Efficiency
-\deqn{nselog = 1 - ( sum((log(obs) - log(mod))^2) / sum((log(obs) - mean(log(obs)))^2) ) }
-\item cor: correlation coefficient
-\deqn{cor = cor(mod, obs) }
-\item rmse: root mean squared error
-\deqn{rmse = sqrt( sum((mod - obs)^2) / n ) }
-\item rmsenorm: normalized root mean squared error
-\deqn{rmsenorm = rmse / (max(obs) - min(obs)) }
-\item bias: percent bias
-\deqn{bias = sum(mod - obs) / sum(obs) * 100 }
-\item mae: mean absolute error
-\deqn{mae = mean(abs(mod - obs)) }
-\item errcom: error in the center-of-mass of the flux, where center-of-mass is the
-hour/day when 50\% of daily/monthly/water-year flux has occurred. Reported as number of hours for
-daily time scale and number of days for monthly and yearly time scales.
-\item errmaxt: Error in the time of maximum flux. Reported as number of hours for daily time scale
-and number of days for monthly and yearly time scales).
-\item errfdc: Error in the integrated flow duration curve between 0.05 and 0.95 exceedance thresholds
-(in native flow units).
-}
+Performance Statistics: \cr (mod = model output, obs = observations, n =
+sample size) \itemize{ \item n: sample size \item nse: Nash-Sutcliffe
+Efficiency \deqn{nse = 1 - ( sum((obs - mod)^2) / sum((obs - mean(obs))^2) )
+} \item nselog: log-transformed Nash-Sutcliffe Efficiency \deqn{nselog = 1 -
+( sum((log(obs) - log(mod))^2) / sum((log(obs) - mean(log(obs)))^2) ) } \item
+cor: correlation coefficient \deqn{cor = cor(mod, obs) } \item rmse: root
+mean squared error \deqn{rmse = sqrt( sum((mod - obs)^2) / n ) } \item
+rmsenorm: normalized root mean squared error \deqn{rmsenorm = rmse /
+(max(obs) - min(obs)) } \item bias: percent bias \deqn{bias = sum(mod - obs)
+/ sum(obs) * 100 } \item mae: mean absolute error \deqn{mae = mean(abs(mod -
+obs)) } \item errcom: error in the center-of-mass of the flux, where
+center-of-mass is the hour/day when 50\% of daily/monthly/water-year flux has
+occurred. Reported as number of hours for daily time scale and number of days
+for monthly and yearly time scales. \item errmaxt: Error in the time of
+maximum flux. Reported as number of hours for daily time scale and number of
+days for monthly and yearly time scales). \item errfdc: Error in the
+integrated flow duration curve between 0.05 and 0.95 exceedance thresholds
+(in native flow units). }
 
-Time scales/Flux types:
-\itemize{
-\item t = native model/observation time step (e.g., hourly)
-\item dy = daily time step
-\item mo = monthly time step
-\item yr = water-year time step
-\item max10 = high flows; restricted to the portion of the time series where the observed flux
-is in the highest 10\% (native time step)
-\item min10 = low flows; restricted to the portion of the time series where the observed flux
-is in the lowest 10\% (native time step)
+Time scales/Flux types: \itemize{ \item t = native model/observation time
+step (e.g., hourly) \item dy = daily time step \item mo = monthly time step
+\item yr = water-year time step \item max10 = high flows; restricted to the
+portion of the time series where the observed flux is in the highest 10\%
+(native time step) \item min10 = low flows; restricted to the portion of the
+time series where the observed flux is in the lowest 10\% (native time step)
 }
 }
 \examples{
@@ -92,6 +90,8 @@ is in the lowest 10\% (native time step)
 ## model performance statistics. The model forecast point data was imported using ReadFrxstPts
 ## and the gage observation data was imported using ReadUsgsGage.
 
+
+\dontrun{
 CalcModPerfMulti(modStr1h.allrt.fc, obsStr5min.fc)
 
 > Output:
@@ -108,8 +108,14 @@ max10_rmse max10_rmsenorm max10_bias max10_mae min10_n min10_nse min10_nselog
 min10_cor min10_rmse min10_rmsenorm min10_bias min10_mae
      0.59       0.11          53.89       -7.3      0.09
 }
+}
+\seealso{
+Other modelEvaluation: \code{\link{CalcModPerf}};
+  \code{\link{CalcNoahmpFluxes}};
+  \code{\link{CalcNoahmpWatBudg}}
+}
 \concept{
-aconcept
+modelEval
 }
 \keyword{ts}
 \keyword{univar}

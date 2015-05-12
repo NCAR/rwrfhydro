@@ -18,9 +18,11 @@ Success if the filename which is (SNODAS_YYYYMMDD.nc), otherwise NULL.
 \code{PutSnodasNcdf} Put the output of ReadSnodasDepthSweDate into a netcdf file.
 }
 \examples{
+\dontrun{
 snodasGot <- GetSnodasDepthSweDate(as.POSIXct('2015-02-28'))
 if(snodasGot) snodasList <- ReadSnodasDepthSweDate(as.POSIXct('2015-02-28'))
 PutSnodasNcdf(snodasList)
+}
 }
 \seealso{
 Other SNODAS: \code{\link{CalcSnodasCoords}};

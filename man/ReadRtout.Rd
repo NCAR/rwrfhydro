@@ -43,10 +43,18 @@ OUTPUT RTOUT water budget variables:
 ## and create a new dataframe containing the basin-wide mean values for the major water budget
 ## components over the time series.
 
-modRtout1h.mod1.fc <- ReadRtout("../RUN.MOD1/OUTPUT", "../DOMAIN/Fulldom_hires_hydrofile_4mile.nc", basid=1, ncores=16)
+\dontrun{
+modRtout1h.mod1.fc <-
+  ReadRtout("../RUN.MOD1/OUTPUT", "../DOMAIN/Fulldom_hires_hydrofile_4mile.nc",
+            basid=1, ncores=16)
+}
+}
+\seealso{
+Other modelDataReads: \code{\link{ReadFrxstPts}};
+  \code{\link{ReadGwOut}}; \code{\link{ReadLdasoutWb}}
 }
 \concept{
-aconcept
+dataGet
 }
 \keyword{IO}
 \keyword{ts}

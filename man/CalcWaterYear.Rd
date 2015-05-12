@@ -9,10 +9,12 @@ CalcWaterYear(POSIXct, dayOf = FALSE)
 \arguments{
 \item{POSIXct}{is a POSIXct variable.}
 
-\item{dayOf}{signals if you want to get back the day of the water year instead of the water year.}
+\item{dayOf}{signals if you want to get back the day of the water year
+instead of the water year.}
 }
 \description{
-\code{CalcWaterYear} Returns the water year or the day of water year for a given POSIXct.
+\code{CalcWaterYear} Returns the water year or the day of water year for a
+given POSIXct.
 }
 \examples{
 CalcWaterYear(as.POSIXct(c("2011-09-30", "2011-10-01"), tz='US/Pacific'))

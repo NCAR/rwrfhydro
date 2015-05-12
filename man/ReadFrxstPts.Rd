@@ -24,11 +24,16 @@ rwrfhydro tools.
 \examples{
 ## Take a forecast point output text file for an hourly model run of Fourmile Creek
 ## and return a dataframe.
-
+\dontrun{
 modStr1h.mod1.fc <- ReadFrxstPts("../OUTPUT/frxst_pts_out.txt")
 }
+}
+\seealso{
+Other modelDataReads: \code{\link{ReadGwOut}};
+  \code{\link{ReadLdasoutWb}}; \code{\link{ReadRtout}}
+}
 \concept{
-aconcept
+dataGet
 }
 \keyword{IO}
 

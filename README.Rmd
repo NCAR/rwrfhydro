@@ -42,13 +42,12 @@ devtools::install_github("mccreigh/rwrfhydro")
 The very first time this is run, it can take a while to install all the package dependencies listed as "Imports" in the
 [DESCRIPTION](https://github.com/mccreigh/rwrfhydro/blob/master/DESCRIPTION) file. 
 
-To check for updates (to the master branch) once rwrfhydro is loaded run `CheckForUpdates()`. 
+To check for updates once rwrfhydro is loaded run `CheckForUpdates()`. 
 
 To install other branches than master and perhaps from your own fork:
 ``` R
 devtools::install_github("username/rwrfhydro", ref='myBranch')
 ```
-Note that `CheckForUpdates()` will always tell you there are updates if you are using a different branch than master. 
 
 # Using
 After the one-time install or any subsequent re-installs/updates, simply load the rwrfhydro library in an R session:
@@ -57,72 +56,70 @@ library(rwrfhydro)
 ```
 and now the package (namespace) is available. 
 
-[*Online vignettes*](https://github.com/mccreigh/rwrfhydro/blob/master/vignettes.Rmd) (or in R `browseVignettes("rwrfhydro")`) are probably the easiest way to get in-depth, thematic overviews of rwrfhydro functionality.
+[*Online vignettes*](https://github.com/mccreigh/rwrfhydro/blob/master/vignettes.Rmd) (or in R `browseVignettes("rwrfhydro")`) are probably the easiest way to get in-depth, thematic overviews of rwrfhydro functionality. 
 
 To get package metadata and a listing of functions:  `library(help=rwrfhydro)`. Just the functions: `ls('package:rwrfhydro')`.
 For specific functionality see function help (e.g. `?VisualizeDomain` or `help(VisualizeDomain)`). 
 
-# Developing
+# Developing and bug reports
+
+Bugs are to be reported [here](https://github.com/mccreigh/rwrfhydro/issues). If you want to solve your bugs and get them back into the code, please continue reading about developing. 
 
 There are three main aspects of developing the code base and contributing:
 
 * Version control for collaboration: Again, not terribly interesting but incredibly useful. For those new to the Git/Github process, it can be a bit daunting. Please contact us for some help, we do want to get your useful code into the main repository!
 
-* R Packaging: Not very interesting, but critical for creating the extrememly useful nature of R packages. Fortunately, the `devtools` package simplifies life tremendously and so figures prominently in the development process we sketch below.
+* R Packaging: Not very interesting, but critical for creating the extrememly useful nature of R packages. Fortunately, the `devtools` package simplifies life tremendously and so figures prominently in the development process we sketch below. The main details have been sorted out, contributing new functions is generally fairly easy. 
 
 * Our best practices: This ranges from fundamental to fussy. 
 
 All of these topics (minus some of our specific best practices) are treated by [Hadley Wickham’s book on R Packages](http://r-pkgs.had.co.nz/). Specific sections of this book are linked below. Further resources on R package development are listed below. 
 
 ## Version control for collaboration: Github
-Note that devtools::install_github() installs rwrfhydro into you default library path (`.libPaths()[1]`) and that the sources code 
-is not included. To edit the source, code you can download from github or you can actually fork and clone the repository to your 
-machine of choice. Note that your git repository is not in your default library path, but somewhere else. Using devtools, however, 
-allows you to load the development package similarly to as if it were a package in your library path (with some slight differences). 
-This means that after you add some code locally, you can load rwrfhydro with those changes appearing packaged. The basic use of 
-devtools is outlined below. It greatly stream lines all aspects of developing R packages and is highly recommended. Note we 
-recommend that you install rwrfhydro using devtools::install_github() first, because this streamlines the installation of package 
-dependencies. 
+
+Instead of going straight to developing, we recommend that you install rwrfhydro using `devtools::install_github('mccreigh/rwrfhydro')` first, because this streamlines the installation of package dependencies. Note that `devtools::install_github('mccreigh/rwrfhydro')` installs rwrfhydro into you default library path (`.libPaths()[1]`) and that the source code is not included. 
+
+The very best way to obtain and edit the source is to "fork" rwrfhydro on github and clone the repository to your machine(s) of choice. You edit your fork and, when it's ready, you submit a pull request to get the changes back to the main (upstream) fork of rwrfhydro. More details are provided below. Your cloned git repository is not in your default R library path (`.libPaths()[1]`), but somewhere else where you choose to keep your development code. However, devtools allows you to build your development package into your library path. This means that after you add some code locally, you can `library(rwrfhydro)` from other R sessions on that machine with your changes appearing in the package. The basic use of devtools is outlined below. It greatly stream lines all aspects of developing R packages and is highly recommended. Particularly, it make is easyt to go from github to an R package.
 
 ### Forking and cloning
-Please fork the repository to contribute. A fork is a separate copy of the main repository. 
-[Forking is trivial in Github](https://help.github.com/articles/fork-a-repo/).
-You have to have a free (for open-source repositories) account to fork on github.
+Please fork the repository to contribute. A fork is a separate copy of the main repository. [Forking is trivial in Github](https://help.github.com/articles/fork-a-repo/). You have to have a free (for open-source repositories) account to fork on github.
 
-Then you'll clone the fork to a local computer and you'll have to interact between the github version, 
-which is used to send pull requests to the main repository, and your local version. We give some tips below. 
-Keep your fork sync'd as much as possible to avoid painful merges.  
+Then you'll clone the fork to a local computer and you'll have to interact between your foked github version and the 'master' fork. You are free to merge changes on the master into your fork at any time. Keep your fork sync'd as much as possible to avoid painful merges. Getting changes back to the master fork requires a pull request on github. We give some tips below. 
 
 ### devBranch and pull requests
-We maintain two branches: master and devBranch. devBranch is where pull requests go. Changes go to master, theoretically, after
-they've been tested on devBranch. And that's done by "mccreigh".
-
-We ask that you send pull requests for the devBranch branch in the repository (and NOT the master). How you get your code
-into the devBranch is your choice. The easiest way is to `git checkout devBranch` before you do anything.
-
-When you have a piece of code to add to the master, [send a pull request](https://help.github.com/articles/using-pull-requests/). 
-We give more details on using git in the [workflow](#workflow-git-r-packaging-and-you) overview below.
+We maintain two main branches: master and devBranch. You should never work on the master branch. All changes have to pass through the devBranch before going in to the master and this is controlled by the package maintainer. Therefore, devBranch is where your [pull requests](https://help.github.com/articles/using-pull-requests/) will go. Other barnches on your fork are up to you, How you get your code into your fork's devBranch is your choice. The easiest way is to `git checkout devBranch` and edit that. Some more details on using git are provided in the [workflow](#workflow-git-r-packaging-and-you) overview below.
 
 ### Not using Github.
-hmm..., expand on this: http://stackoverflow.com/questions/4728432/git-forking-without-github
+This may be possible for small amounts of codes over long periods of time. It is really only the "hub" part of github which may give pause, interfacing a git repo with github is described here and maybe an alternative if necessary: http://stackoverflow.com/questions/4728432/git-forking-without-github
+
+## Travis-CI and `R CMD check`
+The rwrfhydro repo is configured to build on a third-party virtual linux machine with every push or pull request to the master or devBranch branches. This service is known as Travis-CI (continuous integration). This means your pull requests are automatically checked by `R CMD check`, this keeps errors from creeping into the upstream code. There are a variety of hurdles to getting code to build on Travis-CI, including installing requisite system and R packages, which can be challenging but worth it for the debugging provided by automated builds in conjunction with `R CMD check`.
+
+`R CMD check` accepts a variety of arguments. Ultimately, it 1) checks the source for consistency including across platforms (Windows, OSX, linux), 2) runs all specified code tests, essentially regression tests, 3) runs all the examples provided in the documentation, and 4) builds all the vignettes. Currently, we are skipping vignette building until we can streamline several of these. 
+
+You can configure your own fork to build on Travis-CI and you can push frequently to check for errors. This is nearly identical to (slightly more stringent than) running `devtools::check()`, but all you have to do is push your commits. 
 
 ## Workflow: git, R Packaging, and you
 
 Workflow is approximately this:
   
-* Fork project
+* Fork project on github
+* Clone the github fork to your local machine(s)
+* Checkout the devBranch (`git checkout devBranch`)
+
 * Development cycles:
-  * Checkout the devBranch (`git checkout devBranch`)
-  * Optional: Make a topic branch of devBranch in git (e.g. `git checkout newBranch`)
+  * Optional: Create a topic branch off of devBranch in git (e.g. `git checkout topicBranch`) and push this to github (`git push origin topicBranch`). 
   * Write code (in these dirs: R/, NAMESPACE, src/, data/, inst/).
   * Write documentation (in these dirs: man/, vignettes/).
   * Write tests (in this dir: test/).
-  * Check with devtools: `devtools::document(); devtools::check_doc(); devtools::check()`
+  * Document and check with devtools: `devtools::document(); devtools::check_doc(); devtools::check()`
   * Commit to your branch with git. (`git commit -am 'Some cool features were needed.'`)
-  * Merge your master with the upstream repository to minimize merge pains. 
-  ([See here.](https://help.github.com/articles/syncing-a-fork/) Note pushing back to github at the very bottom.)
-  * Merge your devBranch with your master. (`git checkout devBranch; git merge master`)
-  * Push your devBranch to github. (`git push origin devBranch`)
+  * Push to github (`git push origin branch`). If Travis-CI is configured, this triggers an `R CMD check` on Travis. 
+
+To get code back to the main reposiory/fork:  
+  * [If on topicBranch: merge it into devBranch.]
+  * Merge your devBranch with the "upstream" devBranch, that is in the master fork: [See here.](https://help.github.com/articles/syncing-a-fork/) **Note** pushing back to github at the very bottom of that page.
+  * [If on topicBranch: You probably want to mege devBranch into topicBranch.]
   * Submit a [pull request on github](https://help.github.com/articles/using-pull-requests/) on devBranch. 
 
 
@@ -152,6 +149,8 @@ Workflow is approximately this:
 
 #### Documentation with roxygen
 [http://r-pkgs.had.co.nz/man.html](http://r-pkgs.had.co.nz/man.html)
+Once you get used to this, you will love writing documentation as you go for your R functions. 
+
 * Roxygen comments start with #' and come before a function. All the roxygen lines preceding a function are called ablock. Each line should be wrapped in the same way as your code, normally at 80 characters.
 * Blocks are broken up into tags, which look like @tagName details. The content of a tag extends from the end of the tag name to the start of the next tag (or the end of the block). Because @ has a special meaning in roxygen, you need to write @@ if you want to add a literal @ to the documentation (this is mostly important for email addresses and for accessing slots of S4 objects).
 * Each block includes some text before the first tag. This is called the introduction, and is parsed specially:
@@ -168,9 +167,6 @@ gaugePts object for organizing "frxst points", both locations and data.
 ### Graphics
 We need to resolve if we are going to use base graphics or ggplot or both. 
 I’m leaning towards both. Not all plotting routines have to always be available for a given function, but I think that both will probably develop over time. 
-
-
-
 
 Because ggplot has a big learning curve, we can return closures which 1) provide tweakability for basic things to be adjusted in the plot make the plot when called, 2) which return the basic ggplot object which can then also be extended with ggplot commands. I made an example of this in VisualizeDomain.R for ggmap/ggplot objects.
 

@@ -8,27 +8,33 @@ MkUsgsTimeSlice(realTimeFiles, outPath, nearestMin = 5, oldestTime = NULL,
   qcFunction, varianceFunction)
 }
 \arguments{
-\item{realTimeFiles}{Character vector of active RData format files to be processed.}
+\item{realTimeFiles}{Character vector of active RData format files to be
+processed.}
 
-\item{outPath}{Character, the directory path where ncdf files are to be written.}
+\item{outPath}{Character, the directory path where ncdf files are to be
+written.}
 
-\item{nearestMin}{Numeric, the time resolution to which the observation times are rounded
-and the netcdf timeslice files are to be written. Must evenly divide 60.}
+\item{nearestMin}{Numeric, the time resolution to which the observation times
+are rounded and the netcdf timeslice files are to be written. Must evenly
+divide 60.}
 
 \item{oldestTime}{POSIXct, the date BEFORE which data will be ignored.}
 
-\item{qcFunction}{Function, used to apply quality control procedures to the timeslice in
-metric units. Note that this QC can only use information from the current time. QC
-procedures involving the temporal domain will be applied elsewhere.}
+\item{qcFunction}{Function, used to apply quality control procedures to the
+timeslice in metric units. Note that this QC can only use information from
+the current time. QC procedures involving the temporal domain will be
+applied elsewhere.}
 
-\item{varianceFunction}{Function, used to derive the observation variance from
-a dataframe with the following columns: \code{site_no}, \code{dateTime}, \code{code},
-\code{queryTime}, and \code{discharge.cms}. The function accepts the dataframe and
-returns the data frame with the new \code{variance} column.}
+\item{varianceFunction}{Function, used to derive the observation variance
+from a dataframe with the following columns: \code{site_no},
+\code{dateTime}, \code{code}, \code{queryTime}, and \code{discharge.cms}.
+The function accepts the dataframe and returns the data frame with the new
+\code{variance} column.}
 }
 \value{
-A dataframe with two columns: \code{POSIXct} and \code{filename} which given the
-time of the timeslice and the corresponding file name with full path.
+A dataframe with two columns: \code{POSIXct} and \code{filename}
+  which given the time of the timeslice and the corresponding file name with
+  full path.
 }
 \description{
 Make timeslices from active USGS discharge data files.
@@ -60,11 +66,12 @@ unlink(unique(c(ret1$file, ret2$file)))
 ret1 <- MkUsgsTimeSlice( realTimeFiles, outPath=outPath, nearest=60,
                         oldest=as.POSIXct('2015-04-15 00:00:00', tz='UTC'))
 nStn <-
-  plyr::ldply(NamedList(ret1$file),
-              function(ff) { nc <- ncdump(ff, quiet=TRUE)
-                             data.frame(nStn=nc$dim$stationId$len,
-                                        time=as.POSIXct('1970-01-01 00:00:00',tz='UTC') + nc$dim$time$vals,
-                                       nUniqueStn = length(unique(nc$dim$stationId$vals)) )},
+ plyr::ldply(NamedList(ret1$file),
+      function(ff) { nc <- ncdump(ff, quiet=TRUE)
+                     data.frame(nStn=nc$dim$stationId$len,
+                                time=as.POSIXct('1970-01-01 00:00:00',tz='UTC') +
+                                     nc$dim$time$vals,
+                                nUniqueStn = length(unique(nc$dim$stationId$vals)) )},
              .parallel=TRUE)
 library(ggplot2)
 ggplot(nStn, aes(x=time,y=nStn)) + geom_point(color='red')

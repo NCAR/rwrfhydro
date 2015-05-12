@@ -18,17 +18,19 @@ QuerySiteProd(site, path = ".",
 \code{QuerySiteProd} finds the products available for a given site in the local database.
 }
 \examples{
+\dontrun{
 QuerySiteProd('06730500', '~/streamflow/OBS/')
+}
 }
 \seealso{
 Other streamObs: \code{\link{FindUsgsStns}};
   \code{\link{GetSiteHuc}}; \code{\link{GetUsgsHucData}};
   \code{\link{GetUsgsIvProduct}};
   \code{\link{ImproveHucMeta}}; \code{\link{LoadMetaDB}};
-  \code{\link{PlotPrettyData}}; \code{\link{PrettyUsgs}};
+  \code{\link{PlotPrettyUsgs}}; \code{\link{PrettyUsgs}};
   \code{\link{QueryHaveSite}}; \code{\link{QuerySiteData}};
   \code{\link{QuerySiteInfo}}; \code{\link{QuerySiteName}};
-  \code{\link{SaveHucData}};
+  \code{\link{SaveHucData}}; \code{\link{[.prettyUsgs}};
   \code{\link{subset.prettyUsgs}}
 }
 \concept{

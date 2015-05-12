@@ -9,12 +9,12 @@ RoundMinutes(POSIXct, nearest = 5)
 \arguments{
 \item{POSIXct,}{POSIXct class vector.}
 
-\item{nearest,}{Numeric, the time resolution to which the passed times are rounded.
-Must evenly divide 60.}
+\item{nearest,}{Numeric, the time resolution to which the passed times are
+rounded. Must evenly divide 60.}
 }
 \value{
-A vector of POSIXct class corresponding to the input, rounded to the nearest
-\code{nearest} minutes.
+A vector of POSIXct class corresponding to the input, rounded to the
+  nearest \code{nearest} minutes.
 }
 \description{
 Round a POSIXct time to the nearest mth minute.
@@ -23,4 +23,5 @@ Round a POSIXct time to the nearest mth minute.
 print(time <- Sys.time()+lubridate::minutes(1:10))
 RoundMinutes(time, nearest=5)
 }
+\keyword{internal}
 

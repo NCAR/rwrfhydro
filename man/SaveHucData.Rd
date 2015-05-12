@@ -15,28 +15,36 @@ SaveHucData(hucData, outPath,
 
 \item{metaDBFileName}{Character The name of the database metadata file.}
 
-\item{overwriteHucDataFile}{Logical Replace/overwrite the existing data file for the HUC with the current data.}
+\item{overwriteHucDataFile}{Logical Replace/overwrite the existing data file
+for the HUC with the current data.}
 }
 \description{
-\code{SaveHucData} take a list returned by \code{GetUsgsHucData}, create or append to an existing archive, and update
-metadata file. Input list is grouped by HUC codes where each HUC has data and meta lists. The output files
-are written to outPath with the following format HHHHHHHH.data.RData where HHHHHHHH is the HUC8 code. The
-name of the metadata file is configurable. The metadata file contains metadata for all files in the outPath.
+\code{SaveHucData} take a list returned by \code{GetUsgsHucData}, create or
+append to an existing archive, and update metadata file. Input list is
+grouped by HUC codes where each HUC has data and meta lists. The output files
+are written to outPath with the following format HHHHHHHH.data.RData where
+HHHHHHHH is the HUC8 code. The name of the metadata file is configurable. The
+metadata file contains metadata for all files in the outPath.
 }
 \examples{
-files <- SaveHucData(GetUsgsHucData(huc='10190005'), outPath='~/wrfHydroTestCases/usgsDb') ##boulder, CO
-files <- SaveHucData(GetUsgsHucData(huc='03160203'), outPath='~/wrfHydroTestCases/usgsDb') ##satilpa, AL
-files <- SaveHucData(GetUsgsHucData(huc='03020104'), outPath='~/wrfHydroTestCases/usgsDb')  ##vans, NC
+\dontrun{
+files <- SaveHucData(GetUsgsHucData(huc='10190005'),
+                     outPath='~/wrfHydroTestCases/usgsDb') ##boulder, CO
+files <- SaveHucData(GetUsgsHucData(huc='03160203'),
+                     outPath='~/wrfHydroTestCases/usgsDb') ##satilpa, AL
+files <- SaveHucData(GetUsgsHucData(huc='03020104'),
+                     outPath='~/wrfHydroTestCases/usgsDb')  ##vans, NC
+}
 }
 \seealso{
 Other streamObs: \code{\link{FindUsgsStns}};
   \code{\link{GetSiteHuc}}; \code{\link{GetUsgsHucData}};
   \code{\link{GetUsgsIvProduct}};
   \code{\link{ImproveHucMeta}}; \code{\link{LoadMetaDB}};
-  \code{\link{PlotPrettyData}}; \code{\link{PrettyUsgs}};
+  \code{\link{PlotPrettyUsgs}}; \code{\link{PrettyUsgs}};
   \code{\link{QueryHaveSite}}; \code{\link{QuerySiteData}};
   \code{\link{QuerySiteInfo}}; \code{\link{QuerySiteName}};
-  \code{\link{QuerySiteProd}};
+  \code{\link{QuerySiteProd}}; \code{\link{[.prettyUsgs}};
   \code{\link{subset.prettyUsgs}}
 }
 \concept{

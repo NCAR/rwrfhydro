@@ -2,30 +2,35 @@
 % Please edit documentation in R/usgs_ingest.R
 \name{GetUsgsIvProduct}
 \alias{GetUsgsIvProduct}
-\title{For a single product, get instantaneous USGS data and separate data and metadata/attributes into a list.}
+\title{For a single product, get instantaneous USGS data and separate data and
+metadata/attributes into a list.}
 \usage{
 GetUsgsIvProduct(prodDf)
 }
 \arguments{
-\item{prodDf}{is a dataframe returned by \code{dataRetrieval::whatNWISdata(stns$site_no, service = "uv")}
-subet to an individual product code.}
+\item{prodDf}{is a dataframe returned by
+\code{dataRetrieval::whatNWISdata(stns$site_no, service = "uv")} subet to
+an individual product code.}
 }
 \value{
 list(data=,meta=)
 }
 \description{
-\code{GetUsgsIvProduct} gets instantaneous USGS data for a single product code
-and separates the returned dataframe with attributes from \code{dataRetrieval::readNWISuv} into a list with
-separate data and metadata/attributes. The meta data are updated with startTime and endTime information.
+\code{GetUsgsIvProduct} gets instantaneous USGS data for a single product
+code and separates the returned dataframe with attributes from
+\code{dataRetrieval::readNWISuv} into a list with separate data and
+metadata/attributes. The meta data are updated with startTime and endTime
+information.
 }
 \seealso{
 Other streamObs: \code{\link{FindUsgsStns}};
   \code{\link{GetSiteHuc}}; \code{\link{GetUsgsHucData}};
   \code{\link{ImproveHucMeta}}; \code{\link{LoadMetaDB}};
-  \code{\link{PlotPrettyData}}; \code{\link{PrettyUsgs}};
+  \code{\link{PlotPrettyUsgs}}; \code{\link{PrettyUsgs}};
   \code{\link{QueryHaveSite}}; \code{\link{QuerySiteData}};
   \code{\link{QuerySiteInfo}}; \code{\link{QuerySiteName}};
   \code{\link{QuerySiteProd}}; \code{\link{SaveHucData}};
+  \code{\link{[.prettyUsgs}};
   \code{\link{subset.prettyUsgs}}
 }
 \concept{

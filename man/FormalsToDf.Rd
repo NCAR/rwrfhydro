@@ -31,7 +31,6 @@ myF <- function(x,y,z=NULL) {
   }
 myF.atomic(x=11:13,y=1:3)
 myF(x=11:13,y=1:3)
-myF(x=11:13,y=1:2,z=NULL)
 }
 \keyword{internal}
 \keyword{utilities}

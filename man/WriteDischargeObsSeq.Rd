@@ -29,7 +29,9 @@ or squares the result to return the variance (default).
 }
 \examples{
 #Following on examples for MkDischargeVariance
+\dontrun{
 WriteDischargeObsSeq(prettyOro, '~/.', 'orodell', 'climTaperDefault')
+}
 }
 \concept{
 DART dataMgmt

@@ -60,7 +60,7 @@ WriteNcPrettyUsgs <- function(prettyDf, outPath='.') {
   #' globalAttList <- list()
   #' globalAttList[[1]] <- list(name='Restart_Time',value='2012-07-05_00:00:00', precision="text")
   #' globalAttList[[2]] <- list(name='Some reall atts',value='#$%^!!', precision="text" )
-  dum <- MkNcdf( varList, globalAttList, '~/testHistoricalStreamData.nc' )
+  dum <- MkNcdf( varList, globalAttList=globalAttList, filename='~/testHistoricalStreamData.nc' )
   
   
 }
@@ -73,7 +73,7 @@ WriteNcPrettyUsgs <- function(prettyDf, outPath='.') {
 #' and \code{variance} where dateTime is the same for the entire dataframe. 
 #' @param outPath     Character, the file name with path for the output netcdf file. 
 #' @examples
-#' See \link{MkUsgsTimeSlice}.
+#' ## See \link{MkUsgsTimeSlice}.
 #' @keywords internal
 #' @export
 WriteNcTimeSlice <- function(dfByPosix, outPath) {
@@ -156,7 +156,7 @@ WriteNcTimeSlice <- function(dfByPosix, outPath) {
     globalAttList[[1]] <- list(name='Some reall atts',value='#$%^!!', precision="text" )
      
     MkNcdf( varList, globalAttList=globalAttList, 
-            file=paste0(outPath,'/',fileName), 
+            filename=paste0(outPath,'/',fileName), 
             overwrite=TRUE )
 }
 
@@ -172,8 +172,10 @@ TimeSliceFileName <- function(POSIXct)
 #' timeslices on file.
 #' @param file, the ncdf file to read.
 #' @examples
+#' \dontrun{
 #' sliceFiles <- list.files('~/usgsStreamData/timeSliceData/','.*', full.names=TRUE)
 #' ReadNcTimeSlice(tail(sliceFiles,1))
+#' }
 #' @keywords internal
 #' @export
 ReadNcTimeSlice <- function(file) {  

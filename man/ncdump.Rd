@@ -20,6 +20,9 @@ is set, its values are returned.
 \description{
 I just hacked print.ncdf4 just to make it look more like unix output.
 }
+\examples{
+# See \\code{\\link{MkNcdf}}.
+}
 \seealso{
 Other ncdf: \code{\link{MkNcdf}}
 }

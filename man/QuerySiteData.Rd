@@ -23,25 +23,29 @@ dataframe of data with pertinent attributes.
 \code{QuerySiteData} gets the specified data from the local database in long format.
 }
 \examples{
+\dontrun{
 p='~/wrfHydroTestCases/usgsDb/'
-dataOrodell <- QuerySiteData(QuerySiteName("FOURMILE CREEK AT ORODELL, CO", p), '00060', p)
+dataOrodell <- QuerySiteData(QuerySiteName("FOURMILE CREEK AT ORODELL, CO", p),
+                             '00060', p)
 siteInfo<-QuerySiteInfo(c('station_nm','site_no','stateCd'), path=p)
-dataCO <- QuerySiteData(subset(siteInfo, stateCd=='08' & product=='00060')$site_no, '00060', p)
+dataCO <- QuerySiteData(subset(siteInfo, stateCd=='08' & product=='00060')$site_no,
+                        '00060', p)
 dataMultiHuc <- QuerySiteData(c('06730500','02084557'),'00060',p)
 Case with ill-defined variables
 dataMultiHuc <- QuerySiteData('06730500','00065',p)
 ## This is the multisite multi product case.
 dataMultiHuc <- QuerySiteData(c('06730500','02084557'),c('00065','00060'),p)
 }
+}
 \seealso{
 Other streamObs: \code{\link{FindUsgsStns}};
   \code{\link{GetSiteHuc}}; \code{\link{GetUsgsHucData}};
   \code{\link{GetUsgsIvProduct}};
   \code{\link{ImproveHucMeta}}; \code{\link{LoadMetaDB}};
-  \code{\link{PlotPrettyData}}; \code{\link{PrettyUsgs}};
+  \code{\link{PlotPrettyUsgs}}; \code{\link{PrettyUsgs}};
   \code{\link{QueryHaveSite}}; \code{\link{QuerySiteInfo}};
   \code{\link{QuerySiteName}}; \code{\link{QuerySiteProd}};
-  \code{\link{SaveHucData}};
+  \code{\link{SaveHucData}}; \code{\link{[.prettyUsgs}};
   \code{\link{subset.prettyUsgs}}
 }
 \concept{
