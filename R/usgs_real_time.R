@@ -142,11 +142,17 @@ PlotNStnSlice <- function(pattern='*.nc',
 
 if(FALSE){
 
+  slice <- PlotNStnSlice()
   whMost<-which.max(slice$nStnDf$nUniqueStn)
   mostFile<-slice$nStnDf$.id[whMost]
   mostStn<-ncdump(mostFile,'stationId')
   length(mostStn);length(unique(mostStn))
-theTable<-table(mostStn)
-theTable[which(theTable>1)]
+  theTable<-table(mostStn)
+  theTable[which(theTable>1)]
 
+  
+  UnionStns <- function(files) {
+    
+  }
+  
 }

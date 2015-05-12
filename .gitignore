@@ -6,3 +6,4 @@
 packrat/*
 gh-md-toc
 *.build.timestamp
+.Rproj.user
