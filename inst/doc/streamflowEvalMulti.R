@@ -20,7 +20,7 @@ library("rwrfhydro")
 #' 
 ## ----, echo=FALSE--------------------------------------------------------
 options(width = 190)
-library(printr)
+#library(printr)
 
 #' 
 #' Set the data paths for the Upper Rio Grande.
@@ -395,7 +395,7 @@ perfStats
 
 #' 
 ## ----, , results = "asis", echo=FALSE------------------------------------
-suppressPackageStartupMessages(library(pander))
-pander::pandoc.table(perfStats, justify="left", caption="")
+#suppressPackageStartupMessages(library(pander))
+#pander::pandoc.table(perfStats, justify="left", caption="")
 
 #' 

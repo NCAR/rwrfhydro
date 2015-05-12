@@ -59,8 +59,8 @@ wb.allrt.fc
 
 #' 
 ## ----, results = "asis", echo=FALSE--------------------------------------
-suppressPackageStartupMessages(library(pander))
-pander::pandoc.table(wb.allrt.fc, justify="left", caption="")
+#suppressPackageStartupMessages(library(pander))
+#pander::pandoc.table(wb.allrt.fc, justify="left", caption="")
 
 #' 
 #' Plot the water budget as a pie chart.
