@@ -118,9 +118,28 @@ PlotNStnSlice <- function(pattern='*.nc',
                                          time=as.POSIXct('1970-01-01 00:00:00',tz='UTC') + nc$dim$time$vals,
                                          nUniqueStn = length(unique(nc$dim$stationId$vals)) )},
                 .parallel=foreach::getDoParWorkers() > 1)
-  ggplot2::ggplot(nStn, ggplot2::aes(x=time,y=nStn)) + 
-    ggplot2::geom_point(color='red') + 
-    ggplot2::theme_bw(base_size=24) 
+
+  thePlot <- 
+    ggplot2::ggplot(nStn, ggplot2::aes(x=time,y=nStn)) + 
+      ggplot2::geom_point(color='red') + 
+      ggplot2::geom_vline(xintercept=as.numeric(lubridate::with_tz(Sys.time(),'UTC')), color='cyan')+
+      ggplot2::theme_bw(base_size=24)        
+      ggplot2::scale_x_datetime(name='Date')
+  
+  print(thePlot)
+  
+  
+  invisible(list(nStnDf=nStn, thePlot=thePlot))
+  
 }
 
+if(FALSE){
 
+  whMost<-which.max(slice$nStnDf$nUniqueStn)
+  mostFile<-slice$nStnDf$.id[whMost]
+  mostStn<-ncdump(mostFile,'stationId')
+  length(mostStn);length(unique(mostStn))
+theTable<-table(mostStn)
+theTable[which(theTable>1)]
+
+}
