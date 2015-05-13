@@ -1,0 +1,53 @@
+# rwrfhydro 1.0.0.9000
+2015-05-06 WRF-Hydro v3.0.0
+* Fix to water budget calculations
+
+# rwrfhydro 1.0.0
+2015-05-01. WRF-Hydro v3.0.0.
+
+## New Features (all are new!)
+This is not an exhaustive list, but is simply culled from the more relevant commit messages. Future change logs will be more informative with bug references.
+
+* ReadCoDwrGage: read CO Dept Water Resources Gage files.
+
+* Multi-basin streamflow eval vignette. 
+
+* New reasmple type option to GetMODIS.
+
+* Using Travis-CI via the new .travis.yml file with native R support: automated build checks on push and pull request (incl. slack notification). Ncdf and rgdal are installed during the check. 
+
+* Appending to unlimited dimensions in ncdf files in MkNcdf.
+
+* CalcModPerf accounts for uneven timesteps in timing stats with output as single row for multi-runs.
+
+* Fixed startup to check for updates can be suppressed with suppressPackageStartupMessages().
+
+* GagesII attribute information in gages2Attr and gages2AttrPlus with documentation and attribution. 
+
+* An rwrfhydro discovery vignette.
+
+* Parallelization of GetSnodasDepthSweDate.
+
+* Snodas vignette.
+
+* FormalsToDf: the suggested way to handle vector arguments (collated across multiple vector arguments) to rwrfhydro routines. 
+
+* MODIS processing routines and vignette.
+
+* Common functions in utilities doc.
+
+* PlotFluxCompare and visualize_modeleval.
+
+* Read in LDASOUT and RTOUT files for water budget calcs: CalcNoahmpWatBudg.
+
+* Functionality for reading WRF-Hydro output.
+
+* Reading USGS and Ameriflux obs data.
+
+* Calculating model performance statistics.
+
+* Snodas retrieval and processing to ncdf (incl a useful matrix rotation utility!).
+
+* MkNcdf: list-based creation of ncdf files using netcdf v4 (later added appending to unlimited dimensions).
+
+* VisualizeChanNtwk: Understanding the seemingly random channel network, gauge-link matching, plot options, point selection with maps, etc. 
