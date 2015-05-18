@@ -9,7 +9,9 @@ GetActiveHucData <- function(huc, parameterCd=c('00060','00065')) {
                               parameterCd=parameterCd)
                               #period='PT4H')
 }
-#system.time(for(i in 1:10) dum<-GetActiveHucData('10',parameterCd = '00060'))
+#system.time(for(i in 1:10) 
+#dum<-GetActiveHucData('10',parameterCd = '00060')
+#)
 ##averaged over 10 pulls, pulling only 00060 using "period='PT4H"' took 
 ## huc06: 130% longer, huc14: 146% longer, huc10: 221% longer. 
 
@@ -126,6 +128,7 @@ PlotNStnSlice <- function(pattern='*.nc',
                                          nUniqueStn = length(unique(nc$dim$stationId$vals)) )},
                 .parallel=foreach::getDoParWorkers() > 1)
 
+  
   thePlot <- 
     ggplot2::ggplot(nStn, ggplot2::aes(x=time,y=nStn)) + 
       ggplot2::geom_point(color='red') + 
@@ -142,10 +145,25 @@ PlotNStnSlice <- function(pattern='*.nc',
 
 if(FALSE){
 
+  doMC::registerDoMC(8)
   slice <- PlotNStnSlice()
-  whMost<-which.max(slice$nStnDf$nUniqueStn)
+
+  sliceData1 <- reshape2::melt(slice$nStnDf[-1], id='time')
+  ggplot2::ggplot(sliceData1, ggplot2::aes(x=time,y=value, color=variable)) + ggplot2::geom_point()
+
+  sliceData2 <- within(slice$nStnDf, {diff=nStn-nUniqueStn; diff[diff<=1]<-NA})
+  ggplot2::ggplot(sliceData2, ggplot2::aes(x=time,y=diff)) + ggplot2::geom_point()
+  
+  
+  whMost<-which.max(slice$nStnDf$nStn)
   mostFile<-slice$nStnDf$.id[whMost]
   mostStn<-ncdump(mostFile,'stationId')
+  mostTime<-ncdump(mostFile,'time')
+  mostQueryTime<-as.POSIXct(ncdump(mostFile,'queryTime'), 
+                            origin=as.POSIXct('1970-01-01 00:00:00 UTC') )
+  
+  ggplot2::ggplot(data.frame(qt=mostQueryTime), ggplot2::aes(x=qt,y=qt)) + ggplot2::geom_point()
+  
   length(mostStn);length(unique(mostStn))
   theTable<-table(mostStn)
   theTable[which(theTable>1)]
