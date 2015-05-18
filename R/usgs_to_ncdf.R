@@ -80,7 +80,7 @@ WriteNcTimeSlice <- function(dfByPosix, outPath) {
     
     fileName <- TimeSliceFileName(dfByPosix$dateTime[1])
     outFileName <- paste0(outPath,'/',fileName)
-    
+
     ## does the file exist?
     if(file.exists(outFileName)) {
       print("file exists: merging... ")
@@ -89,7 +89,7 @@ WriteNcTimeSlice <- function(dfByPosix, outPath) {
       ## new and sort it out and then overwrite the file. 
       dfByPosix <- rbind(dfByPosix, ReadNcTimeSlice(outFileName))      
     }
-    
+
     ## could have multiple of the same station at a given time. 
     ## simly take the most recent. if it got this far it has had some qc
     dfByPosix <- plyr::ddply(dfByPosix, plyr::.(site_no),

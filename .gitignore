@@ -7,4 +7,3 @@ packrat/*
 gh-md-toc
 *.build.timestamp
 .Rproj.user
-packrat/lib*/

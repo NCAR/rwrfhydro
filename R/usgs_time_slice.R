@@ -61,13 +61,14 @@
 #' 
 #' 
 #' ###############################
-#' ## process on hydro-c1
+#' ## process on saudi
 #' realTimeFiles <- list.files(pattern='huc.*.RData', 
 #'                             path='~/usgsStreamData/realTimeData', 
 #'                             full.names=TRUE)
+#' #realTimeFiles <- tail(realTimeFiles,21)
 #' outPath = '~/usgsStreamData/timeSliceData/'
 #' library(doMC)
-#' registerDoMC(12)
+#' registerDoMC(8)
 #' 
 #' ## I'm worried about using too much memory, when I run this on all 
 #' ## previously collected data, so break up the problem
@@ -82,6 +83,8 @@
 #'                          oldest=as.POSIXct('2015-04-15 00:00:00', tz='UTC')
 #'                        )
 #' }
+#' 
+#' 
 #' 
 #' ## end dontrun }  
 #' @family usgs
@@ -108,6 +111,9 @@ MkUsgsTimeSlice <- function( realTimeFiles, outPath,
   }
   allData <- plyr::ldply(NamedList(realTimeFiles), GetActiveData, 
                          .parallel=(foreach::getDoParWorkers() > 1 ))  
+  
+  ##needs to happen before
+  allData$site_no <- as.numeric(allData$site_no)
   
   ## transform the time "granularity"
   ## files are written to the nearest Nth minute.
@@ -137,16 +143,15 @@ MkUsgsTimeSlice <- function( realTimeFiles, outPath,
 #  allData <- varainceFunction(allData)
   allData$variance <- allData$discharge.cms * .1 
 
-  ## for testing outside of plyr
-  #WriteNcTimeSlice(subset(allData, dateTime == allData$dateTime[1]), outPath = outPath)
-  
   ## "slice" the dataframe by time and pass for writing to ncdf. 
   ## this can be done in parallel.
+  ## for testing outside of plyr:
+  ### WriteNcTimeSlice(subset(allData, dateTime == allData$dateTime[1]), outPath = outPath)
   outList <- plyr::ddply(allData, plyr::.(dateTime), 
                          WriteNcTimeSlice, 
                          outPath, 
                          .parallel=(foreach::getDoParWorkers() > 1 ) ) #, .inform=TRUE )
-  
+                         
   names(outList) <- c('POSIXct', 'file')
   outList  
 }
