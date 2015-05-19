@@ -152,7 +152,6 @@ ReadSnodasDepthSweDate <- function(datePOSIXct, outputDir='.') {
 #' @param snodasList The output of ReadSnodasDepthSweDate. 
 #' @param outputDir Character. The directory path where the output files are to be written. 
 #' @return Success if the filename which is (SNODAS_YYYYMMDD.nc), otherwise NULL.
-#' @
 #' \dontrun{
 #' snodasGot <- GetSnodasDepthSweDate(as.POSIXct('2015-02-28'))
 #' if(snodasGot) snodasList <- ReadSnodasDepthSweDate(as.POSIXct('2015-02-28'))

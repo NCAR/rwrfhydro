@@ -194,13 +194,12 @@ MkNcdf <- function( varList, filename,
 #' Emulate ncdump -h on OSX where ncdump might not be availabe. 
 #' 
 #' I just hacked print.ncdf4 just to make it look more like unix output. 
-#' 
+#'
 #' @param file Character, the file to inspect. 
 #' @param variable Character, a variable to return. 
 #' @param quiet Logical, suppress the 'meta' dump?
 #' @return If variable is not set, the meta object \code{ncdf4::nc_open(file)} is returned. If \code{variable}
 #' is set, its values are returned. 
-#' @example See \link{\code{MKNcdf}}.
 #' @concept ncdf 
 #' @family ncdf 
 #' @export
