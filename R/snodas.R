@@ -1,20 +1,15 @@
 #' Get and unpack the SNODAS snow depth and SWE tarball for given dates.
+#'
+#' \code{GetSnodasDepthSweDate} Get and unpack the SNODAS snow depth and SWE tarball for a given date. 
 #' 
-#' \code{GetSnodasDepthSweDate} Get and unpack the SNODAS snow depth and SWE
-#' tarball for a given date.
-#' 
-#' @param datePOSIXct The date in POSIXct format for which data is desired. Only
-#'   whole days matter.
-#' @param outputDir   The directory where the data are to be archived. This
-#'   directory is checked to see if the data exist when overwrite=FALSE
-#' @param overwrite   When false: If the depth and SWE files exist on disk, dont
-#'   grab the tarball. \cr When false: If the tarball exists on disk but depth
-#'   and SWE files dont, just unpack the tarball. \cr When true: Pull new
-#'   tarball and overwrite any existing files with the same date.
-#' @param quiet       Passed to curl, to show it's progress (typcially too fast
-#'   to matter).
-#' @param parallel    Logical Defaults to (foreach::getDoParWorkers>1), so if
-#'   you've set up parallelization it is automatically used.
+#' @param datePOSIXct The date in POSIXct format for which data is desired. Only whole days matter. 
+#' @param outputDir   The directory where the data are to be archived. This directory is checked to see if the
+#'                    data exist when overwrite=FALSE
+#' @param overwrite   When false: If the depth and SWE files exist on disk, dont grab the tarball. \cr
+#'                    When false: If the tarball exists on disk but depth and SWE files dont, just unpack the tarball. \cr
+#'                    When true: Pull new tarball and overwrite any existing files with the same date.
+#' @param quiet       Passed to curl, to show it's progress (typcially too fast to matter).
+#' @param parallel   Logical Defaults to (foreach::getDoParWorkers>1), so if you've set up parallelization it is automatically used. 
 #' @return Logical was the file "got"?
 #' @examples
 #' snodasGot <- GetSnodasDepthSweDate(as.POSIXct('2015-02-28'),
@@ -95,8 +90,8 @@ GetSnodasDepthSweDate <- function(datePOSIXct, outputDir='.', overwrite=FALSE,
 #'
 #' \code{ReadSnodasDepthSweDate} Read (from local disk into memory) the SNODAS snow depth and SWE for a given date. 
 #' 
-#' @param datePOSIXct  The date in POSIXct format for which data is desired. Only whole days matter. 
-#' @param outputDir    The directory where the data are archived.
+#' @param datePOSIXct The date in POSIXct format for which data is desired. Only whole days matter. 
+#' @param outputDir         The directory where the data are archived.
 #' @return A list with a SWE and a depth matrix. 
 #' @examples
 #' snodasGot <- GetSnodasDepthSweDate(as.POSIXct('2015-02-28'),
@@ -114,9 +109,9 @@ ReadSnodasDepthSweDate <- function(datePOSIXct, outputDir='.') {
   mon <- format(datePOSIXct, c("%h")); dd <- format(datePOSIXct, c("%d"))
  
   # depthProdId <- '1036',  sweProdId <- '1034'
-  depthFile0 <- paste0(outputDir,'/','us_ssmv1',
+  depthFile0<- paste0(outputDir,'/','us_ssmv1',
                       '1036tS__T0001TTNATS',yy,mm,dd,'05HP001.dat.gz')
-  sweFile0   <- paste0(outputDir,'/','us_ssmv1',
+  sweFile0  <- paste0(outputDir,'/','us_ssmv1',
                       '1034tS__T0001TTNATS',yy,mm,dd,'05HP001.dat.gz')
 
   # SNODAS spatial reference and scaling
@@ -124,12 +119,12 @@ ReadSnodasDepthSweDate <- function(datePOSIXct, outputDir='.') {
   nRow <- 3351 #columns and rows number:masked version of contiguous US
   dataScaleFactor  <-  1000  #multiply the data this amount, both depth and SWE
 
-  depthCon  <- gzcon(file(depthFile0, "rb"))
+  depthCon <- gzcon(file(depthFile0, "rb"))
   depthData <- readBin(depthCon, integer(), n=nRow*nCol, size=2,
                        signed=TRUE, endian='big')/dataScaleFactor
   close(depthCon)
   
-  sweCon  <- gzcon(file(sweFile0, "rb"))
+  sweCon <- gzcon(file(sweFile0, "rb"))
   sweData <- readBin(sweCon, integer(), n=nRow*nCol, size=2,
                      signed=TRUE, endian='big')/dataScaleFactor
   close(sweCon)
@@ -144,12 +139,12 @@ ReadSnodasDepthSweDate <- function(datePOSIXct, outputDir='.') {
     return(NULL)
   }
 
-  list(datePOSIXct = datePOSIXct,
-       depth.m = RotateCw(matrix(depthData, ncol=nCol, nrow=nRow, byrow=TRUE)),
-       swe.m   = RotateCw(matrix(sweData,   ncol=nCol, nrow=nRow, byrow=TRUE)) )
-}  
-  
-  
+  list(datePOSIXct=datePOSIXct,
+       depth.m= RotateCw(matrix(depthData, ncol=nCol, nrow=nRow, byrow=TRUE)),
+       swe.m  = RotateCw(matrix(sweData,   ncol=nCol, nrow=nRow, byrow=TRUE)) ) 
+}
+
+
 #' Write output of ReadSnodasDepthSweDate to netcdf.
 #'
 #' \code{PutSnodasNcdf} Put the output of ReadSnodasDepthSweDate into a netcdf file. 
@@ -157,7 +152,7 @@ ReadSnodasDepthSweDate <- function(datePOSIXct, outputDir='.') {
 #' @param snodasList The output of ReadSnodasDepthSweDate. 
 #' @param outputDir Character. The directory path where the output files are to be written. 
 #' @return Success if the filename which is (SNODAS_YYYYMMDD.nc), otherwise NULL.
-#' @examples
+#' @
 #' \dontrun{
 #' snodasGot <- GetSnodasDepthSweDate(as.POSIXct('2015-02-28'))
 #' if(snodasGot) snodasList <- ReadSnodasDepthSweDate(as.POSIXct('2015-02-28'))
@@ -215,7 +210,7 @@ PutSnodasNcdf <- function(snodasList, outputDir='.') {
   globalAttList[[2]] <- list(name='POSIXct Origin',value='1970-01-01 00:00.00 UTC', precision="text")
   
   outFile <- paste0(outputDir,'/','SNODAS_',format(snodasList$datePOSIXct,'%Y%m%d'),'.nc')
-  MkNcdf( varList, globalAttList=globalAttList, filename=outFile )
+  MkNcdf( varList, globalAttList, outFile )
 }  
 
 

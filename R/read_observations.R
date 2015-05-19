@@ -1,36 +1,27 @@
 #' Read standard-format text data table downloaded from USGS Water Data
+#'
+#' \code{ReadUsgsGage} reads USGS data table (streamflow and/or stage) and puts into a dataframe.
+#'
+#' \code{ReadUsgsGage} reads a streamflow or stage time series data table (standard USGS Water
+#' Data format) and outputs a dataframe with consistent date and data columns for use with other
+#' rwrfhydro tools.
 #' 
-#' \code{ReadUsgsGage} reads USGS data table (streamflow and/or stage) and puts
-#' into a dataframe.
-#' 
-#' \code{ReadUsgsGage} reads a streamflow or stage time series data table
-#' (standard USGS Water Data format) and outputs a dataframe with consistent
-#' date and data columns for use with other rwrfhydro tools.
-#' 
-#' @param pathGageData The full pathname to the streamflow/stage time series
-#'   text file as downloaded from USGS Water Data. The file should include the
-#'   standard USGS header info and the data time series with standard USGS
-#'   columns.
+#' @param pathGageData The full pathname to the streamflow/stage time series text file as
+#' downloaded from USGS Water Data. The file should include the standard USGS header info and
+#' the data time series with standard USGS columns.
 #' @param returnEnglish Logical: Return variables in english units (cfs and ft)?
 #' @param returnMetric  Logical: Return variables in these units (cms and m)?
-#' @param timeZone  (OPTIONAL) The time zone for the USGS gage data. Only
-#'   necessary if tz code is NOT provided in the input file (e.g., daily
-#'   streamflow gage data files). Time zone name must be R-friendly for your
-#'   current OS. See:
-#'   \url{http://stat.ethz.ch/R-manual/R-devel/library/base/html/timezones.html}
+#' @param timeZone  (OPTIONAL) The time zone for the USGS gage data. Only necessary if tz code
+#' is NOT provided in the input file (e.g., daily streamflow gage data files).
+#' Time zone name must be R-friendly for your current OS. See: \url{http://stat.ethz.ch/R-manual/R-devel/library/base/html/timezones.html}
 #' @return A dataframe containing the USGS flow and/or stage data.
-#'   
+#'
 #' @examples
-#' ## Take a text file downloaded from the USGS Water Data website for 
-#' ## 5-minute flow at Fourmile Creekand create a dataframe called
-#' ## "obsStr5min.fc".
-#' \dontrun{
-#' obsStr5min.fc <- 
-#'   ReadUsgsGage("../OBS/STRFLOW/5min_str_06727500_110401_140810.txt")
-#' obsStr5min.fc <- 
-#'   ReadUsgsGage("../OBS/STRFLOW/5min_str_06727500_110401_140810.txt, 
-#'                returnEnglish=FALSE")
-#' }
+#' ## Take a text file downloaded from the USGS Water Data website for 5-minute flow at Fourmile Creek
+#' ## and create a dataframe called "obsStr5min.fc".
+#'
+#' obsStr5min.fc <- ReadUsgsGage("../OBS/STRFLOW/5min_str_06727500_110401_140810.txt")
+#' obsStr5min.fc <- ReadUsgsGage("../OBS/STRFLOW/5min_str_06727500_110401_140810.txt, returnEnglish=FALSE")
 #' @keywords IO
 #' @concept dataGet
 #' @family obsDataReads
@@ -114,35 +105,29 @@ ReadUsgsGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, ti
 
 
 #' Read standard-format text data table downloaded from CO DWR
+#'
+#' \code{ReadCoDwrGage} reads CO DWR gage data table (streamflow and/or stage) and puts into a dataframe.
+#'
+#' \code{ReadCoDwrGage} reads a streamflow or stage time series data table (standard CO DWR
+#' data format) and outputs a dataframe with consistent date and data columns for use with other
+#' rwrfhydro tools.
 #' 
-#' \code{ReadCoDwrGage} reads CO DWR gage data table (streamflow and/or stage)
-#' and puts into a dataframe.
-#' 
-#' \code{ReadCoDwrGage} reads a streamflow or stage time series data table
-#' (standard CO DWR data format) and outputs a dataframe with consistent date
-#' and data columns for use with other rwrfhydro tools.
-#' 
-#' @param pathGageData The full pathname to the streamflow/stage time series
-#'   text file as downloaded from CO DWR. The file should include the standard
-#'   CO DWR header info and the data time series with standard CO DWR columns.
+#' @param pathGageData The full pathname to the streamflow/stage time series text file as
+#' downloaded from CO DWR. The file should include the standard CO DWR header info and
+#' the data time series with standard CO DWR columns.
 #' @param returnEnglish Logical: Return variables in english units (cfs and ft)
 #' @param returnMetric  Logical: Return variables in these units (cms and m)
-#' @param timeZone  (OPTIONAL) The time zone for the gage data
-#'   (DEFAULT="America/Denver", which is MST/MDT). Time zone name must be
-#'   R-friendly for your current OS. See:
-#'   \url{http://stat.ethz.ch/R-manual/R-devel/library/base/html/timezones.html}
+#' @param timeZone  (OPTIONAL) The time zone for the gage data (DEFAULT="America/Denver",
+#' which is MST/MDT).
+#' Time zone name must be R-friendly for your current OS. See: \url{http://stat.ethz.ch/R-manual/R-devel/library/base/html/timezones.html}
 #' @return A dataframe containing the flow and/or stage data.
-#'   
+#'
 #' @examples
-#' ## Take a text file downloaded from the CO DWR website for 15-minute flow 
-#' ## at Alamosa River and create a dataframe called "obsStr15min.alaterco".
-#' 
-#' \dontrun{
-#' obsStr15min.alaterco <- 
-#'   ReadCoDwrGage("../OBS/STRFLOW/ALATERCO_41715103512.txt")
-#' obsStr15min.alaterco <- 
-#'   ReadCoDwrGage("../OBS/STRFLOW/ALATERCO_41715103512.txt", returnEnglish=FALSE)
-#' }
+#' ## Take a text file downloaded from the CO DWR website for 15-minute flow at Alamosa River
+#' ## and create a dataframe called "obsStr15min.alaterco".
+#'
+#' obsStr15min.alaterco <- ReadCoDwrGage("../OBS/STRFLOW/ALATERCO_41715103512.txt")
+#' obsStr15min.alaterco <- ReadCoDwrGage("../OBS/STRFLOW/ALATERCO_41715103512.txt", returnEnglish=FALSE)
 #' @keywords IO
 #' @concept dataGet
 #' @family obsDataReads
@@ -206,29 +191,24 @@ ReadCoDwrGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, t
 
 
 #' Read standard-format NetCDF data downloaded from Ameriflux
+#'
+#' \code{ReadAmerifluxNC} reads Ameriflux data table (Level 2 standardized NetCDF file) and creates
+#' a dataframe.
+#'
+#' \code{ReadAmerifluxNC} reads an Ameriflux Level 2 standardized NetCDF file and outputs a dataframe
+#' with consistent date and data columns for use with other rwrfhydro tools.
 #' 
-#' \code{ReadAmerifluxNC} reads Ameriflux data table (Level 2 standardized
-#' NetCDF file) and creates a dataframe.
-#' 
-#' \code{ReadAmerifluxNC} reads an Ameriflux Level 2 standardized NetCDF file
-#' and outputs a dataframe with consistent date and data columns for use with
-#' other rwrfhydro tools.
-#' 
-#' @param pathFluxData The full pathname to the flux time series NetCDF file as
-#'   downloaded from an Ameriflux data server.
-#' @param timeZone The time zone for the flux data. Time zone name must be
-#'   R-friendly for your current OS. See:
-#'   \url{http://stat.ethz.ch/R-manual/R-devel/library/base/html/timezones.html}
+#' @param pathFluxData The full pathname to the flux time series NetCDF file as downloaded from an
+#' Ameriflux data server.
+#' @param timeZone The time zone for the flux data. Time zone name must be R-friendly for your
+#' current OS. See: \url{http://stat.ethz.ch/R-manual/R-devel/library/base/html/timezones.html}
 #' @return A dataframe containing the Ameriflux data.
-#'   
+#'
 #' @examples
-#' ## Takes a NetCDF file downloaded from the ORNL Amerifux website for US-NC2
-#' ## (North Carolina Loblolly Pine) and returns a dataframe.
-#' 
-#' \dontrun{
-#' obsFlux30min.usnc2 <- 
-#'   ReadAmerifluxNC("../OBS/FLUX/AMF_USNC2_2005_L2_WG_V003.nc", "America/New_York")
-#' }
+#' ## Takes a NetCDF file downloaded from the ORNL Amerifux website for US-NC2 (North Carolina Loblolly Pine)
+#' ## and returns a dataframe.
+#'
+#' obsFlux30min.usnc2 <- ReadAmerifluxNC("../OBS/FLUX/AMF_USNC2_2005_L2_WG_V003.nc", "America/New_York")
 #' @keywords IO
 #' @concept dataGet
 #' @family obsDataReads
@@ -259,29 +239,24 @@ ReadAmerifluxNC <- function(pathFluxData, timeZone) {
 
 
 #' Read standard-format CSV data downloaded from Ameriflux
+#'
+#' \code{ReadAmerifluxCSV} reads Ameriflux data table (Level 2 standardized CSV file) and creates
+#' a dataframe.
+#'
+#' \code{ReadAmerifluxCSV} reads an Ameriflux Level 2 standardized CSV file and outputs a dataframe
+#' with consistent date and data columns for use with other rwrfhydro tools.
 #' 
-#' \code{ReadAmerifluxCSV} reads Ameriflux data table (Level 2 standardized CSV
-#' file) and creates a dataframe.
-#' 
-#' \code{ReadAmerifluxCSV} reads an Ameriflux Level 2 standardized CSV file and
-#' outputs a dataframe with consistent date and data columns for use with other
-#' rwrfhydro tools.
-#' 
-#' @param pathFluxData The full pathname to the flux time series CSV file as
-#'   downloaded from an Ameriflux data server.
-#' @param timeZone The time zone for the flux data. Time zone name must be
-#'   R-friendly for your current OS. See:
-#'   \url{http://stat.ethz.ch/R-manual/R-devel/library/base/html/timezones.html}
+#' @param pathFluxData The full pathname to the flux time series CSV file as downloaded from an
+#' Ameriflux data server.
+#' @param timeZone The time zone for the flux data. Time zone name must be R-friendly for your
+#' current OS. See: \url{http://stat.ethz.ch/R-manual/R-devel/library/base/html/timezones.html}
 #' @return A dataframe containing the Ameriflux data.
-#'   
+#'
 #' @examples
 #' ## Takes a CSV file downloaded from the ORNL Amerifux website for US-NR1 (Niwot Ridge)
 #' ## and returns a dataframe.
-#' 
-#' \dontrun{
-#' obsFlux30min.usnr1 <- 
-#'   ReadAmerifluxCSV("../OBS/FLUX/AMF_USNR1_2013_L2_GF_V008.csv", "America/Denver")
-#' }
+#'
+#' obsFlux30min.usnr1 <- ReadAmerifluxCSV("../OBS/FLUX/AMF_USNR1_2013_L2_GF_V008.csv", "America/Denver")
 #' @keywords IO
 #' @concept dataGet
 #' @family obsDataReads
