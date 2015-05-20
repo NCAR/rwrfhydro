@@ -3,14 +3,15 @@
 #' This is simply an off-line implementation of how the code solves the connectivity from the 
 #' hydrogrid file with some reformatting for less repetition.
 #' trunk/NDHMS/Routing/module_HYDRO_io.F : SUBROUTINE READ_ROUTEDIM, v3.0 prerelease line ~574, ~5225
-#'
+#' @param hydroGridFile character, the path/fileName to the "Fulldom" file, aka "the hydro grid file"
+#' @param quiet Logical Print information about the channel connectivity?
 #' @examples
 #' hydroFile4Mile <- '~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/Fulldom_hydro_OrodellBasin_100m.nc'
 #' conn4Mile <- CalcChanConnect(hydroFile4Mile)
 #' fromTo <- conn4Mile$toNode; names(fromTo) <- conn4Mile$fromNode
 #' toFrom <- conn4Mile$fromNode; names(fromTo) <- conn4Mile$toNode
 #' 
-#' Watch the "flows" go up stream from outlet!
+#' #Watch the "flows" go up stream from outlet!
 #' chrtFile <- paste0('~/wrfHydroTestCases/Fourmile_Creek/RUN.RTTESTS/OUTPUT_CHRT_DAILY/201308010000.CHRTOUT_DOMAIN1')
 #' Viz4Mile <- VisualizeChanNtwk(chrtFile, plot=FALSE)
 #' chrtGg <- Viz4Mile()
@@ -36,10 +37,10 @@
 #' }
 
 #' @export
-CalcChanConnect <- function(hydroGridFile) {
+CalcChanConnect <- function(hydroGridFile, quiet=FALSE) {
   
   ## Note this is only for gridded channel routing.
-  print("Connectivity only applies to GRIDDED channel routing!")
+  if(!quiet) cat("Connectivity only applies to GRIDDED channel routing!\n")
   
   flipHoriz <- function(m) m[,ncol(m):1] 
 
@@ -70,8 +71,8 @@ CalcChanConnect <- function(hydroGridFile) {
   CH_NETLNK <- CH_NETRT*0 - 9999
   NLAKES = 0
   
-  ## Dont need the loop in R.
   # temp fix for buggy Arc export...
+  ## Dont need the loop in R.
   #for (j in 1:jxrt) {
   #  for (i in 1:ixrt) {
   #    if(DIRECTION[i,j] == -128) DIRECTION(i,j) <- 128
@@ -86,7 +87,7 @@ CalcChanConnect <- function(hydroGridFile) {
   #  }
   #}
   NLINKS <- length( which( CH_NETRT >= 0 & CH_NETRT < 100 ) )
-  print(paste0("NLINKS IS ", NLINKS))
+  if(!quiet) cat(paste0("NLINKS IS ", NLINKS, "\n"))
   ## apparently, this code will fail once we have more than 100 lakes!
   #if(any(CH_NETRT >= 100)) warning("")
   
@@ -116,7 +117,6 @@ CalcChanConnect <- function(hydroGridFile) {
     
     if(k=='map') { ## need cnt for these
       ## Initialize these variables   
-      print(paste('cnt: ',cnt))
       CHLAT <- CHLON <- CHANL                             <- as.numeric(1:cnt)*0.-9999.
       FROM_NODE <- TO_NODE <- CHANLEN <- CHANXI <- CHANYJ <- as.integer(1:cnt)*0 -9999
       TYPEL <- LAKENODE                                   <- as.integer(1:cnt)*0
@@ -190,8 +190,15 @@ CalcChanConnect <- function(hydroGridFile) {
             if(k=='enumerate') CH_NETLNK[i,j] = cnt             
             if(k=='map')       AssignData(cnt=cnt, i=i, j=j, iTo=i-1, jTo=j+1, distInd=8)
           } else {
-            print(paste("PrPt/LkIn", CH_NETRT[i,j], DIRECTION[i,j], LON[i,j], LAT[i,j],i,j))
-            if (DIRECTION[i,j] == 0) print(paste("Direction i,j ",i, j," of point ", cnt, "is invalid"))
+            if(k=='enumerate') if(!quiet) 
+              cat(paste0("--- PrPt/LkIn Info ---", 
+                         "\ni=", i, ";  j=", j,
+                         "\n CH_NETRT[i,j]=", CH_NETRT[i,j],
+                         "\nDIRECTION[i,j]=", DIRECTION[i,j], 
+                         "\n      LON[i,j]=", LON[i,j],
+                         "\n      LAT[i,j]=", LAT[i,j],"\n")
+                  )
+            if (DIRECTION[i,j] == 0) cat(paste("Direction i,j ",i, j," of point ", cnt, "is invalid\n"))
           }
         
         } #End If #CH_NETRT check for this node
@@ -199,7 +206,7 @@ CalcChanConnect <- function(hydroGridFile) {
       } #END FOR ixrt
     } #END FOR jxrt
     
-    if(k=='enumerate') print(paste("Found type 0 nodes", cnt))
+    if(k=='enumerate') type0Cnt <- cnt
     
     #Find out if the boundaries are on an edge or flow into a lake
     #DJG inv       DO j = jxrt,1,-1
@@ -213,7 +220,8 @@ CalcChanConnect <- function(hydroGridFile) {
             cnt = cnt + 1
             if(k=='enumerate') CH_NETLNK[i,j] = cnt
             if(k=='map')       AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j, distInd=3)
-            print(paste("Boundary Pour Point N", cnt, CH_NETRT[i,j], i, j))
+            if(k=="enumerate") if(!quiet) 
+              cat(paste0("Boundary Pour Point N: cnt=", cnt, "; i=", i, "; j=", j, "; CH_NETRT[i,j]=", CH_NETRT[i,j], "\n"))
           } else if( (DIRECTION[i,j]==128 & i + 1>ixrt)  | #-- 128's can flow out of the North or East edge
                      (DIRECTION[i,j]==128 & j + 1>jxrt)  | #   this is due north edge     
                      (DIRECTION[i,j]==128 & i<ixrt & j<jxrt & CH_NETRT[i+1, j+1]<0) )
@@ -221,14 +229,16 @@ CalcChanConnect <- function(hydroGridFile) {
             cnt = cnt + 1
             if(k=='enumerate') CH_NETLNK[i,j] = cnt
             if(k=='map')       AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j, distInd=3)
-            print(paste("Boundary Pour Point NE", cnt, CH_NETRT[i,j], i, j))
+            if(k=="enumerate") if(!quiet) 
+              cat(paste0("Boundary Pour Point NE: cnt=", cnt, "; i=", i, "; j=", j, "; CH_NETRT[i,j]=", CH_NETRT[i,j], "\n"))
           } else if( (DIRECTION[i,j]==1 & i+1>ixrt) |  #-- 1's can only flow due east
                      (DIRECTION[i,j]==1 & i<ixrt & CH_NETRT[i+1, j]<0) ) 
           { #East
             cnt = cnt + 1
             if(k=='enumerate') CH_NETLNK[i,j] = cnt
             if(k=='map')       AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j, distInd=3)
-            print(paste("Boundary Pour Point E", cnt, CH_NETRT[i,j], i, j))
+            if(k=="enumerate") if(!quiet) 
+              cat(paste0("Boundary Pour Point E: cnt=", cnt, "; i=", i, "; j=", j, "; CH_NETRT[i,j]=", CH_NETRT[i,j], "\n"))
           } else if( (DIRECTION[i,j]==2 & i+1>ixrt)  |      #-- 2's can flow out of east or south edge
                      (DIRECTION[i,j]==2 & j-1==0  )  |      #-- this is the south edge
                      (DIRECTION[i,j]==2 & i<ixrt & j>1 & CH_NETRT[i+1, j-1]<0) ) 
@@ -236,14 +246,16 @@ CalcChanConnect <- function(hydroGridFile) {
             cnt = cnt + 1
             if(k=='enumerate') CH_NETLNK[i,j] = cnt
             if(k=='map')       AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j, distInd=3)
-            print(paste("Boundary Pour Point SE", cnt, CH_NETRT[i,j], i, j))
+            if(k=="enumerate") if(!quiet) 
+              cat(paste0("Boundary Pour Point SE: cnt=", cnt, "; i=", i, "; j=", j, "; CH_NETRT[i,j]=", CH_NETRT[i,j], "\n"))
           } else if( (DIRECTION[i,j]==4 & j-1==0)    |      #-- 4's can only flow due south
                      (DIRECTION[i,j]==4 & j>1 & CH_NETRT[i, j-1]<0) )
           { #due south
             cnt = cnt + 1
             if(k=='enumerate') CH_NETLNK[i,j] = cnt
             if(k=='map')       AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j, distInd=3)
-            print(paste("Boundary Pour Point S", cnt, CH_NETRT[i,j], i, j))
+            if(k=="enumerate") if(!quiet) 
+              cat(paste0("Boundary Pour Point S: cnt=", cnt, "; i=", i, "; j=", j, "; CH_NETRT[i,j]=", CH_NETRT[i,j], "\n"))
           } else if( (DIRECTION[i, j]==8 & i-1<=0)     |      #-- 8's can flow south or west
                      (DIRECTION[i, j]==8 & j-1==0)     |      #-- this is the south edge
                      (DIRECTION[i, j]==8 & i>1 & j>1 & CH_NETRT[i-1, j-1]<0) )
@@ -251,14 +263,16 @@ CalcChanConnect <- function(hydroGridFile) {
             cnt = cnt + 1
             if(k=='enumerate') CH_NETLNK[i,j] = cnt
             if(k=='map')       AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j, distInd=3)
-            print(paste("Boundary Pour Point SW", cnt, CH_NETRT[i,j], i, j))
+            if(k=="enumerate") if(!quiet) 
+              cat(paste0("Boundary Pour Point SW: cnt=", cnt, "; i=", i, "; j=", j, "; CH_NETRT[i,j]=", CH_NETRT[i,j], "\n"))
           } else if( (DIRECTION[i,j]==16 & i-1<=0)     |      #-- 16's can only flow due west 
                      (DIRECTION[i,j]==16 & i>1 & CH_NETRT[i-1, j]<0) )
           { #West
             cnt = cnt + 1
             if(k=='enumerate') CH_NETLNK[i,j] = cnt
             if(k=='map')       AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j, distInd=3)
-            print(paste("Boundary Pour Point W", cnt, CH_NETRT[i,j], i, j))
+            if(k=="enumerate") if(!quiet) 
+              cat(paste0("Boundary Pour Point W: cnt=", cnt, "; i=", i, "; j=", j, "; CH_NETRT[i,j]=", CH_NETRT[i,j], "\n"))
           } else if( (DIRECTION[i,j]==32 & i-1<=0)     |      #-- 32's can flow either west or north
                      (DIRECTION[i,j]==32 & j+1>jxrt)   |      #-- this is the north edge
                      (DIRECTION[i,j]==32 & i>1 & j<jxrt & CH_NETRT[i-1, j+1]<0) )
@@ -266,36 +280,37 @@ CalcChanConnect <- function(hydroGridFile) {
             cnt = cnt + 1
             if(k=='enumerate') CH_NETLNK[i,j] = cnt
             if(k=='map')       AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j, distInd=3)
-            print(paste("Boundary Pour Point NW", cnt, CH_NETRT[i,j], i, j))
+            if(k=="enumerate") if(!quiet) 
+              cat(paste0("Boundary Pour Point NW: cnt=", cnt, "; i=", i, "; j=", j, "; CH_NETRT[i,j]=", CH_NETRT[i,j], "\n"))
           }
         } #endif #CH_NETRT check for this node
       } #END DO
     } # END DO 
     
-    ## Some diagnostics
-    print(paste("Total number of channel elements:", cnt))
-    print(paste("Total number of NLINKS          :", NLINKS))
-    #endif
-    
-    if(cnt != NLINKS) {
-      #ifdef HYDRO_D
-      print(paste("Apparent error in network topology", cnt, NLINKS))
-      print(paste("ixrt =", ixrt, "jxrt =", jxrt))
-      #endif
+    if(k=='enumerate') {
+      if(!quiet) {
+        cat('\n')
+        cat(paste("Total number of channel elements:", cnt, "\n"))
+        cat(paste("Total number of NLINKS          :", NLINKS, "\n"))
+        cat(paste("Total number of type 0 nodes    :", type0Cnt, "\n"))
+      }
+      if(cnt != NLINKS) {
+        cat(paste("Apparent error in network topology", cnt, NLINKS, "\n"))
+        cat(paste("ixrt =", ixrt, "jxrt =", jxrt, "\n"))
+      }
     }
     
   } #END FOR enumerate/map
   
   #-- get the number of lakes
-  #DJG inv       do j=jxrt,1,-1
   for(j in 1:jxrt) {
     for(i in 1:ixrt) {
       if(LAKE_MSKRT[i,j] > NLAKES) NLAKES = LAKE_MSKRT[i,j]
     }
   } ## does that work?
-  #ifdef HYDRO_D
-  print(paste("nlakes = ", NLAKES))
-  #endif
+  
+  if(!quiet) cat(paste("nlakes = ", NLAKES, "\n"))
+  cat('\n')
   
   ## testing
   ## all( which(CH_NETLNK!=-9999) == which(CH_NETRT!=-9999) )
@@ -309,3 +324,12 @@ CalcChanConnect <- function(hydroGridFile) {
 }
 
 
+#' Find nearest gridcell to a gage location.
+
+#' Nearest confulences to a given channel grid cell.
+#' 
+#' 
+#'
+#'
+#'
+#FindConfluenceNear <- function()

@@ -1,43 +1,58 @@
 
-
 #' Visualize WRF Hydro channel link indices and get coordinates.
-#'
-#' \code{VisualizeChanNtwk} shows the channel network indices and provides interactive selection to retrieve link 
-#' coordinates.
-#'
-#' Read a CHANRTOUT file and display the link indicies. Returns a function which allows interactive querying of 
-#' individual links for lat and lon.
 #' 
-#' The arguments of the returned function are:
-#' \describe{
-#'   \item{\code{location}}{Most generically, the center of the google (or other) map. More specifically, 
-#'   this is the argument passed to the \pkg{ggmap} for its argument of the same name. 
-#'   (Default\code{=c(lon=mean(range(linkDf$lon)),lat=mean(range(linkDf$lat)))})}
+#' \code{VisualizeChanNtwk} shows the channel network indices and provides 
+#' interactive selection to retrieve link coordinates.
 #' 
-#'   \item{\code{zoom=11}}{The zoom level for the google (or other) map. See \pkg{ggmap} for more details.}
+#' Read a CHANRTOUT file and display the link indicies. Returns a function which
+#' allows interactive querying of individual links for lat and lon.
 #' 
-#'   \item{\code{source='google'}}{The source for the underlying map. See \pkg{ggmap} package for details.}
+#' The arguments of the returned function are: \describe{ 
+#' \item{\code{location}}{Most generically, the center of the google (or other) 
+#' map. More specifically, this is the argument passed to the \pkg{ggmap} for 
+#' its argument of the same name. 
+#' (Default\code{=c(lon=mean(range(linkDf$lon)),lat=mean(range(linkDf$lat)))})}
 #' 
-#'   \item{\code{maptype='terrain'}}{The map type for \pkg{ggmap}.}
+#' \item{\code{zoom=11}}{The zoom level for the google (or other) map. See 
+#' \pkg{ggmap} for more details.}
 #' 
-#'   \item{\code{padPlot=.1}}{The fraction of the range (in both lon and lat) of the channel network to expand the plot by.}
+#' \item{\code{source='google'}}{The source for the underlying map. See 
+#' \pkg{ggmap} package for details.}
 #' 
-#'   \item{\code{gaugeZoom=NULL}}{The name of the gauge you'd like to zoom in on. This will likely require finessing zoom and padPlot to make it look nice.}
+#' \item{\code{maptype='terrain'}}{The map type for \pkg{ggmap}.}
 #' 
-#'  \item{\code{clickSelect=FALSE}}{Do you want to click on the plot to query a specfic point? You only get one click per function call.}
+#' \item{\code{padPlot=.1}}{The fraction of the range (in both lon and lat) of 
+#' the channel network to expand the plot by.}
 #' 
-#'  \item{\code{linkShape=5}}{The shape code (ggplot2) for the gridded link elements.}
+#' \item{\code{gaugeZoom=NULL}}{The name of the gauge you'd like to zoom in on. 
+#' This will likely require finessing zoom and padPlot to make it look nice.}
 #' 
-#'  \item{\code{gaugeShape=4}}{The shape code (ggplot2) for the gauges.}
-#' }
-#' @param file A path/name to an output YYYMMDDHHmm.CHRTOUT_DOMAIN* file or a hydroDART Posterior_Diag.nc file.
-#' @param gaugePts Optional list of gauge points. Nearest stream links are found. See examples.
-#' @param excludeInds Optional index of channel network to exclude. See examples.
+#' \item{\code{clickSelect=FALSE}}{Do you want to click on the plot to query a 
+#' specfic point? You only get one click per function call.}
+#' 
+#' \item{\code{linkShape=5}}{The shape code (ggplot2) for the gridded link 
+#' elements.}
+#' 
+#' \item{\code{gaugeShape=4}}{The shape code (ggplot2) for the gauges.} }
+#' @param file A path/name to an output YYYMMDDHHmm.CHRTOUT_DOMAIN* file or a 
+#'   hydroDART Posterior_Diag.nc file.
+#' @param gaugePts Optional list of gauge points. Nearest stream links are 
+#'   found. See examples.
+#' @param excludeInds Optional index of channel network to exclude. See 
+#'   examples.
 #' @param gaugeAccuracy The number of digits printed for the gauge information.
 #' @param plot Logical to plot or not.
-#' @return A function which allows the plot to be interactively queried once each time it is run and returns 
-#' the coordinates of the selected location. Details provided in details above. 
-#' 
+#' @param hydroGridFile Character Optional The path/filename of the "fulldom" or 
+#'   "hydro grid" or "fine grid" file. If supplied, the returned \code{linkDf} 
+#'   from the closure contains extra information including channel connectivity.
+#' @return A function which allows the underlying plot to be tuned. The function
+#'   also allows interactive queries once each time it is run and prints the
+#'   coordinates of the selected location. Details provided in details above.
+#'   The return value of the function (the returned function once called) is a
+#'   list containing \code{linkDf} which contains channel information and
+#'   \code{ggplot} which gives access to the plot (and it's data is contained
+#'   within that object).
+#'   
 #' @examples
 #' ## See the vignette "WRF Hydro Domain and Channel Visualization", for details. 
 #' tcPath <- '~/wrfHydroTestCases/'
@@ -67,8 +82,15 @@
 #' LocLinkFun <- VisualizeChanNtwk(chrtFile, gaugePts=gaugePts, exc=350, plot=FALSE)
 #' ## Increase the accuracy of the lon/lat ouput 
 #' LocLinkFun <- VisualizeChanNtwk(chrtFile, gaugePts=gaugePts, exc=350, plot=FALSE, gaugeAccuracy=17)
-#' ## Now make the plot that was suppressed in the previous call. 
-#' LocLinkFun()
+#' ## Now make the plot that was suppressed in the previous call and its returned data.
+#' data <- LocLinkFun()
+#' str(data$linkDf)
+#' ## Now also ask for connectivity information
+#' hydroGridFile <- paste0(fcPath,'/DOMAIN/Fulldom_hydro_OrodellBasin_100m_geogrd.nc')
+#' LocLinkFun <- VisualizeChanNtwk(chrtFile, gaugePts=gaugePts, exc=350, plot=FALSE, gaugeAccuracy=17, hydroGridFile=hydroGridFile)
+#' ## The plot is the same but the returned data (linkDf) is richer.
+#' data <- LocLinkFun()
+#' str(data$linkDf)
 #' ## Change the amount of padding around the domain and the shape of the gauge symbols.
 #' LocLinkFun(pad=.3, gaugeShape=16)
 #' ## Zoom to the orodell gauge. 
@@ -81,9 +103,11 @@
 #' @family domain
 #' @export
 VisualizeChanNtwk <- function(file, gaugePts=NULL, excludeInds=NULL,
-                              gaugeAccuracy=12, plot=TRUE, hydroFile=NULL) {
+                              gaugeAccuracy=12, plot=TRUE, hydroGridFile=NULL) {
 
   ## Get the data.
+  if(!is.null(hydroGridFile)) chanConn <- CalcChanConnect(hydroGridFile)
+  
   ncid <- ncdf4::nc_open(file)
   
   if(length(grep('_Diag.nc',file))) {
@@ -109,8 +133,19 @@ VisualizeChanNtwk <- function(file, gaugePts=NULL, excludeInds=NULL,
     linkDf$q <- q
     rm('lon','lat')
   }
-
-  stop()
+  
+  if(!is.null(hydroGridFile)) {
+    if( !( all(linkDf$lon == chanConn$chLon) & all(linkDf$lat == chanConn$chLat) ) )
+      warning(paste0("There is no longer correspondence between the way we compute ",
+                     "channel connectivity in R and the output files read in from the model. PLEASE REPORT THIS ASAP: ",
+                     "https://github.com/UCAR/rwrfhydro/issues or https://github.com/mccreigh/rwrfhydro/issues if ",
+                     "the former is not yet available."), 
+              immediate. = TRUE )
+    linkDf <- cbind(linkDf, 
+                    chanConn[,c("fromNode", "toNode", "chanLen", "chanI", 
+                                "chanJ", "typeL", "lakeNode")])
+    linkDf$ind <- NULL ## redundant with fromNode
+  }
   
   if(length(excludeInds)) linkDf <- linkDf[-excludeInds,]
   
@@ -163,8 +198,7 @@ VisualizeChanNtwk <- function(file, gaugePts=NULL, excludeInds=NULL,
   }
 
   ## This function is going to be returned as a closure.
-  ## It's env is visChanNtwkm which includes linkDf, and maybe the reference to the
-  ## viewport?
+  ## It returns a list containing linkDf attributes of the network and the ggplot object.
   GetChanPoint <- function(location=c(lon=mean(range(linkDf$lon)),
                                       lat=mean(range(linkDf$lat)) ),
                            zoom=11, source='google', maptype='terrain',
@@ -248,8 +282,11 @@ VisualizeChanNtwk <- function(file, gaugePts=NULL, excludeInds=NULL,
       print(thePlot)
     } else print(thePlot)
    
+    ## The return value of the closure
+    invisible(list(linkDf=linkDf, ggplot=thePlot))
   }
   
   if(plot) GetChanPoint() 
+  ## The closure is returned from the main function.
   invisible(GetChanPoint)
 }
