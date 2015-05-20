@@ -126,28 +126,36 @@ MkDischargeVariance <- function(prettyUsgs, error3SdFunc, retVariance=TRUE) {
   #as.POSIXct(with(dataHourly, paste0(year,'/',month,'/',day,'_',hour)),format='%Y/%m/%d_%H')
 
 
-#=============================================================================================
 
-#' Writes an ascii obs_seq.in file for DART binary create_obs_sequence ' '
-#\code{WriteDischargeObsSeq} makes variances for prettyUsgs discharge
-#observations. The formulation ' of the variances is subjective. Assuming
-#zero-mean Gaussian observation errors, the approach ' here is to supply a
-#function which estimates the 3-sigma (inner 99.5% error quantiles) around ' the
-#observations. This amount seems somewhat easier to conceptualize than 1-sigma,
-#hence here ' we are. This function divides the error amounts by 3 and either
-#returns the standard deviation ' or squares the result to return the variance
-#(default). ' @param pretty The prettyUsgs discharge observations to which
-#variances are to be added. ' @param outPath     Character The directory where
-#the file is to be written. ' @param stationName Character To help identify the
-#outputfile and the station data in the file. ' @param errorId     Character To
-#help identify the outputfile and the error function used. ' @param typeQ      
-#Numeric   Stream discharge obs type index in my pre-release version of DART. It
-#could change. '                             
-#DART/obs_kind/DEFAULT_obs_kind_mod.F90 ' @examples ' #Following on examples for
-#MkDischargeVariance ' WriteDischargeObsSeq(prettyOro, '~/.', 'orodell',
-#'climTaperDefault') mkGaugeObsSeq( loganData, '~/boulderCreek/', 'loganMill' ) 
-#mkGaugeObsSeq( sunshineData, '~/boulderCreek/', 'sunshine' ) ' @keywords manip 
-#' @concept DART dataMgmt ' @family dartObs ' @export
+#' Writes an ascii obs_seq.in file for DART binary create_obs_sequence.
+#' 
+#' \code{WriteDischargeObsSeq} makes variances for prettyUsgs discharge
+#' observations. The formulation of the variances is subjective. Assuming
+#' zero-mean Gaussian observation errors, the approach here is to supply a
+#' function which estimates the 3-sigma (inner 99.5% error quantiles) around the
+#' observations. This amount seems somewhat easier to conceptualize than
+#' 1-sigma, hence here we are. This function divides the error amounts by 3 and
+#' either returns the standard deviation or squares the result to return the
+#' variance (default).
+#' @param pretty The prettyUsgs discharge observations to which variances are to
+#'   be added.
+#' @param outPath     Character The directory where the file is to be written.
+#' @param stationName Character To help identify the outputfile and the station
+#'   data in the file.
+#' @param errorId     Character To help identify the outputfile and the error
+#'   function used.
+#' @param typeQ       Numeric   Stream discharge obs type index in my
+#'   pre-release version of DART. It could change. 
+#'   DART/obs_kind/DEFAULT_obs_kind_mod.F90
+#' @examples
+#' #Following on examples for MkDischargeVariance
+#' WriteDischargeObsSeq(prettyOro, '~/.', 'orodell', 'climTaperDefault')
+#' mkGaugeObsSeq( loganData, '~/boulderCreek/', 'loganMill' )
+#' mkGaugeObsSeq( sunshineData, '~/boulderCreek/', 'sunshine' ) 
+#' @keywords manip
+#' @concept DART dataMgmt
+#' @family dartObs
+#' @export
 WriteDischargeObsSeq <- function(pretty, outPath='.', 
                                  stationName, errorId, 
                                  typeQ=20) {

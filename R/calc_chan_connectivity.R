@@ -8,11 +8,31 @@
 #' hydroFile4Mile <- '~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/Fulldom_hydro_OrodellBasin_100m.nc'
 #' conn4Mile <- CalcChanConnect(hydroFile4Mile)
 #' fromTo <- conn4Mile$toNode; names(fromTo) <- conn4Mile$fromNode
+#' toFrom <- conn4Mile$fromNode; names(fromTo) <- conn4Mile$toNode
 
 #' chrtFile <- paste0('~/wrfHydroTestCases/Fourmile_Creek/RUN.RTTESTS/OUTPUT_CHRT_DAILY/201308010000.CHRTOUT_DOMAIN1')
 #' Viz4Mile <- VisualizeChanNtwk(chrtFile, plot=FALSE)
-#' chrtData <- Viz4Mile()
-
+#' chrtGg <- Viz4Mile()
+#' 
+#' toTo=350
+#' cc=1
+#' while(length(toTo)) {
+#' whTf <- c('chLat','chLon','fromNode')
+#' tfSub <- subset(conn4Mile, toNode %in% toTo | fromNode %in% toTo )[whTf]
+#' tfSub$var <- ifelse(tfSub$fromNode %in% toTo, 'to', 'from')
+#' print("---------")
+#' print(cc)
+#' print(tfSub)
+#' png(file=paste0('~/tmpPngs/fourmile.',formatC(cc,,dig=3,flag='0'),'.png'), width=210*5*2,height=70*5*2, pointsize=3)
+#' print(chrtGg$plot + ggplot2::geom_point(data=tfSub, 
+#'                         ggplot2::aes(x=chLon, y=chLat, color=var) ))
+#' dev.off()
+#' toTo <- subset(tfSub, var=='from')$fromNode                       
+#' cc=cc+1
+#' #if(cc==30) break
+#' print(toTo)
+#' #Sys.sleep(2)
+#' }
 
 #' @export
 CalcChanConnect <- function(hydroGridFile) {
@@ -20,10 +40,8 @@ CalcChanConnect <- function(hydroGridFile) {
   ## Note this is only for gridded channel routing.
   print("Connectivity only applies to GRIDDED channel routing!")
   
-  ## This is a mind bender, could it be done with less operations?
-  ## Caveat emptor that apply(,1,rev) isnt what I expect.
-  flipHoriz <- function(m) t(apply(t(m),2,rev))
-  
+  flipHoriz <- function(m) m[,ncol(m):1] 
+
   ## Get data from file
   ncid <- ncdf4::nc_open(hydroGridFile)
   CH_NETRT   <- flipHoriz(ncdf4::ncvar_get(ncid, "CHANNELGRID"   ))
