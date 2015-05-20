@@ -81,7 +81,7 @@
 #' @family domain
 #' @export
 VisualizeChanNtwk <- function(file, gaugePts=NULL, excludeInds=NULL,
-                              gaugeAccuracy=12, plot=TRUE) {
+                              gaugeAccuracy=12, plot=TRUE, hydroFile=NULL) {
 
   ## Get the data.
   ncid <- ncdf4::nc_open(file)
@@ -110,6 +110,8 @@ VisualizeChanNtwk <- function(file, gaugePts=NULL, excludeInds=NULL,
     rm('lon','lat')
   }
 
+  stop()
+  
   if(length(excludeInds)) linkDf <- linkDf[-excludeInds,]
   
   ## standardize the lon just in case

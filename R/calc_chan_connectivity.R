@@ -9,7 +9,8 @@
 #' conn4Mile <- CalcChanConnect(hydroFile4Mile)
 #' fromTo <- conn4Mile$toNode; names(fromTo) <- conn4Mile$fromNode
 #' toFrom <- conn4Mile$fromNode; names(fromTo) <- conn4Mile$toNode
-
+#' 
+#' Watch the "flows" go up stream from outlet!
 #' chrtFile <- paste0('~/wrfHydroTestCases/Fourmile_Creek/RUN.RTTESTS/OUTPUT_CHRT_DAILY/201308010000.CHRTOUT_DOMAIN1')
 #' Viz4Mile <- VisualizeChanNtwk(chrtFile, plot=FALSE)
 #' chrtGg <- Viz4Mile()
