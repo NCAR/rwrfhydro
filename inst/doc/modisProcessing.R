@@ -80,7 +80,7 @@ lai.b <- ConvertRS2Stack(paste0(options("MODIS_outDirPath"), '/FOURMILE_LAI'), "
 #' <div style="border:1px solid; border-radius: 25px; padding: 12px 25px;">
 ## ----, echo=FALSE--------------------------------------------------------
 
-library(printr)
+#library(printr)
 ?ConvertRS2Stack
 
 #' </div>
@@ -138,8 +138,8 @@ head(stats.lai.b)
 
 #' 
 ## ----, , results = "asis", echo=FALSE------------------------------------
-library(pander)
-pander::pandoc.table(head(stats.lai.b))
+#library(pander)
+#pander::pandoc.table(head(stats.lai.b))
 
 #' 
 ## ----compSmoothLAI, fig.width = 12, fig.height = 6, out.width='700', out.height='350'----

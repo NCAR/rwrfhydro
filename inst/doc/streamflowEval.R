@@ -19,7 +19,7 @@ library("rwrfhydro")
 #' 
 ## ----, echo=FALSE--------------------------------------------------------
 options(width = 190)
-library(printr)
+#library(printr)
 
 #' 
 #' Set a data path to the Fourmile Creek test case.
@@ -126,8 +126,8 @@ CalcModPerf(modStrd.chrt.fc, obsStr5min.fc)
 
 #' 
 ## ----, , results = "asis", echo=FALSE------------------------------------
-library(pander)
-pander::pandoc.table(CalcModPerf(modStrd.chrt.fc, obsStr5min.fc),split.table=Inf)
+#library(pander)
+#pander::pandoc.table(CalcModPerf(modStrd.chrt.fc, obsStr5min.fc),split.table=Inf)
 
 #' 
 ## ----, results='hide'----------------------------------------------------
@@ -135,7 +135,7 @@ CalcModPerf(modStrd.allrt.fc, obsStr5min.fc)
 
 #' 
 ## ----, , results = "asis", echo=FALSE------------------------------------
-pander::pandoc.table(CalcModPerf(modStrd.allrt.fc, obsStr5min.fc), split.table=Inf)
+#pander::pandoc.table(CalcModPerf(modStrd.allrt.fc, obsStr5min.fc), split.table=Inf)
 
 #' 
 #' Help on CalcModPerf gives details on the individual statistics returned.
@@ -157,7 +157,7 @@ CalcFdcPerf(modStrd.allrt.fc, obsStr5min.fc)
 
 #' 
 ## ----, , results = "asis", echo=FALSE------------------------------------
-pander::pandoc.table(CalcFdcPerf(modStrd.allrt.fc, obsStr5min.fc),split.table=Inf)
+#pander::pandoc.table(CalcFdcPerf(modStrd.allrt.fc, obsStr5min.fc),split.table=Inf)
 
 #' 
 #' Again, help on CalcFdcPerf gives details on the individual statistics returned.

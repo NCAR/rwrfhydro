@@ -111,10 +111,10 @@ CalcModPerf(modLsm.allrt.niw, obsFlux1d.usnr1, flxCol.mod="LE", flxCol.obs="LE")
 
 #' 
 ## ----, results = "asis", echo=FALSE--------------------------------------
-library(pander)
-pander::pandoc.table(CalcModPerf(modLsm.allrt.niw, obsFlux1d.usnr1, 
-                                 flxCol.mod="LE", flxCol.obs="LE"), 
-                     split.table=Inf)
+#library(pander)
+#pander::pandoc.table(CalcModPerf(modLsm.allrt.niw, obsFlux1d.usnr1, 
+#                                 flxCol.mod="LE", flxCol.obs="LE"), 
+#                     split.table=Inf)
 
 #' 
 #' 
