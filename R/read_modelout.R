@@ -126,6 +126,7 @@ ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk",
     # Setup mask
     msk <- ncdf4::nc_open(pathDomfile)
     mskvar <- ncdf4::ncvar_get(msk,mskvar)
+    ncdf4::nc_close(msk)
     # Subset to basinID
     mskvar[which(mskvar != basid)] <- 0.0
     mskvar[which(mskvar == basid)] <- 1.0

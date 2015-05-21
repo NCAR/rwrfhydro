@@ -69,6 +69,8 @@
 #'   is one of the GDAL methods listed above.
 #' @param quiet From MODIS::runGdal help: Logical, Default FALSE. Some progress 
 #'   informations.
+#' @param scriptPath OPTIONAL path to where gdal_calc.py script lives in case
+#'   it is not in the same default path as gdal executables
 #' @return Empty
 #'   
 #' @examples
@@ -107,7 +109,7 @@
 GetMODIS <- function(geogrdPath, prodName, outDir, begin=NULL, end=NULL, 
                      collection=NULL, buffer=0.04,
                      SDSstring=NULL, 
-                     exclList=NULL, resampList=NULL, quiet=FALSE) {
+                     exclList=NULL, resampList=NULL, quiet=FALSE, scriptPath=NULL) {
     # Check packages
     if (!(require("rgdal") & require("raster") & require("ncdf4") & require("MODIS"))) {
         stop("Required packages not found. Must have R packages: rgdal (requires GDAL system install), raster, ncdf4, and MODIS")
@@ -146,7 +148,7 @@ GetMODIS <- function(geogrdPath, prodName, outDir, begin=NULL, end=NULL,
                                extent=hgt.r, buffer=buffer, 
                                SDSstring=SDSstring, job=outDir, 
                                exclList=exclList, resampList=resampList,
-                               quiet=quiet)
+                               quiet=quiet, scriptPath=scriptPath)
 }
 
 
