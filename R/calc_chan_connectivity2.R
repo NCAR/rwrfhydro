@@ -6,8 +6,14 @@
 #' @param hydroGridFile character, the path/fileName to the "Fulldom" file, aka "the hydro grid file"
 #' @param quiet Logical Print information about the channel connectivity?
 #' @examples
+#' conusFullDom <- '~/chimayoSpace/WRF_Hydro/CONUS/DOMAIN/Fulldom_hires_netcdf_file.nc'
+#' connConus <- CalcChanConnect2(conusFullDom)
+#' 
 #' hydroFile4Mile <- '~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/Fulldom_hydro_OrodellBasin_100m.nc'
-#' conn4Mile <- CalcChanConnect2(hydroFile4Mile)
+#' conn4Mile  <- CalcChanConnect2(hydroFile4Mile)
+#' conn4Mile0 <-  CalcChanConnect(hydroFile4Mile)
+#' identical(conn4Mile0, conn4Mile)
+#' 
 #' fromTo <- conn4Mile$toNode; names(fromTo) <- conn4Mile$fromNode
 #' toFrom <- conn4Mile$fromNode; names(fromTo) <- conn4Mile$toNode
 #' 
@@ -52,7 +58,10 @@ CalcChanConnect2 <- function(hydroGridFile, quiet=FALSE) {
   ixrt <- dim(CH_NETRT)[1]  ## i dont think we'll need this with the subset rasters.
   jxrt <- dim(CH_NETRT)[2]
   whChNetRT  <- which(CH_NETRT >= 0)
+  nChNetRt <- length(whChNetRT)
   ij  <- which(CH_NETRT >= 0, arr.ind = TRUE)
+  #i <- ij[,1]
+  #j <- ij[,2]
   CH_NETRT <- CH_NETRT[whChNetRT]
   
   ## these rasters are subset to the CHR_NETRT
@@ -135,22 +144,32 @@ CalcChanConnect2 <- function(hydroGridFile, quiet=FALSE) {
     }
   }
   
-  ## Helper list + function to deal with out of bounds indices in R (which are handled in fortran)
-  dirIJList<- list(`32`=c(i=-1, j=1),  `64`=c(i=0, j=1), `128`=c(i=1, j=1),
-                   `16`=c(i=-1, j=0),                      `1`=c(i=1, j=0),
-                   `8`=c(i=-1, j=-1),  `4`=c(i=0, j=-1), `2`=c(i=1, j=-1)  )
-  toInBoundsOnNtwk <- function(i,j, outOfBoundsOffNtwk=FALSE ) {
-    toIJ <- dirIJList[[as.character(DIRECTION[h])]]
-    theTest <- 
-      (all( (c(i,j) + toIJ) <= c(ixrt, jxrt) ) | all( (c(i,j) + toIJ) <= c(   1,    1) )) &  ## in bounds AND
-      GetIJSubset(i+toIJ['i'], j+toIJ['j'], ij, CH_NETRT) >= 0                               ## on network
-    if(outOfBoundsOffNtwk) theTest <- !theTest ## outof bounds OR off network
-    theTest
-  }
+  ## Attempting to vectorize the enumeration
+  dirI<- c(`32`=-1, `64`=0, `128`=1, 
+           `16`=-1,           `1`=1, 
+            `8`=-1,  `4`=0,   `2`=1)
+  
+  dirJ<- c(`32`= 1, `64`= 1, `128`= 1, 
+           `16`= 0,            `1`= 0, 
+            `8`=-1,  `4`=-1,   `2`=-1)
+  
+  toI <- ij[,1] + dirI[as.character(DIRECTION)]
+  toJ <- ij[,2] + dirJ[as.character(DIRECTION)]
+  toInBounds <- ( toI >= 1 | toI <= ixrt ) & ( toJ >= 1 | toJ <= jxrt )
+  toOnNtwk   <- ( toI %in% ij[,1] ) & ( toJ %in% ij[,2] )
+  whInOn <- which( toInBounds & toOnNtwk )
+  whNotInOn <- which( !( toInBounds & toOnNtwk ) )
+  CH_NETLNK[whInOn] <- 1:length(whInOn)
+  if(length(whNotInOn)) CH_NETLNK[whNotInOn] <- length(whInOn) + 1:length(whNotInOn)
+  
+  
+  
+  cnt <- NLINKS
   
   ## First time through enumerates the channel links.  
   ## Second time through maps the flows using the enumeration.
-  for(k in c('enumerate','map')) {
+  #for(k in c('enumerate','map')) {
+  for(k in c('map')) {
     
     if(k=='map') { ## need cnt for these
       ## Initialize these variables   
@@ -160,142 +179,154 @@ CalcChanConnect2 <- function(hydroGridFile, quiet=FALSE) {
     }
     
     cnt <- 0 ## reset
-    
-    for(h in 1:length(whChNetRT)) {
+    t0 <- Sys.time()
+    for(h in 1:nChNetRt) {
       j <- ij[h,2]
       i <- ij[h,1]
       #for(j in 1:jxrt) {  #rows
       #for(i in 1:ixrt) {  #colsumns
       #if(CH_NETRT[i, j] >= 0) {  #get its direction
       
-      if ( DIRECTION[h] == 64  & toInBoundsOnNtwk(i,j) ) 
+      hDir <- DIRECTION[h]
+      hBdsNtwk <- toInBounds[h] & toOnNtwk[h] #toInBoundsOnNtwk(i, j, hDir)
+
+      if ( hDir == 64  & hBdsNtwk ) 
       { #North
         cnt = cnt + 1
-        if(k=='enumerate') CH_NETLNK[h] = cnt
-        if(k=='map')       AssignData(cnt=cnt, i=i, j=j, iTo=i, jTo=j+1, distInd=1)
-      } else if( DIRECTION[h] == 128 & toInBoundsOnNtwk(i,j) ) 
+        AssignData(cnt=cnt, i=i, j=j, iTo=i, jTo=j+1, distInd=1)
+      } else if( hDir == 128 & hBdsNtwk ) 
       { #North East
         cnt = cnt + 1
-        if(k=='enumerate') CH_NETLNK[h] = cnt             
-        if(k=='map')       AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j+1, distInd=2)
-      } else if( DIRECTION[h] == 1   & toInBoundsOnNtwk(i,j) )
+                     
+        AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j+1, distInd=2)
+      } else if( hDir == 1   & hBdsNtwk )
       {  #East
         cnt = cnt + 1
-        if(k=='enumerate') CH_NETLNK[h] = cnt
-        if(k=='map')       AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j, distInd=3)
-      } else if( DIRECTION[h] == 2   & toInBoundsOnNtwk(i,j)  )
+        
+        AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j, distInd=3)
+      } else if( hDir == 2   & hBdsNtwk  )
       { #south east
         cnt = cnt + 1
-        if(k=='enumerate') CH_NETLNK[h] = cnt             
-        if(k=='map')       AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j-1, distInd=4)
-      } else if ( DIRECTION[h] == 4   & toInBoundsOnNtwk(i,j) )
+                     
+        AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j-1, distInd=4)
+      } else if ( hDir == 4   & hBdsNtwk )
       { #due south
         cnt = cnt + 1
-        if(k=='enumerate') CH_NETLNK[h] = cnt             
-        if(k=='map')       AssignData(cnt=cnt, i=i, j=j, iTo=i, jTo=j-1, distInd=5)
-      } else if ( DIRECTION[h] == 8   & toInBoundsOnNtwk(i,j) )
+                     
+        AssignData(cnt=cnt, i=i, j=j, iTo=i, jTo=j-1, distInd=5)
+      } else if ( hDir == 8   & hBdsNtwk )
       { #south west
         cnt = cnt + 1
-        if(k=='enumerate') CH_NETLNK[h] = cnt             
-        if(k=='map')       AssignData(cnt=cnt, i=i, j=j, iTo=i-1, jTo=j-1, distInd=6)
-      } else if ( DIRECTION[h] == 16  & toInBoundsOnNtwk(i,j) ) 
+                     
+        AssignData(cnt=cnt, i=i, j=j, iTo=i-1, jTo=j-1, distInd=6)
+      } else if ( hDir == 16  & hBdsNtwk ) 
       { #West
         cnt = cnt + 1
-        if(k=='enumerate') CH_NETLNK[h] = cnt             
-        if(k=='map')       AssignData(cnt=cnt, i=i, j=j, iTo=i-1, jTo=j, distInd=7)
-      } else if ( DIRECTION[h] == 32  & toInBoundsOnNtwk(i,j) )
+                     
+        AssignData(cnt=cnt, i=i, j=j, iTo=i-1, jTo=j, distInd=7)
+      } else if ( hDir == 32  & hBdsNtwk )
       { #North West
         cnt = cnt + 1
-        if(k=='enumerate') CH_NETLNK[h] = cnt             
-        if(k=='map')       AssignData(cnt=cnt, i=i, j=j, iTo=i-1, jTo=j+1, distInd=8)
+                     
+        AssignData(cnt=cnt, i=i, j=j, iTo=i-1, jTo=j+1, distInd=8)
       } else {
         if(k=='enumerate') if(!quiet) 
           cat(paste0("--- PrPt/LkIn Info ---", 
                      "\ni=", ij[h,1], ";  j=", ij[h,2],
                      "\n CH_NETRT[i,j]=", CH_NETRT[h],
-                     "\nDIRECTION[h]=", DIRECTION[h], 
+                     "\nDIRECTION[h]=", hDir, 
                      "\n      LON[i,j]=", LON[h],
                      "\n      LAT[i,j]=", LAT[h],"\n")
           )
-        if (DIRECTION[h] == 0) cat(paste("Direction i,j ",ij[h,1], ij[h,2]," of point ", cnt, "is invalid\n"))
+        if (hDir == 0) cat(paste("Direction i,j ",ij[h,1], ij[h,2]," of point ", cnt, "is invalid\n"))
       }
       
       #} #End If #CH_NETRT check for this node
       #} #END FOR ixrt
       #} #END FOR jxrt
+#      print(h)
+      #print(cnt)
+      #if((cnt %% 100) == 0) print(paste(k," first loop :", cnt/nChNetRt))
+      #if((cnt %% 100) == 0) print(paste("Time:", Sys.time()-t0))
+      #if(h==24) print(paste("Time:", Sys.time()-t0))
+      #if(h==24) return(1)
     } #END FOR h
     
     if(k=='enumerate') type0Cnt <- cnt
     
     #Find out if the boundaries are on an edge or flow into a lake
     #DJG inv       DO j = jxrt,1,-1
-    for(h in 1:length(whChNetRT)) {
+    for(h in 1:nChNetRt) {
       j <- ij[h,2]
       i <- ij[h,1]
       #for(j in 1:jxrt) {
       #for(i in 1:ixrt) {
       #if(CH_NETRT[i,j] >= 0) { #get its direction
       
-      if(        DIRECTION[h]==64  & toInBoundsOnNtwk(i,j,outOfBoundsOffNtwk=TRUE) ) #-- 64's can only flow north
+      hDir <- DIRECTION[h]
+      hBdsNtwk <- !(toInBounds[h] & toOnNtwk[h]) 
+      
+      if(        hDir==64  & hBdsNtwk ) #-- 64's can only flow north
       { #North
         cnt = cnt + 1
-        if(k=='enumerate') CH_NETLNK[h] = cnt
-        if(k=='map')       AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j, distInd=3)
+        
+        AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j, distInd=3)
         if(k=="enumerate") if(!quiet) 
           cat(paste0("Boundary Pour Point N: cnt=", cnt, "; i=", i, "; j=", j, "; CH_NETRT[i,j]=", CH_NETRT[h], "\n"))
-      } else if( DIRECTION[h]==128 & toInBoundsOnNtwk(i,j,outOfBoundsOffNtwk=TRUE) ) #-- 128's can flow out of the North or East edge
+      } else if( hDir==128 & hBdsNtwk ) #-- 128's can flow out of the North or East edge
       { #North East
         cnt = cnt + 1
-        if(k=='enumerate') CH_NETLNK[h] = cnt
-        if(k=='map')       AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j, distInd=3)
+        
+        AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j, distInd=3)
         if(k=="enumerate") if(!quiet) 
           cat(paste0("Boundary Pour Point NE: cnt=", cnt, "; i=", i, "; j=", j, "; CH_NETRT[i,j]=", CH_NETRT[h], "\n"))
-      } else if( DIRECTION[h]==1   & toInBoundsOnNtwk(i,j,outOfBoundsOffNtwk=TRUE) ) #-- 1's can only flow due east
+      } else if( hDir==1   & hBdsNtwk ) #-- 1's can only flow due east
       { #East
         cnt = cnt + 1
-        if(k=='enumerate') CH_NETLNK[h] = cnt
-        if(k=='map')       AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j, distInd=3)
+        
+        AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j, distInd=3)
         if(k=="enumerate") if(!quiet) 
           cat(paste0("Boundary Pour Point E: cnt=", cnt, "; i=", i, "; j=", j, "; CH_NETRT[i,j]=", CH_NETRT[h], "\n"))
-      } else if( DIRECTION[h]==2   & toInBoundsOnNtwk(i,j,outOfBoundsOffNtwk=TRUE) ) #-- 2's can flow out of east or south edge
+      } else if( hDir==2   & hBdsNtwk ) #-- 2's can flow out of east or south edge
       { #south east
         cnt = cnt + 1
-        if(k=='enumerate') CH_NETLNK[h] = cnt
-        if(k=='map')       AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j, distInd=3)
+        
+        AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j, distInd=3)
         if(k=="enumerate") if(!quiet) 
           cat(paste0("Boundary Pour Point SE: cnt=", cnt, "; i=", i, "; j=", j, "; CH_NETRT[i,j]=", CH_NETRT[h], "\n"))
-      } else if( DIRECTION[h]==4   & toInBoundsOnNtwk(i,j,outOfBoundsOffNtwk=TRUE) ) #-- 4's can only flow due south
+      } else if( hDir==4   & hBdsNtwk ) #-- 4's can only flow due south
       { #due south
         cnt = cnt + 1
-        if(k=='enumerate') CH_NETLNK[h] = cnt
-        if(k=='map')       AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j, distInd=3)
+        
+        AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j, distInd=3)
         if(k=="enumerate") if(!quiet) 
           cat(paste0("Boundary Pour Point S: cnt=", cnt, "; i=", i, "; j=", j, "; CH_NETRT[i,j]=", CH_NETRT[h], "\n"))
-      } else if( DIRECTION[h]==8   & toInBoundsOnNtwk(i,j,outOfBoundsOffNtwk=TRUE) ) #-- 8's can flow south or west
+      } else if( hDir==8   & hBdsNtwk ) #-- 8's can flow south or west
       { #south west
         cnt = cnt + 1
-        if(k=='enumerate') CH_NETLNK[h] = cnt
-        if(k=='map')       AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j, distInd=3)
+        
+        AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j, distInd=3)
         if(k=="enumerate") if(!quiet) 
           cat(paste0("Boundary Pour Point SW: cnt=", cnt, "; i=", i, "; j=", j, "; CH_NETRT[i,j]=", CH_NETRT[h], "\n"))
-      } else if( DIRECTION[h]==16   & toInBoundsOnNtwk(i,j,outOfBoundsOffNtwk=TRUE) ) #-- 16's can only flow due west 
+      } else if( hDir==16   & hBdsNtwk ) #-- 16's can only flow due west 
       { #West
         cnt = cnt + 1
-        if(k=='enumerate') CH_NETLNK[h] = cnt
-        if(k=='map')       AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j, distInd=3)
+        
+        AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j, distInd=3)
         if(k=="enumerate") if(!quiet) 
           cat(paste0("Boundary Pour Point W: cnt=", cnt, "; i=", i, "; j=", j, "; CH_NETRT[i,j]=", CH_NETRT[h], "\n"))
-      } else if( DIRECTION[h]==32  & toInBoundsOnNtwk(i,j,outOfBoundsOffNtwk=TRUE) ) #-- 32's can flow either west or north
+      } else if( hDir==32  & hBdsNtwk ) #-- 32's can flow either west or north
       { #North West
         cnt = cnt + 1
-        if(k=='enumerate') CH_NETLNK[h] = cnt
-        if(k=='map')       AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j, distInd=3)
+        
+        AssignData(cnt=cnt, i=i, j=j, iTo=i+1, jTo=j, distInd=3)
         if(k=="enumerate") if(!quiet) 
           cat(paste0("Boundary Pour Point NW: cnt=", cnt, "; i=", i, "; j=", j, "; CH_NETRT[i,j]=", CH_NETRT[h], "\n"))
       }
       #} #endif #CH_NETRT check for this node
       #} #END DO
       #} # END DO 
+      if((cnt %% 1000) == 0) print(paste(k," first loop :", cnt/nChNetRt))
     } # END DO h
     
     if(k=='enumerate') {
@@ -326,11 +357,13 @@ CalcChanConnect2 <- function(hydroGridFile, quiet=FALSE) {
   
   ## testing
   ## all( which(CH_NETLNK!=-9999) == which(CH_NETRT!=-9999) )
+
+#  stop()
   
   ## return
   data.frame(chLat=CHLAT,        chLon=CHLON,
              fromNode=FROM_NODE, toNode=TO_NODE, 
-             chanLen=CHANLEN,    
+             chanLen=CHANLEN,    direction=DIRECTION,
              chanI=CHANXI,       chanJ=CHANYJ,
              typeL=TYPEL,        lakeNode=LAKENODE)
 }

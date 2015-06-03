@@ -1,3 +1,18 @@
+#' Read channel connectivity files now output by WRF Hydro. 
+#'
+#' @param connFile, character. The path/file of the connectivity file of interest.
+#' @examples
+#' connFile4Mile <- '~/wrfHydroTestCases/Fourmile_Creek/CHANNEL_CONNECTIVITY.nc'
+#' conn4Mile <- ReadChanConn(connFile4Mile)
+#' @export
+ReadChanConn <- function(connFile) {
+  conn <- GetNcdfFile(connFile, var='lambert_conformal_conic', exc=TRUE, quiet=TRUE)
+  names(conn) <- c("chLat", "chLon", "chanLen", "fromNode", "toNode", "chanI", "chanJ", "typeL", "lakeNode")
+  conn
+}
+
+
+
 #' Calculate the channel connectivity for gridded routing.
 #'
 #' This is simply an off-line implementation of how the code solves the connectivity from the 
@@ -7,7 +22,11 @@
 #' @param quiet Logical Print information about the channel connectivity?
 #' @examples
 #' hydroFile4Mile <- '~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/Fulldom_hydro_OrodellBasin_100m.nc'
-#' conn4Mile <- CalcChanConnect(hydroFile4Mile)
+#' conn4Mile0 <- CalcChanConnect(hydroFile4Mile)
+#' 
+#' connFile4Mile <- '~/wrfHydroTestCases/Fourmile_Creek/CHANNEL_CONNECTIVITY.KS.nc'
+#' connFile4Mile <- '~/CHANNEL_CONNECTIVITY.nc'
+#' conn4Mile <- ReadChanConn(connFile4Mile)
 #' fromTo <- conn4Mile$toNode; names(fromTo) <- conn4Mile$fromNode
 #' toFrom <- conn4Mile$fromNode; names(fromTo) <- conn4Mile$toNode
 #' 
@@ -16,7 +35,35 @@
 #' Viz4Mile <- VisualizeChanNtwk(chrtFile, plot=FALSE)
 #' chrtGg <- Viz4Mile()
 #' 
-#' toTo=350
+#' 
+#' ## are there repeated channel nodes???
+#' #hydroFile4Mile <- '~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/Fulldom_hydro_OrodellBasin_100m.nc'
+#' hydroFile4Mile <- '~/WRF_Hydro/Fourmile_test_case_KS_5-29-15/GIS/Fulldom_hires_netcdf_file.nc'
+#' hydroFile4Mile <- '~/Fulldom_hires_netcdf_file.nc'
+#' chLL <- GetNcdfFile(hydroFile4Mile,variables = c("LONGITUDE",'LATITUDE'), quiet=TRUE, flip2D=TRUE)
+#' 
+#' for(ii in 1:nrow(conn4Mile)) {
+#'  ll <- conn4Mile[ii,1:2]
+#'  whMatch <- which(conn4Mile[,1]==ll[1,1] & conn4Mile[,2]==ll[1,2])
+#'  if( length(whMatch) > 1 ) {
+#'    print('-------------------------------')
+#'    print(ii)
+#'    print(whMatch)
+#'    print(format(conn4Mile[whMatch,], digits=19))
+#'    i <- conn4Mile[whMatch,'chanI']
+#'    j <- conn4Mile[whMatch,'chanJ']
+#'    print(paste('i,j =',i[1],j[1]))
+#'    print(format(chLL$LONGITUDE[i[1],j[1]], digits=19))
+#'    print(format(chLL$LATITUDE[i[1],j[1]], digits=19))
+#'    print(paste('i,j =',i[2],j[2]))
+#'    print(format(chLL$LONGITUDE[i[2],j[2]], digits=19))
+#'    print(format(chLL$LATITUDE[i[2],j[2]], digits=19))
+#'  }
+#' }
+#' 
+#' 
+#' 
+#' toTo=1
 #' cc=1
 #' while(length(toTo)) {
 #' whTf <- c('chLat','chLon','fromNode')
@@ -24,25 +71,22 @@
 #' tfSub$var <- ifelse(tfSub$fromNode %in% toTo, 'to', 'from')
 #' print("---------")
 #' print(cc)
-#' print(tfSub)
+#' print(format(tfSub, digits=19))
 #' png(file=paste0('~/tmpPngs/fourmile.',formatC(cc,,dig=3,flag='0'),'.png'), width=210*5*2,height=70*5*2, pointsize=3)
-#' print(chrtGg$plot + ggplot2::geom_point(data=tfSub, 
-#'                         ggplot2::aes(x=chLon, y=chLat, color=var) ))
+#' print(chrtGg$ggplot + ggplot2::geom_point(data=tfSub, ggplot2::aes(x=chLon, y=chLat, color=var) ))
 #' dev.off()
 #' toTo <- subset(tfSub, var=='from')$fromNode                       
 #' cc=cc+1
-#' #if(cc==30) break
+#' #if(cc==19) break
 #' print(toTo)
 #' #Sys.sleep(2)
 #' }
 
 #' @export
-CalcChanConnect <- function(hydroGridFile, quiet=FALSE) {
-  
+CalcChanConnect <- function(hydroGridFile, quiet=FALSE, conFile=TRUE) {
+
   ## Note this is only for gridded channel routing.
   if(!quiet) cat("Connectivity only applies to GRIDDED channel routing!\n")
-  
-  flipHoriz <- function(m) m[,ncol(m):1] 
 
   ## Get data from file
   ncid <- ncdf4::nc_open(hydroGridFile)
