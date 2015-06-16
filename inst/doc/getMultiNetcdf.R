@@ -18,7 +18,7 @@
 library("rwrfhydro")
 
 #' 
-## ---- echo=FALSE---------------------------------------------------------
+## ----, echo=FALSE--------------------------------------------------------
 options(width = 190)
 
 #' 
@@ -59,9 +59,8 @@ varList <- list(lsm=lsmVars, hydro=hydroVars)
 #' Only a scalar can be returned for each entry specified index. However, spatial fields (a range of indices) can be summarized using arbitrary statistics. We show how to define your own useful statistics which can be used when specifying the indexList. (Note that the envir argument may be needed to get your function inside of GetMultiNcdf in special circumstances.) Our statistic example is to calculate basin-average and basin-maximum soil moisture on each layer. To do this we need the basin mask (a non-standard field in the hydro grid file) to define the grid indices in the basin and the fraction of each within the basin. 
 ## ------------------------------------------------------------------------
 library(ncdf4)
-fineGridNc <- nc_open(paste0(fcPath,'DOMAIN/Fulldom_hydro_OrodellBasin_100m_geogrd.nc'))
-basinMask <- ncvar_get(fineGridNc, 'basn_msk_geogrid')
-nc_close(fineGridNc)
+basinMask <- CreateBasinMask(paste0(fcPath,'DOMAIN/Fulldom_hydro_OrodellBasin_100m.nc'), 
+                             basid=1, aggfact=10)
 basAvg <- function(var) sum(basinMask*var)/sum(basinMask)
 basMax <- function(var) max(ceiling(basinMask)*var)
 
@@ -90,7 +89,7 @@ indList <- list(lsm=lsmInds, hydro=hydroInds)
 ## ------------------------------------------------------------------------
 library(doMC)   ## Showing parallelization, which is at the file level within
 registerDoMC(3) ## each file groups; pointless to be longer than your timeseries.
-fileData <- GetMultiNcdf(file=flList,var=varList, ind=indList, parallel=FALSE)
+fileData <- GetMultiNcdf(filesList=flList, variableList=varList, indexList=indList, parallel=FALSE)
 
 #' 
 #' What did we get?
@@ -101,7 +100,7 @@ str(fileData)
 #' 
 #' # Plot the timeseries
 #' This output format is easily plotted using `ggplot2`. 
-## ----results='hold', fig.width = 12, fig.height = 10.29*1.2, out.width='700', out.height='720'----
+## ----,results='hold', fig.width = 12, fig.height = 10.29*1.2, out.width='700', out.height='720'----
 library(ggplot2)
 library(scales)
 ggplot(fileData, aes(x=POSIXct, y=value, color=fileGroup)) +
