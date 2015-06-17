@@ -124,7 +124,7 @@ ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk",
         doMC::registerDoMC(ncores)
         }
     # Setup mask
-    mskvar <- CreateBasinMask(pathDomFile, mskvar=mskvar, basid=basid, aggfact=aggfact)
+    mskvar <- CreateBasinMask(pathDomfile, mskvar=mskvar, basid=basid, aggfact=aggfact)
     # Calculate basin area as a cell count
     basarea <- sum(mskvar)
     # Setup basin mean function
@@ -296,3 +296,48 @@ ReadRtout <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, ncore
    }
    basnmsk
  }
+
+#' Get geogrid cell indices from lat/lon.
+#'
+#' \code{GetGeogridIndex} reads in a set of lat/lon coordinates and generates a 
+#' corresponding set of geogrid index pairs.
+#'
+#' \code{GetGeogridIndex} reads in a set of lat/lon coordinates and a geogrid
+#' file and generates a corresponding set of geogrid index pairs.
+#' 
+#' @param ll The dataframe of lat/lon coordinates. The dataframe must contain one 
+#' "x" and one "y" column at a minimum.
+#' @param ncfile The full pathname to the WRF-Hydro geogrid domain file.
+#' @param x The column name for the x coordinate value (DEFAULT="lon")
+#' @param y The column name for the y coordinate value (DEFAULT="lat")
+#' @param proj4 The proj4 string for the x/y coordinate projection 
+#' (DEFAULT='+proj=longlat +datum=WGS84')
+#' @return A dataframe containing the i, j indices (row, column).
+#'
+#' @examples
+#' ## Take the geogrid (low-res) domain for Fourmile and a pair of lat/lon
+#' ## coordinates for the Niwot Ridge SNOTEL site and get the index values.
+#' \dontrun{
+#' GetGeogridIndex(data.frame(lon=-105.54, lat=40.04), "~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/geo_em.d01_1km_nlcd11.nc")
+#' }
+#' @keywords IO
+#' @concept dataGet
+#' @family modelDataReads
+#' @export
+GetGeogridIndex <- function(ll, ncfile, x="lon", y="lat", proj4='+proj=longlat +datum=WGS84') {
+  # Create temp geogrid tif
+  randnum <- round(runif(1)*10^8,0)
+  ExportGeogrid(ncfile, "HGT_M", paste0("tmp_", randnum, ".tif"))
+  geohgt <- raster::raster(paste0("tmp_", randnum, ".tif"))
+  file.remove(paste0("tmp_", randnum, ".tif"))
+  # Setup coords
+  sp<-SpatialPoints(data.frame(x=ll[,x], y=ll[,y]))
+  crs(sp)<-proj4
+  sp2 <- spTransform(sp, crs(geohgt))
+  outDf <- as.data.frame(rowColFromCell(geohgt, cellFromXY(geohgt, sp2)))
+  outDf$ew <- outDf$col
+  outDf$sn <- dim(geohgt)[1]-outDf$row
+  outDf$row<-NULL
+  outDf$col<-NULL
+  outDf
+}
