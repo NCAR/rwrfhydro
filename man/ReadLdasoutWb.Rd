@@ -66,6 +66,7 @@ modLdasoutWb1d.mod1.fc <-
 }
 \seealso{
 Other modelDataReads: \code{\link{CreateBasinMask}};
+  \code{\link{GetGeogridIndex}};
   \code{\link{ReadFrxstPts}}; \code{\link{ReadGwOut}};
   \code{\link{ReadRtout}}
 }

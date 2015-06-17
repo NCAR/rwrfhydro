@@ -38,9 +38,9 @@ geoMsk <- CreateBasinMask("~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/Fulldom_hyd
 }
 }
 \seealso{
-Other modelDataReads: \code{\link{ReadFrxstPts}};
-  \code{\link{ReadGwOut}}; \code{\link{ReadLdasoutWb}};
-  \code{\link{ReadRtout}}
+Other modelDataReads: \code{\link{GetGeogridIndex}};
+  \code{\link{ReadFrxstPts}}; \code{\link{ReadGwOut}};
+  \code{\link{ReadLdasoutWb}}; \code{\link{ReadRtout}}
 }
 \concept{
 dataGet
