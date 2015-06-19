@@ -5,53 +5,70 @@
 \title{Visualize WRF Hydro channel link indices and get coordinates.}
 \usage{
 VisualizeChanNtwk(file, gaugePts = NULL, excludeInds = NULL,
-  gaugeAccuracy = 12, plot = TRUE)
+  gaugeAccuracy = 12, plot = TRUE, hydroGridFile = NULL)
 }
 \arguments{
-\item{file}{A path/name to an output YYYMMDDHHmm.CHRTOUT_DOMAIN* file or a hydroDART Posterior_Diag.nc file.}
+\item{file}{A path/name to an output YYYMMDDHHmm.CHRTOUT_DOMAIN* file or a
+hydroDART Posterior_Diag.nc file.}
 
-\item{gaugePts}{Optional list of gauge points. Nearest stream links are found. See examples.}
+\item{gaugePts}{Optional list of gauge points. Nearest stream links are
+found. See examples.}
 
-\item{excludeInds}{Optional index of channel network to exclude. See examples.}
+\item{excludeInds}{Optional index of channel network to exclude. See
+examples.}
 
 \item{gaugeAccuracy}{The number of digits printed for the gauge information.}
 
 \item{plot}{Logical to plot or not.}
+
+\item{hydroGridFile}{Character Optional The path/filename of the "fulldom" or
+"hydro grid" or "fine grid" file. If supplied, the returned \code{linkDf}
+from the closure contains extra information including channel connectivity.}
 }
 \value{
-A function which allows the plot to be interactively queried once each time it is run and returns
-the coordinates of the selected location. Details provided in details above.
+A function which allows the underlying plot to be tuned. The function
+  also allows interactive queries once each time it is run and prints the
+  coordinates of the selected location. Details provided in details above.
+  The return value of the function (the returned function once called) is a
+  list containing \code{linkDf} which contains channel information and
+  \code{ggplot} which gives access to the plot (and it's data is contained
+  within that object).
 }
 \description{
-\code{VisualizeChanNtwk} shows the channel network indices and provides interactive selection to retrieve link
-coordinates.
+\code{VisualizeChanNtwk} shows the channel network indices and provides
+interactive selection to retrieve link coordinates.
 }
 \details{
-Read a CHANRTOUT file and display the link indicies. Returns a function which allows interactive querying of
-individual links for lat and lon.
+Read a CHANRTOUT file and display the link indicies. Returns a function which
+allows interactive querying of individual links for lat and lon.
 
-The arguments of the returned function are:
-\describe{
-  \item{\code{location}}{Most generically, the center of the google (or other) map. More specifically,
-  this is the argument passed to the \pkg{ggmap} for its argument of the same name.
-  (Default\code{=c(lon=mean(range(linkDf$lon)),lat=mean(range(linkDf$lat)))})}
+The arguments of the returned function are: \describe{
+\item{\code{location}}{Most generically, the center of the google (or other)
+map. More specifically, this is the argument passed to the \pkg{ggmap} for
+its argument of the same name.
+(Default\code{=c(lon=mean(range(linkDf$lon)),lat=mean(range(linkDf$lat)))})}
 
-\item{\code{zoom=11}}{The zoom level for the google (or other) map. See \pkg{ggmap} for more details.}
+\item{\code{zoom=11}}{The zoom level for the google (or other) map. See
+\pkg{ggmap} for more details.}
 
-\item{\code{source='google'}}{The source for the underlying map. See \pkg{ggmap} package for details.}
+\item{\code{source='google'}}{The source for the underlying map. See
+\pkg{ggmap} package for details.}
 
 \item{\code{maptype='terrain'}}{The map type for \pkg{ggmap}.}
 
-\item{\code{padPlot=.1}}{The fraction of the range (in both lon and lat) of the channel network to expand the plot by.}
+\item{\code{padPlot=.1}}{The fraction of the range (in both lon and lat) of
+the channel network to expand the plot by.}
 
-\item{\code{gaugeZoom=NULL}}{The name of the gauge you'd like to zoom in on. This will likely require finessing zoom and padPlot to make it look nice.}
+\item{\code{gaugeZoom=NULL}}{The name of the gauge you'd like to zoom in on.
+This will likely require finessing zoom and padPlot to make it look nice.}
 
-\item{\code{clickSelect=FALSE}}{Do you want to click on the plot to query a specfic point? You only get one click per function call.}
+\item{\code{clickSelect=FALSE}}{Do you want to click on the plot to query a
+specfic point? You only get one click per function call.}
 
-\item{\code{linkShape=5}}{The shape code (ggplot2) for the gridded link elements.}
+\item{\code{linkShape=5}}{The shape code (ggplot2) for the gridded link
+elements.}
 
-\item{\code{gaugeShape=4}}{The shape code (ggplot2) for the gauges.}
-}
+\item{\code{gaugeShape=4}}{The shape code (ggplot2) for the gauges.} }
 }
 \examples{
 ## See the vignette "WRF Hydro Domain and Channel Visualization", for details.
@@ -82,8 +99,15 @@ VisualizeChanNtwk(chrtFile, gaugePts=gaugePts, plot=FALSE)
 LocLinkFun <- VisualizeChanNtwk(chrtFile, gaugePts=gaugePts, exc=350, plot=FALSE)
 ## Increase the accuracy of the lon/lat ouput
 LocLinkFun <- VisualizeChanNtwk(chrtFile, gaugePts=gaugePts, exc=350, plot=FALSE, gaugeAccuracy=17)
-## Now make the plot that was suppressed in the previous call.
-LocLinkFun()
+## Now make the plot that was suppressed in the previous call and its returned data.
+data <- LocLinkFun()
+str(data$linkDf)
+## Now also ask for connectivity information
+hydroGridFile <- paste0(fcPath,'/DOMAIN/Fulldom_hydro_OrodellBasin_100m_geogrd.nc')
+LocLinkFun <- VisualizeChanNtwk(chrtFile, gaugePts=gaugePts, exc=350, plot=FALSE, gaugeAccuracy=17, hydroGridFile=hydroGridFile)
+## The plot is the same but the returned data (linkDf) is richer.
+data <- LocLinkFun()
+str(data$linkDf)
 ## Change the amount of padding around the domain and the shape of the gauge symbols.
 LocLinkFun(pad=.3, gaugeShape=16)
 ## Zoom to the orodell gauge.

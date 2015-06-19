@@ -69,6 +69,18 @@ RotateCw <- function(matrix) t(apply(matrix, 2, rev))
 #' @export
 RotateCcw <- function(matrix) apply(matrix, 1, rev)
 
+#' Flip a matrix vertically, that is over it's horizontal axis (y1 <-> yn).
+#' 
+#' This is the transformation which 2D WRF Hydro fields need upon import.
+#' \code{FlipVert} Flips a matrix vertically (over it's horizontal axis).
+#' @param matrix A matrix.
+#' @examples
+#' x <- matrix(1:9, 3)
+#' x
+#' FlipVert(x)
+#' @keywords internal
+#' @export
+FlipVert <- function(m) m[,ncol(m):1] 
 
 #' Translate (i.e. invert) timezones to the so calle Olson names used by POSIXct. 
 #' 
