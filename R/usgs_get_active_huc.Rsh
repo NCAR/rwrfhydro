@@ -71,7 +71,7 @@ tryForMinutes <- function(func, list, minutes=4, quitOnFail=FALSE) {
   t0=Sys.time()
   result <- try(log("a"), silent=TRUE)
   while(class(result) == 'try-error' & 
-        difftime(Sys.time(),t0, unit='mins') < minutes) {
+        difftime(Sys.time(),t0, unit='sec') < minutes*60) {
     result <- try(do.call(func, list))
   }
   
@@ -95,7 +95,11 @@ tryForMinutes <- function(func, list, minutes=4, quitOnFail=FALSE) {
 ####################
 ## Get and process the data!
 
+## The NWIS Filter options
 service='iv'
+modifiedSince='PT15M'
+period='PT4H'
+parameterCd='00060'
 
 ## default diagnostics
 pullTime <- parseTime <- NULL
@@ -105,14 +109,18 @@ doPullParse <- function() {
 
   ## The following 3 commands constitute readNWISdata.
   ## 1. Forming the url should never fail
-  urlCall <- dataRetrieval::readNWISdataUrlCall(service=service, huc=huc, parameterCd='00060')
+  urlCall <- dataRetrieval::readNWISdataUrlCall(service=service,
+                                                huc=huc, 
+                                                modifiedSince=modifiedSince, 
+                                                period=period,
+                                                parameterCd=parameterCd)
   
   ## 2. Getting the data apparaently fails often.
   ## Pull time is a diagnostic.
   pullTime <<- system.time( 
     waterMLList <- tryForMinutes(dataRetrieval::readNWISdataImport, 
                                 list(urlCall=urlCall, service=service),
-                                minutes=1) 
+                                minutes=.3) 
   )
   if(class(waterMLList)=='try-error') {
     errMsg(paste0("For HUC ", huc, ", failed to get data (readNWISdataImport)"))
@@ -125,7 +133,7 @@ doPullParse <- function() {
     parseTime <<- system.time(
       data <- tryForMinutes(dataRetrieval::readNWISdataRetval, 
                             list(importList=waterMLList, service=service), 
-                            minutes=1)
+                            minutes=.3)
     )
   } else {
     data <- NA  ## if not processed
@@ -144,7 +152,7 @@ doPullParse <- function() {
 
 ## The number of minutes here should be less than allowed "killAfterMins" in the 
 ## script /home/jamesmcc/usgsStreamData/scripts/getAllActiveHucs_saudiLogin.sh
-data <- tryForMinutes(doPullParse, list(), minutes=8, quitOnFail=TRUE )
+data <- tryForMinutes(doPullParse, list(), minutes=3, quitOnFail=TRUE )
 
 ## another diagnostic
 obSize <- format(object.size(data), units='MB')

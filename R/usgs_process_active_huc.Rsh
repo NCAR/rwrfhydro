@@ -30,7 +30,7 @@ options(warn=1)
 ## these are the "parameters"
 oldestDateToProc <- as.POSIXct('2015-04-15 00:00:00', tz='UTC')
 #nearest number of minutes to round to
-nearest <- 60
+nearest <- 15
 
 ####################
 ## argument handling
