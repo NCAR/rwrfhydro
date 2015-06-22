@@ -10,7 +10,7 @@
 
 <meta name="author" content="James McCreight" />
 
-<meta name="date" content="2015-05-07" />
+<meta name="date" content="2015-06-22" />
 
 <title>Get data from multiple netcdf files</title>
 
@@ -54,7 +54,7 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <div id="header">
 <h1 class="title">Get data from multiple netcdf files</h1>
 <h4 class="author"><em>James McCreight</em></h4>
-<h4 class="date"><em>2015-05-07</em></h4>
+<h4 class="date"><em>2015-06-22</em></h4>
 </div>
 
 
@@ -95,10 +95,7 @@ varList &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="
 <h2><code>indexList</code></h2>
 <p>The indexList defines what indices/stats are desired for each variable in each file group. This list is collated with both of the previous two lists in a nested way, illustrated below.</p>
 <p>Only a scalar can be returned for each entry specified index. However, spatial fields (a range of indices) can be summarized using arbitrary statistics. We show how to define your own useful statistics which can be used when specifying the indexList. (Note that the envir argument may be needed to get your function inside of GetMultiNcdf in special circumstances.) Our statistic example is to calculate basin-average and basin-maximum soil moisture on each layer. To do this we need the basin mask (a non-standard field in the hydro grid file) to define the grid indices in the basin and the fraction of each within the basin.</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ncdf4)
-fineGridNc &lt;-<span class="st"> </span><span class="kw">nc_open</span>(<span class="kw">paste0</span>(fcPath,<span class="st">'DOMAIN/Fulldom_hydro_OrodellBasin_100m_geogrd.nc'</span>))
-basinMask &lt;-<span class="st"> </span><span class="kw">ncvar_get</span>(fineGridNc, <span class="st">'basn_msk_geogrid'</span>)
-<span class="kw">nc_close</span>(fineGridNc)
+<pre class="sourceCode r"><code class="sourceCode r">basinMask &lt;-<span class="st"> </span><span class="kw">ncdump</span>(<span class="kw">paste0</span>(fcPath,<span class="st">'DOMAIN/Fulldom_hydro_OrodellBasin_100m.nc'</span>), <span class="st">'basn_msk_geogrid'</span>, <span class="dt">quiet=</span><span class="ot">TRUE</span>)
 basAvg &lt;-<span class="st"> </span>function(var) <span class="kw">sum</span>(basinMask*var)/<span class="kw">sum</span>(basinMask)
 basMax &lt;-<span class="st"> </span>function(var) <span class="kw">max</span>(<span class="kw">ceiling</span>(basinMask)*var)</code></pre>
 <p>For fun, we can also calculate the size of the basin while we are here. The LSM pixels are 1km:</p>
