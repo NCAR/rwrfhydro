@@ -58,10 +58,7 @@ varList <- list(lsm=lsmVars, hydro=hydroVars)
 #' 
 #' Only a scalar can be returned for each entry specified index. However, spatial fields (a range of indices) can be summarized using arbitrary statistics. We show how to define your own useful statistics which can be used when specifying the indexList. (Note that the envir argument may be needed to get your function inside of GetMultiNcdf in special circumstances.) Our statistic example is to calculate basin-average and basin-maximum soil moisture on each layer. To do this we need the basin mask (a non-standard field in the hydro grid file) to define the grid indices in the basin and the fraction of each within the basin. 
 ## ------------------------------------------------------------------------
-library(ncdf4)
-fineGridNc <- nc_open(paste0(fcPath,'DOMAIN/Fulldom_hydro_OrodellBasin_100m_geogrd.nc'))
-basinMask <- ncvar_get(fineGridNc, 'basn_msk_geogrid')
-nc_close(fineGridNc)
+basinMask <- ncdump(paste0(fcPath,'DOMAIN/Fulldom_hydro_OrodellBasin_100m_geogrd.nc'), 'basn_msk_geogrid', quiet=TRUE)
 basAvg <- function(var) sum(basinMask*var)/sum(basinMask)
 basMax <- function(var) max(ceiling(basinMask)*var)
 
