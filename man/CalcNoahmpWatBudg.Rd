@@ -61,12 +61,13 @@ soil moisture storage (mm) \item HYD_QSTRMVOL: Total runoff into channel from
 land \emph{(routing model only)}  (mm) \item HYD_DELSFCHEAD: Change in
 surface storage \emph{(routing model only)} (mm) \item HYD_QBDRY: Total flow
 outside of domain \emph{(routing model only)} (mm) \item HYD_GWOUT: Total
-groundwater outflow \emph{(routing model only)} (mm) \item HYD_DELGWSTOR:
-Change in groundwater storage \emph{(routing model only)} (mm) \item
+groundwater outflow \emph{(routing model only)} (mm) \item
 WB_SFCRNOFF: Total surface runoff used in the water budget calculation
 (\emph{either} LSM_SFCRNOFF or HYD_QSTRMVOL) (mm) \item WB_GWOUT: Total
 groundwater outflow used in the water budget calculation (\emph{either}
-LSM_UGDRNOFF or HYD_GWOUT) (mm) \item ERROR: Remainder in water budget (mm)
+LSM_UGDRNOFF or HYD_GWOUT) (mm) \item WB_DELGWSTOR: Change in groundwater
+storage (adjusted by surface runoff when no surface routing active) (mm)
+\item ERROR: Remainder in water budget (mm)
 \item RUN_FRAC: Runoff fraction, runoff/precipitation \item EVAP_FRAC:
 Evaporative fraction, evapotranspiration/precipitation \item STOR_FRAC:
 Change in storage fraction, storagechange/precipitation }

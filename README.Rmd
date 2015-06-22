@@ -8,7 +8,7 @@
 <table summary="Package rwrfhydro summary">
 <tr>
 <td style="vertical-align: top;">Version:</td>
-<td>1.0.0</td>
+<td>1.0.0.9000</td>
 </tr>
 <tr>
 <td style="vertical-align: top;">Depends:</td>
