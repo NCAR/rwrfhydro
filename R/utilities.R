@@ -302,7 +302,7 @@ CalcCOM <- function (x) {
 #' @keywords internal
 #' @export
 ReshapeMultiNcdf <- function(myDf) {
-    newDF <- subset(myDf[,c("POSIXct","stat")], myDf$variableGroup==unique(myDf$variableGroup)[1])
+    newDF <- subset(myDf[,c("POSIXct","stat","statArg")], myDf$variableGroup==unique(myDf$variableGroup)[1])
     for (i in unique(myDf$variableGroup)) {
         newDF[,i] <- subset(myDf$value, myDf$variableGroup==i)
         }

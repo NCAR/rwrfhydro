@@ -2,14 +2,14 @@
 % Please edit documentation in R/read_modelout.R
 \name{GetGeogridIndex}
 \alias{GetGeogridIndex}
-\title{Get geogrid cell indices from lat/lon.}
+\title{Get geogrid cell indices from lat/lon (or other) coordinates.}
 \usage{
-GetGeogridIndex(ll, ncfile, x = "lon", y = "lat",
+GetGeogridIndex(xy, ncfile, x = "lon", y = "lat",
   proj4 = "+proj=longlat +datum=WGS84")
 }
 \arguments{
-\item{ll}{The dataframe of lat/lon coordinates. The dataframe must contain one
-"x" and one "y" column at a minimum.}
+\item{xy}{The dataframe of lat/lon (or other) coordinates. The dataframe
+must contain one "x" and one "y" column at a minimum.}
 
 \item{ncfile}{The full pathname to the WRF-Hydro geogrid domain file.}
 
@@ -24,12 +24,13 @@ GetGeogridIndex(ll, ncfile, x = "lon", y = "lat",
 A dataframe containing the i, j indices (row, column).
 }
 \description{
-\code{GetGeogridIndex} reads in a set of lat/lon coordinates and generates a
-corresponding set of geogrid index pairs.
+\code{GetGeogridIndex} reads in a set of lat/lon (or other) coordinates and
+generates a corresponding set of geogrid index pairs.
 }
 \details{
-\code{GetGeogridIndex} reads in a set of lat/lon coordinates and a geogrid
-file and generates a corresponding set of geogrid index pairs.
+\code{GetGeogridIndex} reads in a set of lat/lon (or other real-world)
+coordinates and a geogrid file and generates a corresponding set of
+geogrid index pairs.
 }
 \examples{
 ## Take the geogrid (low-res) domain for Fourmile and a pair of lat/lon

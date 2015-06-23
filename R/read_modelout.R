@@ -297,16 +297,17 @@ ReadRtout <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, ncore
    basnmsk
  }
 
-#' Get geogrid cell indices from lat/lon.
+#' Get geogrid cell indices from lat/lon (or other) coordinates.
 #'
-#' \code{GetGeogridIndex} reads in a set of lat/lon coordinates and generates a 
-#' corresponding set of geogrid index pairs.
+#' \code{GetGeogridIndex} reads in a set of lat/lon (or other) coordinates and 
+#' generates a corresponding set of geogrid index pairs.
 #'
-#' \code{GetGeogridIndex} reads in a set of lat/lon coordinates and a geogrid
-#' file and generates a corresponding set of geogrid index pairs.
+#' \code{GetGeogridIndex} reads in a set of lat/lon (or other real-world) 
+#' coordinates and a geogrid file and generates a corresponding set of 
+#' geogrid index pairs.
 #' 
-#' @param ll The dataframe of lat/lon coordinates. The dataframe must contain one 
-#' "x" and one "y" column at a minimum.
+#' @param xy The dataframe of lat/lon (or other) coordinates. The dataframe  
+#' must contain one "x" and one "y" column at a minimum.
 #' @param ncfile The full pathname to the WRF-Hydro geogrid domain file.
 #' @param x The column name for the x coordinate value (DEFAULT="lon")
 #' @param y The column name for the y coordinate value (DEFAULT="lat")
@@ -324,19 +325,20 @@ ReadRtout <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, ncore
 #' @concept dataGet
 #' @family modelDataReads
 #' @export
-GetGeogridIndex <- function(ll, ncfile, x="lon", y="lat", proj4='+proj=longlat +datum=WGS84') {
+GetGeogridIndex <- function(xy, ncfile, x="lon", y="lat", proj4='+proj=longlat +datum=WGS84') {
   # Create temp geogrid tif
   randnum <- round(runif(1)*10^8,0)
   ExportGeogrid(ncfile, "HGT_M", paste0("tmp_", randnum, ".tif"))
   geohgt <- raster::raster(paste0("tmp_", randnum, ".tif"))
   file.remove(paste0("tmp_", randnum, ".tif"))
   # Setup coords
-  sp<-SpatialPoints(data.frame(x=ll[,x], y=ll[,y]))
+  sp<-SpatialPoints(data.frame(x=xy[,x], y=xy[,y]))
   crs(sp)<-proj4
   sp2 <- spTransform(sp, crs(geohgt))
   outDf <- as.data.frame(rowColFromCell(geohgt, cellFromXY(geohgt, sp2)))
   outDf$ew <- outDf$col
-  outDf$sn <- dim(geohgt)[1]-outDf$row
+  # Change row count from N->S to S->N
+  outDf$sn <- dim(geohgt)[1] - outDf$row + 1
   outDf$row<-NULL
   outDf$col<-NULL
   outDf

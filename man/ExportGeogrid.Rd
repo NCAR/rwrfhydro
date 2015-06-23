@@ -4,7 +4,7 @@
 \alias{ExportGeogrid}
 \title{Creates a georeferenced TIF from a geogrid variable}
 \usage{
-ExportGeogrid(inFile, inVar, outFile)
+ExportGeogrid(inFile, inVar, outFile, inCoordFile = NA, inLyr = NA)
 }
 \arguments{
 \item{inFile}{The geogrid NetCDF file.}
@@ -12,6 +12,15 @@ ExportGeogrid(inFile, inVar, outFile)
 \item{inVar}{The name of the variable to be converted.}
 
 \item{outFile}{The geoTiff filename to create.}
+
+\item{inCoordFile}{(OPTIONAL) The netcdf file containing the lat/lon
+coordinates if they are not included in the inFile. This is useful,
+for example, when creating a geotiff from an LDASOUT output file which
+does not contain lat/lon coordinates but matches the spatial coordinate
+system of the geogrid input file.}
+
+\item{inLyr}{(OPTIONAL) The layer number to export if the variable has
+more than 2 dimensions, e.g., for soil or snow layer variables.}
 }
 \description{
 \code{ExportGeogrid} takes a NetCDF geogrid and converts the specified
@@ -27,7 +36,13 @@ in standard GIS tools.
 ## to a geoTiff called geogrid_hgt.tif.
 
 \dontrun{
-ExportGeogrid("geo_em.d01_1km.nc", "HGT_M", "geogrid_hgt.tif")
+ExportGeogrid("~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/geo_em.d01_1km_nlcd11.nc",
+             "HGT_M", "geogrid_hgt.tif")
+ExportGeogrid("~/wrfHydroTestCases/Fourmile_Creek/RUN.RTTESTS/OUTPUT_ALLRT_DAILY/2013031500.LDASOUT_DOMAIN1",
+             inVar="SOIL_M",
+             outFile="20130315_soilm3.tif",
+             inCoordFile="~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/geo_em.d01_1km_nlcd11.nc",
+             inLyr=3)
 }
 }
 \concept{

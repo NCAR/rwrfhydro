@@ -134,6 +134,7 @@ GetFileStat <- function(theFile, variable, index, env=parent.frame(), parallel=F
     statChar <- indexList$statChar
     statArg <- indexList$statArg
     ## sanity check the dimensions
+    #print(paste("i=", i, "label=", label, "dataStart=", length(dataStart), "dataEnd=", length(dataEnd), "dimSize=", length(dimSize)))
     if( length(dataStart)!=length(dataEnd) | length(dataStart)!=length(dimSize) |
         any(dataStart < 1) | any(dataStart > dimSize) |
         any(dataEnd   < 1) | any(dataEnd   > dimSize) |
