@@ -299,7 +299,7 @@ CalcCOM <- function (x) {
 #' for ease of use in other functions.
 #' @param myDf The output dataframe from GetMultiNcdf.
 #' @return The reshaped output dataframe.
-#' @keywords internal
+#' @keywords utilities internal
 #' @export
 ReshapeMultiNcdf <- function(myDf) {
     newDF <- subset(myDf[,c("POSIXct","stat","statArg")], myDf$variableGroup==unique(myDf$variableGroup)[1])
@@ -523,7 +523,7 @@ FormalsToDf <- function(theFunc, envir=parent.frame()) {
 #' @param mo The month.
 #' @param yr The year.
 #' @return The day count.
-#' @keywords internal
+#' @keywords utilities internal
 #' @export
 CalcMonthDays <- function(mo, yr) {
   #m <- format(date, format="%m")
@@ -537,4 +537,19 @@ CalcMonthDays <- function(mo, yr) {
   }
   return(res)
 }
-  
+
+#' Calculate date object from POSIXct time
+#' 
+#' \code{CalcDateTrunc} takes a POSIXct object and outputs
+#' a corresponding date object. POSIXct times are truncated
+#' to a date, not rounded (e.g., 03/15/2014 23:00 will 
+#' become 03/15/2014).
+#' @param timePOSIXct Time in POSIXct format
+#' @param timeZone Time zone (DEFAULT="UTC")
+#' @return Date object
+#' @keywords utilities internal
+#' @export
+CalcDateTrunc <- function(timePOSIXct, timeZone="UTC") {
+  timeDate <- as.Date(trunc(as.POSIXct(format(timePOSIXct, tz=timeZone), tz=timeZone), "days"))
+  return(timeDate)
+}

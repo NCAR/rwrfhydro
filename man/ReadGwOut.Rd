@@ -30,7 +30,6 @@ modGWout1h.mod1.fc <- ReadGwOut("../OUTPUT/GW_outflow.txt")
 }
 \seealso{
 Other modelDataReads: \code{\link{CreateBasinMask}};
-  \code{\link{GetGeogridIndex}};
   \code{\link{ReadFrxstPts}}; \code{\link{ReadLdasoutWb}};
   \code{\link{ReadRtout}}
 }

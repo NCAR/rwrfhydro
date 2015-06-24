@@ -30,8 +30,8 @@ modStr1h.mod1.fc <- ReadFrxstPts("../OUTPUT/frxst_pts_out.txt")
 }
 \seealso{
 Other modelDataReads: \code{\link{CreateBasinMask}};
-  \code{\link{GetGeogridIndex}}; \code{\link{ReadGwOut}};
-  \code{\link{ReadLdasoutWb}}; \code{\link{ReadRtout}}
+  \code{\link{ReadGwOut}}; \code{\link{ReadLdasoutWb}};
+  \code{\link{ReadRtout}}
 }
 \concept{
 dataGet
