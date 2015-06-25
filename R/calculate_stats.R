@@ -59,6 +59,7 @@ CalcNoahmpFluxes <- function(ldasoutDf, idCol=NULL) {
         tmp <- c(NA, diff(tmp))
         ldasoutDf$DEL_UGDRNOFF[ldasoutDf[,idCol]==idList[i]] <- tmp }
     }
+    ldasoutDf <- ldasoutDf[order(ldasoutDf[,idCol], ldasoutDf[,"POSIXct"]),]
   }
   ldasoutDf
 }
