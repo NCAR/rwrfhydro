@@ -25,6 +25,8 @@
 #' @param endYr (OPTIONAL) The last year to download files for.
 #' @param month (OPTIONAL) The month to download files for.
 #' @param day (OPTIONAL) The day of month to download files for.
+#' @param quiet (OPTIONAL) Whether to suppress output (TRUE=suppress output; 
+#' DEFAULT=FALSE).
 #' @return dataframe
 #' @examples
 #' sno.santafe <- GetSnotel(c("921","922"), series="Daily", startYr=2009, endYr=2010)
@@ -41,7 +43,8 @@ GetSnotel <- function(siteIDs,
                       current="DAY", 
                       duration="WY", 
                       startYr=NULL, endYr=NULL,
-                      month=NULL, day=NULL) {
+                      month=NULL, day=NULL,
+                      quiet=FALSE) {
   
   # test: siteIDs="663"; report="STAND"; series="Hourly"; intervaltype="Historic"; current="DAY"; duration="WY"; startYr=NULL; endYr=NULL; month=NULL; day=NULL
   # test: siteIDs=c("663","922"); report="STAND"; series="Hourly"; intervaltype="Historic"; current="DAY"; duration="WY"; startYr=2005; endYr=2015; month=NULL; day=NULL
@@ -65,10 +68,10 @@ GetSnotel <- function(siteIDs,
   # Loop through sites and years
   for (i in 1:length(siteIDs)) {
     siteID <- siteIDs[i]
-    print(paste("Site:", siteID))
+    if (!quiet) print(paste("Site:", siteID))
     for (j in 1:length(years)) {
       if (intervaltype=="Current") {
-        print(paste("  - processing current", current))
+        if (!quiet) print(paste("  - processing current", current))
         # Form URL
         baseurl <- paste0(server, 
                           "view?intervalType=", intervaltype, 
@@ -77,7 +80,7 @@ GetSnotel <- function(siteIDs,
                           "&format=copy&sitenum=", siteID,
                           "&interval=", current)
       } else {
-        print(paste("  - processing year:", years[j]))
+        if (!quiet) print(paste("  - processing year:", years[j]))
         # Form URL
         baseurl <- paste0(server, 
                       "view?intervalType=", intervaltype, 

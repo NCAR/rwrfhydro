@@ -6,7 +6,8 @@
 \usage{
 GetSnotel(siteIDs, report = "STAND", series = "Daily",
   intervaltype = "Historic", current = "DAY", duration = "WY",
-  startYr = NULL, endYr = NULL, month = NULL, day = NULL)
+  startYr = NULL, endYr = NULL, month = NULL, day = NULL,
+  quiet = FALSE)
 }
 \arguments{
 \item{siteIDs}{A single site ID or vector of site IDs to download and process. Site IDs
@@ -37,6 +38,9 @@ are: \itemize{ \item "CY" (calendar year) \item "WY" (water year) }}
 \item{month}{(OPTIONAL) The month to download files for.}
 
 \item{day}{(OPTIONAL) The day of month to download files for.}
+
+\item{quiet}{(OPTIONAL) Whether to suppress output (TRUE=suppress output;
+DEFAULT=FALSE).}
 }
 \value{
 dataframe
