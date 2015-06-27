@@ -100,7 +100,7 @@ at http://www.ral.ucar.edu/projects/wrf_hydro/rwrfhydro.php.</em>
   <col style="width: 94%;" />
   <td style="vertical-align: top;"> Reference&nbsp;manual: </td>
   <td>
-    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/rwrfhydro.pdf">rwrfhydro.pdf </a>
+    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/rwrfhydro-manual.pdf">rwrfhydro.pdf </a>
   </td>
 </table>
 </tr>
