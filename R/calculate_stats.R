@@ -31,6 +31,8 @@ CalcNoahmpFluxes <- function(ldasoutDf, idCol=NULL) {
     if ("ACCEDIR" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_ACCEDIR[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACCEDIR) }
     if ("UGDRNOFF" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_UGDRNOFF[2:nrow(ldasoutDf)] <- diff(ldasoutDf$UGDRNOFF) }
     if ("SFCRNOFF" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_SFCRNOFF[2:nrow(ldasoutDf)] <- diff(ldasoutDf$SFCRNOFF) }
+    if ("ACSNOM" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_ACSNOM[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACSNOM) }
+    if ("ACSNOW" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_ACSNOW[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACSNOW) }
   } else {
     idList <- unique(ldasoutDf[,idCol])
     for (i in 1:length(idList)) {
@@ -58,6 +60,14 @@ CalcNoahmpFluxes <- function(ldasoutDf, idCol=NULL) {
         tmp <- subset(ldasoutDf$UGDRNOFF, ldasoutDf[,idCol]==idList[i])
         tmp <- c(NA, diff(tmp))
         ldasoutDf$DEL_UGDRNOFF[ldasoutDf[,idCol]==idList[i]] <- tmp }
+      if ("ACSNOM" %in% colnames(ldasoutDf)) {
+        tmp <- subset(ldasoutDf$ACSNOM, ldasoutDf[,idCol]==idList[i])
+        tmp <- c(NA, diff(tmp))
+        ldasoutDf$DEL_ACSNOM[ldasoutDf[,idCol]==idList[i]] <- tmp }
+      if ("ACSNOW" %in% colnames(ldasoutDf)) {
+        tmp <- subset(ldasoutDf$ACSNOW, ldasoutDf[,idCol]==idList[i])
+        tmp <- c(NA, diff(tmp))
+        ldasoutDf$DEL_ACSNOW[ldasoutDf[,idCol]==idList[i]] <- tmp }
     }
     ldasoutDf <- ldasoutDf[order(ldasoutDf[,idCol], ldasoutDf[,"POSIXct"]),]
   }
