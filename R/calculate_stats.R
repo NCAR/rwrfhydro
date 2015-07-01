@@ -24,6 +24,7 @@
 #' @family modelEvaluation
 #' @export
 CalcNoahmpFluxes <- function(ldasoutDf, idCol=NULL) {
+  ldasoutDf <- ldasoutDf[order(ldasoutDf[,"POSIXct"]),]
   if (is.null(idCol)) {
     if ("ACCPRCP" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_ACCPRCP[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACCPRCP) }
     if ("ACCECAN" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_ACCECAN[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACCECAN) }
