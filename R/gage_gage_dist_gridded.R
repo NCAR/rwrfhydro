@@ -134,8 +134,8 @@ GetGageGageDist <- function(ind1, ind2, upstream, downstream, length,
       tmpInds <- inds 
       
       if(nIter > 0) {
+        ## With each iteration, try a successively downstream confluence.
         ## For NHD plus, downJunct could be an array! Fix this?
-        #downJunct <- GoToDownstreamJunct(downstream, upstream, inds[ii], skip=TRUE)
         downJunct <- 
           IterateFunction(GoToDownstreamJunct, 
                           list(downstream=downstream, upstream=upstream, 
@@ -143,30 +143,41 @@ GetGageGageDist <- function(ind1, ind2, upstream, downstream, length,
                           'ind', nIter)
         #print(paste0(nIter,' , ',ii,' : ', downJunct))
         tmpInds[ii] <- downJunct
-        tmpInds[otherInd[ii]] <- inds[ii]
+        #tmpInds[otherInd[ii]] <- inds[ii]
+        tmpInds[otherInd[ii]] <- inds[otherInd[ii]] ## experimental
       }
       
       upstreamSearch <- 
         GatherUpstream(upstream, length, gridded=gridded, 
                        tmpInds[ii], indDist=list(ind=c(), dist=c()) )
 
+      ## was the other index found in upstream search?
       if(length(whInd <- which(upstreamSearch$ind == tmpInds[otherInd[ii]]))) {
-        if(nIter==0) return(upstreamSearch$dist[whInd])
+        ## if it was found with out iteration, the points are connected via
+        ## simple upstream search.
+        if(nIter==0) return(data.frame(ind1=tmpInds[otherInd[ii]],
+                                       ind2=tmpInds[ii],
+                                       symmetric=TRUE,
+                                       dist=upstreamSearch$dist[whInd]))
+        
+        ## otherwise (you get here) this is the distance from the test common
+        ## confluence in tmpInds[ii] UP to the start pt in tmpInds[otherInd[ii]], 
+        ## which is not the one necessarily upstream from the downstreamsearch.
         downToStartDist <- upstreamSearch$dist[whInd]
-      }
 
-      if(nIter > 1) { 
         ## tmpInds[ii] <- downJunct # same
-        tmpInds[otherInd[ii]] <- inds[otherInd[ii]]
+        tmpInds[otherInd[ii]] <- inds[ii]
         upstreamSearch <- 
           GatherUpstream(upstream, length, gridded=gridded, 
                          tmpInds[ii], indDist=list(ind=c(), dist=c()) )
         if(length(whInd <- which(upstreamSearch$ind == tmpInds[otherInd[ii]]))) {
           downToEndDist <- upstreamSearch$dist[whInd]
-          ## For link/reach will have double counted the junction, subtract it off.
-          if(!gridded) downToEndDist <- downToEndDist - length[downJunct]
-          return( downToStartDist + downToEndDist )
-        }
+          ## first row is the first search above, second is the search directly above.
+          return( data.frame(ind1=c(inds[otherInd[ii]], inds[ii]),
+                             ind2=c(inds[ii],           inds[otherInd[ii]]),
+                             symmetric=c(FALSE, FALSE),
+                             dist=c(downToStartDist, downToEndDist) ) )
+        } ## if match was found
       } ## if(nIter > 1)
       
     } ## for(1 in 1:2)
@@ -256,17 +267,18 @@ IterateFunction <- function(f, args, resultArg, iterations=1){
 if(FALSE){
 ##----------------------
 ## create the gage-gage distances file
-g1<-plyr::laply(whFrxst[2:4], GetGageGageDist, 
+g1<-plyr::ldply(whFrxst[2:4], GetGageGageDist, 
                 whFrxst[1], upstream, downstream, length, gridded=TRUE)
-g2<-plyr::laply(whFrxst[3:4], GetGageGageDist, 
+g2<-plyr::ldply(whFrxst[3:4], GetGageGageDist, 
                 whFrxst[2], upstream, downstream, length, gridded=TRUE)
-g3<-plyr::laply(whFrxst[4], GetGageGageDist, 
+g3<-plyr::ldply(whFrxst[4], GetGageGageDist, 
                 whFrxst[3], upstream, downstream, length, gridded=TRUE)
-gageIds <- c('06730200','06730160','06727410','06727500')
-gg <- data.frame(gage1=gageIds[c(1,1,1,2,2,3)],
-                 gage2=gageIds[c(2,3,4,3,4,4)],
-                 dist=c(g1,g2,g3) )
-
+gg <- data.frame(rbind(g1, g2, g3))
+gageIndToId <- c('06730200','06730160','06727410','06727500')
+names(gageIndToId) <- c(whFrxst)
+gg$ind1 <- gageIndToId[as.character(gg$ind1)]
+gg$ind2 <- gageIndToId[as.character(gg$ind2)]
+gg
 ## need to set the missing value used by ncdf4? i think it's NA by default
 dimensionList <-
   list(  # n.b. the dimension order: z,y,x,t
@@ -280,30 +292,45 @@ dimensionList <-
                          units='', 
                          values=1:15,
                          unlimited=FALSE,
+                         create_dimvar=FALSE),
+    
+    symmetricIdStrLen=list(name='symmetricIdStrLen',
+                         units='', 
+                         values=1,
+                         unlimited=FALSE,
                          create_dimvar=FALSE)
   )
 
 
 varList = list()
 varList[[1]] <- 
-  list( name='gageId1',
+  list( name='stationId1',
         longname='USGS station identifer for first of pair',
         units='',
         precision = 'char',
         #missing = ,
         dimensionList=dimensionList[c('stationIdStrLen','distancesIdInd')],
-        data = gg$gage1 )
+        data = gg$ind2 )
 
 varList[[2]] <- 
-  list( name='gageId2',
+  list( name='stationId2',
         longname='USGS station identifer for second of pair',
         units='',
         precision = 'char',
         #missing = ,
         dimensionList=dimensionList[c('stationIdStrLen','distancesIdInd')],
-        data = gg$gage2 )
+        data = gg$ind2 )
 
 varList[[3]] <- 
+  list( name='symmetric',
+        longname='pt to pt dist (vs distance to nearest confluence)?',
+        units='-',
+        precision = 'char',
+        #missing = ,
+        dimensionList=dimensionList[c('symmetricIdStrLen','distancesIdInd')],
+        data = gg$symmetric )
+
+varList[[4]] <- 
   list( name='distance',
         longname='distance.meters',
         units='m',
