@@ -71,7 +71,20 @@ CheckReGridConnDown <- function(ind, printInds=FALSE) {
   TRUE
 }
 
-#' Find the upstream links/nodes/cells with distances from a specified point
+#' Get the "distance" between two indices on the network. 
+#' If the gages lie up or downstream from one another, then this "symmetric" 
+#' distance between them is returned. If the gages are connected by a common 
+#' downstream (to both) confulence, requiring a downstream-upstream search, then 
+#' the distance from each to the confluence is returned, which is not symmetric.
+#' The output data frame contains:
+#' ind1: if symmetric, the upstream index. If not symmetric, this index's 
+#' distance to the confluence is reported.
+#' ind2: if symmetric, the downstream index. If not symmetric, this is just a 
+#' place holder.
+#' symmetric: if the points are connected up/downstream from each other or if a
+#' downstream-upstream search is required to connect them.
+#' distance: in meters, as described for ind1 and ind2. 
+#' 
 #' @examples 
 #'  devtools::load_all()
 #' 
@@ -310,7 +323,7 @@ varList[[1]] <-
         precision = 'char',
         #missing = ,
         dimensionList=dimensionList[c('stationIdStrLen','distancesIdInd')],
-        data = gg$ind2 )
+        data = formatC(gg$ind1, width=15) )
 
 varList[[2]] <- 
   list( name='stationId2',
@@ -319,7 +332,7 @@ varList[[2]] <-
         precision = 'char',
         #missing = ,
         dimensionList=dimensionList[c('stationIdStrLen','distancesIdInd')],
-        data = gg$ind2 )
+        data = formatC(gg$ind2, width=15))
 
 varList[[3]] <- 
   list( name='symmetric',
@@ -328,7 +341,7 @@ varList[[3]] <-
         precision = 'char',
         #missing = ,
         dimensionList=dimensionList[c('symmetricIdStrLen','distancesIdInd')],
-        data = gg$symmetric )
+        data = gg$symmetric )  ## results in T & F without coercion. 
 
 varList[[4]] <- 
   list( name='distance',
@@ -373,13 +386,13 @@ dimensionList <-
 
 varList = list()
 varList[[1]] <- 
-  list( name='gageId',
+  list( name='stationId',
         longname='USGS station identifer',
         units='-',
         precision = 'char',
         #missing = ,
         dimensionList=dimensionList[c('stationIdStrLen','stationIdInd')],
-        data = gageParams$nhdRtIntersect )
+        data = formatC(gageParams$nhdRtIntersect, width=15) )
 
 varList[[2]] <- 
   list( name='R',
