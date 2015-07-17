@@ -38,9 +38,10 @@ ReIndexRouteLink <- function(routeLinkFile) {
 ##   upstream         lookup   match
 ##------------------------------------
 #' @examples
-#' doMC::registerDoMC(16)
-#' ReExpNetwork("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink3.ReIndex.Rdb")
-#' ReExpNetwork("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink3.ReIndex.Rdb", up=FALSE)
+ library(rwrfhydro)
+ doMC::registerDoMC(16)
+ ReExpNetwork("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink3.ReIndex.Rdb")
+ ReExpNetwork("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink3.ReIndex.Rdb", up=FALSE)
 
 ReExpNetwork <- function(routeLinkReInd, upstream=TRUE) {
   load(routeLinkReInd)
@@ -62,7 +63,7 @@ ReExpNetwork <- function(routeLinkReInd, upstream=TRUE) {
   ## the cumulative sum dosent give the start, it gives the last in each range. fix
   whLenGt1 <- which(theLen > 1)
   cumAdj <- as.integer(0*(1:length(theLen)))
-  cumAdj[whLenGt1] = cumAdj[whLenGt1] - toLen[whLenGt1] + 1
+  cumAdj[whLenGt1] = cumAdj[whLenGt1] - theLen[whLenGt1] + 1
   theStart <- theStart + cumAdj
 
   base <- strsplit(basename(routeLinkReInd),'\\.')[[1]][1]
