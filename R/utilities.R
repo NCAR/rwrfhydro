@@ -604,3 +604,18 @@ lsOS <- function(..., n=10) {
   .ls.objects(..., order.by="Size", decreasing=TRUE, head=TRUE, n=n)
 }
 
+#' Calculate a running mean
+#' 
+#' \code{CalcRunningMean} takes series and calculates
+#' a running mean over specified number of records
+#' @param x Vector of values
+#' @param n Number of records to use
+#' @param sides Whether to use both sides (2=past and 
+#' future) or just one side (1=past only).
+#' @return Vector of moving averages
+#' @keywords utilities internal
+#' @export
+CalcRunningMean = function(x, n, sides=2) {
+  filter(x, rep(1/n,n), sides=sides, method="convolution")
+}
+
