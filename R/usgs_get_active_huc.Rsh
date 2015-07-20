@@ -31,7 +31,7 @@ args <- commandArgs(TRUE)
 
 ## arg 1: huc
 huc <- formatC(as.numeric(args[1]), width=2, flag='0')
-if(!(huc %in% formatC(1:21, width=2, flag='0'))) fatalGraceful(paste0("No such HUC two: ",huc)}
+if(!(huc %in% formatC(1:21, width=2, flag='0'))) fatalGraceful(paste0("No such HUC two: ",huc))
 
 ## arg 2: outPath
 outPath <- args[2]
@@ -45,7 +45,7 @@ if(is.na(dateId)) fatalGraceful("No dateId argument supplied.")
 ## arg 4
 process <- args[4]
 if(toupper(process)=='TRUE')   process <- TRUE
-if(touppper(process)=='FALSE') process <- FALSE
+if(toupper(process)=='FALSE') process <- FALSE
 if(!is.logical(process)) fatalGraceful("Supplied argument 'process' is not logical.")
 
 
