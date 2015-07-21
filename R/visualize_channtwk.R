@@ -248,6 +248,8 @@ VisualizeChanNtwk <- function(file, gaugePts=NULL, excludeInds=NULL,
       print(thePlot)
     } else print(thePlot)
    
+    ## The return value of the closure  
+    invisible(list(linkDf=linkDf, ggplot=thePlot))
   }
   
   if(plot) GetChanPoint() 

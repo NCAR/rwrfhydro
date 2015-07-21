@@ -61,7 +61,8 @@ GetMODIS(geogrdPath=paste0(dataPath, '/DOMAIN/geo_em.d01_1km_nlcd11.nc'), prodNa
                        "FparLai_QC"="mode", 
                        "FparExtra_QC"="mode", 
                        "FparStdDev_1km"="bilinear", 
-                       "LaiStdDev_1km"="bilinear"))
+                       "LaiStdDev_1km"="bilinear"),
+         quiet=TRUE)
 
 #' 
 #' Create a raster stack of the downloaded and processed MODIS LAI images. This tool does some additional processing of the images to get them into a more usable format. Specifically, it can remove "no data" values (in this case, we already excluded those before reasmpling in the step above) and can apply product-specific scale factors (in this case, 0.1). See the <a href="https://lpdaac.usgs.gov/products/modis_products_table">MODIS data page</a> for specifics on valid value ranges and scale factors.
@@ -80,7 +81,7 @@ lai.b <- ConvertRS2Stack(paste0(options("MODIS_outDirPath"), '/FOURMILE_LAI'), "
 #' <div style="border:1px solid; border-radius: 25px; padding: 12px 25px;">
 ## ----, echo=FALSE--------------------------------------------------------
 
-#library(printr)
+library(printr)
 ?ConvertRS2Stack
 
 #' </div>
@@ -116,14 +117,14 @@ plot(lai.b, "DT2013.07.12")
 lai.b.sm1 <- SmoothStack(lai.b, 
                          outDirPath=paste0(options("MODIS_outDirPath"), '/FOURMILE_LAI_SMOOTH1'), 
                          outputAs="one", removeOutlier=TRUE, outlierThreshold=0.5, 
-                         lambda=1000, overwrite=TRUE)
+                         lambda=2000, overwrite=TRUE)
 
 #' 
 #' Try a less aggressive filter.
 ## ------------------------------------------------------------------------
 lai.b.sm2 <- SmoothStack(lai.b, 
                          outDirPath=paste0(options("MODIS_outDirPath"), '/FOURMILE_LAI_SMOOTH2'), 
-                         outputAs="one", lambda=20, overwrite=TRUE)
+                         outputAs="one", lambda=100, overwrite=TRUE)
 
 #' 
 #' Calculate statistics and plot the domain means over time.
@@ -138,8 +139,8 @@ head(stats.lai.b)
 
 #' 
 ## ----, , results = "asis", echo=FALSE------------------------------------
-#library(pander)
-#pander::pandoc.table(head(stats.lai.b))
+library(pander)
+pander::pandoc.table(head(stats.lai.b))
 
 #' 
 ## ----compSmoothLAI, fig.width = 12, fig.height = 6, out.width='700', out.height='350'----
@@ -153,7 +154,7 @@ legend("topleft", c("MODIS Raw", "Smooth Filter 1", "Smooth Filter 2"),
 #' 
 #' # Export to forcing
 #' 
-#' Export the second smoothed time series to the forcing data for use in future model runs.
+#' Export the second smoothed time series to the forcing data for use in future model runs. This requires a local NCO installation.
 ## ------------------------------------------------------------------------
 InsertRS(lai.b.sm2, forcPath=paste0(dataPath, '/FORCING'), forcName="LDASIN_DOMAIN1", 
          varName="LAI", varUnit="(m^2)/(m^2)", varLong="Leaf area index", overwrite=TRUE)

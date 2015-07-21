@@ -556,7 +556,7 @@ CalcDateTrunc <- function(timePOSIXct, timeZone="UTC") {
 
 #' List objects with more detailed metadata
 #' 
-#' \code{.ls.objects} lists objects with more detailed info on type, size,
+#' \code{LsObjects} lists objects with more detailed info on type, size,
 #' etc. Blatantly plagiarized from the following sources:
 #' Petr Pikal, David Hinds, Dirk Eddelbuettel, Tony Breyal.
 #' @param pos
@@ -568,7 +568,7 @@ CalcDateTrunc <- function(timePOSIXct, timeZone="UTC") {
 #' @return dataframe
 #' @keywords utilities internal
 #' @export
-.ls.objects <- function (pos = 1, pattern, order.by,
+LsObjects <- function (pos = 1, pattern, order.by,
                          decreasing=FALSE, head=FALSE, n=5) {
   napply <- function(names, fn) sapply(names, function(x)
     fn(get(x, pos = pos)))
@@ -591,9 +591,9 @@ CalcDateTrunc <- function(timePOSIXct, timeZone="UTC") {
     out <- head(out, n)
   out
 }
-#' Shorthand call for .ls.objects.
+#' Shorthand call for LsObjects.
 #' 
-#' \code{lsOS} Shorthand call for .ls.objects
+#' \code{lsOS} Shorthand call for LsObjects
 #' Blatantly plagiarized from the following sources:
 #' Petr Pikal, David Hinds, Dirk Eddelbuettel, Tony Breyal.
 #' @param n
@@ -601,7 +601,7 @@ CalcDateTrunc <- function(timePOSIXct, timeZone="UTC") {
 #' @keywords utilities internal
 #' @export
 lsOS <- function(..., n=10) {
-  .ls.objects(..., order.by="Size", decreasing=TRUE, head=TRUE, n=n)
+  LsObjects(..., order.by="Size", decreasing=TRUE, head=TRUE, n=n)
 }
 
 #' Calculate a running mean

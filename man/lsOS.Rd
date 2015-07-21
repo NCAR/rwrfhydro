@@ -2,7 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{lsOS}
 \alias{lsOS}
-\title{Shorthand call for .ls.objects.}
+\title{Shorthand call for LsObjects.}
 \usage{
 lsOS(..., n = 10)
 }
@@ -13,7 +13,7 @@ lsOS(..., n = 10)
 dataframe
 }
 \description{
-\code{lsOS} Shorthand call for .ls.objects
+\code{lsOS} Shorthand call for LsObjects
 Blatantly plagiarized from the following sources:
 Petr Pikal, David Hinds, Dirk Eddelbuettel, Tony Breyal.
 }
