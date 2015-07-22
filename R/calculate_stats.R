@@ -9,6 +9,8 @@
 #' as the LSM.
 #' 
 #' @param ldasoutDf The LDASOUT dataframe
+#' @param idCol The optional ID column to use to parse the output;
+#' for example, a basin ID column or other index ID. (DEFAULT=NULL)
 #' @return The input dataframe with new water flux columns added.
 #'   
 #' @examples
@@ -21,14 +23,56 @@
 #' @concept dataMgmt
 #' @family modelEvaluation
 #' @export
-CalcNoahmpFluxes <- function(ldasoutDf) {
+CalcNoahmpFluxes <- function(ldasoutDf, idCol=NULL) {
+  ldasoutDf <- ldasoutDf[order(ldasoutDf[,"POSIXct"]),]
+  if (is.null(idCol)) {
     if ("ACCPRCP" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_ACCPRCP[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACCPRCP) }
     if ("ACCECAN" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_ACCECAN[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACCECAN) }
     if ("ACCETRAN" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_ACCETRAN[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACCETRAN) }
     if ("ACCEDIR" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_ACCEDIR[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACCEDIR) }
     if ("UGDRNOFF" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_UGDRNOFF[2:nrow(ldasoutDf)] <- diff(ldasoutDf$UGDRNOFF) }
     if ("SFCRNOFF" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_SFCRNOFF[2:nrow(ldasoutDf)] <- diff(ldasoutDf$SFCRNOFF) }
-    ldasoutDf
+    if ("ACSNOM" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_ACSNOM[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACSNOM) }
+    if ("ACSNOW" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_ACSNOW[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACSNOW) }
+  } else {
+    idList <- unique(ldasoutDf[,idCol])
+    for (i in 1:length(idList)) {
+      if ("ACCPRCP" %in% colnames(ldasoutDf)) {
+        tmp <- subset(ldasoutDf$ACCPRCP, ldasoutDf[,idCol]==idList[i])
+        tmp <- c(NA, diff(tmp))
+        ldasoutDf$DEL_ACCPRCP[ldasoutDf[,idCol]==idList[i]] <- tmp }
+      if ("ACCECAN" %in% colnames(ldasoutDf)) {
+        tmp <- subset(ldasoutDf$ACCECAN, ldasoutDf[,idCol]==idList[i])
+        tmp <- c(NA, diff(tmp))
+        ldasoutDf$DEL_ACCECAN[ldasoutDf[,idCol]==idList[i]] <- tmp }
+      if ("ACCEDIR" %in% colnames(ldasoutDf)) {
+        tmp <- subset(ldasoutDf$ACCEDIR, ldasoutDf[,idCol]==idList[i])
+        tmp <- c(NA, diff(tmp))
+        ldasoutDf$DEL_ACCEDIR[ldasoutDf[,idCol]==idList[i]] <- tmp }
+      if ("ACCETRAN" %in% colnames(ldasoutDf)) {
+        tmp <- subset(ldasoutDf$ACCETRAN, ldasoutDf[,idCol]==idList[i])
+        tmp <- c(NA, diff(tmp))
+        ldasoutDf$DEL_ACCETRAN[ldasoutDf[,idCol]==idList[i]] <- tmp }
+      if ("SFCRNOFF" %in% colnames(ldasoutDf)) {
+        tmp <- subset(ldasoutDf$SFCRNOFF, ldasoutDf[,idCol]==idList[i])
+        tmp <- c(NA, diff(tmp))
+        ldasoutDf$DEL_SFCRNOFF[ldasoutDf[,idCol]==idList[i]] <- tmp }
+      if ("UGDRNOFF" %in% colnames(ldasoutDf)) {
+        tmp <- subset(ldasoutDf$UGDRNOFF, ldasoutDf[,idCol]==idList[i])
+        tmp <- c(NA, diff(tmp))
+        ldasoutDf$DEL_UGDRNOFF[ldasoutDf[,idCol]==idList[i]] <- tmp }
+      if ("ACSNOM" %in% colnames(ldasoutDf)) {
+        tmp <- subset(ldasoutDf$ACSNOM, ldasoutDf[,idCol]==idList[i])
+        tmp <- c(NA, diff(tmp))
+        ldasoutDf$DEL_ACSNOM[ldasoutDf[,idCol]==idList[i]] <- tmp }
+      if ("ACSNOW" %in% colnames(ldasoutDf)) {
+        tmp <- subset(ldasoutDf$ACSNOW, ldasoutDf[,idCol]==idList[i])
+        tmp <- c(NA, diff(tmp))
+        ldasoutDf$DEL_ACSNOW[ldasoutDf[,idCol]==idList[i]] <- tmp }
+    }
+    ldasoutDf <- ldasoutDf[order(ldasoutDf[,idCol], ldasoutDf[,"POSIXct"]),]
+  }
+  ldasoutDf
 }
 
 

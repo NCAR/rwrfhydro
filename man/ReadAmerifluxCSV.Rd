@@ -4,15 +4,22 @@
 \alias{ReadAmerifluxCSV}
 \title{Read standard-format CSV data downloaded from Ameriflux}
 \usage{
-ReadAmerifluxCSV(pathFluxData, timeZone)
+ReadAmerifluxCSV(pathFluxData, timeZone = NULL, utcOffset = NULL)
 }
 \arguments{
 \item{pathFluxData}{The full pathname to the flux time series CSV file as
 downloaded from an Ameriflux data server.}
 
-\item{timeZone}{The time zone for the flux data. Time zone name must be
+\item{timeZone}{The time zone for the flux site. Time zone name must be
 R-friendly for your current OS. See:
-\url{http://stat.ethz.ch/R-manual/R-devel/library/base/html/timezones.html}}
+\url{http://stat.ethz.ch/R-manual/R-devel/library/base/html/timezones.html}.
+Provide this OR a UTC offset. Note that Ameriflux data is (allegedly!) in local
+time without daylight savings.}
+
+\item{utcOffset}{The UTC offset for the flux site's local time. These should be in
+positive or negative hours (e.g., -7 for "America/Denver" with no DST shift).
+These values will supercede any provided time zones. See tzLookup for a list of
+time zone UTC offsets.}
 }
 \value{
 A dataframe containing the Ameriflux data.
@@ -32,7 +39,7 @@ rwrfhydro tools.
 
 \dontrun{
 obsFlux30min.usnr1 <-
-  ReadAmerifluxCSV("../OBS/FLUX/AMF_USNR1_2013_L2_GF_V008.csv", "America/Denver")
+  ReadAmerifluxCSV("../OBS/FLUX/AMF_USNR1_2013_L2_GF_V008.csv", utcOffset=-7)
 }
 }
 \seealso{

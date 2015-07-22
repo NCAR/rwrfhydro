@@ -53,10 +53,10 @@ names(lsmInds) <- names(lsmVars)
 indList <- list( lsm=lsmInds )
 
 #' 
-#' Run the tool. To speed things up, we will run this over 8 cores using the doMC package.
+#' Run the tool. To speed things up, we will run this over 3 cores using the doMC package.
 ## ------------------------------------------------------------------------
 library(doMC)
-registerDoMC(8)
+registerDoMC(3)
 modDf <- GetMultiNcdf(file=flList,var=varList, ind=indList, parallel=TRUE)
 
 #' 
@@ -79,15 +79,19 @@ modLsm.allrt.niw$LE <- with(modLsm.allrt.niw, ET_mm * 2.5106e+6 / 86400)
 #' 
 #' # Import observed datasets
 #' 
-#' Import Ameriflux station data for Niwot Ridge (Level 2 Standardized). We specify "America/Denver" as the time zone (Ameriflux timestamps are in local time).
+#' Import Ameriflux station data for Niwot Ridge (US-NR1). The GetAmeriflux function will download the data from the ORNL server (Ameriflux Level 2 standardized CSV files) and convert to an R dataframe with POSIXct timestamps. We first check to make sure the "US-NR1" station ID is in the master database (amfMeta, included with the rwrfhydro release) and we agree with the specified UTC offset (should be local station time, no daylight savings).
 ## ------------------------------------------------------------------------
-obsFlux30min.usnr1 <- ReadAmerifluxCSV(paste0(dataPath, '/OBS/AMF_USNR1_2013_L2_GF_V008.csv'), 
-                                       "America/Denver")
+subset(amfMeta, amfMeta$id_txt=="US-NR1")
 
 #' 
-#' Our LDASOUT time step was 1 day, so we need to aggregate the observations to a UTC daily time step for comparison.
+#' Then we use this ID to download the data for 2013.
 ## ------------------------------------------------------------------------
-obsFlux1d.usnr1 <- aggregate(obsFlux30min.usnr1[names(obsFlux30min.usnr1) != c("POSIXct")], 
+obsFlux30min.usnr1 <- GetAmeriflux("US-NR1", gaps=TRUE, startYr=2013, endYr=2013)
+
+#' 
+#' Our LDASOUT time step was 1 day, so we need to aggregate the observations to a UTC daily time step for comparison. We apply the aggregations only to numeric variables to avoid a bunch of R warnings.
+## ------------------------------------------------------------------------
+obsFlux1d.usnr1 <- aggregate(obsFlux30min.usnr1[sapply(obsFlux30min.usnr1, is.numeric)], 
      by = list(as.POSIXct(round(as.POSIXct(format(obsFlux30min.usnr1$POSIXct, tz="UTC"), tz="UTC"), 
                                 "days"))), 
      CalcMeanNarm)
@@ -111,10 +115,10 @@ CalcModPerf(modLsm.allrt.niw, obsFlux1d.usnr1, flxCol.mod="LE", flxCol.obs="LE")
 
 #' 
 ## ----, results = "asis", echo=FALSE--------------------------------------
-#library(pander)
-#pander::pandoc.table(CalcModPerf(modLsm.allrt.niw, obsFlux1d.usnr1, 
-#                                 flxCol.mod="LE", flxCol.obs="LE"), 
-#                     split.table=Inf)
+library(pander)
+pander::pandoc.table(CalcModPerf(modLsm.allrt.niw, obsFlux1d.usnr1, 
+                                 flxCol.mod="LE", flxCol.obs="LE"), 
+                     split.table=Inf)
 
 #' 
 #' 
@@ -263,7 +267,7 @@ PlotFluxCompare(subset(obsFlux30min.usnr1,
                 labelMod1="All Routing", title="Wind Speed: Niwot Ridge")
 
 #' 
-#' Now we convert specific humidity to relative humidity to compare to the flow tower observations.
+#' Now we convert specific humidity to relative humidity to compare to the flux tower observations.
 #' 
 ## ------------------------------------------------------------------------
 modForc.allrt.may.niw$RH <- with(modForc.allrt.may.niw, 

@@ -20,4 +20,5 @@ Calculate the number of days in the month specified
 by the given month and year.
 }
 \keyword{internal}
+\keyword{utilities}
 

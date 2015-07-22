@@ -299,10 +299,10 @@ CalcCOM <- function (x) {
 #' for ease of use in other functions.
 #' @param myDf The output dataframe from GetMultiNcdf.
 #' @return The reshaped output dataframe.
-#' @keywords internal
+#' @keywords utilities internal
 #' @export
 ReshapeMultiNcdf <- function(myDf) {
-    newDF <- subset(myDf[,c("POSIXct","stat")], myDf$variableGroup==unique(myDf$variableGroup)[1])
+    newDF <- subset(myDf[,c("POSIXct","stat","statArg")], myDf$variableGroup==unique(myDf$variableGroup)[1])
     for (i in unique(myDf$variableGroup)) {
         newDF[,i] <- subset(myDf$value, myDf$variableGroup==i)
         }
@@ -523,7 +523,7 @@ FormalsToDf <- function(theFunc, envir=parent.frame()) {
 #' @param mo The month.
 #' @param yr The year.
 #' @return The day count.
-#' @keywords internal
+#' @keywords utilities internal
 #' @export
 CalcMonthDays <- function(mo, yr) {
   #m <- format(date, format="%m")
@@ -537,4 +537,85 @@ CalcMonthDays <- function(mo, yr) {
   }
   return(res)
 }
-  
+
+#' Calculate date object from POSIXct time
+#' 
+#' \code{CalcDateTrunc} takes a POSIXct object and outputs
+#' a corresponding date object. POSIXct times are truncated
+#' to a date, not rounded (e.g., 03/15/2014 23:00 will 
+#' become 03/15/2014).
+#' @param timePOSIXct Time in POSIXct format
+#' @param timeZone Time zone (DEFAULT="UTC")
+#' @return Date object
+#' @keywords utilities internal
+#' @export
+CalcDateTrunc <- function(timePOSIXct, timeZone="UTC") {
+  timeDate <- as.Date(trunc(as.POSIXct(format(timePOSIXct, tz=timeZone), tz=timeZone), "days"))
+  return(timeDate)
+}
+
+#' List objects with more detailed metadata
+#' 
+#' \code{LsObjects} lists objects with more detailed info on type, size,
+#' etc. Blatantly plagiarized from the following sources:
+#' Petr Pikal, David Hinds, Dirk Eddelbuettel, Tony Breyal.
+#' @param pos
+#' @param pattern
+#' @param order.by
+#' @param decreasing
+#' @param head
+#' @param n
+#' @return dataframe
+#' @keywords utilities internal
+#' @export
+LsObjects <- function (pos = 1, pattern, order.by,
+                         decreasing=FALSE, head=FALSE, n=5) {
+  napply <- function(names, fn) sapply(names, function(x)
+    fn(get(x, pos = pos)))
+  names <- ls(pos = pos, pattern = pattern)
+  obj.class <- napply(names, function(x) as.character(class(x))[1])
+  obj.mode <- napply(names, mode)
+  obj.type <- ifelse(is.na(obj.class), obj.mode, obj.class)
+  obj.prettysize <- napply(names, function(x) {
+    capture.output(format(utils::object.size(x), units = "auto")) })
+  obj.size <- napply(names, object.size)
+  obj.dim <- t(napply(names, function(x)
+    as.numeric(dim(x))[1:2]))
+  vec <- is.na(obj.dim)[, 1] & (obj.type != "function")
+  obj.dim[vec, 1] <- napply(names, length)[vec]
+  out <- data.frame(obj.type, obj.size, obj.prettysize, obj.dim)
+  names(out) <- c("Type", "Size", "PrettySize", "Rows", "Columns")
+  if (!missing(order.by))
+    out <- out[order(out[[order.by]], decreasing=decreasing), ]
+  if (head)
+    out <- head(out, n)
+  out
+}
+#' Shorthand call for LsObjects.
+#' 
+#' \code{lsOS} Shorthand call for LsObjects
+#' Blatantly plagiarized from the following sources:
+#' Petr Pikal, David Hinds, Dirk Eddelbuettel, Tony Breyal.
+#' @param n
+#' @return dataframe
+#' @keywords utilities internal
+#' @export
+lsOS <- function(..., n=10) {
+  LsObjects(..., order.by="Size", decreasing=TRUE, head=TRUE, n=n)
+}
+
+#' Calculate a running mean
+#' 
+#' \code{CalcRunningMean} takes series and calculates
+#' a running mean over specified number of records
+#' @param x Vector of values
+#' @param n Number of records to use
+#' @param sides Whether to use both sides (2=past and 
+#' future) or just one side (1=past only).
+#' @return Vector of moving averages
+#' @keywords utilities internal
+#' @export
+CalcRunningMean = function(x, n, sides=2) {
+  filter(x, rep(1/n,n), sides=sides, method="convolution")
+}
+

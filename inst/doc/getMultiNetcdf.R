@@ -18,7 +18,7 @@
 library("rwrfhydro")
 
 #' 
-## ---- echo=FALSE---------------------------------------------------------
+## ----, echo=FALSE--------------------------------------------------------
 options(width = 190)
 
 #' 
@@ -56,9 +56,17 @@ varList <- list(lsm=lsmVars, hydro=hydroVars)
 #' ## `indexList`
 #' The indexList defines what indices/stats are desired for each variable in each file group. This list is collated with both of the previous two lists in a nested way, illustrated below. 
 #' 
-#' Only a scalar can be returned for each entry specified index. However, spatial fields (a range of indices) can be summarized using arbitrary statistics. We show how to define your own useful statistics which can be used when specifying the indexList. (Note that the envir argument may be needed to get your function inside of GetMultiNcdf in special circumstances.) Our statistic example is to calculate basin-average and basin-maximum soil moisture on each layer. To do this we need the basin mask (a non-standard field in the hydro grid file) to define the grid indices in the basin and the fraction of each within the basin. 
+#' Only a scalar can be returned for each entry specified index. However, spatial fields (a range of indices) can be summarized using arbitrary statistics. We show how to define your own useful statistics which can be used when specifying the indexList. (Note that the envir argument may be needed to get your function inside of GetMultiNcdf in special circumstances.)
+#' 
+#' Our statistic example is to calculate basin-average radiative temperature, basin-maximum snow water equivalent, and basin-average soil moisture on each layer. Since all of these variables are on the low-res grid, we need the basin mask from the high-res grid resampled to the low-res geogrid. We use the CreateBasinMask function to generate a basin mask weight grid (each cell value is the fraction of basin within that cell). We specify the path to the high-res routing grid (which contains the basin mask variable), the basin ID we want to run (1), and the aggregation factor between the high-res and low-res grids (10).
 ## ------------------------------------------------------------------------
-basinMask <- ncdump(paste0(fcPath,'DOMAIN/Fulldom_hydro_OrodellBasin_100m_geogrd.nc'), 'basn_msk_geogrid', quiet=TRUE)
+library(ncdf4)
+basinMask <- CreateBasinMask(paste0(fcPath,'DOMAIN/Fulldom_hydro_OrodellBasin_100m.nc'), 
+                             basid=1, aggfact=10)
+
+#' 
+#' Then, we use this resampled basin mask to setup basin mean and max functions, which determine the mean and maximum values of a variable within the basin mask.
+## ------------------------------------------------------------------------
 basAvg <- function(var) sum(basinMask*var)/sum(basinMask)
 basMax <- function(var) max(ceiling(basinMask)*var)
 
@@ -87,7 +95,7 @@ indList <- list(lsm=lsmInds, hydro=hydroInds)
 ## ------------------------------------------------------------------------
 library(doMC)   ## Showing parallelization, which is at the file level within
 registerDoMC(3) ## each file groups; pointless to be longer than your timeseries.
-fileData <- GetMultiNcdf(file=flList,var=varList, ind=indList, parallel=FALSE)
+fileData <- GetMultiNcdf(filesList=flList, variableList=varList, indexList=indList, parallel=FALSE)
 
 #' 
 #' What did we get?
@@ -98,7 +106,7 @@ str(fileData)
 #' 
 #' # Plot the timeseries
 #' This output format is easily plotted using `ggplot2`. 
-## ----results='hold', fig.width = 12, fig.height = 10.29*1.2, out.width='700', out.height='720'----
+## ----,results='hold', fig.width = 12, fig.height = 10.29*1.2, out.width='700', out.height='720'----
 library(ggplot2)
 library(scales)
 ggplot(fileData, aes(x=POSIXct, y=value, color=fileGroup)) +

@@ -100,6 +100,7 @@ ReadGwOut <- function(pathOutfile) {
 #' routing grid and a 1-km LSM grid, aggfact = 10)
 #' @param ncores If multi-core processing is available, the number of cores to use (DEFAULT=1).
 #' Must have doMC installed if ncores is more than 1.
+#' @param pattern Pattern to match in the model output (DEFAULT=glob2rx('*LDASOUT_DOMAIN*'))
 #' @return A dataframe containing a time series of basin-wide mean water budget variables.
 #'
 #' @examples
@@ -116,22 +117,14 @@ ReadGwOut <- function(pathOutfile) {
 #' @concept dataGet
 #' @family modelDataReads
 #' @export
-ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, aggfact=10, ncores=1) {
+ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk", 
+                          basid=1, aggfact=10, ncores=1, 
+                          pattern=glob2rx('*LDASOUT_DOMAIN*')) {
     if (ncores > 1) {
         doMC::registerDoMC(ncores)
         }
     # Setup mask
-    msk <- ncdf4::nc_open(pathDomfile)
-    mskvar <- ncdf4::ncvar_get(msk,mskvar)
-    # Subset to basinID
-    mskvar[which(mskvar != basid)] <- 0.0
-    mskvar[which(mskvar == basid)] <- 1.0
-    # Reverse y-direction for N->S hydro grids to S->N
-    mskvar <- mskvar[,order(ncol(mskvar):1)]
-    # Resample the high-res grid to the low-res LSM
-    if (aggfact > 1) {
-      mskvar <- raster::as.matrix(raster::aggregate(raster::raster(mskvar), fact=aggfact, fun=mean))
-    }
+    mskvar <- CreateBasinMask(pathDomfile, mskvar=mskvar, basid=basid, aggfact=aggfact)
     # Calculate basin area as a cell count
     basarea <- sum(mskvar)
     # Setup basin mean function
@@ -159,7 +152,7 @@ ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, a
     names(ldasoutInd) <- names(ldasoutVars)
     ldasoutIndexList <- list( ldasout = ldasoutInd )
     # Run GetMultiNcdf
-    ldasoutFilesList <- list( ldasout = list.files(path=pathOutdir, pattern=glob2rx('*LDASOUT_DOMAIN*'), full.names=TRUE))
+    ldasoutFilesList <- list( ldasout = list.files(path=pathOutdir, pattern=pattern, full.names=TRUE))
     if (ncores > 1) {
         ldasoutDF <- GetMultiNcdf(indexList=ldasoutIndexList, 
                                   variableList=ldasoutVariableList, 
@@ -258,4 +251,49 @@ ReadRtout <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, ncore
     outDf <- ReshapeMultiNcdf(chrtoutDF)
     outDf
 }
+
+#' Create a coarse-resolution basin mask grid.
+#'
+#' \code{CreateBasinMask} reads in a high-res domain file and outputs a resampled
+#' weighted basin mask grid for generating LSM-grid statistics.
+#'
+#' \code{CreateBasinMask} reads in a high-res domain file and outputs a resampled
+#' weighted basin mask grid for generating LSM-grid statistics. The output grid will
+#' contain 1 for cells that are completely within the basin, 0 for cells that are
+#' completely outside of the basin, and fractions (based on area) for cells that are 
+#' partially within and partially outside of the basin.
+#' 
+#' @param ncfile The full pathname to the WRF-Hydro high-res routing domain file.
+#' @param mskvar The variable name for the high-res basin mask (DEFAULT="basn_msk")
+#' @param basid The basin ID to generate a mask file for (DEFAULT=1)
+#' @param aggfact The aggregation factor for downsampling the high-res grid (e.g.,
+#' aggfact=1 for going from a 100-m routing grid to a 1km geogrid) (DEFAULT=1)
+#' @return A matrix containing the basin mask weights on the resampled grid.
+#'
+#' @examples
+#' ## Take the high-res 100-m routing domain for Fourmile and generate a matrix of
+#' ## area weights on the 1km geogrid domain.
+#' \dontrun{
+#' geoMsk <- CreateBasinMask("~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/Fulldom_hydro_OrodellBasin_100m.nc", aggFact=10)
+#' }
+#' @keywords IO
+#' @concept dataGet
+#' @family modelDataReads
+#' @export
+ CreateBasinMask <- function(ncfile, mskvar="basn_msk", basid=1, aggfact=1) {
+   # Setup mask
+   nc <- ncdf4::nc_open(ncfile)
+   basnmsk <- ncdf4::ncvar_get(nc, mskvar)
+   ncdf4::nc_close(nc)
+   # Subset to basinID
+   basnmsk[which(basnmsk != basid)] <- 0.0
+   basnmsk[which(basnmsk == basid)] <- 1.0
+   # Reverse y-direction for N->S hydro grids to S->N
+   basnmsk <- basnmsk[,order(ncol(basnmsk):1)]
+   # Resample the high-res grid to the low-res LSM
+   if (aggfact > 1) {
+     basnmsk <- raster::as.matrix(raster::aggregate(raster::raster(basnmsk), fact=aggfact, fun=mean))
+   }
+   basnmsk
+ }
 

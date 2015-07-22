@@ -13,27 +13,29 @@
 #' 
 #' @param strDf.obs The OBSERVED flux time series dataframe (e.g., output from
 #'   \code{\link{ReadUsgsGage}}). The dataframe must contain a column of flux
-#'   values and a POSIXct column.
+#'   values and a POSIXct or Date column.
 #' @param strCol.obs The name of the column containing the flux values for the
 #'   OBSERVED dataframe (DEFAULT="q_cms").
 #' @param strDf.mod1 The FIRST MODEL flux time series dataframe (e.g., output
 #'   from \code{\link{ReadFrxstPts}}). The dataframe must contain a column of
-#'   flux values and a POSIXct column.
+#'   flux values and a POSIXct or Date column.
 #' @param strCol.mod1 The name of the column containing the FIRST MODEL flux
 #'   values (DEFAULT="q_cms").
 #' @param strDf.mod2 The SECOND MODEL flux time series dataframe (e.g., output
 #'   from \code{\link{ReadFrxstPts}}). The dataframe must contain a column of
-#'   flux values and a POSIXct column.
+#'   flux values and a POSIXct or Date column.
 #' @param strCol.mod2 The name of the column containing the SECOND MODEL flux
 #'   values (DEFAULT="q_cms").
 #' @param stdate Start date for plot/statistics (DEFAULT=NULL, all records will
 #'   be used). Date MUST be specified in POSIXct format with appropriate
 #'   timezone (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d
-#'   \%H:\%M:\%S", tz="UTC"))
+#'   \%H:\%M:\%S", tz="UTC")) or Date (e.g., as.Date("2013-05-01", 
+#'   format="\%Y-\%m-\%d")) where Date is assumed to match a UTC date.
 #' @param enddate End date for plot/statistics (DEFAULT=NULL, all records will
 #'   be used). Date MUST be specified in POSIXct format with appropriate
 #'   timezone (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d
-#'   \%H:\%M:\%S", tz="UTC"))
+#'   \%H:\%M:\%S", tz="UTC")) or Date (e.g., as.Date("2013-05-01", 
+#'   format="\%Y-\%m-\%d")) where Date is assumed to match a UTC date.
 #' @param logy (TRUE or FALSE) Optional flag to set the y-axis to log-scale
 #'   (DEFAULT=FALSE).
 #' @param labelObs Optional label for the observed streamflow
@@ -41,6 +43,9 @@
 #' @param labelMod1 Optional label for the FIRST MODEL (DEFAULT="Model 1")
 #' @param labelMod2 Optional label for the SECOND MODEL (DEFAULT="Model 2")
 #' @param title Optional for the plot (DEFAULT="Observed and Modelled Fluxes")
+#' @param colorObs Optional color for the observed line (DEFAULT="black")
+#' @param colorMod1 Optional color for the FIRST MODEL line (DEFAULT="green2")
+#' @param colorMod2 Optional color for the FIRST MODEL line (DEFAULT="blue")
 #' @return A plot of the hydrographs.
 #'   
 #' @examples
@@ -67,13 +72,21 @@ PlotFluxCompare <- function(strDf.obs, strCol.obs="q_cms",
                             strDf.mod2=NULL, strCol.mod2="q_cms",
                             stdate=NULL, enddate=NULL, logy=FALSE,
                             labelObs="Observed", labelMod1="Model 1", labelMod2="Model 2",
-                            title="Observed and Modelled Fluxes") {
+                            title="Observed and Modelled Fluxes",
+                            colorObs="black", colorMod1="green2", colorMod2="blue") {
     # PREP DATA
+    if ("POSIXct" %in% names(strDf.obs) & "POSIXct" %in% names(strDf.mod1)) {
+      dateCol <- "POSIXct"
+    } else if ("Date" %in% names(strDf.obs) & "Date" %in% names(strDf.mod1)) {
+      dateCol <- "Date"
+    } else {
+      stop("No time/date column (checked: POSIXct or Date). Exiting.")
+    }
     if (!is.null(stdate) && !is.null(enddate)) {
-        strDf.obs <- subset(strDf.obs, POSIXct>=stdate & POSIXct<=enddate)
-        strDf.mod1 <- subset(strDf.mod1, POSIXct>=stdate & POSIXct<=enddate)
+        strDf.obs <- subset(strDf.obs, strDf.obs[,dateCol]>=stdate & strDf.obs[,dateCol]<=enddate)
+        strDf.mod1 <- subset(strDf.mod1, strDf.mod1[,dateCol]>=stdate & strDf.mod1[,dateCol]<=enddate)
         if (!is.null(strDf.mod2)) {
-            strDf.mod2 <- subset(strDf.mod2, POSIXct>=stdate & POSIXct<=enddate)
+            strDf.mod2 <- subset(strDf.mod2, strDf.mod2[,dateCol]>=stdate & strDf.mod2[,dateCol]<=enddate)
             }
         ttext <- paste0(title, " (", stdate, " to ", enddate, ")")
         }
@@ -85,9 +98,9 @@ PlotFluxCompare <- function(strDf.obs, strCol.obs="q_cms",
     if (!is.null(strDf.mod2)) {
         strDf.mod2$qcomp.mod2 <- strDf.mod2[,strCol.mod2]
     }
-    strDf <- merge(strDf.obs[c("POSIXct","qcomp.obs")], strDf.mod1[c("POSIXct","qcomp.mod1")], by=c("POSIXct"))
+    strDf <- merge(strDf.obs[c(dateCol,"qcomp.obs")], strDf.mod1[c(dateCol,"qcomp.mod1")], by=c(dateCol))
     if (!is.null(strDf.mod2)) {
-        strDf <- merge(strDf, strDf.mod2[c("POSIXct","qcomp.mod2")], by<-c("POSIXct"))
+        strDf <- merge(strDf, strDf.mod2[c(dateCol,"qcomp.mod2")], by<-c(dateCol))
         }
     # STATS
     nseflow1 <- round(Nse(strDf$qcomp.mod1, strDf$qcomp.obs), 2)
@@ -102,21 +115,21 @@ PlotFluxCompare <- function(strDf.obs, strCol.obs="q_cms",
         }
     # PLOT
     if (logy) {
-        with(strDf, plot(POSIXct, log10(qcomp.mod1), typ='l', log='y', col='green2', ylab=paste0(strCol.mod1),
-                                main=ttext, ylim=c(minflow,maxflow)))
+        plot(strDf[,dateCol], log10(strDf$qcomp.mod1), typ='l', log='y', col=colorMod1, ylab=paste0(strCol.mod1),
+                                xlab=dateCol, main=ttext, ylim=c(minflow,maxflow))
         }
     else {
-        with(strDf, plot(POSIXct, qcomp.mod1, typ='l', col='green2', ylab=paste0(strCol.mod1),
-                                main=ttext, ylim=c(minflow,maxflow)))
+        plot(strDf[,dateCol], strDf$qcomp.mod1, typ='l', col=colorMod1, ylab=paste0(strCol.mod1),
+                                xlab=dateCol, main=ttext, ylim=c(minflow,maxflow))
         }
-    if (!is.null(strDf.mod2)) { with(strDf, lines(POSIXct, qcomp.mod2, col='blue')) }
-    with(strDf, lines(POSIXct, qcomp.obs, col='black'))
+    if (!is.null(strDf.mod2)) { lines(strDf[,dateCol], strDf$qcomp.mod2, col=colorMod2) }
+    lines(strDf[,dateCol], strDf$qcomp.obs, col=colorObs)
     if (!is.null(strDf.mod2)) {
-        legend('topright', c(labelMod1, labelMod2, labelObs), col=c('green2','blue','black'), lty=c(1,1,1), bg="white")
+        legend('topright', c(labelMod1, labelMod2, labelObs), col=c(colorMod1,colorMod2,colorObs), lty=c(1,1,1), bg="white")
         mtext(c(paste0("MODEL1: NSE=", nseflow1, " Bias=", biasflow1, "%  MODEL2: NSE=", nseflow2, " Bias=", biasflow2, "%")), side=3, line=0.0, cex=0.9)
         }
     else {
-        legend('topright', c(labelMod1, labelObs), col=c('green2','black'), lty=c(1,1), bg="white")
+        legend('topright', c(labelMod1, labelObs), col=c(colorMod1,colorObs), lty=c(1,1), bg="white")
         mtext(c(paste0("MODEL: NSE=", nseflow1, " Bias=", biasflow1, "%")), side=3, line=0.0, cex=0.9)
         }
 }

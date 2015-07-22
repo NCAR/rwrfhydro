@@ -5,7 +5,7 @@
 \title{Read WRF-Hydro (w/NoahMP) LDASOUT data files and generate basin-wide mean water budget variables.}
 \usage{
 ReadLdasoutWb(pathOutdir, pathDomfile, mskvar = "basn_msk", basid = 1,
-  aggfact = 10, ncores = 1)
+  aggfact = 10, ncores = 1, pattern = glob2rx("*LDASOUT_DOMAIN*"))
 }
 \arguments{
 \item{pathOutdir}{The full pathname to the output directory containing the LDASOUT files.}
@@ -22,6 +22,8 @@ routing grid and a 1-km LSM grid, aggfact = 10)}
 
 \item{ncores}{If multi-core processing is available, the number of cores to use (DEFAULT=1).
 Must have doMC installed if ncores is more than 1.}
+
+\item{pattern}{Pattern to match in the model output (DEFAULT=glob2rx('*LDASOUT_DOMAIN*'))}
 }
 \value{
 A dataframe containing a time series of basin-wide mean water budget variables.
@@ -63,8 +65,9 @@ modLdasoutWb1d.mod1.fc <-
 }
 }
 \seealso{
-Other modelDataReads: \code{\link{ReadFrxstPts}};
-  \code{\link{ReadGwOut}}; \code{\link{ReadRtout}}
+Other modelDataReads: \code{\link{CreateBasinMask}};
+  \code{\link{ReadFrxstPts}}; \code{\link{ReadGwOut}};
+  \code{\link{ReadRtout}}
 }
 \concept{
 dataGet

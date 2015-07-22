@@ -8,26 +8,27 @@ PlotFluxCompare(strDf.obs, strCol.obs = "q_cms", strDf.mod1,
   strCol.mod1 = "q_cms", strDf.mod2 = NULL, strCol.mod2 = "q_cms",
   stdate = NULL, enddate = NULL, logy = FALSE, labelObs = "Observed",
   labelMod1 = "Model 1", labelMod2 = "Model 2",
-  title = "Observed and Modelled Fluxes")
+  title = "Observed and Modelled Fluxes", colorObs = "black",
+  colorMod1 = "green2", colorMod2 = "blue")
 }
 \arguments{
 \item{strDf.obs}{The OBSERVED flux time series dataframe (e.g., output from
 \code{\link{ReadUsgsGage}}). The dataframe must contain a column of flux
-values and a POSIXct column.}
+values and a POSIXct or Date column.}
 
 \item{strCol.obs}{The name of the column containing the flux values for the
 OBSERVED dataframe (DEFAULT="q_cms").}
 
 \item{strDf.mod1}{The FIRST MODEL flux time series dataframe (e.g., output
 from \code{\link{ReadFrxstPts}}). The dataframe must contain a column of
-flux values and a POSIXct column.}
+flux values and a POSIXct or Date column.}
 
 \item{strCol.mod1}{The name of the column containing the FIRST MODEL flux
 values (DEFAULT="q_cms").}
 
 \item{strDf.mod2}{The SECOND MODEL flux time series dataframe (e.g., output
 from \code{\link{ReadFrxstPts}}). The dataframe must contain a column of
-flux values and a POSIXct column.}
+flux values and a POSIXct or Date column.}
 
 \item{strCol.mod2}{The name of the column containing the SECOND MODEL flux
 values (DEFAULT="q_cms").}
@@ -35,12 +36,14 @@ values (DEFAULT="q_cms").}
 \item{stdate}{Start date for plot/statistics (DEFAULT=NULL, all records will
 be used). Date MUST be specified in POSIXct format with appropriate
 timezone (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d
-\%H:\%M:\%S", tz="UTC"))}
+\%H:\%M:\%S", tz="UTC")) or Date (e.g., as.Date("2013-05-01",
+format="\%Y-\%m-\%d")) where Date is assumed to match a UTC date.}
 
 \item{enddate}{End date for plot/statistics (DEFAULT=NULL, all records will
 be used). Date MUST be specified in POSIXct format with appropriate
 timezone (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d
-\%H:\%M:\%S", tz="UTC"))}
+\%H:\%M:\%S", tz="UTC")) or Date (e.g., as.Date("2013-05-01",
+format="\%Y-\%m-\%d")) where Date is assumed to match a UTC date.}
 
 \item{logy}{(TRUE or FALSE) Optional flag to set the y-axis to log-scale
 (DEFAULT=FALSE).}
@@ -53,6 +56,12 @@ timezone (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d
 \item{labelMod2}{Optional label for the SECOND MODEL (DEFAULT="Model 2")}
 
 \item{title}{Optional for the plot (DEFAULT="Observed and Modelled Fluxes")}
+
+\item{colorObs}{Optional color for the observed line (DEFAULT="black")}
+
+\item{colorMod1}{Optional color for the FIRST MODEL line (DEFAULT="green2")}
+
+\item{colorMod2}{Optional color for the FIRST MODEL line (DEFAULT="blue")}
 }
 \value{
 A plot of the hydrographs.

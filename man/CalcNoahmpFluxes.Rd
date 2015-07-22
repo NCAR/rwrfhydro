@@ -4,10 +4,13 @@
 \alias{CalcNoahmpFluxes}
 \title{Calculate water fluxes from NoahMP output}
 \usage{
-CalcNoahmpFluxes(ldasoutDf)
+CalcNoahmpFluxes(ldasoutDf, idCol = NULL)
 }
 \arguments{
 \item{ldasoutDf}{The LDASOUT dataframe}
+
+\item{idCol}{The optional ID column to use to parse the output;
+for example, a basin ID column or other index ID. (DEFAULT=NULL)}
 }
 \value{
 The input dataframe with new water flux columns added.
