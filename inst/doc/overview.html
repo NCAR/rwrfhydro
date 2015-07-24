@@ -10,7 +10,7 @@
 
 <meta name="author" content="James McCreight and Aubrey Dugger" />
 
-<meta name="date" content="2015-04-29" />
+<meta name="date" content="2015-04-03" />
 
 <title>An overview of rwrfhydro functionality</title>
 
@@ -54,7 +54,7 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <div id="header">
 <h1 class="title">An overview of rwrfhydro functionality</h1>
 <h4 class="author"><em>James McCreight and Aubrey Dugger</em></h4>
-<h4 class="date"><em>2015-04-29</em></h4>
+<h4 class="date"><em>2015-04-03</em></h4>
 </div>
 
 
@@ -68,7 +68,6 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <h1>Setup</h1>
 <p>Load the rwrfhydro package.</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;rwrfhydro&quot;</span>)</code></pre>
-<pre><code>## To check rwrfhydro updates run: CheckForUpdates()</code></pre>
 </div>
 <div id="r-help-and-help.search" class="section level1">
 <h1>R <code>help</code> and <code>help.search</code></h1>
@@ -80,7 +79,7 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <td>
 rwrfhydro
 </td>
-<td style="text-align: right;">
+<td align="right">
 R Documentation
 </td>
 </tr>
@@ -98,7 +97,7 @@ A community-contributed tool box for managing, analyzing, and visualizing WRF Hy
 Getting started
 </h3>
 <p>
-Please visit the welcome documentation/README page at: <br /> <a href="https://github.com/mccreigh/rwrfhydro" class="uri">https://github.com/mccreigh/rwrfhydro</a>
+Please visit the welcome documentation/README page at: <br> <a href="https://github.com/mccreigh/rwrfhydro" class="uri">https://github.com/mccreigh/rwrfhydro</a>
 </p>
 <h3>
 Other package help
@@ -111,12 +110,12 @@ Top level help: <code>help(package=‘rwrfhydro’)</code>
 </li>
 <li>
 <p>
-<p>Package overview vignette (long-form example) online:<br /> <a href="http://htmlpreview.github.io/?https://github.com/mccreigh/rwrfhydro/blob/master/vignettes/overview.Rmd" class="uri">http://htmlpreview.github.io/?https://github.com/mccreigh/rwrfhydro/blob/master/vignettes/overview.Rmd</a></p>
+<p>Package overview vignette (long-form example) online:<br> <a href="http://htmlpreview.github.io/?https://github.com/mccreigh/rwrfhydro/blob/master/vignettes/overview.Rmd" class="uri">http://htmlpreview.github.io/?https://github.com/mccreigh/rwrfhydro/blob/master/vignettes/overview.Rmd</a></p>
 </p>
 </li>
 <li>
 <p>
-<p>All package vignettes (long-form examples) online: <br /> <a href="https://github.com/mccreigh/rwrfhydro/blob/master/vignettes.Rmd" class="uri">https://github.com/mccreigh/rwrfhydro/blob/master/vignettes.Rmd</a></p>
+<p>All package vignettes (long-form examples) online: <br> <a href="https://github.com/mccreigh/rwrfhydro/blob/master/vignettes.Rmd" class="uri">https://github.com/mccreigh/rwrfhydro/blob/master/vignettes.Rmd</a></p>
 </p>
 </li>
 <li>
@@ -134,9 +133,9 @@ Top level help: <code>help(package=‘rwrfhydro’)</code>
 ## 
 ## Package:           rwrfhydro
 ## Type:              Package
-## Title:             R tools for the WRF Hydro Model
-## Version:           1.0.0
-## Date:              2015-05-01
+## Title:             R tools for working with the WRF Hydro model.
+## Version:           0.1.0
+## Date:              2015-01-13
 ## Authors@R:         c( person(&quot;James&quot;, &quot;McCreight&quot;, email = &quot;jamesmcc@ucar.edu&quot;, role =
 ##                    c(&quot;aut&quot;,&quot;cre&quot;)), person(&quot;Aubrey&quot;, &quot;Dugger&quot;, email =
 ##                    &quot;adugger@ucar.edu&quot;, role = &quot;aut&quot;) )
@@ -146,16 +145,14 @@ Top level help: <code>help(package=‘rwrfhydro’)</code>
 ## License:           https://github.com/mccreigh/rwrfhydro/blob/master/LICENSE.md
 ## Depends:           R (&gt;= 3.1.0)
 ## Imports:           plyr (&gt;= 1.8.1), grid (&gt;= 3.1.2), lubridate (&gt;= 1.3.3), ncdf4 (&gt;=
-##                    1.13), ggplot2 (&gt;= 1.0.0), ggmap (&gt;= 2.3), reshape2 (&gt;= 1.4.1), doMC
-##                    (&gt;= 1.3.3), foreach (&gt;= 1.4.2), curl (&gt;= 0.5), dataRetrieval (&gt;=
-##                    2.1.2), raster (&gt;= 2.3), httr (&gt;= 0.6.1), devtools (&gt;= 1.7.0),
-##                    jsonlite (&gt;= 0.9.14)
+##                    1.13), ggplot2 (&gt;= 1.0.0), ggmap (&gt;= 2.3), RColorBrewer (&gt;= 1.1-2),
+##                    reshape2 (&gt;= 1.4.1), doMC (&gt;= 1.3.3), scales (&gt;= 0.2.4), curl (&gt;=
+##                    0.5), dataRetrieval (&gt;= 2.1.2), raster (&gt;= 2.3)
 ## LazyData:          true
-## Suggests:          testthat, knitr, rgdal, pander
-## BuildVignettes:    false
+## Suggests:          testthat, knitr, printr, rgdal, rgeos, MODIS
 ## VignetteBuilder:   knitr
 ## Author:            James McCreight [aut, cre], Aubrey Dugger [aut]
-## Built:             R 3.2.0; ; 2015-04-29 15:28:43 UTC; unix
+## Built:             R 3.1.2; ; 2015-04-03 18:18:43 UTC; unix
 ## 
 ## Index:
 ## 
@@ -165,8 +162,6 @@ Top level help: <code>help(package=‘rwrfhydro’)</code>
 ## CalcFdcSpline           Generate a spline-fit funtion for a flow
 ##                         duration curve
 ## CalcModPerf             Computes model performance statistics for
-##                         WRF-Hydro flux output
-## CalcModPerfMulti        Computes model performance statistics for
 ##                         WRF-Hydro flux output
 ## CalcNoahmpFluxes        Calculate water fluxes from NoahMP output
 ## CalcNoahmpWatBudg       Calculate water balance from WRF-Hydro
@@ -196,8 +191,6 @@ Top level help: <code>help(package=‘rwrfhydro’)</code>
 ## MkDischargeVariance     Make variances for prettyUsgs discharge
 ##                         observations.
 ## MkNcdf                  List based creation of netcdf files.
-## MkUsgsTimeSlice         Make timeslices from active USGS discharge data
-##                         files.
 ## Model3SdErrClimTaper    Three-sigma error specification assuming errors
 ##                         are smaller near climatological median (or
 ##                         other quantile).
@@ -205,7 +198,6 @@ Top level help: <code>help(package=‘rwrfhydro’)</code>
 ##                         Three-sigma errors specified as percent of
 ##                         observed plus some quantile of historical
 ##                         flows.
-## NamedList               Create and or name a list with its entries.
 ## PlotFdc                 Plot a flow duration curve for a single
 ##                         streamflow time series
 ## PlotFdcCompare          Plots a flow duration curve for up to three
@@ -214,10 +206,11 @@ Top level help: <code>help(package=‘rwrfhydro’)</code>
 ## PlotFluxCompare         Plot time series comparing modeled and observed
 ##                         fluxes
 ## PlotPrettyData          Plot USGS site data which has been prettied
-##                         with PrettyUsgs.
+##                         with PrettySiteData.
 ## PlotWatBudg             Plot water balance from WRF-Hydro (w/NoahMP)
 ##                         output
-## PrettyUsgs              PrettyUsgs constructs the S3 class prettyUsgs.
+## PrettySiteData          Pretty USGS site data makes nice headers and
+##                         optionally converts to metric.
 ## PutSnodasCoordsNcdf     Put the SNODAS coordinates into a netcdf file.
 ## PutSnodasNcdf           Write output of ReadSnodasDepthSweDate to
 ##                         netcdf.
@@ -226,8 +219,8 @@ Top level help: <code>help(package=‘rwrfhydro’)</code>
 ## QuerySiteData           Returns the data for given sites from local
 ##                         database.
 ## QuerySiteInfo           Returns the desired information from the
-##                         database metadata file.
-## QuerySiteName           Find the name (site id) for a given site (name)
+##                         database file.
+## QuerySiteName           Find the name(site id) for a given site(name)
 ##                         in the local database.
 ## QuerySiteProd           Find the products available for a given site in
 ##                         the local database.
@@ -235,8 +228,6 @@ Top level help: <code>help(package=‘rwrfhydro’)</code>
 ##                         Ameriflux
 ## ReadAmerifluxNC         Read standard-format NetCDF data downloaded
 ##                         from Ameriflux
-## ReadCoDwrGage           Read standard-format text data table downloaded
-##                         from CO DWR
 ## ReadFrxstPts            Read WRF-Hydro standard-format forecast points
 ##                         output text file.
 ## ReadGwOut               Read WRF-Hydro standard-format groundwater
@@ -261,76 +252,65 @@ Top level help: <code>help(package=‘rwrfhydro’)</code>
 ## WriteDischargeObsSeq    Writes an ascii obs_seq.in file for DART binary
 ##                         create_obs_sequence
 ## gages2Attr              Gages-II attributes
-## gages2AttrPlus          Gages-II attributes
-## ncdump                  Emulate ncdump -h on OSX where ncdump might not
-##                         be availabe.
 ## rwrfhydro               rwrfhydro: Tools for working with WRF Hydro
 ##                         data.
 ## subset.prettyUsgs       Subset prettyUsgs objects.
 ## 
 ## Further information is available in the following vignettes in directory
-## '/Users/jamesmcc/R/Libraries/R3.2/rwrfhydro/doc':
+## '/Users/jamesmcc/R/Libraries/R3.1/rwrfhydro/doc':
 ## 
-## domainChannelVis: WRF Hydro Domain and Channel Visualization (source, pdf)
-## evapotranspirationEval: ET Evaluation (source, pdf)
-## getMultiNetcdf: Get data from multiple netcdf files (source, pdf)
-## modisProcessing: MODIS Processing (source, pdf)
-## overview: An overview of rwrfhydro functionality (source, pdf)
-## snodas: Collect the SNODAS product and build a local database (source, pdf)
-## streamflowEval: Streamflow Evaluation (source, pdf)
-## streamflowEvalMulti: Streamflow Evaluation - Multi-Basin (source, pdf)
-## usgsObsDb: Collect USGS stream observations and build a local database (source, pdf)
-## waterBudget: Water Budget (source, pdf)</code></pre>
+## domainChannelVis: WRF Hydro Domain and Channel Visualization (source)
+## evapotranspirationEval: ET Evaluation (source)
+## getMultiNetcdf: Get data from multiple netcdf files (source)
+## modisProcessing: MODIS Processing (source)
+## overview: An overview of rwrfhydro functionality (source)
+## snodas: Collect the SNODAS product and build a local database (source)
+## streamflowEval: Streamflow Evaluation (source)
+## usgsObsDb: Collect USGS stream observations and build a local database (source)
+## waterBudget: Water Budget (source)</code></pre>
 <p>To simply print the available (exported) functions:</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ls</span>(<span class="st">'package:rwrfhydro'</span>)</code></pre>
-<pre><code>##  [1] &quot;AllSame&quot;                        &quot;CalcCOM&quot;                       
-##  [3] &quot;CalcDates&quot;                      &quot;CalcFdc&quot;                       
-##  [5] &quot;CalcFdcPerf&quot;                    &quot;CalcFdcSpline&quot;                 
-##  [7] &quot;CalcMeanMinrm&quot;                  &quot;CalcMeanNarm&quot;                  
-##  [9] &quot;CalcModPerf&quot;                    &quot;CalcModPerfMulti&quot;              
-## [11] &quot;CalcMonthDays&quot;                  &quot;CalcNoahmpFluxes&quot;              
-## [13] &quot;CalcNoahmpWatBudg&quot;              &quot;CalcSnodasCoords&quot;              
-## [15] &quot;CalcStatsRS&quot;                    &quot;CalcWaterYear&quot;                 
-## [17] &quot;CheckForUpdates&quot;                &quot;CheckMasterSha&quot;                
-## [19] &quot;CommitGithub&quot;                   &quot;ConvertRS2Stack&quot;               
-## [21] &quot;ConvertStack2NC&quot;                &quot;CumsumNa&quot;                      
-## [23] &quot;ExportGeogrid&quot;                  &quot;FindUsgsStns&quot;                  
-## [25] &quot;FormalsToDf&quot;                    &quot;gages2Attr&quot;                    
-## [27] &quot;gages2AttrPlus&quot;                 &quot;GetActiveHucData&quot;              
-## [29] &quot;GetFileStat&quot;                    &quot;GetGages2NwisMeta&quot;             
-## [31] &quot;GetMODIS&quot;                       &quot;GetMultiNcdf&quot;                  
-## [33] &quot;GetMultiNcdfFile&quot;               &quot;GetMultiNcdfVariable&quot;          
-## [35] &quot;GetPkgMeta&quot;                     &quot;GetPkgRawDataPath&quot;             
-## [37] &quot;GetRemoteMetadata&quot;              &quot;GetSiteHuc&quot;                    
-## [39] &quot;GetSnodasDepthSweDate&quot;          &quot;GetUsgsHucData&quot;                
-## [41] &quot;GetUsgsIvProduct&quot;               &quot;github_GET&quot;                    
-## [43] &quot;ImproveHucMeta&quot;                 &quot;InsertRS&quot;                      
-## [45] &quot;LoadMetaDB&quot;                     &quot;MkDischargeVariance&quot;           
-## [47] &quot;MkNcdf&quot;                         &quot;MkUsgsTimeSlice&quot;               
-## [49] &quot;Model3SdErrClimTaper&quot;           &quot;Model3SdErrPctErrPlusQntlIncpt&quot;
-## [51] &quot;NamedList&quot;                      &quot;ncdump&quot;                        
-## [53] &quot;Nse&quot;                            &quot;NseLog&quot;                        
-## [55] &quot;PadRange&quot;                       &quot;PlotCollectStats&quot;              
-## [57] &quot;PlotFdc&quot;                        &quot;PlotFdcCompare&quot;                
-## [59] &quot;PlotFluxCompare&quot;                &quot;PlotLatency&quot;                   
-## [61] &quot;PlotNStnSlice&quot;                  &quot;PlotPrettyData&quot;                
-## [63] &quot;PlotWatBudg&quot;                    &quot;PrettyUsgs&quot;                    
-## [65] &quot;PutSnodasCoordsNcdf&quot;            &quot;PutSnodasNcdf&quot;                 
-## [67] &quot;QueryHaveSite&quot;                  &quot;QuerySiteData&quot;                 
-## [69] &quot;QuerySiteInfo&quot;                  &quot;QuerySiteName&quot;                 
-## [71] &quot;QuerySiteProd&quot;                  &quot;ReadAmerifluxCSV&quot;              
-## [73] &quot;ReadAmerifluxNC&quot;                &quot;ReadCoDwrGage&quot;                 
-## [75] &quot;ReadFrxstPts&quot;                   &quot;ReadGwOut&quot;                     
-## [77] &quot;ReadLdasoutWb&quot;                  &quot;ReadNcTimeSlice&quot;               
-## [79] &quot;ReadRtout&quot;                      &quot;ReadSnodasDepthSweDate&quot;        
-## [81] &quot;ReadUsgsGage&quot;                   &quot;ReshapeMultiNcdf&quot;              
-## [83] &quot;Rmse&quot;                           &quot;RmseNorm&quot;                      
-## [85] &quot;RotateCcw&quot;                      &quot;RotateCw&quot;                      
-## [87] &quot;RoundMinutes&quot;                   &quot;SaveHucData&quot;                   
-## [89] &quot;SmoothStack&quot;                    &quot;StdLon&quot;                        
-## [91] &quot;TransTz&quot;                        &quot;VisualizeChanNtwk&quot;             
-## [93] &quot;VisualizeDomain&quot;                &quot;WriteDischargeObsSeq&quot;          
-## [95] &quot;WriteNcPrettyUsgs&quot;              &quot;WriteNcTimeSlice&quot;</code></pre>
+<pre><code>##  [1] &quot;CalcCOM&quot;                        &quot;CalcDates&quot;                     
+##  [3] &quot;CalcFdc&quot;                        &quot;CalcFdcPerf&quot;                   
+##  [5] &quot;CalcFdcSpline&quot;                  &quot;CalcMeanMinrm&quot;                 
+##  [7] &quot;CalcMeanNarm&quot;                   &quot;CalcModPerf&quot;                   
+##  [9] &quot;CalcNoahmpFluxes&quot;               &quot;CalcNoahmpWatBudg&quot;             
+## [11] &quot;CalcSnodasCoords&quot;               &quot;CalcStatsRS&quot;                   
+## [13] &quot;CalcWaterYear&quot;                  &quot;CheckForUpdate&quot;                
+## [15] &quot;checkMasterSha&quot;                 &quot;ConvertRS2Stack&quot;               
+## [17] &quot;ConvertStack2NC&quot;                &quot;CumsumNa&quot;                      
+## [19] &quot;ExportGeogrid&quot;                  &quot;FindUsgsStns&quot;                  
+## [21] &quot;FormalsToDf&quot;                    &quot;gages2Attr&quot;                    
+## [23] &quot;gages2AttrPlus&quot;                 &quot;GetFileStat&quot;                   
+## [25] &quot;GetGages2NwisMeta&quot;              &quot;GetMODIS&quot;                      
+## [27] &quot;GetMultiNcdf&quot;                   &quot;GetMultiNcdfFile&quot;              
+## [29] &quot;GetMultiNcdfVariable&quot;           &quot;GetPkgMeta&quot;                    
+## [31] &quot;GetPkgRawDataPath&quot;              &quot;GetSiteHuc&quot;                    
+## [33] &quot;GetSnodasDepthSweDate&quot;          &quot;GetUsgsHucData&quot;                
+## [35] &quot;GetUsgsIvProduct&quot;               &quot;github_commit&quot;                 
+## [37] &quot;github_GET&quot;                     &quot;ImproveHucMeta&quot;                
+## [39] &quot;InsertRS&quot;                       &quot;LoadMetaDB&quot;                    
+## [41] &quot;MkDischargeVariance&quot;            &quot;MkNcdf&quot;                        
+## [43] &quot;Model3SdErrClimTaper&quot;           &quot;Model3SdErrPctErrPlusQntlIncpt&quot;
+## [45] &quot;NamedList&quot;                      &quot;Nse&quot;                           
+## [47] &quot;NseLog&quot;                         &quot;PadRange&quot;                      
+## [49] &quot;PlotFdc&quot;                        &quot;PlotFdcCompare&quot;                
+## [51] &quot;PlotFluxCompare&quot;                &quot;PlotPrettyData&quot;                
+## [53] &quot;PlotWatBudg&quot;                    &quot;PrettySiteData&quot;                
+## [55] &quot;PutSnodasCoordsNcdf&quot;            &quot;PutSnodasNcdf&quot;                 
+## [57] &quot;QueryHaveSite&quot;                  &quot;QuerySiteData&quot;                 
+## [59] &quot;QuerySiteInfo&quot;                  &quot;QuerySiteName&quot;                 
+## [61] &quot;QuerySiteProd&quot;                  &quot;ReadAmerifluxCSV&quot;              
+## [63] &quot;ReadAmerifluxNC&quot;                &quot;ReadFrxstPts&quot;                  
+## [65] &quot;ReadGwOut&quot;                      &quot;ReadLdasoutWb&quot;                 
+## [67] &quot;ReadRtout&quot;                      &quot;ReadSnodasDepthSweDate&quot;        
+## [69] &quot;ReadUsgsGage&quot;                   &quot;remote_metadata&quot;               
+## [71] &quot;ReshapeMultiNcdf&quot;               &quot;Rmse&quot;                          
+## [73] &quot;RmseNorm&quot;                       &quot;RotateCcw&quot;                     
+## [75] &quot;RotateCw&quot;                       &quot;SaveHucData&quot;                   
+## [77] &quot;SmoothStack&quot;                    &quot;StdLon&quot;                        
+## [79] &quot;TransTz&quot;                        &quot;VisualizeChanNtwk&quot;             
+## [81] &quot;VisualizeDomain&quot;                &quot;WriteDischargeObsSeq&quot;</code></pre>
 <p>However, none of the above (except perhaps the first) really help make sense of the (already) sprawling set of functions available in rwrfhydro. The R <code>help.search()</code> matches a pattern against <code>fields = c(&quot;alias&quot;, &quot;concept&quot;, &quot;title&quot;)</code> by default, so it can help when you know the concept your are looking for. It also provides a <code>keyword</code> field, so you can find keywords of interest (keywords are defined a priori unlike concepts, so you might actually know them).</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">help.search</span>(<span class="st">&quot;DART&quot;</span>,<span class="dt">package=</span><span class="st">'rwrfhydro'</span>)</code></pre>
 <table>
@@ -388,7 +368,7 @@ Top level help: <code>help(package=‘rwrfhydro’)</code>
 <tr class="odd">
 <td align="left">rwrfhydro</td>
 <td align="left">PlotPrettyData</td>
-<td align="left">Plot USGS site data which has been prettied with PrettyUsgs.</td>
+<td align="left">Plot USGS site data which has been prettied with PrettySiteData.</td>
 </tr>
 <tr class="even">
 <td align="left">rwrfhydro</td>
@@ -412,17 +392,13 @@ Top level help: <code>help(package=‘rwrfhydro’)</code>
 ## -----------------------------------
 ## rwrfhydro concepts
 ## -----------------------------------
+## aconcept
 ## DART
 ## data
-## dataAnalysis
 ## dataGet
 ## dataMgmt
-## modelEval
-## MODIS
-## ncdf
 ## plot
 ## SNODAS
-## usgs
 ## usgsStreamObs
 ## 
 ## -----------------------------------
@@ -444,48 +420,37 @@ Top level help: <code>help(package=‘rwrfhydro’)</code>
 ## -----------------------------------
 ## rwrfhydro concepts
 ## -----------------------------------
+## * aconcept:
+##    CalcFdc CalcFdcPerf CalcFdcSpline CalcModPerf CalcNoahmpFluxes CalcNoahmpWatBudg
+##    CalcStatsRS ConvertRS2Stack ConvertStack2NC ExportGeogrid GetMODIS InsertRS PlotFdc
+##    PlotFdcCompare ReadAmerifluxCSV ReadAmerifluxNC ReadFrxstPts ReadGwOut ReadLdasoutWb
+##    ReadRtout ReadUsgsGage SmoothStack
+## 
 ## * DART:
 ##    MkDischargeVariance VisualizeChanNtwk VisualizeDomain WriteDischargeObsSeq
 ## 
 ## * data:
-##    gages2Attr gages2AttrPlus
-## 
-## * dataAnalysis:
-##    CalcStatsRS SmoothStack
+##    gages2Attr
 ## 
 ## * dataGet:
-##    FindUsgsStns GetFileStat GetMODIS GetMultiNcdfFile GetMultiNcdfVariable GetSiteHuc
-##    GetUsgsHucData GetUsgsIvProduct ImproveHucMeta ReadAmerifluxCSV ReadAmerifluxNC
-##    ReadCoDwrGage ReadFrxstPts ReadGwOut ReadLdasoutWb ReadRtout ReadUsgsGage SaveHucData
+##    FindUsgsStns GetFileStat GetMultiNcdfFile GetMultiNcdfVariable GetSiteHuc
+##    GetUsgsHucData GetUsgsIvProduct ImproveHucMeta SaveHucData
 ## 
 ## * dataMgmt:
-##    CalcNoahmpFluxes ConvertRS2Stack ConvertStack2NC ExportGeogrid InsertRS LoadMetaDB
-##    MkDischargeVariance PrettyUsgs QueryHaveSite QuerySiteData QuerySiteInfo QuerySiteName
-##    QuerySiteProd TransUsgsProdStat WriteDischargeObsSeq subset.prettyUsgs
-## 
-## * modelEval:
-##    CalcFdc CalcFdcPerf CalcFdcSpline CalcModPerf CalcModPerfMulti CalcNoahmpWatBudg
-##    PlotFdc PlotFdcCompare
-## 
-## * MODIS:
-##    CalcStatsRS ConvertRS2Stack ConvertStack2NC GetMODIS InsertRS SmoothStack
-## 
-## * ncdf:
-##    MkNcdf ncdump
+##    LoadMetaDB MkDischargeVariance PrettySiteData QueryHaveSite QuerySiteData
+##    QuerySiteInfo QuerySiteName QuerySiteProd TransUsgsProdStat WriteDischargeObsSeq
+##    subset.prettyUsgs
 ## 
 ## * plot:
-##    PlotFdc PlotFdcCompare PlotPrettyData VisualizeChanNtwk VisualizeDomain
+##    PlotPrettyData VisualizeChanNtwk VisualizeDomain
 ## 
 ## * SNODAS:
 ##    CalcSnodasCoords GetSnodasDepthSweDate PutSnodasCoordsNcdf PutSnodasNcdf
 ##    ReadSnodasDepthSweDate
 ## 
-## * usgs:
-##    MkUsgsTimeSlice
-## 
 ## * usgsStreamObs:
 ##    FindUsgsStns GetSiteHuc GetUsgsHucData GetUsgsIvProduct ImproveHucMeta LoadMetaDB
-##    PlotPrettyData PrettyUsgs QueryHaveSite QuerySiteData QuerySiteInfo QuerySiteName
+##    PlotPrettyData PrettySiteData QueryHaveSite QuerySiteData QuerySiteInfo QuerySiteName
 ##    QuerySiteProd SaveHucData TransUsgsProdStat subset.prettyUsgs
 ## 
 ## 
@@ -493,7 +458,7 @@ Top level help: <code>help(package=‘rwrfhydro’)</code>
 ## rwrfhydro keywords
 ## -----------------------------------
 ## * data:
-##    gages2Attr gages2AttrPlus
+##    gages2Attr
 ## 
 ## * database:
 ##    LoadMetaDB QueryHaveSite QuerySiteData QuerySiteInfo QuerySiteName QuerySiteProd
@@ -503,63 +468,58 @@ Top level help: <code>help(package=‘rwrfhydro’)</code>
 ##    PlotFdc PlotFdcCompare PlotPrettyData VisualizeChanNtwk VisualizeDomain
 ## 
 ## * internal:
-##    AllSame CalcCOM CalcDates CalcMeanMinrm CalcMeanNarm CalcMonthDays CalcWaterYear
-##    CumsumNa FormalsToDf GetFileStat GetGithubPat GetMultiNcdfFile GetMultiNcdfVariable
-##    GetPkgRawDataPath GetUsgsIvProduct ImproveHucMeta LoadMetaDB Nse NseLog PadRange
-##    ReadNcTimeSlice ReshapeMultiNcdf Rmse RmseNorm RotateCcw RotateCw RoundMinutes StdLon
-##    TransTz TransUsgsProdStat WriteNcTimeSlice
+##    AllSame CalcCOM CalcDates CalcMeanMinrm CalcMeanNarm CalcWaterYear CumsumNa
+##    FormalsToDf GetFileStat GetMultiNcdfFile GetMultiNcdfVariable GetPkgRawDataPath
+##    GetUsgsIvProduct ImproveHucMeta LoadMetaDB NamedList Nse NseLog PadRange
+##    ReshapeMultiNcdf Rmse RmseNorm RotateCcw RotateCw StdLon TransTz TransUsgsProdStat
+##    github_pat
 ## 
 ## * IO:
 ##    ConvertRS2Stack ConvertStack2NC ExportGeogrid FindUsgsStns GetMODIS GetSiteHuc
 ##    GetSnodasDepthSweDate GetUsgsHucData GetUsgsIvProduct ImproveHucMeta InsertRS
-##    PutSnodasCoordsNcdf PutSnodasNcdf ReadAmerifluxCSV ReadAmerifluxNC ReadCoDwrGage
-##    ReadFrxstPts ReadGwOut ReadLdasoutWb ReadRtout ReadUsgsGage SaveHucData
+##    PutSnodasCoordsNcdf PutSnodasNcdf ReadAmerifluxCSV ReadAmerifluxNC ReadFrxstPts
+##    ReadGwOut ReadLdasoutWb ReadRtout ReadUsgsGage SaveHucData
 ## 
 ## * manip:
-##    CalcNoahmpFluxes CalcNoahmpWatBudg CalcSnodasCoords MkDischargeVariance NamedList
-##    PrettyUsgs ReadSnodasDepthSweDate WriteDischargeObsSeq subset.prettyUsgs
+##    CalcNoahmpFluxes CalcNoahmpWatBudg CalcSnodasCoords MkDischargeVariance PrettySiteData
+##    ReadSnodasDepthSweDate WriteDischargeObsSeq subset.prettyUsgs
 ## 
 ## * smooth:
 ##    SmoothStack
 ## 
 ## * ts:
-##    CalcFdcPerf CalcModPerf CalcModPerfMulti ReadLdasoutWb ReadRtout
+##    CalcFdcPerf CalcModPerf ReadLdasoutWb ReadRtout
 ## 
 ## * univar:
-##    CalcFdc CalcFdcPerf CalcFdcSpline CalcModPerf CalcModPerfMulti CalcStatsRS
-##    ReadLdasoutWb ReadRtout
+##    CalcFdc CalcFdcPerf CalcFdcSpline CalcModPerf CalcStatsRS ReadLdasoutWb ReadRtout
 ## 
 ## * utilities:
 ##    FormalsToDf GetPkgMeta</code></pre>
 <p>Note the structure of the returned value which could be computed on.</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">str</span>(pkgMeta)</code></pre>
 <pre><code>## List of 2
-##  $ concept:List of 12
+##  $ concept:List of 8
+##   ..$ aconcept     : chr [1:22] &quot;CalcFdc&quot; &quot;CalcFdcPerf&quot; &quot;CalcFdcSpline&quot; &quot;CalcModPerf&quot; ...
 ##   ..$ DART         : chr [1:4] &quot;MkDischargeVariance&quot; &quot;VisualizeChanNtwk&quot; &quot;VisualizeDomain&quot; &quot;WriteDischargeObsSeq&quot;
-##   ..$ data         : chr [1:2] &quot;gages2Attr&quot; &quot;gages2AttrPlus&quot;
-##   ..$ dataAnalysis : chr [1:2] &quot;CalcStatsRS&quot; &quot;SmoothStack&quot;
-##   ..$ dataGet      : chr [1:18] &quot;FindUsgsStns&quot; &quot;GetFileStat&quot; &quot;GetMODIS&quot; &quot;GetMultiNcdfFile&quot; ...
-##   ..$ dataMgmt     : chr [1:16] &quot;CalcNoahmpFluxes&quot; &quot;ConvertRS2Stack&quot; &quot;ConvertStack2NC&quot; &quot;ExportGeogrid&quot; ...
-##   ..$ modelEval    : chr [1:8] &quot;CalcFdc&quot; &quot;CalcFdcPerf&quot; &quot;CalcFdcSpline&quot; &quot;CalcModPerf&quot; ...
-##   ..$ MODIS        : chr [1:6] &quot;CalcStatsRS&quot; &quot;ConvertRS2Stack&quot; &quot;ConvertStack2NC&quot; &quot;GetMODIS&quot; ...
-##   ..$ ncdf         : chr [1:2] &quot;MkNcdf&quot; &quot;ncdump&quot;
-##   ..$ plot         : chr [1:5] &quot;PlotFdc&quot; &quot;PlotFdcCompare&quot; &quot;PlotPrettyData&quot; &quot;VisualizeChanNtwk&quot; ...
+##   ..$ data         : chr &quot;gages2Attr&quot;
+##   ..$ dataGet      : chr [1:9] &quot;FindUsgsStns&quot; &quot;GetFileStat&quot; &quot;GetMultiNcdfFile&quot; &quot;GetMultiNcdfVariable&quot; ...
+##   ..$ dataMgmt     : chr [1:11] &quot;LoadMetaDB&quot; &quot;MkDischargeVariance&quot; &quot;PrettySiteData&quot; &quot;QueryHaveSite&quot; ...
+##   ..$ plot         : chr [1:3] &quot;PlotPrettyData&quot; &quot;VisualizeChanNtwk&quot; &quot;VisualizeDomain&quot;
 ##   ..$ SNODAS       : chr [1:5] &quot;CalcSnodasCoords&quot; &quot;GetSnodasDepthSweDate&quot; &quot;PutSnodasCoordsNcdf&quot; &quot;PutSnodasNcdf&quot; ...
-##   ..$ usgs         : chr &quot;MkUsgsTimeSlice&quot;
 ##   ..$ usgsStreamObs: chr [1:16] &quot;FindUsgsStns&quot; &quot;GetSiteHuc&quot; &quot;GetUsgsHucData&quot; &quot;GetUsgsIvProduct&quot; ...
 ##   ..- attr(*, &quot;meta&quot;)= chr &quot;concept&quot;
 ##   ..- attr(*, &quot;package&quot;)= chr &quot;rwrfhydro&quot;
 ##   ..- attr(*, &quot;class&quot;)= chr [1:2] &quot;pkgMeta&quot; &quot;list&quot;
 ##  $ keyword:List of 10
-##   ..$ data     : chr [1:2] &quot;gages2Attr&quot; &quot;gages2AttrPlus&quot;
+##   ..$ data     : chr &quot;gages2Attr&quot;
 ##   ..$ database : chr [1:8] &quot;LoadMetaDB&quot; &quot;QueryHaveSite&quot; &quot;QuerySiteData&quot; &quot;QuerySiteInfo&quot; ...
 ##   ..$ hplot    : chr [1:5] &quot;PlotFdc&quot; &quot;PlotFdcCompare&quot; &quot;PlotPrettyData&quot; &quot;VisualizeChanNtwk&quot; ...
-##   ..$ internal : chr [1:31] &quot;AllSame&quot; &quot;CalcCOM&quot; &quot;CalcDates&quot; &quot;CalcMeanMinrm&quot; ...
-##   ..$ IO       : chr [1:22] &quot;ConvertRS2Stack&quot; &quot;ConvertStack2NC&quot; &quot;ExportGeogrid&quot; &quot;FindUsgsStns&quot; ...
-##   ..$ manip    : chr [1:9] &quot;CalcNoahmpFluxes&quot; &quot;CalcNoahmpWatBudg&quot; &quot;CalcSnodasCoords&quot; &quot;MkDischargeVariance&quot; ...
+##   ..$ internal : chr [1:28] &quot;AllSame&quot; &quot;CalcCOM&quot; &quot;CalcDates&quot; &quot;CalcMeanMinrm&quot; ...
+##   ..$ IO       : chr [1:21] &quot;ConvertRS2Stack&quot; &quot;ConvertStack2NC&quot; &quot;ExportGeogrid&quot; &quot;FindUsgsStns&quot; ...
+##   ..$ manip    : chr [1:8] &quot;CalcNoahmpFluxes&quot; &quot;CalcNoahmpWatBudg&quot; &quot;CalcSnodasCoords&quot; &quot;MkDischargeVariance&quot; ...
 ##   ..$ smooth   : chr &quot;SmoothStack&quot;
-##   ..$ ts       : chr [1:5] &quot;CalcFdcPerf&quot; &quot;CalcModPerf&quot; &quot;CalcModPerfMulti&quot; &quot;ReadLdasoutWb&quot; ...
-##   ..$ univar   : chr [1:8] &quot;CalcFdc&quot; &quot;CalcFdcPerf&quot; &quot;CalcFdcSpline&quot; &quot;CalcModPerf&quot; ...
+##   ..$ ts       : chr [1:4] &quot;CalcFdcPerf&quot; &quot;CalcModPerf&quot; &quot;ReadLdasoutWb&quot; &quot;ReadRtout&quot;
+##   ..$ univar   : chr [1:7] &quot;CalcFdc&quot; &quot;CalcFdcPerf&quot; &quot;CalcFdcSpline&quot; &quot;CalcModPerf&quot; ...
 ##   ..$ utilities: chr [1:2] &quot;FormalsToDf&quot; &quot;GetPkgMeta&quot;
 ##   ..- attr(*, &quot;meta&quot;)= chr &quot;keyword&quot;
 ##   ..- attr(*, &quot;package&quot;)= chr &quot;rwrfhydro&quot;
@@ -571,17 +531,13 @@ Top level help: <code>help(package=‘rwrfhydro’)</code>
 ## -----------------------------------
 ## rwrfhydro concepts
 ## -----------------------------------
+## aconcept
 ## DART
 ## data
-## dataAnalysis
 ## dataGet
 ## dataMgmt
-## modelEval
-## MODIS
-## ncdf
 ## plot
 ## SNODAS
-## usgs
 ## usgsStreamObs</code></pre>
 <p>Or perhaps you just want to look at certain concepts and keywords</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">GetPkgMeta</span>(<span class="dt">concept=</span><span class="kw">c</span>(<span class="st">'plot'</span>, <span class="st">'dataGet'</span>), <span class="dt">keyword=</span><span class="kw">c</span>(<span class="st">'hplot'</span>, <span class="st">'manip'</span>))</code></pre>
@@ -590,12 +546,11 @@ Top level help: <code>help(package=‘rwrfhydro’)</code>
 ## rwrfhydro concepts
 ## -----------------------------------
 ## * dataGet:
-##    FindUsgsStns GetFileStat GetMODIS GetMultiNcdfFile GetMultiNcdfVariable GetSiteHuc
-##    GetUsgsHucData GetUsgsIvProduct ImproveHucMeta ReadAmerifluxCSV ReadAmerifluxNC
-##    ReadCoDwrGage ReadFrxstPts ReadGwOut ReadLdasoutWb ReadRtout ReadUsgsGage SaveHucData
+##    FindUsgsStns GetFileStat GetMultiNcdfFile GetMultiNcdfVariable GetSiteHuc
+##    GetUsgsHucData GetUsgsIvProduct ImproveHucMeta SaveHucData
 ## 
 ## * plot:
-##    PlotFdc PlotFdcCompare PlotPrettyData VisualizeChanNtwk VisualizeDomain
+##    PlotPrettyData VisualizeChanNtwk VisualizeDomain
 ## 
 ## 
 ## -----------------------------------
@@ -605,8 +560,8 @@ Top level help: <code>help(package=‘rwrfhydro’)</code>
 ##    PlotFdc PlotFdcCompare PlotPrettyData VisualizeChanNtwk VisualizeDomain
 ## 
 ## * manip:
-##    CalcNoahmpFluxes CalcNoahmpWatBudg CalcSnodasCoords MkDischargeVariance NamedList
-##    PrettyUsgs ReadSnodasDepthSweDate WriteDischargeObsSeq subset.prettyUsgs</code></pre>
+##    CalcNoahmpFluxes CalcNoahmpWatBudg CalcSnodasCoords MkDischargeVariance PrettySiteData
+##    ReadSnodasDepthSweDate WriteDischargeObsSeq subset.prettyUsgs</code></pre>
 <p>What were the concepts or keywords of the <code>GetPkgMeta</code> and <code>ReadAmerifluxCSV</code> functions?</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">GetPkgMeta</span>(<span class="dt">byFunction =</span> <span class="kw">c</span>(<span class="st">'GetPkgMeta'</span>,<span class="st">'ReadAmerifluxCSV'</span>))</code></pre>
 <pre><code>## 
@@ -621,7 +576,7 @@ Top level help: <code>help(package=‘rwrfhydro’)</code>
 ## rwrfhydro: ReadAmerifluxCSV()
 ## -----------------------------------
 ## * concept:
-##    dataGet
+##    aconcept
 ## 
 ## * keyword:
 ##    IO</code></pre>
@@ -653,7 +608,9 @@ Top level help: <code>help(package=‘rwrfhydro’)</code>
 <span class="co">#' @family SNODAS</span>
 <span class="co">#' @export</span></code></pre>
 <p>Internal functions (those not exported into the package namespace) should be exported but tagged with keyword “internal”. This makes the documentation available to users.</p>
-<p>For reference, the following command lists the existing R keywords.</p>
+</div>
+<div id="section" class="section level1">
+<h1></h1>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cat</span>( <span class="kw">readLines</span>( <span class="kw">paste0</span>(<span class="kw">R.home</span>(<span class="st">&quot;doc&quot;</span>),<span class="st">'/KEYWORDS'</span>) ) , <span class="dt">sep =</span> <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span> )</code></pre>
 <pre><code>## GROUPED Keywords
 ## ----------------

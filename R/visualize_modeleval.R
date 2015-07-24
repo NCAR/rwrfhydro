@@ -1,65 +1,46 @@
 
 #' Plot time series comparing modeled and observed fluxes
-#' 
-#' \code{PlotFluxCompare} plots a time series of an observed flux (e.g.,
-#' streamflow, ET) and up to 2 modelled fluxes.
-#' 
-#' \code{PlotFluxCompare} reads modelled and observed dataframes (e.g., as
-#' generated from \code{\link{ReadFrxstPts}} and \code{\link{ReadUsgsGage}}) and
-#' plot the time series and summary statistics. The tool will subset data to
-#' matching time periods (e.g., if the observed data is at 5-min increments and
-#' modelled data is at 1-hr increments, the tool will subset the observed data
-#' to select only observations on the matching hour break).
-#' 
-#' @param strDf.obs The OBSERVED flux time series dataframe (e.g., output from
-#'   \code{\link{ReadUsgsGage}}). The dataframe must contain a column of flux
-#'   values and a POSIXct column.
-#' @param strCol.obs The name of the column containing the flux values for the
-#'   OBSERVED dataframe (DEFAULT="q_cms").
-#' @param strDf.mod1 The FIRST MODEL flux time series dataframe (e.g., output
-#'   from \code{\link{ReadFrxstPts}}). The dataframe must contain a column of
-#'   flux values and a POSIXct column.
-#' @param strCol.mod1 The name of the column containing the FIRST MODEL flux
-#'   values (DEFAULT="q_cms").
-#' @param strDf.mod2 The SECOND MODEL flux time series dataframe (e.g., output
-#'   from \code{\link{ReadFrxstPts}}). The dataframe must contain a column of
-#'   flux values and a POSIXct column.
-#' @param strCol.mod2 The name of the column containing the SECOND MODEL flux
-#'   values (DEFAULT="q_cms").
-#' @param stdate Start date for plot/statistics (DEFAULT=NULL, all records will
-#'   be used). Date MUST be specified in POSIXct format with appropriate
-#'   timezone (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d
-#'   \%H:\%M:\%S", tz="UTC"))
-#' @param enddate End date for plot/statistics (DEFAULT=NULL, all records will
-#'   be used). Date MUST be specified in POSIXct format with appropriate
-#'   timezone (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d
-#'   \%H:\%M:\%S", tz="UTC"))
-#' @param logy (TRUE or FALSE) Optional flag to set the y-axis to log-scale
-#'   (DEFAULT=FALSE).
-#' @param labelObs Optional label for the observed streamflow
-#'   (DEFAULT="Observed")
+#'
+#' \code{PlotFluxCompare} plots a time series of an observed flux (e.g., streamflow, ET)
+#' and up to 2 modelled fluxes.
+#'
+#' \code{PlotFluxCompare} reads modelled and observed dataframes (e.g., as generated
+#' from \code{\link{ReadFrxstPts}} and \code{\link{ReadUsgsGage}}) and plot the time series
+#' and summary statistics. The tool will subset data to matching time periods (e.g., if the
+#' observed data is at 5-min increments and modelled data is at 1-hr increments, the tool
+#' will subset the observed data to select only observations on the matching hour break).
+#'
+#' @param strDf.obs The OBSERVED flux time series dataframe (e.g., output from \code{\link{ReadUsgsGage}}).
+#' The dataframe must contain a column of flux values and a POSIXct column.
+#' @param strCol.obs The name of the column containing the flux values for the OBSERVED
+#' dataframe (DEFAULT="q_cms").
+#' @param strDf.mod1 The FIRST MODEL flux time series dataframe (e.g., output from \code{\link{ReadFrxstPts}}).
+#' The dataframe must contain a column of flux values and a POSIXct column.
+#' @param strCol.mod1 The name of the column containing the FIRST MODEL flux values
+#' (DEFAULT="q_cms").
+#' @param strDf.mod2 The SECOND MODEL flux time series dataframe (e.g., output from \code{\link{ReadFrxstPts}}).
+#' The dataframe must contain a column of flux values and a POSIXct column.
+#' @param strCol.mod2 The name of the column containing the SECOND MODEL flux values
+#' (DEFAULT="q_cms").
+#' @param stdate Start date for plot/statistics (DEFAULT=NULL, all records will be used).
+#' Date MUST be specified in POSIXct format with appropriate timezone
+#' (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))
+#' @param enddate End date for plot/statistics (DEFAULT=NULL, all records will be used).
+#' Date MUST be specified in POSIXct format with appropriate timezone
+#' (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))
+#' @param logy (TRUE or FALSE) Optional flag to set the y-axis to log-scale (DEFAULT=FALSE).
+#' @param labelObs Optional label for the observed streamflow (DEFAULT="Observed")
 #' @param labelMod1 Optional label for the FIRST MODEL (DEFAULT="Model 1")
 #' @param labelMod2 Optional label for the SECOND MODEL (DEFAULT="Model 2")
 #' @param title Optional for the plot (DEFAULT="Observed and Modelled Fluxes")
 #' @return A plot of the hydrographs.
-#'   
+#'
 #' @examples
-#' ## Take a time series of observed 5-minute streamflow values for Fourmile
-#' ## Creek (obsStr5min.fc) and two model runs (mod1Str1h.fc, mod2Str1h.fc), 
-#' ## all with streamflow columns named "q_cms", and plot the the hydrographs 
-#' ## for all three over the May-June snowmelt period.
-#' 
-#' \dontrun{
-#' PlotFluxCompare(obsStr5min.fc, "q_cms", modStrh.chrt.fc, "q_cms", 
-#'                 strDf.mod2=modStrh.allrt.fc, strCol.mod2="q_cms",
-#'                 labelObs="Observed Fourmile Creek at Orodell",
-#'                 labelMod1="Channel Routing Only", labelMod2="All Routing",
-#'                 title="Streamflow: Fourmile Creek",
-#'                 stdate=as.POSIXct("2013-05-01 00:00:00", 
-#'                                   format="%Y-%m-%d %H:%M:%S", tz="UTC"),
-#'                 enddate=as.POSIXct("2013-06-30 00:00:00",
-#'                                    format="%Y-%m-%d %H:%M:%S", tz="UTC"))
-#' }
+#' ## Take a time series of observed 5-minute streamflow values for Fourmile Creek (obsStr5min.fc) and two model
+#' ## runs (mod1Str1h.fc, mod2Str1h.fc), all with streamflow columns named "q_cms", and plot the
+#' ## the hydrographs for all three over the May-June snowmelt period.
+#'
+#' PlotFluxCompare(obsStr5min.fc, "q_cms", modStrh.chrt.fc, "q_cms", strDf.mod2=modStrh.allrt.fc, strCol.mod2="q_cms", labelObs="Observed Fourmile Creek at Orodell", labelMod1="Channel Routing Only", labelMod2="All Routing", title="Streamflow: Fourmile Creek", stdate=as.POSIXct("2013-05-01 00:00:00", format="%Y-%m-%d %H:%M:%S", tz="UTC"), enddate=as.POSIXct("2013-06-30 00:00:00", format="%Y-%m-%d %H:%M:%S", tz="UTC"))
 #' @export
 
 PlotFluxCompare <- function(strDf.obs, strCol.obs="q_cms",
@@ -85,7 +66,7 @@ PlotFluxCompare <- function(strDf.obs, strCol.obs="q_cms",
     if (!is.null(strDf.mod2)) {
         strDf.mod2$qcomp.mod2 <- strDf.mod2[,strCol.mod2]
     }
-    strDf <- merge(strDf.obs[c("POSIXct","qcomp.obs")], strDf.mod1[c("POSIXct","qcomp.mod1")], by=c("POSIXct"))
+    strDf <- merge(strDf.obs[c("POSIXct","qcomp.obs")], strDf.mod1[c("POSIXct","qcomp.mod1")], by<-c("POSIXct"))
     if (!is.null(strDf.mod2)) {
         strDf <- merge(strDf, strDf.mod2[c("POSIXct","qcomp.mod2")], by<-c("POSIXct"))
         }
@@ -124,30 +105,26 @@ PlotFluxCompare <- function(strDf.obs, strCol.obs="q_cms",
 
 
 #' Plot water balance from WRF-Hydro (w/NoahMP) output
-#' 
-#' \code{PlotWatBudg} plot water budget components from WRF-Hydro (w/NoahMP)
-#' model output.
-#' 
-#' Read water budget dataframe (as generated from
-#' \code{\link{CalcNoahmpWatBudg}}) and plot water budget components as a
-#' piechart or barchart. NOTE: Currently only works for runs using NoahMP as the
-#' LSM.
-#' 
+#'
+#' \code{PlotWatBudg} plot water budget components from WRF-Hydro (w/NoahMP) model output.
+#'
+#' Read water budget dataframe (as generated from \code{\link{CalcNoahmpWatBudg}}) and plot water budget
+#' components as a piechart or barchart.
+#' NOTE: Currently only works for runs using NoahMP as the LSM.
+#'
 #' @param wbDf The water budget dataframe (required)
 #' @param plottyp The plot type (pie or bar) (default=pie)
 #' @return A plot of the water budget components in mm.
-#'   
+#'
 #' @examples
-#' ## Plot the water budget components from a water budget dataframe generated 
-#' ## using CalcNoahmpWatBudg. Plot as a piechart.
-#' 
-#' \dontrun{
+#' ## Plot the water budget components from a water budget dataframe generated using
+#' ## CalcNoahmpWatBudg. Plot as a piechart.
+#'
 #' PlotWatBudg(wb.allrt.fc)
-#' 
+#'
 #' ## Plot the same as a barchart.
-#' 
+#'
 #' PlotWatBudg(wb.allrt.fc, "bar")
-#' }
 #' @export
 
 PlotWatBudg <- function(wbDf, plottyp="pie") {
@@ -164,12 +141,12 @@ PlotWatBudg <- function(wbDf, plottyp="pie") {
             lbls_pcts[length(lbls_pcts)+1] <- paste0("Change in\nStorage", "\n",
                                                 round( with( wbDf, (LSM_DELSOILM + LSM_DELSWE + LSM_DELCANWAT +
                                                 ifelse(is.na(HYD_DELSFCHEAD), 0.0, HYD_DELSFCHEAD) +
-                                                ifelse(is.na(WB_DELGWSTOR), 0.0, WB_DELGWSTOR)) / LSM_PRCP * 100), 1), "%")
+                                                ifelse(is.na(HYD_DELGWSTOR), 0.0, HYD_DELGWSTOR)) / LSM_PRCP * 100), 1), "%")
             pie(as.matrix(with(wbDf, c(LSM_ECAN, LSM_ETRAN, LSM_EDIR,
                                         (WB_SFCRNOFF + ifelse(is.na(HYD_QBDRY), 0.0, HYD_QBDRY)),
                                         WB_GWOUT, LSM_DELSOILM + LSM_DELSWE + LSM_DELCANWAT +
                                         ifelse(is.na(HYD_DELSFCHEAD), 0.0, HYD_DELSFCHEAD) +
-                                        ifelse(is.na(WB_DELGWSTOR), 0.0, WB_DELGWSTOR)))),
+                                        ifelse(is.na(HYD_DELGWSTOR), 0.0, HYD_DELGWSTOR)))),
                 col=c("chartreuse3","darkgreen","darkgoldenrod2","cornflowerblue","darkblue","grey30"),
                 main=c("Water Budget"), labels=lbls_pcts)
             }
@@ -182,7 +159,7 @@ PlotWatBudg <- function(wbDf, plottyp="pie") {
             text(0,-1, paste0("*Storage Loss: ",
                         round( with( wbDf, (LSM_DELSOILM + LSM_DELSWE + LSM_DELCANWAT +
                                         ifelse(is.na(HYD_DELSFCHEAD), 0.0, HYD_DELSFCHEAD) +
-                                        ifelse(is.na(WB_DELGWSTOR), 0.0, WB_DELGWSTOR)) /
+                                        ifelse(is.na(HYD_DELGWSTOR), 0.0, HYD_DELGWSTOR)) /
                                         LSM_PRCP * 100), 1),"%"))
             } # end storage fraction split
         } # end pie
@@ -190,11 +167,11 @@ PlotWatBudg <- function(wbDf, plottyp="pie") {
         lbls_pcts[length(lbls_pcts)+1] <- paste0("Change in Storage", "\n",
                                 round( with( wbDf, (LSM_DELSOILM + LSM_DELSWE + LSM_DELCANWAT +
                                         ifelse(is.na(HYD_DELSFCHEAD), 0.0, HYD_DELSFCHEAD) +
-                                        ifelse(is.na(WB_DELGWSTOR), 0.0, WB_DELGWSTOR)) /
+                                        ifelse(is.na(HYD_DELGWSTOR), 0.0, HYD_DELGWSTOR)) /
                                         LSM_PRCP * 100), 1), "%")
         plotDf <- with(wbDf,c(LSM_DELSOILM + LSM_DELSWE + LSM_DELCANWAT +
                                         ifelse(is.na(HYD_DELSFCHEAD), 0.0, HYD_DELSFCHEAD) +
-                                        ifelse(is.na(WB_DELGWSTOR), 0.0, WB_DELGWSTOR),
+                                        ifelse(is.na(HYD_DELGWSTOR), 0.0, HYD_DELGWSTOR),
                                         LSM_ECAN, LSM_ETRAN, LSM_EDIR,
                                         (WB_SFCRNOFF + ifelse(is.na(HYD_QBDRY), 0.0, HYD_QBDRY)),
                                         WB_GWOUT))

@@ -61,27 +61,30 @@
 #' 
 #' 
 #' ###############################
-#' ## process on hydro-c1
-#' realTimeFiles <- list.files(pattern='huc.*.RData', 
-#'                             path='~/usgsStreamData/realTimeData', 
-#'                             full.names=TRUE)
-#' outPath = '~/usgsStreamData/timeSliceData/'
-#' library(doMC)
-#' registerDoMC(12)
+#' ## process on saudi
+#   realTimeFiles <- list.files(pattern='huc.*.RData', 
+#                               path='~/usgsStreamData/realTimeData', 
+#                               full.names=TRUE)
+#   realTimeFiles <- tail(realTimeFiles,21*7*24*4)
+#   outPath = '~/usgsStreamData/timeSliceData5min/'
+#   library(doMC)
+#   registerDoMC(8)
+#   
+#    #I'm worried about using too much memory, when I run this on all 
+#   #previously collected data, so break up the problem
+#    chunkSize <- 1000
+#    chunkDf <- data.frame( ind = 0:(length(realTimeFiles) %/% chunkSize) )
+#    chunkDf <- within(chunkDf, { start = (ind)*chunkSize+1
+#                                 end   = pmin( (ind+1)*chunkSize, length(realTimeFiles)) } )
+#    
+#  for (ii in 1:nrow(chunkDf) ) {
+#    ret1 <- MkUsgsTimeSlice( realTimeFiles[chunkDf$start[ii]:chunkDf$end[ii]], 
+#                             outPath=outPath, nearest=5,
+#                             oldest=as.POSIXct('2015-04-15 00:00:00', tz='UTC')
+#                           )
+#    }
+#   
 #' 
-#' ## I'm worried about using too much memory, when I run this on all 
-#' ## previously collected data, so break up the problem
-#' chunkSize <- 1000
-#' chunkDf <- data.frame( ind = 0:(length(realTimeFiles) %/% chunkSize) )
-#' chunkDf <- within(chunkDf, { start = (ind)*chunkSize+1
-#'                              end   = pmin( (ind+1)*chunkSize, length(realTimeFiles)) } )
-#' 
-#' for (ii in 1:nrow(chunkDf) ) {
-#' ret1 <- MkUsgsTimeSlice( realTimeFiles[chunkDf$start[ii]:chunkDf$end[ii]], 
-#'                          outPath=outPath, nearest=60,
-#'                          oldest=as.POSIXct('2015-04-15 00:00:00', tz='UTC')
-#'                        )
-#' }
 #' 
 #' ## end dontrun }  
 #' @family usgs
@@ -109,10 +112,15 @@ MkUsgsTimeSlice <- function( realTimeFiles, outPath,
   allData <- plyr::ldply(NamedList(realTimeFiles), GetActiveData, 
                          .parallel=(foreach::getDoParWorkers() > 1 ))  
   
+  ##needs to happen
+  allData$site_no <- formatC(allData$site_no, width=16) #width for ncdf output
+  
   ## transform the time "granularity"
   ## files are written to the nearest Nth minute.
-  allData$dateTime <- RoundMinutes(allData$dateTime, nearest=nearestMin)
   if(any(is.na(allData$dateTime))) warning("NAs in dateTime", immediate.=TRUE)
+  allData$dateTimeRound <- RoundMinutes(allData$dateTime, nearest=nearestMin)
+  if(any(is.na(allData$dateTimeRound))) warning("NAs in dateTimeRound", immediate.=TRUE)
+  allData$dateTimeRound <- format(allData$dateTimeRound, '%Y-%m-%d_%H:%M:%S')
   #print(table(allData$dateTime))
   
   ## discharge units: output must be in cms (m3/s)
@@ -123,7 +131,8 @@ MkUsgsTimeSlice <- function( realTimeFiles, outPath,
 
   ## move missing codes to blanks?
   allData$code[which(is.na(allData$code))] <- '-'
-
+  allData$code    <- formatC(allData$code,    width=4)  ## width for ncdf output
+  
   ## remove unused variables for speed/memory
   allData <- within( allData, {.id <- agency_cd <- tz_cd  <- X_00060_00011 <- NULL})
 
@@ -135,19 +144,18 @@ MkUsgsTimeSlice <- function( realTimeFiles, outPath,
   
   ## apply the variance function, fudging for now.
 #  allData <- varainceFunction(allData)
-  allData$variance <- allData$discharge.cms * .1 
+#  allData$variance <- allData$discharge.cms * .1 
 
-  ## for testing outside of plyr
-  #WriteNcTimeSlice(subset(allData, dateTime == allData$dateTime[1]), outPath = outPath)
-  
   ## "slice" the dataframe by time and pass for writing to ncdf. 
   ## this can be done in parallel.
-  outList <- plyr::ddply(allData, plyr::.(dateTime), 
+  ## for testing outside of plyr:
+  ## WriteNcTimeSlice(subset(allData, dateTimeRound == allData$dateTimeRound[1]), outPath = outPath)
+  outList <- plyr::ddply(allData, plyr::.(dateTimeRound), 
                          WriteNcTimeSlice, 
                          outPath, 
-                         .parallel=(foreach::getDoParWorkers() > 1 ) ) #, .inform=TRUE )
-  
-  names(outList) <- c('POSIXct', 'file')
+                         .parallel=(foreach::getDoParWorkers() > 1 ), .inform=TRUE )
+                         
+  if(length(outList)) names(outList) <- c('POSIXct', 'file')
   outList  
 }
 

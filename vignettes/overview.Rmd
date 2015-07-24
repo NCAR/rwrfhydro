@@ -104,7 +104,7 @@ The family field cross-references documentation with all other functions with th
 
 Internal functions (those not exported into the package namespace) should be exported but tagged with keyword "internal". This makes the documentation available to users. 
 
-For reference, the following command lists the existing R keywords.
+# 
 ```{r}
 cat( readLines( paste0(R.home("doc"),'/KEYWORDS') ) , sep = "\n" )
 ```

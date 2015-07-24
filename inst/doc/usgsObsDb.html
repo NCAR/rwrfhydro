@@ -10,7 +10,7 @@
 
 <meta name="author" content="James McCreight" />
 
-<meta name="date" content="2015-05-05" />
+<meta name="date" content="2015-05-20" />
 
 <title>Collect USGS stream observations and build a local database.</title>
 
@@ -54,7 +54,7 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <div id="header">
 <h1 class="title">Collect USGS stream observations and build a local database.</h1>
 <h4 class="author"><em>James McCreight</em></h4>
-<h4 class="date"><em>2015-05-05</em></h4>
+<h4 class="date"><em>2015-05-20</em></h4>
 </div>
 
 
@@ -75,7 +75,7 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;rwrfhydro&quot;</span>)</code></pre>
 <pre><code>## To check rwrfhydro updates run: CheckForUpdates()</code></pre>
 <p>This is the path to the directory where you want your database to be built:</p>
-<pre class="sourceCode r"><code class="sourceCode r">dbPath &lt;-<span class="st"> '~/wrfHydroTestCases/usgsDb/'</span> </code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"> dbPath &lt;-<span class="st"> '~/wrfHydroTestCases/usgsDb/'</span> </code></pre>
 </div>
 <div id="discover-gage-locations-get-data-and-save-to-local-database." class="section level1">
 <h1>Discover gage locations, get data, and save to local database.</h1>
@@ -96,7 +96,7 @@ code > span.er { color: #ff0000; font-weight: bold; }
 ##  $ site_tp_cd   : chr &quot;ST&quot;
 ##  $ dec_lat_va   : num 40
 ##  $ dec_long_va  : num -105
-##  $ queryTime    : POSIXct, format: &quot;2015-05-05 12:40:47&quot;</code></pre>
+##  $ queryTime    : POSIXct, format: &quot;2015-05-20 09:31:53&quot;</code></pre>
 <p>Now you have the site_no or station ID number, “06727500”. You could have also used <code>FindUsgsStns()</code> to reveal the gages in the HUC8, if you knew the HUC8 code. Because we organize the database by HUC8, we have a function to get HUC8 from station id. Then we get the above information for all locations in the HUC8.</p>
 <pre class="sourceCode r"><code class="sourceCode r">huc8 &lt;-<span class="st"> </span><span class="kw">GetSiteHuc</span>(stnDf$site_no)
 <span class="kw">str</span>(<span class="kw">FindUsgsStns</span>(<span class="dt">huc=</span>huc8))</code></pre>
@@ -110,7 +110,7 @@ code > span.er { color: #ff0000; font-weight: bold; }
 ##  $ site_tp_cd   : chr  &quot;ST&quot; &quot;ST&quot; &quot;ST&quot; &quot;ST&quot; ...
 ##  $ dec_lat_va   : num  40 40.1 40 40.1 40.1 ...
 ##  $ dec_long_va  : num  -105 -105 -105 -105 -105 ...
-##  $ queryTime    : POSIXct, format: &quot;2015-05-05 12:40:51&quot; &quot;2015-05-05 12:40:51&quot; &quot;2015-05-05 12:40:51&quot; &quot;2015-05-05 12:40:51&quot; ...</code></pre>
+##  $ queryTime    : POSIXct, format: &quot;2015-05-20 09:31:57&quot; &quot;2015-05-20 09:31:57&quot; &quot;2015-05-20 09:31:57&quot; &quot;2015-05-20 09:31:57&quot; ...</code></pre>
 <p>FindUsgsStns is a wrapper on dataRetrieval::whatNWISsites which has been written to focus on instantaneous values. (It is worth noting the flexibility and generality of the underlying function.)</p>
 <p>Now pull the data for this HUC8. Currently, this grabs all available products for the HUC. Note that the HUC data are organized by product code (e.g. <code>00060</code>) then by <code>data</code> and <code>meta</code> in the returned list. (Also note that this command sometimes fails on the remote end and may need to be rerun.) In <code>meta</code>, siteInfo is the meta that we use in querying the local data base in commands shown below.</p>
 <pre class="sourceCode r"><code class="sourceCode r">coData &lt;-<span class="st"> </span><span class="kw">GetUsgsHucData</span>(<span class="dt">huc=</span>huc8)

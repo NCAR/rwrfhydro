@@ -37,7 +37,7 @@ Model3SdErrPctErrPlusQntlIncpt <- function(data, qntlIncpt=.005, pctErr=.1) {
 #' \code{Model3SdErrClimTaper} models three-sigma errors (same units as input)
 #' as smallest (\code{qntlIncpt} intercept is some climatological quantile) at 
 #' "climatological" observations (\code{qntlClim}, e.g. median = .5) and grow to
-#' some maximum percent error (\code{pctErr}). This is expressed by \cr
+#' some maximum percent error (\code{pctErr}). This is expressed by 
 #' \code{quantile(data, qntlIncpt) + pmin( pctErr*data,
 #' pctErr*abs(data-quantile(data, qntlClim)) )}
 #' @param data Numeric The values for which errors are to be modeled.
@@ -72,7 +72,6 @@ Model3SdErrClimTaper <- function(data, qntlIncpt=.05, qntlClim=.5, pctErr=.15) {
 #' @param retVariance Logical Returns variance if TRUE, else returns 1-sigma
 #'   error.
 #' @examples
-#' \dontrun{
 #' dbPath <- '~/usgsDb/'
 #' prettyOrodell <- 
 #'  PrettySiteData(QuerySiteData(QuerySiteName("FOURMILE CREEK AT ORODELL, CO", path=dbPath), 
@@ -80,7 +79,6 @@ Model3SdErrClimTaper <- function(data, qntlIncpt=.05, qntlClim=.5, pctErr=.15) {
 #' prettyOro <- MkDischargeVariance(prettyOrodell, Model3SdErrClimTaper)
 #' prettyO <- subset(prettyOro, dateTime < as.POSIXct('2012-01-01'))
 #' oroPlot <- PlotPrettyData(prettyO)
-#' }
 #' @keywords manip
 #' @concept DART dataMgmt
 #' @export
@@ -128,28 +126,32 @@ MkDischargeVariance <- function(prettyUsgs, error3SdFunc, retVariance=TRUE) {
   #as.POSIXct(with(dataHourly, paste0(year,'/',month,'/',day,'_',hour)),format='%Y/%m/%d_%H')
 
 
-#=============================================================================================
-#' Writes an ascii obs_seq.in file for DART binary create_obs_sequence
+
+#' Writes an ascii obs_seq.in file for DART binary create_obs_sequence.
 #' 
-#' \code{WriteDischargeObsSeq} makes variances for prettyUsgs discharge observations. The formulation 
-#' of the variances is subjective. Assuming zero-mean Gaussian observation errors, the approach 
-#' here is to supply a function which estimates the 3-sigma (inner 99.5% error quantiles) around 
-#' the observations. This amount seems somewhat easier to conceptualize than 1-sigma, hence here
-#' we are. This function divides the error amounts by 3 and either returns the standard deviation
-#' or squares the result to return the variance (default).
-#' @param pretty The prettyUsgs discharge observations to which variances are to be added. 
+#' \code{WriteDischargeObsSeq} makes variances for prettyUsgs discharge
+#' observations. The formulation of the variances is subjective. Assuming
+#' zero-mean Gaussian observation errors, the approach here is to supply a
+#' function which estimates the 3-sigma (inner 99.5% error quantiles) around the
+#' observations. This amount seems somewhat easier to conceptualize than
+#' 1-sigma, hence here we are. This function divides the error amounts by 3 and
+#' either returns the standard deviation or squares the result to return the
+#' variance (default).
+#' @param pretty The prettyUsgs discharge observations to which variances are to
+#'   be added.
 #' @param outPath     Character The directory where the file is to be written.
-#' @param stationName Character To help identify the outputfile and the station data in the file.
-#' @param errorId     Character To help identify the outputfile and the error function used.
-#' @param typeQ       Numeric   Stream discharge obs type index in my pre-release version of DART. It could change.
-#'                              DART/obs_kind/DEFAULT_obs_kind_mod.F90
+#' @param stationName Character To help identify the outputfile and the station
+#'   data in the file.
+#' @param errorId     Character To help identify the outputfile and the error
+#'   function used.
+#' @param typeQ       Numeric   Stream discharge obs type index in my
+#'   pre-release version of DART. It could change. 
+#'   DART/obs_kind/DEFAULT_obs_kind_mod.F90
 #' @examples
 #' #Following on examples for MkDischargeVariance
-#' \dontrun{
 #' WriteDischargeObsSeq(prettyOro, '~/.', 'orodell', 'climTaperDefault')
-#mkGaugeObsSeq( loganData, '~/boulderCreek/', 'loganMill' )
-#mkGaugeObsSeq( sunshineData, '~/boulderCreek/', 'sunshine' ) 
-#' }
+#' mkGaugeObsSeq( loganData, '~/boulderCreek/', 'loganMill' )
+#' mkGaugeObsSeq( sunshineData, '~/boulderCreek/', 'sunshine' ) 
 #' @keywords manip
 #' @concept DART dataMgmt
 #' @family dartObs

@@ -11,15 +11,13 @@ env:
 before_install:
 - sudo apt-get update -qq
 - sudo apt-get install -qq netcdf-bin libnetcdf-dev
-- sudo apt-get install r-cran-rgdal ## this is 0.8.6, i believe.
 
 r_github_packages:
   - yihui/printr
-  - aubreyd/modis4rwrfhydro
 
 warnings_are_errors: false
 
-r_check_args: "--no-vignettes --no-manual"
+r_check_args: "--no-vignettes --no-manual --no-examples --no-tests"
 
 r_build_args: "--no-build-vignettes --no-manual"
 

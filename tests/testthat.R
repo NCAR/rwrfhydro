@@ -4,4 +4,4 @@ library(rwrfhydro)
 # snodas tests
 
 
-#test_check("rwrfhydro")
+test_check("rwrfhydro")

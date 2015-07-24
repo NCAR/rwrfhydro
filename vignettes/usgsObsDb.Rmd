@@ -44,7 +44,7 @@ library(printr)
 
 This is the path to the directory where you want your database to be built:
 ```{r}
-dbPath <- '~/wrfHydroTestCases/usgsDb/' 
+ dbPath <- '~/wrfHydroTestCases/usgsDb/' 
 ```
 
 
@@ -85,9 +85,9 @@ str(coData)
 str(coData)
 ```
 
-
 Now save this data to the local database. Note that this also could have been achieved by specifying the `outPath` argument to `GetUsgsHucData`.
 ```{r, results='hold', eval=FALSE}
+
 coFiles <- SaveHucData(coData, outPath=dbPath)
 coFiles
 ```

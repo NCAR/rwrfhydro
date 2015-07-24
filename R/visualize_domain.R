@@ -16,7 +16,6 @@
 #' @examples
 #' ## See the vignette "WRF Hydro Domain and Channel Visualization", for details. 
 #' ## set your test case path
-#' \dontrun{
 #' tcPath <- '~/wrfHydroTestCases/'
 #' fcPath <- paste0(tcPath,'Fourmile_Creek/')
 #' hydroFile<-paste0(fcPath,'/DOMAIN/hydro_OrodellBasin_100m.nc')
@@ -33,7 +32,6 @@
 #' ggMap2 + geom_point(data=orodellLonLat, aes(x=lon,y=lat, shape=gauge)) +
 #'          scale_x_continuous(limits=rev(orodellLonLat$lon+c( .01 ,-.01 ))) +
 #'          scale_y_continuous(limits=rev(orodellLonLat$lat+c( .005,-.005))) 
-#' }
 #' @concept plot DART
 #' @keywords hplot
 #' @family domain
@@ -94,7 +92,7 @@ VisualizeDomain <- function(file, variable=NULL, plot=TRUE) {
             pointsize=3, pointshape=15, plot=TRUE ) {
     # Calling library may be forbidden in the package, but this dosent actually get executed in 
     # the package. It seems that ggmap:: should take care of this, but it dosent.
-    library(ggplot2) ## called in the closure.
+    library(ggplot2)
     theMap <- ggmap::get_map(location, zoom = zoom, source = source, maptype=maptype)   
     ggMapObj <- 
       ggmap::ggmap(theMap, extent='normal') +
