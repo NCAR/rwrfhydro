@@ -129,12 +129,39 @@ GetGageGageDist <- function(ind1, ind2, upstream, downstream, length,
   NA
 }
 
+
+## what is the comId for Boulder Creek at 75th?
+## Alot of this going to change when reInd is applied, mostly just variable names
+bc75ComId <- 2889214
+## load the files
+load("~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink.reInd.Rdb")
+load("~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink.reExpTo.Rdb")
+load("~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink.reExpFrom.Rdb")
+whBcCom <- which(reInd$comId == bc75ComId)
+upBc75 <- GatherUpstream(from, reInd$length, gridded=FALSE, start=whBcCom )
+## dosent work:
+downBc75 <- GatherUpstream(to, reInd$length, gridded=FALSE, start=whBcCom )
+
+upstream <- from
+upstream <- to
+
+length   <- reInd$length
+gridded=FALSE
+start=whBcCom
+indDist=list(ind=c(), dist=c())
+
+
+#distances are the cumulative distance from the given start
 #' @export
 GatherUpstream <- function(upstream, length, gridded=TRUE, 
                            start, indDist=list(ind=c(), dist=c())) {
   anyUpstream <- upstream$start[start] > 0
   if(!anyUpstream) return(indDist)
-  upstreamInds <- upstream$upstream[upstream$start[start]:upstream$end[start]]
+  ##rename <- c('go', 'go')
+  ##names(rename)<-c('to','from')
+  ##stream <- plyr::rename(upstream, rename)
+  upstreamInds <- upstream$from[upstream$start[start]:upstream$end[start]]
+  #upstreamInds <- upstream$to[upstream$start[start]:upstream$end[start]]
   for(ss in upstreamInds) {
     if(gridded) { # center point to center point for gridded
       indDist$ind  <- append(indDist$ind,  ss)  
@@ -150,13 +177,19 @@ GatherUpstream <- function(upstream, length, gridded=TRUE,
         indDist$dist <- append(indDist$dist, length[start])
       }
       indDist$ind  <- append(indDist$ind,  ss)
-      startDist <- indDist$dist[which(indDist$ind == start)]
-      indDist$dist <- append(indDist$dist, startDist + length[ss])/2
+      ## is this the correct distance calculation?
+      startDist <- indDist$dist[which(indDist$ind == start)[1]]
+      indDist$dist <- append(indDist$dist, startDist + length[ss])
     }
     indDist <- GatherUpstream(upstream, length, gridded, ss, indDist)
   }
   indDist
 }
+
+
+
+
+
 
 #' @examples
 #' ii <- GoToDownstreamJunct(downstream, upstream, 9296)

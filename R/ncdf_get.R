@@ -86,6 +86,7 @@ ncdump <-function(file, variable, quiet=FALSE) {
     if( nc$ndims > 0 ) {
       for( i in 1:nc$ndims ) {
         if( nc$dim[[i]]$unlim ) {
+         
           cat(paste0(indent,nc$dim[[i]]$name," = UNLIMITED ; // (",nc$dim[[i]]$len,' currently)\n' ))
         } else {
           cat(paste0(indent,nc$dim[[i]]$name," = ",nc$dim[[i]]$len,' ; \n' ))
@@ -102,7 +103,7 @@ ncdump <-function(file, variable, quiet=FALSE) {
         atts <- ncdf4::ncatt_get( nc, nc$dim[[i]]$name )
         natts <- length(atts)
         if( natts > 0 ) {
-          cat(paste0(indent,typeof(nc$dim[[2]]$vals),' ',nc$dim[[i]]$name,"(",nc$dim[[i]]$name,') ; \n' ))
+          cat(paste0(indent,typeof(nc$dim[[i]]$vals),' ',nc$dim[[i]]$name,"(",nc$dim[[i]]$name,') ; \n' ))
           nms <- names( atts )
           for( ia in 1:natts ) 
             cat(paste0(indent,indent,nc$dim[[i]]$name,':',nms[ia], ' = "', atts[[ia]], '"\n' ))
