@@ -99,6 +99,10 @@ GetAmeriflux <- function(siteIDs, gaps=TRUE,
     fluxFiles <- read.table(textConnection(fluxFiles), sep = ",", stringsAsFactor=FALSE)
     fluxFiles <- fluxFiles$V1
     fluxFiles <- fluxFiles[grep('*.csv',fluxFiles)]
+    if (length(fluxFiles)==0) {
+      print("No csv files found. Check directory structure for this site.")
+      next
+    }      
     fluxFiles <- unlist(lapply(fluxFiles, function(x,...) substring(x,57,300)))
     fluxFiles <- data.frame(file=fluxFiles, yr=0, stringsAsFactors=FALSE)
     for (j in 1:nrow(fluxFiles)) {

@@ -338,7 +338,15 @@ CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q
     which.max.dt <- function(dd, qcol, dtcol) { dd[which.max(dd[,qcol]), dtcol] }
     CalcCOM.dt <- function(dd, qcol, dtcol) { dd[CalcCOM(dd[,qcol]), dtcol] }
     # Prepare data
-    if (!is.null(stdate) && !is.null(enddate)) {
+    if (!is.null(stdate) & is.null(enddate)) {
+      flxDf.obs <- subset(flxDf.obs, POSIXct>=stdate)
+      flxDf.mod <- subset(flxDf.mod, POSIXct>=stdate)
+    }
+    if (is.null(stdate) & !is.null(enddate)) {
+      flxDf.obs <- subset(flxDf.obs, POSIXct<=enddate)
+      flxDf.mod <- subset(flxDf.mod, POSIXct<=enddate)
+    }
+    if (!is.null(stdate) & !is.null(enddate)) {
       flxDf.obs <- subset(flxDf.obs, POSIXct>=stdate & POSIXct<=enddate)
       flxDf.mod <- subset(flxDf.mod, POSIXct>=stdate & POSIXct<=enddate)
     }
@@ -658,7 +666,15 @@ CalcModPerfMulti <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.o
   which.max.dt <- function(dd, qcol, dtcol) { dd[which.max(dd[,qcol]), dtcol] }
   CalcCOM.dt <- function(dd, qcol, dtcol) { dd[CalcCOM(dd[,qcol]), dtcol] }
   # Prepare data
-  if (!is.null(stdate) && !is.null(enddate)) {
+  if (!is.null(stdate) & is.null(enddate)) {
+    flxDf.obs <- subset(flxDf.obs, POSIXct>=stdate)
+    flxDf.mod <- subset(flxDf.mod, POSIXct>=stdate)
+  }
+  if (is.null(stdate) & !is.null(enddate)) {
+    flxDf.obs <- subset(flxDf.obs, POSIXct<=enddate)
+    flxDf.mod <- subset(flxDf.mod, POSIXct<=enddate)
+  }
+  if (!is.null(stdate) & !is.null(enddate)) {
     flxDf.obs <- subset(flxDf.obs, POSIXct>=stdate & POSIXct<=enddate)
     flxDf.mod <- subset(flxDf.mod, POSIXct>=stdate & POSIXct<=enddate)
   }
