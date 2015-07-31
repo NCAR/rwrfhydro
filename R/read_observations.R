@@ -276,20 +276,20 @@ ReadAmerifluxCSV <- function(pathFluxData, timeZone) {
 }
 #' Read point NetCDF station time series observations
 #'
-#' \code{ReadNearStationData} reads Ameriflux data table (Level 2 standardized
-#' NetCDF file) and creates a dataframe.
+#' \code{ReadNearStationData} reads station observation data table (point NetCDF file) and creates a dataframe.
 #'
-#' \code{ReadNearStationData} reads an Ameriflux Level 2 standardized NetCDF file
+#' \code{ReadNearStationData} reads a station observation  point NetCDF file
 #' and outputs a dataframe with consistent date and data columns for use with
 #' other rwrfhydro tools.
 #'
-#' @param pathData The full pathname to the point NetCDF file 
+#' @param pathData The full pathname to the point NetCDF file.
 #'   \url{http://stat.ethz.ch/R-manual/R-devel/library/base/html/timezones.html}
 #' @return A dataframe containing station observations.
 #'
 #' @examples
 #' ## Takes a point NetCDF file of station observations
 #' ## (Rocky Mtn. Lodge) and returns a dataframe.
+#' ReadNearStationData("URG1_Upper_Conejos_River_thru_Jul_1_2015.csv_filled.csv.nc")
 #'
 #' @keywords IO
 #' @concept dataGet

@@ -188,9 +188,6 @@ GatherUpstream <- function(upstream, length, gridded=TRUE,
 
 
 
-
-
-
 #' @examples
 #' ii <- GoToDownstreamJunct(downstream, upstream, 9296)
 #' ii <- GoToDownstreamJunct(downstream, upstream, ii, skipFirst=TRUE)
