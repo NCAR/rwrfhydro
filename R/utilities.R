@@ -615,7 +615,28 @@ lsOS <- function(..., n=10) {
 #' @return Vector of moving averages
 #' @keywords utilities internal
 #' @export
-CalcRunningMean = function(x, n, sides=2) {
+CalcRunningMean <- function(x, n, sides=2) {
   filter(x, rep(1/n,n), sides=sides, method="convolution")
 }
 
+#' Fill outliers based on change between steps
+#' 
+#' \code{FillOutliers} is a simple utility
+#' to fill outliers in a time series. Values that are 
+#' more than some threshold change from the previous
+#' time step are replaced by the value from that
+#' previous time step. 
+#' @param x Vector of values
+#' @param thresh Threshold for change between timesteps
+#' (in absolute value of x units)
+#' @return Vector of values with outliers replaced by
+#' previous value
+#' @keywords utilities internal
+#' @export
+FillOutliers <- function(x, thresh) {
+  for (i in 2:(length(x)-1)) {
+    if (!is.na(x[i]) & !is.na(x[i-1])) del <- (x[i]-x[i-1])
+    if (abs(del) > thresh) x[i] <- x[i-1]
+    }
+  return(x)
+}
