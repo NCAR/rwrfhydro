@@ -65,7 +65,7 @@ SelectGhcnGauges <- function(countryCode=NULL,networkCode=NULL,states=NULL,
                              domain=FALSE,minLat=NULL,maxLat=NULL,minLon=NULL,
                              maxLon=NULL,fileAdd="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt") {
 # Setup
-#stationsAddress="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt"
+#fileAdd="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt"
   selectedGauges <- read.fwf(fileAdd,widths=c(2,1,8,-1,8,-1,9,-1,6,-1,2,-1,30,-1,3,-1,3,-1,4),
                  colClasses=c(rep("character",3),rep("numeric",3),rep("character",5)),comment.char = "")
   names(selectedGauges)<- c('country','network','stationID','latitude','longitude',
@@ -136,19 +136,19 @@ GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
   #fileAdd="http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/all/"
 
   getSite <- function(siteId) {
-    tryCatch({
-     urlAdd=paste0(fileAdd,siteId,'.dly')
+    urlAdd=paste0(fileAdd,siteId,'.dly') 
+  
+    tmp <- tryCatch(suppressWarnings(read.fwf(urlAdd,widths=c(11,4,2,4,rep(c(5,1,1,1),31)),
+                                              colClass=c("character","integer","integer","factor",
+                                                         rep(c("integer","factor","factor","factor"),31)))), 
+                          error=function(cond) {message(cond); return(NA)}) 
+      
      # Reading the whole data in the page
        tmp <- read.fwf(urlAdd,widths=c(11,4,2,4,rep(c(5,1,1,1),31)),
                        colClass=c("character","integer","integer","factor",
                                   rep(c("integer","factor","factor","factor"),31)))
        tmp<-tmp[tmp[4]==element,]
-       
-       
-       plyr::aaply(a,1,function(x) print(x))
-       b<-plyr::aaply(a,1,function(x) {if (x=="logical") x="factor"
-                      return(x)})
-       
+
        dayflag<-c('day','mFlag','qFlag','sFlag')
        dayflag<-paste0(dayflag,rep(1:31,each=4))
        names(tmp)<- c('siteId','year','month','element',dayflag)
@@ -171,9 +171,6 @@ GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
          dayMeltDf<-subset(dayMeltDf, datetime > as.Date(startDate) & datetime < as.Date(endDate))
        }
        return(dayMeltDf)
-    }, error = function(e){
-      return(NULL)
-    })
   }
 
   siteIdsList <- as.list(siteIds)
