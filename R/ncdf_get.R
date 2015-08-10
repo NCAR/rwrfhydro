@@ -25,6 +25,9 @@ GetNcdfFile <- function(file, variables, exclude=FALSE, quiet=FALSE, flip2D=TRUE
   
   # Deal with variables asked for
   varsInFile <- names(nc$var)
+  dimVarsInFile <- names(nc$dim)
+  whDimVarsVals <- plyr::laply(nc$dim, '[[', 'create_dimvar')
+  if(any(whDimVarsVals)) varsInFile <- c(dimVarsInFile[whDimVarsVals], varsInFile)
   
   returnVars <- 
   if(!missing(variables)) {
@@ -52,13 +55,8 @@ GetNcdfFile <- function(file, variables, exclude=FALSE, quiet=FALSE, flip2D=TRUE
     
 }
 
-
-
-
-
 ##=========================================================================================================
-#' Emulate ncdump -h on OSX where ncdump might not be availabe. 
-#' 
+#' Emulate ncdump -h.
 #' I just hacked print.ncdf4 just to make it look more like unix output. 
 #'
 #' @param file Character, the file to inspect. 
