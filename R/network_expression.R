@@ -11,7 +11,7 @@
 #'   ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.nc')
 #'   ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink4.nc')
 #'   ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink3.nc')
-#'   ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink.nc')
+#'   ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.nc')
 #' }
 #' @keywords manip
 #' @concept dataMgmt
@@ -142,7 +142,7 @@ ReExpNetwork <- function(routeLinkReInd, upstream=TRUE) {
 #'   for (ii in seq(1,2000)) { print(ii); print(CheckConn(ii)) }
 #'   for (ii in seq(1,2000)) { print(ii); print(CheckConn(ii),up=FALSE) }
 
-
+if(FALSE) {
 load("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reExpFrom.Rdb")
 ## number of contributing/upstream links.
 nContrib<-from$end-from$start
@@ -170,7 +170,7 @@ write.table(comIdWhOutGt1, row.names=FALSE,
             file='~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink4.comIdWhOutGt1.txt')
 
 load("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reInd.Rdb")
-
+}
 
 #' }
 #' @keywords manip
