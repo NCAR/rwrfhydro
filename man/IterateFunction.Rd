@@ -10,10 +10,12 @@ IterateFunction(f, args, resultArg, iterations = 1)
 Iterate a function
 }
 \examples{
+\dontrun{
 ii <- GoToDownstreamJunct(downstream, upstream, 9296)
 ii <- GoToDownstreamJunct(downstream, upstream, ii, skipFirst=TRUE)
 IterateFunction(GoToDownstreamJunct,
                list(downstream=downstream, upstream=upstream, ind=9296, skip=TRUE),
                'ind', 3)
+}
 }
 

@@ -2,16 +2,28 @@
 % Please edit documentation in R/gage_gage_dist_gridded.R
 \name{GetGageGageDist}
 \alias{GetGageGageDist}
-\title{Find the upstream links/nodes/cells with distances from a specified point}
+\title{Get the "distance" between two indices on the network.}
 \usage{
 GetGageGageDist(ind1, ind2, upstream, downstream, length, gridded = TRUE,
   maxIterDownstream = 100)
 }
 \description{
-Find the upstream links/nodes/cells with distances from a specified point
+If the gages lie up or downstream from one another, then this "symmetric"
+distance between them is returned. If the gages are connected by a common
+downstream (to both) confulence, requiring a downstream-upstream search, then
+the distance from each to the confluence is returned, which is not symmetric.
+The output data frame contains:
+ind1: if symmetric, the upstream index. If not symmetric, this index's
+distance to the confluence is reported.
+ind2: if symmetric, the downstream index. If not symmetric, this is just a
+place holder.
+symmetric: if the points are connected up/downstream from each other or if a
+downstream-upstream search is required to connect them.
+distance: in meters, as described for ind1 and ind2.
 }
 \examples{
-devtools::load_all()
+\dontrun{
+ devtools::load_all()
 
  load('~/ncar/WRF_Hydro/DOMAIN_library/Col_Bldr_Creek/newConnectivity.Rdb')
  length <-
@@ -58,5 +70,6 @@ GetGageGageDist(whFrxst[4], whFrxst[3], upstream, downstream, length)
 GetGageGageDist(whFrxst[3], whFrxst[4], upstream, downstream, length)
 GetGageGageDist(whFrxst[2], whFrxst[4], upstream, downstream, length)
 GetGageGageDist(whFrxst[4], whFrxst[2], upstream, downstream, length)
+}
 }
 

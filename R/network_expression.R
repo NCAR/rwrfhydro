@@ -7,9 +7,9 @@
 #' @return The resulting file which was written to disk, of the form "infile.reInd.nc"
 #'   
 #' @examples
-#  \dontrun{
-ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.nc')
-#   ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink4.nc')
+#'  \dontrun{
+#'   ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.nc')
+#'   ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink4.nc')
 #'   ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink3.nc')
 #'   ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink.nc')
 #' }
@@ -62,14 +62,10 @@ ReIndexRouteLink <- function(routeLinkFile) {
 #'         (downstream) or "infile.reExpFrom.nc" (upstream).
 #' @examples
 #' \dontrun{
-   library(rwrfhydro)
-   doMC::registerDoMC(16)
-   ReExpNetwork("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reInd.Rdb")
-   ReExpNetwork("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reInd.Rdb", up=FALSE)
-
-
-
-
+#'   library(rwrfhydro)
+#'   doMC::registerDoMC(16)
+#'   ReExpNetwork("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reInd.Rdb")
+#'   ReExpNetwork("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reInd.Rdb", up=FALSE)
 #' }
 #' @keywords manip
 #' @concept dataMgmt
@@ -330,7 +326,7 @@ NtwKReExToNcdf <- function(toFile, fromFile) {
 #' @param downstream Integer, the index of the downstream chan grid from the index. 
 #' @return ... have to run this to correctly describe... JLM TODO
 #' @examples
-#' \dontrun
+#' \dontrun{
 #'   library(rwrfhydro)
 #'   ncdump('~/ncar/WRF_Hydro/DOMAIN_library/Col_Bldr_Creek/CHANNEL_CONNECTIVITY.nc')
 #'   TO_NODE <- 

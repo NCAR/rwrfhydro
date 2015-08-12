@@ -2,11 +2,17 @@
 % Please edit documentation in R/gage_gage_dist_gridded.R
 \name{GoToDownstreamJunct}
 \alias{GoToDownstreamJunct}
+\title{Find the next downstream junction from current grid cell.}
 \usage{
 GoToDownstreamJunct(downstream, upstream, ind, skipFirst = FALSE)
 }
+\description{
+Find the next downstream junction from current grid cell.
+}
 \examples{
+\dontrun{
 ii <- GoToDownstreamJunct(downstream, upstream, 9296)
 ii <- GoToDownstreamJunct(downstream, upstream, ii, skipFirst=TRUE)
+}
 }
 
