@@ -63,7 +63,7 @@ varList[[4]] <-
         dimensionList=dimensionList[c('stationIdInd')],
         data = gageParams$tau )
 
-MkNcdf( varList, 
+MkNcdf( varList,
         filename=paste0('~/ncar/WRF_Hydro/DOMAIN_library/Col_Bldr_Creek/',
                         'nudgingParameters_Bldr_Creek.nc'), 
         overwrite=TRUE )

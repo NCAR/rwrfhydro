@@ -8,6 +8,8 @@
 #'   
 #' @examples
 #  \dontrun{
+ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.nc')
+#   ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink4.nc')
 #'   ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink3.nc')
 #'   ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink.nc')
 #' }
@@ -60,18 +62,12 @@ ReIndexRouteLink <- function(routeLinkFile) {
 #'         (downstream) or "infile.reExpFrom.nc" (upstream).
 #' @examples
 #' \dontrun{
-#'   library(rwrfhydro)
-#'   doMC::registerDoMC(16)
-   ReExpNetwork("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink.reInd.Rdb")
-   ReExpNetwork("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink.reInd.Rdb", up=FALSE)
+   library(rwrfhydro)
+   doMC::registerDoMC(16)
+   ReExpNetwork("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reInd.Rdb")
+   ReExpNetwork("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reInd.Rdb", up=FALSE)
 
-nContrib<-from$end-from$start
-nContrib[which(from$start>0)] <-nContrib[which(from$start>0)] +1
-table(nContrib)
 
-nOut<-to$end-to$start
-nOut[which(to$start>0)] <-nOut[which(to$start>0)] +1
-table(nOut)
 
 
 #' }
@@ -149,6 +145,37 @@ ReExpNetwork <- function(routeLinkReInd, upstream=TRUE) {
 #'   for (ii in seq(1,2720000,1000)) { print(ii); print(CheckConn(ii), up=FALSE) }
 #'   for (ii in seq(1,2000)) { print(ii); print(CheckConn(ii)) }
 #'   for (ii in seq(1,2000)) { print(ii); print(CheckConn(ii),up=FALSE) }
+
+
+load("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reExpFrom.Rdb")
+## number of contributing/upstream links.
+nContrib<-from$end-from$start
+nContrib[which(from$start>0)] <-nContrib[which(from$start>0)] +1
+table(nContrib)
+for (ii in which(nContrib >3)) { print(ii); print(CheckConn(ii),up=FALSE) }
+comIdWhContribGt3 <-
+  data.frame(nContrib = nContrib[which(nContrib > 16)],
+             comId = reInd$comId[which(nContrib > 16)] )
+comIdWhContribGt3 <- comIdWhContribGt3[order(comIdWhContribGt3$nContrib),]
+write.table(comIdWhContribGt3, row.names=FALSE,
+            file='~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink4.comIdWhContribGt3.txt')
+
+load("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reExpTo.Rdb")
+## number of downstream/outflow links.
+nOut<-to$end-to$start
+nOut[which(to$start>0)] <-nOut[which(to$start>0)] +1
+table(nOut)
+for (ii in which(nOut >1)) { print(ii); print(CheckConn(ii),up=FALSE) }
+comIdWhOutGt1 <-
+  data.frame(nOut = nOut[which(nOut > 1)],
+             comId = reInd$comId[which(nOut > 1)] )
+comIdWhOutGt1 <- comIdWhOutGt1[order(comIdWhOutGt1$nOut),]
+write.table(comIdWhOutGt1, row.names=FALSE,
+            file='~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink4.comIdWhOutGt1.txt')
+
+load("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reInd.Rdb")
+
+
 #' }
 #' @keywords manip
 #' @concept dataMgmt
@@ -172,7 +199,125 @@ CheckConn <- function(ind, upstream=TRUE, printInds=FALSE) {
   if(printInds) print(nhdWay)
   test
 }
- 
+
+
+## totally incomplete... 
+## a few checks on RouteLink
+routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink3.nc'
+CheckRouteLink <- function(routeLinkFile) {
+  ncid <- ncdf4::nc_open(routeLinkFile)
+  link  <- ncdf4::ncvar_get(ncid,'link')
+  reInd <- data.frame(from   = ncdf4::ncvar_get(ncid,'from'),
+                      to     = ncdf4::ncvar_get(ncid,'to'),
+                      length = ncdf4::ncvar_get(ncid,'Length')
+                      )
+  ncdf4::nc_close(ncid)
+  length(setdiff(reInd$from, link))
+  setdiff(reInd$from, link) 
+  length(setdiff(reInd$to, link))
+  setdiff(reInd$to, link)
+  #write.table(setdiff(reInd$to, link), file='~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink3.toLinkDiff.txt', row.names=FALSE)
+}
+
+
+fromFile <- "~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink.reExpFrom.Rdb"
+toFile <- "~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink.reExpTo.Rdb"
+##----------------------
+## Output the network reexpression
+## This results in 3 files 
+NtwKReExToNcdf <- function(toFile, fromFile) {
+
+  load(toFile)
+  load(fromFile)
+
+  ## need to set the missing value used by ncdf4? i think it's NA by default
+  dimensionList <-
+    list(  # n.b. the dimension order: z,y,x,t
+         baseDim=list(name='baseDim',
+           units='-', 
+           values=1:length(to$start),
+           unlimited=FALSE,
+           create_dimvar=FALSE),
+         
+         downDim=list(name='downDim',
+           units='-', 
+           values=1:length(to$to),
+           unlimited=FALSE,
+           create_dimvar=FALSE),
+         
+         upDim=list(name='upDim',
+           units='-', 
+           values=1:length(from$from),
+           unlimited=FALSE,
+           create_dimvar=FALSE)
+         )
+  
+  varList = list()
+  varList[[1]] <- 
+    list( name='upGo',
+         longname='indices in the upstream direction',
+         units='-',
+         precision = 'integer',
+         dimensionList=dimensionList[c('upDim')],
+         data = from$from )
+  
+  varList[[2]] <- 
+    list( name='upStart',
+         longname='start index in upGo for a given index',
+         units='-',
+         precision = 'integer',
+         dimensionList=dimensionList[c('baseDim')],
+         data = from$start )
+  
+  varList[[3]] <- 
+    list( name='upEnd',
+         longname='end index in upGo for a given index',
+         units='-',
+         precision = 'integer',
+         dimensionList=dimensionList[c('baseDim')],
+         data = from$end )
+  
+  varList[[4]] <- 
+    list( name='downGo',
+         longname='indices in the downstream direction',
+         units='-',
+         precision = 'integer',
+         dimensionList=dimensionList[c('downDim')],
+         data = from$from )
+  
+  varList[[5]] <- 
+    list( name='downStart',
+         longname='start index in downGo for a given index',
+         units='-',
+         precision = 'integer',
+         dimensionList=dimensionList[c('baseDim')],
+         data = from$start )
+  
+  varList[[6]] <- 
+    list( name='downEnd',
+         longname='end index in downGo for a given index',
+         units='-',
+         precision = 'integer',
+         dimensionList=dimensionList[c('baseDim')],
+         data = from$end )
+
+  globalAttList <- list()
+  globalAttList[[1]] <- list(name='This File Created',
+                             value=format(Sys.time(),'%Y-%m-%d_%H:%M:%S'),
+                             precision="text")
+  globalAttList[[2]] <- list(name='toFile',  value=toFile,   precision="text" )
+  globalAttList[[3]] <- list(name='fromFile',value=fromFile, precision="text" )
+
+  base <- strsplit(basename(toFile),'\\.')[[1]][1]
+  dir  <- dirname(toFile)
+  
+  MkNcdf( varList, globalAttList=globalAttList,
+         filename=paste0(dir,'/',base,'.reExp.nc'), 
+         overwrite=TRUE )
+
+  #upGo <- ncdump(paste0(dir,'/',base,'.reExp.nc'),'upGo')
+}
+
 
 ##==================================================================================================
 #' ReExpress *gridded* stream networks indexed network traversal.
