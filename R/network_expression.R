@@ -7,7 +7,7 @@
 #' @return The resulting file which was written to disk, of the form "infile.reInd.nc"
 #'   
 #' @examples
-#  \dontrun{
+#' \dontrun{
 #'   ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink3.nc')
 #'   ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink.nc')
 #' }
@@ -62,18 +62,17 @@ ReIndexRouteLink <- function(routeLinkFile) {
 #' \dontrun{
 #'   library(rwrfhydro)
 #'   doMC::registerDoMC(16)
-   ReExpNetwork("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink.reInd.Rdb")
-   ReExpNetwork("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink.reInd.Rdb", up=FALSE)
-
-nContrib<-from$end-from$start
-nContrib[which(from$start>0)] <-nContrib[which(from$start>0)] +1
-table(nContrib)
-
-nOut<-to$end-to$start
-nOut[which(to$start>0)] <-nOut[which(to$start>0)] +1
-table(nOut)
-
-
+#'   ReExpNetwork("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink.reInd.Rdb")
+#'   ReExpNetwork("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink.reInd.Rdb", up=FALSE)
+#'   
+#'   nContrib<-from$end-from$start
+#'   nContrib[which(from$start>0)] <-nContrib[which(from$start>0)] +1
+#'   table(nContrib)
+#'
+#'  nOut<-to$end-to$start
+#'  nOut[which(to$start>0)] <-nOut[which(to$start>0)] +1
+#'  table(nOut)
+#'  
 #' }
 #' @keywords manip
 #' @concept dataMgmt
@@ -185,7 +184,7 @@ CheckConn <- function(ind, upstream=TRUE, printInds=FALSE) {
 #' @param downstream Integer, the index of the downstream chan grid from the index. 
 #' @return ... have to run this to correctly describe... JLM TODO
 #' @examples
-#' \dontrun
+#' \dontrun{
 #'   library(rwrfhydro)
 #'   ncdump('~/ncar/WRF_Hydro/DOMAIN_library/Col_Bldr_Creek/CHANNEL_CONNECTIVITY.nc')
 #'   TO_NODE <- 

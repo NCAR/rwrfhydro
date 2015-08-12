@@ -1,3 +1,4 @@
+if(FALSE) {
 ##----------------------
 ## nudging parameters file
 gageParams <- read.csv('~/ncar/WRF_Hydro/DOMAIN_library/CONUS/nhdRtIntersect.csv',
@@ -70,3 +71,5 @@ MkNcdf( varList,
 
 ncdump(paste0('~/ncar/WRF_Hydro/DOMAIN_library/Col_Bldr_Creek/',
               'nudgingParameters_Bldr_Creek.nc'))
+
+}

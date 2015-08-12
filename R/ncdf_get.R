@@ -38,7 +38,8 @@ GetNcdfFile <- function(file, variables, exclude=FALSE, quiet=FALSE, flip2D=TRUE
   } else varsInFile
   
   doGetVar <- function(theVar) ncdf4::ncvar_get(nc, varid=theVar)
-  outList <- plyr::llply(NamedList(returnVars), doGetVar)
+  NamedRetVars <- NamedList(returnVars)
+  outList <- plyr::llply(NamedRetVars, doGetVar)
   ncdf4::nc_close(nc)
   
   nDims <- plyr::laply(outList, function(ll) length(dim(ll)))
