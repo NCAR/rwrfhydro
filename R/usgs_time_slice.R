@@ -113,7 +113,7 @@ MkUsgsTimeSlice <- function( realTimeFiles, outPath,
                          .parallel=(foreach::getDoParWorkers() > 1 ))  
   
   ##needs to happen
-  allData$site_no <- formatC(allData$site_no, width=16) #width for ncdf output
+  allData$site_no <- formatC(allData$site_no, width=15) #width for ncdf output
   
   ## transform the time "granularity"
   ## files are written to the nearest Nth minute.
@@ -153,6 +153,7 @@ MkUsgsTimeSlice <- function( realTimeFiles, outPath,
   outList <- plyr::ddply(allData, plyr::.(dateTimeRound), 
                          WriteNcTimeSlice, 
                          outPath, 
+                         nearestMin,
                          .parallel=(foreach::getDoParWorkers() > 1 ), .inform=TRUE )
                          
   if(length(outList)) names(outList) <- c('POSIXct', 'file')
@@ -169,8 +170,8 @@ MkUsgsTimeSlice <- function( realTimeFiles, outPath,
 #' @return A vector of POSIXct class corresponding to the input, rounded to the
 #'   nearest \code{nearest} minutes.
 #' @examples
-#' print(time <- Sys.time()+lubridate::minutes(1:10))
-#' RoundMinutes(time, nearest=5)
+#' print(time <- Sys.time()+lubridate::seconds(0:30))
+#' RoundMinutes(time, nearest=1)
 #' @keywords internal
 #' @export
 RoundMinutes <- function(POSIXct, nearest=5) {
@@ -180,7 +181,10 @@ RoundMinutes <- function(POSIXct, nearest=5) {
             immediate.=TRUE)
   nearestInv <- 1./nearest
   theMin <- as.numeric(format(POSIXct,'%M')) + as.numeric(format(POSIXct,'%S'))/60
-  roundMin <- (round(theMin * nearestInv) / nearestInv)
+  floorDiff <- theMin-floor(theMin)
+  whFloor <- which(floorDiff < .5)
+  roundMin <- (ceiling(theMin * nearestInv) / nearestInv)
+  roundMin[whFloor] <- (floor(theMin * nearestInv) / nearestInv)[whFloor]
   diffMin <- roundMin - theMin
   #lubridate::round_date(POSIXct,'minute') + lubridate::seconds(round(diffMin*60))
   lubridate::round_date(POSIXct,'minute') + lubridate::minutes(round(diffMin))

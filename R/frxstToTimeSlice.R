@@ -3,7 +3,7 @@ frxstPtsFile <-
 frxstGageFile <- 
   "~/ncar/WRF_Hydro/DOMAIN_library/Col_Bldr_Creek/Nudging_frxst_gage.csv"  
 
-FrxstToTimeSlice <- function( frxstPtsFile, frxstGageFile) {
+FrxstToTimeSlice <- function( frxstPtsFile, frxstGageFile, sliceResolution) {
   frxst <- ReadFrxstPts(frxstPtsFile)
   frxstGage <- read.csv(frxstGageFile, comment='!', colClasses = 'character', 
                         header = FALSE)[,-3]
@@ -20,5 +20,5 @@ FrxstToTimeSlice <- function( frxstPtsFile, frxstGageFile) {
                        "code", "queryTime", "dateTimeRound")]
   #for testing outside of plyr
   #WriteNcTimeSlice(frxstOut[1:4,], outPath=perfObsPath)
-  plyr::ddply(frxstOut, plyr::.(dateTime), WriteNcTimeSlice, outPath=perfObsPath)
+  plyr::ddply(frxstOut, plyr::.(dateTime), WriteNcTimeSlice, outPath=perfObsPath, sliceResolution)
 }
