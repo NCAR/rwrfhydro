@@ -120,7 +120,7 @@ MkUsgsTimeSlice <- function( realTimeFiles, outPath,
   if(any(is.na(allData$dateTime))) warning("NAs in dateTime", immediate.=TRUE)
   allData$dateTimeRound <- RoundMinutes(allData$dateTime, nearest=nearestMin)
   if(any(is.na(allData$dateTimeRound))) warning("NAs in dateTimeRound", immediate.=TRUE)
-  allData$dateTimeRound <- format(allData$dateTimeRound, '%Y-%m-%d_%H:%M:%S')
+  allData$dateTimeRound <- format(allData$dateTimeRound, '%Y-%m-%d_%H:%M:%S', tz='UTC')
   #print(table(allData$dateTime))
   
   ## discharge units: output must be in cms (m3/s)

@@ -4,7 +4,7 @@
 \alias{WriteNcTimeSlice}
 \title{Write a USGS discharge timeslice to a netcdf file.}
 \usage{
-WriteNcTimeSlice(dfByPosix, outPath)
+WriteNcTimeSlice(dfByPosix, outPath, sliceResolution)
 }
 \arguments{
 \item{dfByPosix}{Dataframe, a data frame with the following columns:

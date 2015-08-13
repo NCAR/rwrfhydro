@@ -20,8 +20,8 @@ A vector of POSIXct class corresponding to the input, rounded to the
 Round a POSIXct time to the nearest mth minute.
 }
 \examples{
-print(time <- Sys.time()+lubridate::minutes(1:10))
-RoundMinutes(time, nearest=5)
+print(time <- Sys.time()+lubridate::seconds(0:30))
+RoundMinutes(time, nearest=1)
 }
 \keyword{internal}
 
