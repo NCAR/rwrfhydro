@@ -141,37 +141,6 @@ ReExpNetwork <- function(routeLinkReInd, upstream=TRUE) {
 #'   for (ii in seq(1,2720000,1000)) { print(ii); print(CheckConn(ii), up=FALSE) }
 #'   for (ii in seq(1,2000)) { print(ii); print(CheckConn(ii)) }
 #'   for (ii in seq(1,2000)) { print(ii); print(CheckConn(ii),up=FALSE) }
-
-if(FALSE) {
-load("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reExpFrom.Rdb")
-## number of contributing/upstream links.
-nContrib<-from$end-from$start
-nContrib[which(from$start>0)] <-nContrib[which(from$start>0)] +1
-table(nContrib)
-for (ii in which(nContrib >3)) { print(ii); print(CheckConn(ii),up=FALSE) }
-comIdWhContribGt3 <-
-  data.frame(nContrib = nContrib[which(nContrib > 16)],
-             comId = reInd$comId[which(nContrib > 16)] )
-comIdWhContribGt3 <- comIdWhContribGt3[order(comIdWhContribGt3$nContrib),]
-write.table(comIdWhContribGt3, row.names=FALSE,
-            file='~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink4.comIdWhContribGt3.txt')
-
-load("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reExpTo.Rdb")
-## number of downstream/outflow links.
-nOut<-to$end-to$start
-nOut[which(to$start>0)] <-nOut[which(to$start>0)] +1
-table(nOut)
-for (ii in which(nOut >1)) { print(ii); print(CheckConn(ii),up=FALSE) }
-comIdWhOutGt1 <-
-  data.frame(nOut = nOut[which(nOut > 1)],
-             comId = reInd$comId[which(nOut > 1)] )
-comIdWhOutGt1 <- comIdWhOutGt1[order(comIdWhOutGt1$nOut),]
-write.table(comIdWhOutGt1, row.names=FALSE,
-            file='~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink4.comIdWhOutGt1.txt')
-
-load("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reInd.Rdb")
-}
-
 #' }
 #' @keywords manip
 #' @concept dataMgmt
@@ -194,6 +163,38 @@ CheckConn <- function(ind, upstream=TRUE, printInds=FALSE) {
   if(!test) stop(paste0('test failed at index: ',ind))
   if(printInds) print(nhdWay)
   test
+}
+
+
+
+if(FALSE) {
+  load("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reExpFrom.Rdb")
+  ## number of contributing/upstream links.
+  nContrib<-from$end-from$start
+  nContrib[which(from$start>0)] <-nContrib[which(from$start>0)] +1
+  table(nContrib)
+  for (ii in which(nContrib >3)) { print(ii); print(CheckConn(ii),up=FALSE) }
+  comIdWhContribGt3 <-
+    data.frame(nContrib = nContrib[which(nContrib > 16)],
+               comId = reInd$comId[which(nContrib > 16)] )
+  comIdWhContribGt3 <- comIdWhContribGt3[order(comIdWhContribGt3$nContrib),]
+  write.table(comIdWhContribGt3, row.names=FALSE,
+              file='~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink4.comIdWhContribGt3.txt')
+  
+  load("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reExpTo.Rdb")
+  ## number of downstream/outflow links.
+  nOut<-to$end-to$start
+  nOut[which(to$start>0)] <-nOut[which(to$start>0)] +1
+  table(nOut)
+  for (ii in which(nOut >1)) { print(ii); print(CheckConn(ii),up=FALSE) }
+  comIdWhOutGt1 <-
+    data.frame(nOut = nOut[which(nOut > 1)],
+               comId = reInd$comId[which(nOut > 1)] )
+  comIdWhOutGt1 <- comIdWhOutGt1[order(comIdWhOutGt1$nOut),]
+  write.table(comIdWhOutGt1, row.names=FALSE,
+              file='~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink4.comIdWhOutGt1.txt')
+  
+  load("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reInd.Rdb")
 }
 
 
