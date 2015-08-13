@@ -170,7 +170,7 @@ WriteNcTimeSlice <- function(dfByPosix, outPath, sliceResolution) {
       list( name='discharge_quality',
             longname='Discharge quality 0 to 100 to be scaled by 100.',
             units='-',
-            precision = 'int',
+            precision = 'short',
             multfactor='.01',
             #missing = ,
             dimensionList=dimensionList[c('stationIdInd')],
