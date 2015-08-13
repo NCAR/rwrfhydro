@@ -174,7 +174,7 @@ WriteNcTimeSlice <- function(dfByPosix, outPath, sliceResolution) {
             multfactor='.01',
             #missing = ,
             dimensionList=dimensionList[c('stationIdInd')],
-            data = as.integer(dfByPosix$discharge.cms*0+1) )
+            data = as.integer(dfByPosix$discharge.cms*0+100) )
     
     varList[[5]] <- 
       list( name='queryTime',
@@ -186,11 +186,11 @@ WriteNcTimeSlice <- function(dfByPosix, outPath, sliceResolution) {
             data = as.integer(dfByPosix$queryTime) )
   
     globalAttList <- list()
-    globalAttList[[1]] <- list(name='fileUpdateTime',
+    globalAttList[[1]] <- list(name='fileUpdateTimeUTC',
                                value=format(Sys.time(),'%Y-%m-%d_%H:%M:%S',tz='UTC'), precision="text" )
-    globalAttList[[2]] <- list(name='sliceCenterTime',
+    globalAttList[[2]] <- list(name='sliceCenterTimeUTC',
                                value=dateTimeRound[1], precision="text" )  ## already a string
-    globalAttList[[3]] <- list(name='sliceTimeResolution',
+    globalAttList[[3]] <- list(name='sliceTimeResolutionMinutes',
                                value=formatC(sliceResolution, width=2), precision="text" )
     
     MkNcdf( varList, globalAttList=globalAttList, 
