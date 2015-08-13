@@ -78,7 +78,7 @@ WriteNcPrettyUsgs <- function(prettyDf, outPath='.') {
 #' @export
 WriteNcTimeSlice <- function(dfByPosix, outPath, sliceResolution) {
     
-    dateTimeRound <- dfByPosix$dateTimeRound
+    dateTimeRound <- dfByPosix$dateTimeRound   ## this is a string
     dfByPosix$dateTimeRound <- NULL
     fileName <- TimeSliceFileName(dateTimeRound[1], sliceResolution)
     outFileName <- paste0(outPath,'/',fileName)
@@ -189,7 +189,7 @@ WriteNcTimeSlice <- function(dfByPosix, outPath, sliceResolution) {
     globalAttList[[1]] <- list(name='fileUpdateTime',
                                value=format(Sys.time(),'%Y-%m-%d_%H:%M:%S',tz='UTC'), precision="text" )
     globalAttList[[2]] <- list(name='sliceCenterTime',
-                               value=format(dateTimeRound[1],'%Y-%m-%d_%H:%M:%S',tz='UTC'), precision="text" )
+                               value=dateTimeRound[1], precision="text" )  ## already a string
     globalAttList[[3]] <- list(name='sliceTimeResolution',
                                value=formatC(sliceResolution, width=2), precision="text" )
     
