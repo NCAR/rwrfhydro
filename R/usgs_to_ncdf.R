@@ -241,7 +241,7 @@ ReadNcTimeSlice <- function(file) {
                                  format='%Y-%m-%d_%H:%M:%S', tz='UTC')
   sliceDf <- plyr::rename(sliceDf, c("discharge"="discharge.cms",
                                      "time"="dateTime",
-                                     "discharge_code"="code",
+                                     "discharge_quality"="code",
                                      "stationId"="site_no"))
   
   sliceDf
