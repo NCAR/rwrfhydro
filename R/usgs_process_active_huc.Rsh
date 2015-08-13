@@ -57,7 +57,8 @@ if(is.null(nCores)) nCores <- 8  ## saudi is only 8 cores on login
 
 ####################
 ## Process.
-queryFiles <- list.files(path=inPath, pattern=queryTime, 
+queryFiles <- list.files(path=inPath,
+			 pattern=paste0("(^", queryTime, ").*(RData$)"),
                          full.name=TRUE)
 if(!length(queryFiles)) fatalGraceful("There were no real time files to process!")
 
