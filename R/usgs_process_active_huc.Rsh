@@ -5,6 +5,8 @@
 ## 3: outPath:   character, the directory where the output is to be placed.
 ## 4: nCores:    character, the of cores to use in processing
 
+options(error=NULL)
+
 ####################
 ## Error handling functions
 thisScript <- 'usgs_process_active_huc.Rsh'
