@@ -109,6 +109,7 @@ MkUsgsTimeSlice <- function( realTimeFiles, outPath,
   GetActiveData <- function(file) {
     tryLoad <- try(load(file))
     if(class(tryLoad)=="try-error") return(NULL)
+    if(class(data)=="function") return(NULL)
     data$queryTime <- attr(data,'queryTime')
     data <- if(is.null(oldestTime)) {
       subset(data, !is.na(X_00060_00011))  ## remove missing data.
