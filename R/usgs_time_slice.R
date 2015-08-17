@@ -61,12 +61,20 @@
 #' 
 #' 
 #' ###############################
-#' ## process on saudi
+#' ## "re-"process on saudi
+#   library(rwrfhydro)
 #   realTimeFiles <- list.files(pattern='huc.*.RData', 
-#                               path='~/usgsStreamData/realTimeData', 
+#                               path='~/usgsStreamData/realTimeData/', 
 #                               full.names=TRUE)
-#   realTimeFiles <- tail(realTimeFiles,21*7*24*4)
-#   outPath = '~/usgsStreamData/timeSliceData5min/'
+#   # apparently not the problem
+#   #whRealTimeFileGt0Bytes <- which(file.size(realTimeFiles) !=0)
+#   
+#   #realTimeFiles <- tail(realTimeFiles,21*7*24*4)
+#   #realTimeFiles <- realTimeFiles[941:945]
+#   whRT <- grep('2015-05-22', realTimeFiles)[1]
+#   realTimeFiles <- realTimeFiles[whRT:length(realTimeFiles)]
+#   
+#   outPath = '~/usgsStreamData/timeSliceData/'
 #   library(doMC)
 #   registerDoMC(8)
 #   
@@ -78,8 +86,9 @@
 #                                 end   = pmin( (ind+1)*chunkSize, length(realTimeFiles)) } )
 #    
 #  for (ii in 1:nrow(chunkDf) ) {
+#    print(ii)
 #    ret1 <- MkUsgsTimeSlice( realTimeFiles[chunkDf$start[ii]:chunkDf$end[ii]], 
-#                             outPath=outPath, nearest=5,
+#                             outPath=outPath, nearest=15,
 #                             oldest=as.POSIXct('2015-04-15 00:00:00', tz='UTC')
 #                           )
 #    }
@@ -98,7 +107,9 @@ MkUsgsTimeSlice <- function( realTimeFiles, outPath,
 
   ## get all the active data from the specified files
   GetActiveData <- function(file) {
-    load(file)
+    tryLoad <- try(load(file))
+    if(class(tryLoad)=="try-error") return(NULL)
+    if(class(data)=="function") return(NULL)
     data$queryTime <- attr(data,'queryTime')
     data <- if(is.null(oldestTime)) {
       subset(data, !is.na(X_00060_00011))  ## remove missing data.
@@ -113,14 +124,14 @@ MkUsgsTimeSlice <- function( realTimeFiles, outPath,
                          .parallel=(foreach::getDoParWorkers() > 1 ))  
   
   ##needs to happen
-  allData$site_no <- formatC(allData$site_no, width=16) #width for ncdf output
+  allData$site_no <- formatC(allData$site_no, width=15) #width for ncdf output
   
   ## transform the time "granularity"
   ## files are written to the nearest Nth minute.
   if(any(is.na(allData$dateTime))) warning("NAs in dateTime", immediate.=TRUE)
   allData$dateTimeRound <- RoundMinutes(allData$dateTime, nearest=nearestMin)
   if(any(is.na(allData$dateTimeRound))) warning("NAs in dateTimeRound", immediate.=TRUE)
-  allData$dateTimeRound <- format(allData$dateTimeRound, '%Y-%m-%d_%H:%M:%S')
+  allData$dateTimeRound <- format(allData$dateTimeRound, '%Y-%m-%d_%H:%M:%S', tz='UTC')
   #print(table(allData$dateTime))
   
   ## discharge units: output must be in cms (m3/s)
@@ -153,6 +164,7 @@ MkUsgsTimeSlice <- function( realTimeFiles, outPath,
   outList <- plyr::ddply(allData, plyr::.(dateTimeRound), 
                          WriteNcTimeSlice, 
                          outPath, 
+                         nearestMin,
                          .parallel=(foreach::getDoParWorkers() > 1 ), .inform=TRUE )
                          
   if(length(outList)) names(outList) <- c('POSIXct', 'file')
@@ -169,8 +181,8 @@ MkUsgsTimeSlice <- function( realTimeFiles, outPath,
 #' @return A vector of POSIXct class corresponding to the input, rounded to the
 #'   nearest \code{nearest} minutes.
 #' @examples
-#' print(time <- Sys.time()+lubridate::minutes(1:10))
-#' RoundMinutes(time, nearest=5)
+#' print(time <- Sys.time()+lubridate::seconds(0:30))
+#' RoundMinutes(time, nearest=1)
 #' @keywords internal
 #' @export
 RoundMinutes <- function(POSIXct, nearest=5) {
@@ -180,7 +192,10 @@ RoundMinutes <- function(POSIXct, nearest=5) {
             immediate.=TRUE)
   nearestInv <- 1./nearest
   theMin <- as.numeric(format(POSIXct,'%M')) + as.numeric(format(POSIXct,'%S'))/60
-  roundMin <- (round(theMin * nearestInv) / nearestInv)
+  floorDiff <- theMin-floor(theMin)
+  whFloor <- which(floorDiff < .5)
+  roundMin <- (ceiling(theMin * nearestInv) / nearestInv)
+  roundMin[whFloor] <- (floor(theMin * nearestInv) / nearestInv)[whFloor]
   diffMin <- roundMin - theMin
   #lubridate::round_date(POSIXct,'minute') + lubridate::seconds(round(diffMin*60))
   lubridate::round_date(POSIXct,'minute') + lubridate::minutes(round(diffMin))

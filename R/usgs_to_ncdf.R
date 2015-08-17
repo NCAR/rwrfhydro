@@ -76,11 +76,11 @@ WriteNcPrettyUsgs <- function(prettyDf, outPath='.') {
 #' ## See \link{MkUsgsTimeSlice}.
 #' @keywords internal
 #' @export
-WriteNcTimeSlice <- function(dfByPosix, outPath) {
+WriteNcTimeSlice <- function(dfByPosix, outPath, sliceResolution) {
     
-    dateTimeRound <- dfByPosix$dateTimeRound
+    dateTimeRound <- dfByPosix$dateTimeRound   ## this is a string
     dfByPosix$dateTimeRound <- NULL
-    fileName <- TimeSliceFileName(dateTimeRound[1])
+    fileName <- TimeSliceFileName(dateTimeRound[1], sliceResolution)
     outFileName <- paste0(outPath,'/',fileName)
 
     ## does the file exist?
@@ -120,7 +120,7 @@ WriteNcTimeSlice <- function(dfByPosix, outPath) {
        
        stationIdStrLen=list(name='stationIdStrLen',
                        units='', 
-                       values=1:16,
+                       values=1:15,
                        unlimited=FALSE,
                        create_dimvar=FALSE),
        
@@ -141,7 +141,7 @@ WriteNcTimeSlice <- function(dfByPosix, outPath) {
     varList = list()
     varList[[1]] <- 
       list( name='stationId',
-            longname='USGS station identifer upto 16 digits',
+            longname='USGS station identifer of length 15',
             units='',
             precision = 'char',
             #missing = ,
@@ -165,24 +165,16 @@ WriteNcTimeSlice <- function(dfByPosix, outPath) {
             #missing = ,
             dimensionList=dimensionList[c('stationIdInd')],
             data = dfByPosix$discharge.cms )
-
-    #varList[[2]] <- 
-    #  list( name='variance',
-    #        longname='Discharge.variance',
-    #        units='m^6/s^2',
-    #        precision = ,
-    #        #missing = ,
-    #        dimensionList=dimensionList[c('stationIdInd')],
-    #        data = .1*dfByPosix$variance )
     
     varList[[4]] <- 
-      list( name='discharge_code',
-            longname='Discharge.code.USGS',
+      list( name='discharge_quality',
+            longname='Discharge quality 0 to 100 to be scaled by 100.',
             units='-',
-            precision = 'char',
+            precision = 'short',
+            multfactor='.01',
             #missing = ,
-            dimensionList=dimensionList[c('codeStrLen','stationIdInd')],
-            data = dfByPosix$code )
+            dimensionList=dimensionList[c('stationIdInd')],
+            data = as.integer(dfByPosix$discharge.cms*0+100) )
     
     varList[[5]] <- 
       list( name='queryTime',
@@ -194,7 +186,12 @@ WriteNcTimeSlice <- function(dfByPosix, outPath) {
             data = as.integer(dfByPosix$queryTime) )
   
     globalAttList <- list()
-    globalAttList[[1]] <- list(name='Some real atts',value='#$%^!!', precision="text" )
+    globalAttList[[1]] <- list(name='fileUpdateTimeUTC',
+                               value=format(Sys.time(),'%Y-%m-%d_%H:%M:%S',tz='UTC'), precision="text" )
+    globalAttList[[2]] <- list(name='sliceCenterTimeUTC',
+                               value=dateTimeRound[1], precision="text" )  ## already a string
+    globalAttList[[3]] <- list(name='sliceTimeResolutionMinutes',
+                               value=formatC(sliceResolution, width=2), precision="text" )
     
     MkNcdf( varList, globalAttList=globalAttList, 
             filename=paste0(outPath,'/',fileName), 
@@ -202,10 +199,14 @@ WriteNcTimeSlice <- function(dfByPosix, outPath) {
 }
 
 ##====================================================================================
-TimeSliceFileName <- function(POSIXctOrChr) {
+TimeSliceFileName <- function(POSIXctOrChr, sliceResolution) {
   if(class(POSIXctOrChr)[1] == 'POSIXct') {
-      paste0(format(POSIXct,'%Y-%m-%d_%H:%M:%S'), '.usgsTimeSlice.ncdf')
-  } else paste0(POSIXctOrChr,'.usgsTimeSlice.ncdf')
+      paste0(format(POSIXct,'%Y-%m-%d_%H:%M:%S'), 
+             '.', formatC(sliceResolution, width=2, flag='0'),'min', 
+             '.usgsTimeSlice.ncdf')
+  } else paste0(POSIXctOrChr,
+                '.', formatC(sliceResolution, width=2, flag='0'),'min',
+                '.usgsTimeSlice.ncdf')
 }
 ##====================================================================================
 #'
@@ -240,7 +241,7 @@ ReadNcTimeSlice <- function(file) {
                                  format='%Y-%m-%d_%H:%M:%S', tz='UTC')
   sliceDf <- plyr::rename(sliceDf, c("discharge"="discharge.cms",
                                      "time"="dateTime",
-                                     "discharge_code"="code",
+                                     "discharge_quality"="code",
                                      "stationId"="site_no"))
   
   sliceDf

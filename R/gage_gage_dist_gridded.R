@@ -1,4 +1,5 @@
 #' Get the "distance" between two indices on the network. 
+#' 
 #' If the gages lie up or downstream from one another, then this "symmetric" 
 #' distance between them is returned. If the gages are connected by a common 
 #' downstream (to both) confulence, requiring a downstream-upstream search, then 
@@ -13,6 +14,7 @@
 #' distance: in meters, as described for ind1 and ind2. 
 #' 
 #' @examples 
+#'  \dontrun{
 #'  devtools::load_all()
 #' 
 #'  load('~/ncar/WRF_Hydro/DOMAIN_library/Col_Bldr_Creek/newConnectivity.Rdb')
@@ -60,6 +62,7 @@
 #' GetGageGageDist(whFrxst[3], whFrxst[4], upstream, downstream, length)
 #' GetGageGageDist(whFrxst[2], whFrxst[4], upstream, downstream, length)
 #' GetGageGageDist(whFrxst[4], whFrxst[2], upstream, downstream, length)
+#' }
 #' @export
 GetGageGageDist <- function(ind1, ind2, upstream, downstream, length, 
                             gridded=TRUE, maxIterDownstream=100) {
@@ -129,7 +132,7 @@ GetGageGageDist <- function(ind1, ind2, upstream, downstream, length,
   NA
 }
 
-
+if(FALSE){
 ## what is the comId for Boulder Creek at 75th?
 ## Alot of this going to change when reInd is applied, mostly just variable names
 bc75ComId <- 2889214
@@ -149,7 +152,7 @@ length   <- reInd$length
 gridded=FALSE
 start=whBcCom
 indDist=list(ind=c(), dist=c())
-
+}
 
 #distances are the cumulative distance from the given start
 #' @export
@@ -188,9 +191,15 @@ GatherUpstream <- function(upstream, length, gridded=TRUE,
 
 
 
+
+
+#' Find the next downstream junction from current grid cell.
+#' 
 #' @examples
+#' \dontrun{
 #' ii <- GoToDownstreamJunct(downstream, upstream, 9296)
 #' ii <- GoToDownstreamJunct(downstream, upstream, ii, skipFirst=TRUE)
+#' }
 #' @export
 GoToDownstreamJunct <- function(downstream, upstream, ind, skipFirst=FALSE) {
   ## If a pourpoint is given
@@ -218,12 +227,13 @@ GoToDownstreamJunct <- function(downstream, upstream, ind, skipFirst=FALSE) {
   
 #' Iterate a function
 #' @examples 
+#' \dontrun{
 #' ii <- GoToDownstreamJunct(downstream, upstream, 9296)
 #' ii <- GoToDownstreamJunct(downstream, upstream, ii, skipFirst=TRUE)
 #' IterateFunction(GoToDownstreamJunct, 
 #'                list(downstream=downstream, upstream=upstream, ind=9296, skip=TRUE),
 #'                'ind', 3)
-#' 
+#' }
 #' @export
 IterateFunction <- function(f, args, resultArg, iterations=1){
     for(ii in 1:iterations) {

@@ -105,6 +105,9 @@
 VisualizeChanNtwk <- function(file, gaugePts=NULL, excludeInds=NULL,
                               gaugeAccuracy=12, plot=TRUE, hydroGridFile=NULL) {
 
+  if(length(grep(tolower('RouteLink|Route_Link'), tolower(file))))
+      warning("Please use VisualizeRouteLink instead.", immediate. = TRUE)
+  
   ## Get the data.
   if(!is.null(hydroGridFile)) chanConn <- CalcChanConnect(hydroGridFile)
   
