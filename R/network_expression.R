@@ -219,6 +219,11 @@ CheckRouteLink <- function(routeLinkFile) {
 
 fromFile <- "~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink.reExpFrom.Rdb"
 toFile <- "~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink.reExpTo.Rdb"
+
+fromFile <- "~/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.reExpFrom.Rdb"
+toFile <- "~/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.reExpTo.Rdb"
+
+
 ##----------------------
 ## Output the network reexpression
 ## This results in 3 files 
@@ -280,7 +285,7 @@ NtwKReExToNcdf <- function(toFile, fromFile) {
          units='-',
          precision = 'integer',
          dimensionList=dimensionList[c('downDim')],
-         data = from$from )
+         data = to$to )
   
   varList[[5]] <- 
     list( name='downStart',
@@ -288,7 +293,7 @@ NtwKReExToNcdf <- function(toFile, fromFile) {
          units='-',
          precision = 'integer',
          dimensionList=dimensionList[c('baseDim')],
-         data = from$start )
+         data = to$start )
   
   varList[[6]] <- 
     list( name='downEnd',
@@ -296,7 +301,7 @@ NtwKReExToNcdf <- function(toFile, fromFile) {
          units='-',
          precision = 'integer',
          dimensionList=dimensionList[c('baseDim')],
-         data = from$end )
+         data = to$end )
 
   globalAttList <- list()
   globalAttList[[1]] <- list(name='This File Created',
@@ -312,7 +317,8 @@ NtwKReExToNcdf <- function(toFile, fromFile) {
          filename=paste0(dir,'/',base,'.reExp.nc'), 
          overwrite=TRUE )
 
-  #upGo <- ncdump(paste0(dir,'/',base,'.reExp.nc'),'upGo')
+    #upGo <- ncdump(paste0(dir,'/',base,'.reExp.nc'),'upGo')
+  paste0(dir,'/',base,'.reExp.nc')
 }
 
 
