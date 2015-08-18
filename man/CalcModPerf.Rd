@@ -65,7 +65,8 @@ cor: correlation coefficient \deqn{cor = cor(mod, obs) } \item rmse: root
 mean squared error \deqn{rmse = sqrt( sum((mod - obs)^2) / n ) } \item
 rmsenorm: normalized root mean squared error \deqn{rmsenorm = rmse /
 (max(obs) - min(obs)) } \item bias: percent bias \deqn{bias = sum(mod - obs)
-/ sum(obs) * 100 } \item mae: mean absolute error \deqn{mae = mean(abs(mod -
+/ sum(obs) * 100 } \item msd: mean signed deviation \deqn{msd = mean(mod -
+obs) } \item mae: mean absolute error \deqn{mae = mean(abs(mod -
 obs)) } \item errcom: error in the center-of-mass of the flux, where
 center-of-mass is the hour/day when 50\% of daily/monthly/water-year flux has
 occurred. Reported as number of hours for daily time scale and number of days
@@ -91,16 +92,17 @@ the portion of the time series where the observed flux is in the lowest 10\%
 
 
 \dontrun{
-CalcModPerf(modStr1h.allrt.fc, obsStr5min.fc)
+CalcModPerf(modStrd.chrt.fc, obsStr5min.fc)
 
 > Output:
-          nse nselog  cor rmse rmsenorm  bias  mae errcom errmaxt errfdc
-ts       0.57   0.61 0.79 1.43     9.48 -28.0 0.70     NA      NA  -0.42
-daily    0.71   0.64 0.87 1.17     9.86 -28.1 0.61   0.19   -2.25  -0.37
-monthly  0.80   0.70 0.93 0.89    12.73 -26.6 0.53  -0.18   -0.96     NA
-yearly   0.05   0.37 0.36 0.55    41.50  -6.5 0.45  -1.50   -3.38     NA
-max10   -7.50 -15.94 0.19 3.82    38.89 -24.5 0.04     NA      NA     NA
-min10   -2.84  -1.83 0.10 0.05    33.36 -23.7   NA     NA      NA     NA
+            n      nse   nselog      cor       rmse rmsenorm    bias        msd        mae     errcom    errmaxt     errfdc
+units   count unitless unitless unitless flux units unitless percent flux units flux units hours|days hours|days flux units
+t         116     0.81     0.67     0.91      0.211     8.48     7.1     0.0313     0.1385       <NA>       <NA>       0.04
+daily     116     0.81     0.67     0.91      0.211     8.48     7.1     0.0313     0.1385          0          0       0.04
+monthly     5     0.92     0.82     0.96     0.1073    10.35     9.1     0.0324     0.0833       -1.2        0.2       <NA>
+yearly      1     <NA>     <NA>     <NA>       <NA>     <NA>     7.1     0.0313     0.0313          0          4       <NA>
+max10      12     0.46     0.58     0.71      0.348    23.63    -2.8     -0.044      0.248       <NA>       <NA>       <NA>
+min10      12  -385.99   -14.59     0.35     0.1678   538.78   112.4      0.056     0.0592       <NA>       <NA>       <NA>
 }
 }
 \seealso{

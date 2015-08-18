@@ -66,7 +66,8 @@ cor: correlation coefficient \deqn{cor = cor(mod, obs) } \item rmse: root
 mean squared error \deqn{rmse = sqrt( sum((mod - obs)^2) / n ) } \item
 rmsenorm: normalized root mean squared error \deqn{rmsenorm = rmse /
 (max(obs) - min(obs)) } \item bias: percent bias \deqn{bias = sum(mod - obs)
-/ sum(obs) * 100 } \item mae: mean absolute error \deqn{mae = mean(abs(mod -
+/ sum(obs) * 100 } \item msd: mean signed deviation \deqn{msd = mean(mod -
+obs) } \item mae: mean absolute error \deqn{mae = mean(abs(mod -
 obs)) } \item errcom: error in the center-of-mass of the flux, where
 center-of-mass is the hour/day when 50\% of daily/monthly/water-year flux has
 occurred. Reported as number of hours for daily time scale and number of days
@@ -92,21 +93,17 @@ time series where the observed flux is in the lowest 10\% (native time step)
 
 
 \dontrun{
-CalcModPerfMulti(modStr1h.allrt.fc, obsStr5min.fc)
+CalcModPerfMulti(modStrd.chrt.fc, obsStr5min.fc)
 
 > Output:
-t_n t_nse t_nselog t_cor t_rmse t_rmsenorm t_bias t_mae t_errfdc dy_n dy_nse dy_nselog
-744  0.63     0.66   0.8   0.29      13.29    0.7  0.19     0.04   32   0.69      0.74
-dy_cor dy_rmse dy_rmsenorm dy_bias dy_mae dy_errcom dy_errmaxt dy_errfdc mo_n
-  0.83    0.26       13.23     0.6   0.18      0.03      -0.56      0.03    2
-mo_nse mo_nselog mo_cor mo_rmse mo_rmsenorm mo_bias mo_mae mo_errcom mo_errmaxt
-     1      0.99      1    0.01        2.46    -0.8   0.01       0.5        1.5
-yr_n yr_bias yr_mae yr_errcom yr_errmaxt max10_n max10_nse max10_nselog max10_cor
-   1     0.7   0.01         0          3      75     -5.05         -6.9     -0.84
-max10_rmse max10_rmsenorm max10_bias max10_mae min10_n min10_nse min10_nselog
-      0.72          80.01      -27.9       0.6     138     -2.64        -2.43
-min10_cor min10_rmse min10_rmsenorm min10_bias min10_mae
-     0.59       0.11          53.89       -7.3      0.09
+t_n t_nse t_nselog t_cor t_rmse t_rmsenorm t_bias  t_msd  t_mae t_errfdc dy_n dy_nse dy_nselog dy_cor dy_rmse dy_rmsenorm dy_bias dy_msd
+116  0.81     0.67  0.91  0.211       8.48    7.1 0.0313 0.1385     0.04  116   0.81      0.67   0.91   0.211        8.48     7.1 0.0313
+dy_mae dy_errcom dy_errmaxt dy_errfdc mo_n mo_nse mo_nselog mo_cor mo_rmse mo_rmsenorm mo_bias mo_msd mo_mae mo_errcom mo_errmaxt yr_n
+0.1385         0          0      0.04    5   0.92      0.82   0.96  0.1073       10.35     9.1 0.0324 0.0833      -1.2        0.2    1
+yr_bias yr_msd yr_mae yr_errcom yr_errmaxt max10_n max10_nse max10_nselog max10_cor max10_rmse max10_rmsenorm max10_bias max10_msd max10_mae
+    7.1 0.0313 0.0313         0          4      12      0.46         0.58      0.71      0.348          23.63       -2.8    -0.044     0.248
+min10_n min10_nse min10_nselog min10_cor min10_rmse min10_rmsenorm min10_bias min10_msd min10_mae
+     12   -385.99       -14.59      0.35     0.1678         538.78      112.4     0.056    0.0592
 }
 }
 \seealso{
