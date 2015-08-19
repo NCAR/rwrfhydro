@@ -8,10 +8,14 @@
 #'   
 #' @examples
 #'  \dontrun{
-#'   ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.nc')
-#'   ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink4.nc')
-#'   ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink3.nc')
-#'   ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.nc')
+#'reIndFile <-
+#'  ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.nc')
+#'reIndFile <-
+#'  ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink4.nc')
+#'reIndFile <-
+#'  ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink3.nc')
+ reIndFile <-
+   ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.nc')
 #' }
 #' @keywords manip
 #' @concept dataMgmt
@@ -64,8 +68,8 @@ ReIndexRouteLink <- function(routeLinkFile) {
 #' \dontrun{
 #'   library(rwrfhydro)
 #'   doMC::registerDoMC(16)
-#'   ReExpNetwork("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reInd.Rdb")
-#'   ReExpNetwork("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reInd.Rdb", up=FALSE)
+#'   ReExpNetwork(reIndFile)
+#'   ReExpNetwork(reIndFile, up=FALSE)
 #' }
 #' @keywords manip
 #' @concept dataMgmt
@@ -142,8 +146,12 @@ ReExpNetwork <- function(routeLinkReInd, upstream=TRUE) {
 #'   for (ii in seq(1,2000)) { print(ii); print(CheckConn(ii)) }
 #'   for (ii in seq(1,2000)) { print(ii); print(CheckConn(ii),up=FALSE) }
 
+
 if(FALSE) {
+load("/home/jamesmcc/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.reInd.Rdb")
+  
 load("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reExpFrom.Rdb")
+load("/home/jamesmcc/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.reExpFrom.Rdb")
 ## number of contributing/upstream links.
 nContrib<-from$end-from$start
 nContrib[which(from$start>0)] <-nContrib[which(from$start>0)] +1
@@ -157,6 +165,7 @@ write.table(comIdWhContribGt3, row.names=FALSE,
             file='~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink4.comIdWhContribGt3.txt')
 
 load("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reExpTo.Rdb")
+load("/home/jamesmcc/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.reExpFrom.Rdb")
 ## number of downstream/outflow links.
 nOut<-to$end-to$start
 nOut[which(to$start>0)] <-nOut[which(to$start>0)] +1
