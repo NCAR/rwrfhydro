@@ -7,7 +7,7 @@
 ## time is either a global attribute or in the variable 'Times'
 
 #=====================================================================
-ParseIndexArg <- function( index, dimSize ) {
+ParseIndexArg <- function( index, dimSize, ncid ) {
 
   ## Deal with various index possibilities. 
   ## Dont accept functions/closures, i want their names so I can use that information.
@@ -42,7 +42,7 @@ ParseIndexArg <- function( index, dimSize ) {
   if(is.list(index)) {
     if(!all(c('start','end','stat') %in% names(index))) {
       ncdf4::nc_close(ncid)
-      warning('List index has inapproprite names.')
+      warning('List index has inappropriate names.')
       return(NULL)
     }
     dataStart <- index[['start']]
@@ -56,11 +56,11 @@ ParseIndexArg <- function( index, dimSize ) {
     dataStart <- dataEnd*0+1
   } else if(is.function(index)) {    
     statFunc <- CharToFunction(index)  ## this will throw error
-  } else if(class(index)=='numeric') {
+  } else if(class(index)=='numeric' | class(index)=='integer') {
     dataStart <- dataEnd <- index
   } else {
     ncdf4::nc_close(ncid)
-    warning('Inapproriate type (',typeof(index),
+    warning('Inappropriate type (',typeof(index),
             ') for argument index or could not find a function with that name.')
     return(NULL)
   }
@@ -125,7 +125,7 @@ GetFileStat <- function(theFile, variable, index, env=parent.frame(), ...) {
   ## Deal with various index possibilities. 
   ## Dont accept functions/closures, i want their names so I can use that information.
   ## Convert character strings to the associated closure/function, or die trying.
-  indexList <- ParseIndexArg(index, dimSize)
+  indexList <- ParseIndexArg(index, dimSize, ncid)
   dataStart <- indexList$dataStart
   dataEnd <- indexList$dataEnd
   statFunc <- indexList$statFunc
