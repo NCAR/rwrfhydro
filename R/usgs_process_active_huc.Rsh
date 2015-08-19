@@ -5,6 +5,8 @@
 ## 3: outPath:   character, the directory where the output is to be placed.
 ## 4: nCores:    character, the of cores to use in processing
 
+options(error=NULL)
+
 ####################
 ## Error handling functions
 thisScript <- 'usgs_process_active_huc.Rsh'
@@ -57,7 +59,8 @@ if(is.null(nCores)) nCores <- 8  ## saudi is only 8 cores on login
 
 ####################
 ## Process.
-queryFiles <- list.files(path=inPath, pattern=queryTime, 
+queryFiles <- list.files(path=inPath,
+			 pattern=paste0("(^", queryTime, ").*(RData$)"),
                          full.name=TRUE)
 if(!length(queryFiles)) fatalGraceful("There were no real time files to process!")
 

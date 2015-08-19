@@ -14,8 +14,8 @@
 #'  ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink4.nc')
 #'reIndFile <-
 #'  ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink3.nc')
- reIndFile <-
-   ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.nc')
+#' reIndFile <-
+#'   ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.nc')
 #' }
 #' @keywords manip
 #' @concept dataMgmt
@@ -146,7 +146,6 @@ ReExpNetwork <- function(routeLinkReInd, upstream=TRUE) {
 #'   for (ii in seq(1,2000)) { print(ii); print(CheckConn(ii)) }
 #'   for (ii in seq(1,2000)) { print(ii); print(CheckConn(ii),up=FALSE) }
 
-
 if(FALSE) {
 load("/home/jamesmcc/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.reInd.Rdb")
   
@@ -206,6 +205,38 @@ CheckConn <- function(ind, upstream=TRUE, printInds=FALSE) {
 }
 
 
+
+if(FALSE) {
+  load("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reExpFrom.Rdb")
+  ## number of contributing/upstream links.
+  nContrib<-from$end-from$start
+  nContrib[which(from$start>0)] <-nContrib[which(from$start>0)] +1
+  table(nContrib)
+  for (ii in which(nContrib >3)) { print(ii); print(CheckConn(ii),up=FALSE) }
+  comIdWhContribGt3 <-
+    data.frame(nContrib = nContrib[which(nContrib > 16)],
+               comId = reInd$comId[which(nContrib > 16)] )
+  comIdWhContribGt3 <- comIdWhContribGt3[order(comIdWhContribGt3$nContrib),]
+  write.table(comIdWhContribGt3, row.names=FALSE,
+              file='~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink4.comIdWhContribGt3.txt')
+  
+  load("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reExpTo.Rdb")
+  ## number of downstream/outflow links.
+  nOut<-to$end-to$start
+  nOut[which(to$start>0)] <-nOut[which(to$start>0)] +1
+  table(nOut)
+  for (ii in which(nOut >1)) { print(ii); print(CheckConn(ii),up=FALSE) }
+  comIdWhOutGt1 <-
+    data.frame(nOut = nOut[which(nOut > 1)],
+               comId = reInd$comId[which(nOut > 1)] )
+  comIdWhOutGt1 <- comIdWhOutGt1[order(comIdWhOutGt1$nOut),]
+  write.table(comIdWhOutGt1, row.names=FALSE,
+              file='~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink4.comIdWhOutGt1.txt')
+  
+  load("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reInd.Rdb")
+}
+
+
 ## totally incomplete... 
 ## a few checks on RouteLink
 routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink3.nc'
@@ -227,6 +258,11 @@ CheckRouteLink <- function(routeLinkFile) {
 
 fromFile <- "~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink.reExpFrom.Rdb"
 toFile <- "~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink.reExpTo.Rdb"
+
+fromFile <- "~/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.reExpFrom.Rdb"
+toFile <- "~/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.reExpTo.Rdb"
+
+
 ##----------------------
 ## Output the network reexpression
 ## This results in 3 files 
@@ -288,7 +324,7 @@ NtwKReExToNcdf <- function(toFile, fromFile) {
          units='-',
          precision = 'integer',
          dimensionList=dimensionList[c('downDim')],
-         data = from$from )
+         data = to$to )
   
   varList[[5]] <- 
     list( name='downStart',
@@ -296,7 +332,7 @@ NtwKReExToNcdf <- function(toFile, fromFile) {
          units='-',
          precision = 'integer',
          dimensionList=dimensionList[c('baseDim')],
-         data = from$start )
+         data = to$start )
   
   varList[[6]] <- 
     list( name='downEnd',
@@ -304,7 +340,7 @@ NtwKReExToNcdf <- function(toFile, fromFile) {
          units='-',
          precision = 'integer',
          dimensionList=dimensionList[c('baseDim')],
-         data = from$end )
+         data = to$end )
 
   globalAttList <- list()
   globalAttList[[1]] <- list(name='This File Created',
@@ -320,7 +356,8 @@ NtwKReExToNcdf <- function(toFile, fromFile) {
          filename=paste0(dir,'/',base,'.reExp.nc'), 
          overwrite=TRUE )
 
-  #upGo <- ncdump(paste0(dir,'/',base,'.reExp.nc'),'upGo')
+    #upGo <- ncdump(paste0(dir,'/',base,'.reExp.nc'),'upGo')
+  paste0(dir,'/',base,'.reExp.nc')
 }
 
 

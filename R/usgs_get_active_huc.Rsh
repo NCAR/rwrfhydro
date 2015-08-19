@@ -140,7 +140,7 @@ doPullParse <- function() {
   }
   
   if(class(data)=='try-error'){
-    waterMLListOut <- paste0(outPath,dateId,'.waterMLList.RData')
+    waterMLListOut <- paste0(outPath,dateId,'.waterMLList.RData.problematic')
     errMsg(paste0("For HUC ", huc, ", failed to parse data (readNWISdataRetval). ",
                   "Saving problematic data to: ", waterMLListOut))
     # Save waterMLList to file to diagnose what the problem is.

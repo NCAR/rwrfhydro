@@ -61,12 +61,20 @@
 #' 
 #' 
 #' ###############################
-#' ## process on saudi
+#' ## "re-"process on saudi
+#   library(rwrfhydro)
 #   realTimeFiles <- list.files(pattern='huc.*.RData', 
-#                               path='~/usgsStreamData/realTimeData', 
+#                               path='~/usgsStreamData/realTimeData/', 
 #                               full.names=TRUE)
-#   realTimeFiles <- tail(realTimeFiles,21*7*24*4)
-#   outPath = '~/usgsStreamData/timeSliceData5min/'
+#   # apparently not the problem
+#   #whRealTimeFileGt0Bytes <- which(file.size(realTimeFiles) !=0)
+#   
+#   #realTimeFiles <- tail(realTimeFiles,21*7*24*4)
+#   #realTimeFiles <- realTimeFiles[941:945]
+#   whRT <- grep('2015-05-22', realTimeFiles)[1]
+#   realTimeFiles <- realTimeFiles[whRT:length(realTimeFiles)]
+#   
+#   outPath = '~/usgsStreamData/timeSliceData/'
 #   library(doMC)
 #   registerDoMC(8)
 #   
@@ -78,8 +86,9 @@
 #                                 end   = pmin( (ind+1)*chunkSize, length(realTimeFiles)) } )
 #    
 #  for (ii in 1:nrow(chunkDf) ) {
+#    print(ii)
 #    ret1 <- MkUsgsTimeSlice( realTimeFiles[chunkDf$start[ii]:chunkDf$end[ii]], 
-#                             outPath=outPath, nearest=5,
+#                             outPath=outPath, nearest=15,
 #                             oldest=as.POSIXct('2015-04-15 00:00:00', tz='UTC')
 #                           )
 #    }
@@ -98,7 +107,9 @@ MkUsgsTimeSlice <- function( realTimeFiles, outPath,
 
   ## get all the active data from the specified files
   GetActiveData <- function(file) {
-    load(file)
+    tryLoad <- try(load(file))
+    if(class(tryLoad)=="try-error") return(NULL)
+    if(class(data)=="function") return(NULL)
     data$queryTime <- attr(data,'queryTime')
     data <- if(is.null(oldestTime)) {
       subset(data, !is.na(X_00060_00011))  ## remove missing data.
@@ -120,7 +131,7 @@ MkUsgsTimeSlice <- function( realTimeFiles, outPath,
   if(any(is.na(allData$dateTime))) warning("NAs in dateTime", immediate.=TRUE)
   allData$dateTimeRound <- RoundMinutes(allData$dateTime, nearest=nearestMin)
   if(any(is.na(allData$dateTimeRound))) warning("NAs in dateTimeRound", immediate.=TRUE)
-  allData$dateTimeRound <- format(allData$dateTimeRound, '%Y-%m-%d_%H:%M:%S')
+  allData$dateTimeRound <- format(allData$dateTimeRound, '%Y-%m-%d_%H:%M:%S', tz='UTC')
   #print(table(allData$dateTime))
   
   ## discharge units: output must be in cms (m3/s)
