@@ -1,4 +1,10 @@
-.Rproj.user
+*.Rproj
+*.Rproj.user
 .Rhistory
 .RData
+.RProfile
+packrat/*
+gh-md-toc
+*.build.timestamp
+.Rproj.user
 packrat/lib*/

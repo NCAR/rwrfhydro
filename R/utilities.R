@@ -1,15 +1,20 @@
+##=============================================================================
+
 #' Simplifed loading of rwrfhydro data included with the package.
 #' 
-#' \code{GetPkgRawDataPath} is a simplified wrapper (for system.file) for loading external 
-#' rwrfhydro data included with the package.
-#' @param theFile The external data file to load (this is in dirrefent places before, 
-#'        rwrfhydro/inst/extdata, and after build, rwrfhydro/). 
+#' \code{GetPkgRawDataPath} is a simplified wrapper (for system.file) for
+#' loading external rwrfhydro data included with the package.
+#' @param theFile The external data file to load (this is in dirrefent places
+#'   before, rwrfhydro/inst/extdata, and after build, rwrfhydro/).
 #' @return The full path to the file.
 #' @examples
-#' GetPkgDataPath('Fourmile_test_case_AD.hydro_OrodellBasin_100m_8.nc')
+#' GetPkgRawDataPath('gagesII_all.csv')
 #' @keywords internal
 #' @export
 GetPkgRawDataPath <- function(theFile='') system.file("extdata", theFile, package = "rwrfhydro")
+
+##=============================================================================
+
 #' Standardize lon to (-180,180].
 #' 
 #' \code{StdLon} Standardizes longitude to (-180,180]
@@ -27,10 +32,12 @@ StdLon <- function(x) {
 
 #' Expand limits by some amount or proportionally to their difference.
 #' 
-#' \code{PadRange} Takes limits and expands them by some amount or proportionally to their difference.
+#' \code{PadRange} Takes limits and expands them by some amount or
+#' proportionally to their difference.
 #' @param limits A vector of length 2, an initial range, to be expanded.
 #' @param delta An amount to add(subtract) from the upper(lower) limit.
-#' @param diffMult A fraction of the passed range (\code{limits}) to use as \code{delta}.
+#' @param diffMult A fraction of the passed range (\code{limits}) to use as
+#'   \code{delta}.
 #' @examples
 #' PadRange(c(0,100))
 #' PadRange(c(0,100), delta=.1)
@@ -70,17 +77,20 @@ RotateCw <- function(matrix) t(apply(matrix, 2, rev))
 RotateCcw <- function(matrix) apply(matrix, 1, rev)
 
 
-#' Translate (i.e. invert) timezones to the so calle Olson names used by POSIXct. 
+#' Translate (i.e. invert) timezones to the so calle Olson names used by
+#' POSIXct.
 #' 
-#' Translate formatted timezones codes to the so-called "Olson names" used by POSIXct.
-#' \code{TransTz} translates the formatted timezone codes (incl those from USGS) to Olson Names.
+#' Translate formatted timezones codes to the so-called "Olson names" used by
+#' POSIXct. \code{TransTz} translates the formatted timezone codes (incl those
+#' from USGS) to Olson Names.
 #' @param tz The timezone to be translated.
 #' @examples
 #' as.POSIXct('2012-01-01')
 #' as.POSIXct('2012-01-01', tz='US/Pacific')
 #' format(as.POSIXct('2012-01-01', tz='US/Pacific'),'%Z')
 #' TransTz(format(as.POSIXct('2012-01-01', tz='US/Pacific'),'%Z'))
-#' lubridate::with_tz(as.POSIXct('2012-01-01'),TransTz(format(as.POSIXct('2012-01-01', tz='US/Pacific'),'%Z')))
+#' lubridate::with_tz(as.POSIXct('2012-01-01'),
+#'                    TransTz(format(as.POSIXct('2012-01-01', tz='US/Pacific'),'%Z')))
 #' @keywords internal
 #' @export
 TransTz <- function(tz) {
@@ -103,9 +113,11 @@ TransTz <- function(tz) {
 
 #' Returns the water year or the day of water year for a given POSIXct.
 #' 
-#' \code{CalcWaterYear} Returns the water year or the day of water year for a given POSIXct.  
+#' \code{CalcWaterYear} Returns the water year or the day of water year for a
+#' given POSIXct.
 #' @param POSIXct is a POSIXct variable.
-#' @param dayOf signals if you want to get back the day of the water year instead of the water year.
+#' @param dayOf signals if you want to get back the day of the water year
+#'   instead of the water year.
 #' @examples
 #' CalcWaterYear(as.POSIXct(c("2011-09-30", "2011-10-01"), tz='US/Pacific'))
 #' CalcWaterYear(as.POSIXct(c("2011-09-30", "2011-10-01"), tz='US/Pacific'), dayOf=TRUE)
@@ -287,10 +299,10 @@ CalcCOM <- function (x) {
 #' for ease of use in other functions.
 #' @param myDf The output dataframe from GetMultiNcdf.
 #' @return The reshaped output dataframe.
-#' @keywords internal
+#' @keywords utilities internal
 #' @export
 ReshapeMultiNcdf <- function(myDf) {
-    newDF <- subset(myDf[,c("POSIXct","stat")], myDf$variableGroup==unique(myDf$variableGroup)[1])
+    newDF <- subset(myDf[,c("POSIXct","stat","statArg")], myDf$variableGroup==unique(myDf$variableGroup)[1])
     for (i in unique(myDf$variableGroup)) {
         newDF[,i] <- subset(myDf$value, myDf$variableGroup==i)
         }
@@ -337,15 +349,19 @@ feet2meters <- 0.30480
 
 #' Get a package's metadata fields and associated entries.
 #' 
-#' \code{GetPkgMeta} Get metadata fields and associated entries from a package's documentation (e.g. "keyword" or "concepts".)
+#' \code{GetPkgMeta} Get metadata fields and associated entries from a package's
+#' documentation (e.g. "keyword" or "concepts".)
 #' @param meta Character the metadata field.
 #' @param package Character The package to query for metadata.
 #' @param quiet Logical Do not print summary to screen.
-#' @param keyword Character A specific keyword to look for. 
+#' @param keyword Character A specific keyword to look for.
 #' @param concept Character A specific concept to look for.
-#' @param listMetaOnly Logical Just return the meta categories (without functons)?
-#' @param byFunction Character Vector of functions for which concepts and keywords are desired.
-#' @return List of metadata fields in alphabetical order with corresponding entries.
+#' @param listMetaOnly Logical Just return the meta categories (without
+#'   functons)?
+#' @param byFunction Character Vector of functions for which concepts and
+#'   keywords are desired.
+#' @return List of metadata fields in alphabetical order with corresponding
+#'   entries.
 #' @examples 
 #' GetPkgMeta()
 #' GetPkgMeta('keyword', package='ggplot2')
@@ -474,7 +490,6 @@ print.pkgMeta  <- function(pkgMeta) {
 #'   }
 #' myF.atomic(x=11:13,y=1:3)
 #' myF(x=11:13,y=1:3)
-#' myF(x=11:13,y=1:2,z=NULL)
 #' @keywords utilities internal
 #' @export
 FormalsToDf <- function(theFunc, envir=parent.frame()) {
@@ -490,7 +505,7 @@ FormalsToDf <- function(theFunc, envir=parent.frame()) {
   }
   theFormals <- theFormals[which(formalLens!=0)]
   formalLens <- formalLens[which(formalLens!=0)]
-  sortFormals <- theFormals[sort(formalLens, index=TRUE, dec=TRUE)$ix]
+  sortFormals <- theFormals[sort(formalLens, index=TRUE, decreasing=TRUE)$ix]
   for (ff in sortFormals) {
     if (ff==sortFormals[1]) {
       df <- data.frame(get(ff, envir=envir))
@@ -500,4 +515,107 @@ FormalsToDf <- function(theFunc, envir=parent.frame()) {
   df  
 }
 
+#' Calculate number of days in a month.
+#' 
+#' \code{CalcMonthDays} calculates the number of days in a month.
+#' Calculate the number of days in the month specified
+#' by the given month and year.
+#' @param mo The month.
+#' @param yr The year.
+#' @return The day count.
+#' @keywords utilities internal
+#' @export
+CalcMonthDays <- function(mo, yr) {
+  #m <- format(date, format="%m")
+  res<-c()
+  for (i in 1:length(mo)) {
+    date <- as.Date(paste0(yr[i], "-", mo[i], "-01"), format="%Y-%m-%d")
+    while (as.integer(format(date, format="%m")) == as.integer(mo[i])) {
+      date <- date + 1
+    }
+    res[i] <- as.integer(format(date - 1, format="%d"))
+  }
+  return(res)
+}
+
+#' Calculate date object from POSIXct time
+#' 
+#' \code{CalcDateTrunc} takes a POSIXct object and outputs
+#' a corresponding date object. POSIXct times are truncated
+#' to a date, not rounded (e.g., 03/15/2014 23:00 will 
+#' become 03/15/2014).
+#' @param timePOSIXct Time in POSIXct format
+#' @param timeZone Time zone (DEFAULT="UTC")
+#' @return Date object
+#' @keywords utilities internal
+#' @export
+CalcDateTrunc <- function(timePOSIXct, timeZone="UTC") {
+  timeDate <- as.Date(trunc(as.POSIXct(format(timePOSIXct, tz=timeZone), tz=timeZone), "days"))
+  return(timeDate)
+}
+
+#' List objects with more detailed metadata
+#' 
+#' \code{LsObjects} lists objects with more detailed info on type, size,
+#' etc. Blatantly plagiarized from the following sources:
+#' Petr Pikal, David Hinds, Dirk Eddelbuettel, Tony Breyal.
+#' @param pos
+#' @param pattern
+#' @param order.by
+#' @param decreasing
+#' @param head
+#' @param n
+#' @return dataframe
+#' @keywords utilities internal
+#' @export
+LsObjects <- function (pos = 1, pattern, order.by,
+                         decreasing=FALSE, head=FALSE, n=5) {
+  napply <- function(names, fn) sapply(names, function(x)
+    fn(get(x, pos = pos)))
+  names <- ls(pos = pos, pattern = pattern)
+  obj.class <- napply(names, function(x) as.character(class(x))[1])
+  obj.mode <- napply(names, mode)
+  obj.type <- ifelse(is.na(obj.class), obj.mode, obj.class)
+  obj.prettysize <- napply(names, function(x) {
+    capture.output(format(utils::object.size(x), units = "auto")) })
+  obj.size <- napply(names, object.size)
+  obj.dim <- t(napply(names, function(x)
+    as.numeric(dim(x))[1:2]))
+  vec <- is.na(obj.dim)[, 1] & (obj.type != "function")
+  obj.dim[vec, 1] <- napply(names, length)[vec]
+  out <- data.frame(obj.type, obj.size, obj.prettysize, obj.dim)
+  names(out) <- c("Type", "Size", "PrettySize", "Rows", "Columns")
+  if (!missing(order.by))
+    out <- out[order(out[[order.by]], decreasing=decreasing), ]
+  if (head)
+    out <- head(out, n)
+  out
+}
+#' Shorthand call for LsObjects.
+#' 
+#' \code{lsOS} Shorthand call for LsObjects
+#' Blatantly plagiarized from the following sources:
+#' Petr Pikal, David Hinds, Dirk Eddelbuettel, Tony Breyal.
+#' @param n
+#' @return dataframe
+#' @keywords utilities internal
+#' @export
+lsOS <- function(..., n=10) {
+  LsObjects(..., order.by="Size", decreasing=TRUE, head=TRUE, n=n)
+}
+
+#' Calculate a running mean
+#' 
+#' \code{CalcRunningMean} takes series and calculates
+#' a running mean over specified number of records
+#' @param x Vector of values
+#' @param n Number of records to use
+#' @param sides Whether to use both sides (2=past and 
+#' future) or just one side (1=past only).
+#' @return Vector of moving averages
+#' @keywords utilities internal
+#' @export
+CalcRunningMean = function(x, n, sides=2) {
+  filter(x, rep(1/n,n), sides=sides, method="convolution")
+}
 

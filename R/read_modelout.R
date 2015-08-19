@@ -13,10 +13,12 @@
 #' @examples
 #' ## Take a forecast point output text file for an hourly model run of Fourmile Creek
 #' ## and return a dataframe.
-#'
+#' \dontrun{
 #' modStr1h.mod1.fc <- ReadFrxstPts("../OUTPUT/frxst_pts_out.txt")
+#' }
 #' @keywords IO
-#' @concept aconcept
+#' @concept dataGet
+#' @family modelDataReads
 #' @export
 ReadFrxstPts <- function(pathOutfile) {
     myobj <- read.table(pathOutfile, header=F, sep=",", colClasses=c("character","character","integer","numeric","numeric","numeric","numeric","numeric"), na.strings=c("********","*********","************"))
@@ -42,10 +44,12 @@ myobj
 #' @examples
 #' ## Take a groundwater outflow text file for an hourly model run of Fourmile Creek
 #' ## and return a dataframe.
-#'
+#' \dontrun{
 #' modGWout1h.mod1.fc <- ReadGwOut("../OUTPUT/GW_outflow.txt")
+#' }
 #' @keywords IO
-#' @concept aconcept
+#' @concept dataGet
+#' @family modelDataReads
 #' @export
 ReadGwOut <- function(pathOutfile) {
     myobj <- read.table(pathOutfile,header=F)
@@ -80,7 +84,7 @@ ReadGwOut <- function(pathOutfile) {
 #'    \item CANLIQ: Mean canopy liquid water storage (mm)
 #'    \item SFCRNOFF: Mean surface runoff from LSM \emph{(meaningful for an LSM-only run)} (mm)
 #'    \item SNEQV: Mean snowpack snow water equivalent (mm)
-#'    \item UGDRNOFF: Mean subsurface runoff from LSM \emph{(meaningful for an LSM-only run)} (mm)
+#'    \item UGDRNOFF: Mean subsurface runoff from LSM \cr \emph{(meaningful for an LSM-only run)} (mm)
 #'    \item SOIL_M1: Mean soil moisture storage in soil layer 1 (top) (mm)
 #'    \item SOIL_M2: Mean soil moisture storage in soil layer 2 (mm)
 #'    \item SOIL_M3: Mean soil moisture storage in soil layer 3 (mm)
@@ -96,6 +100,7 @@ ReadGwOut <- function(pathOutfile) {
 #' routing grid and a 1-km LSM grid, aggfact = 10)
 #' @param ncores If multi-core processing is available, the number of cores to use (DEFAULT=1).
 #' Must have doMC installed if ncores is more than 1.
+#' @param pattern Pattern to match in the model output (DEFAULT=glob2rx('*LDASOUT_DOMAIN*'))
 #' @return A dataframe containing a time series of basin-wide mean water budget variables.
 #'
 #' @examples
@@ -103,24 +108,25 @@ ReadGwOut <- function(pathOutfile) {
 #' ## create a new dataframe containing the basin-wide mean values for the major water budget
 #' ## components over the time series.
 #'
-#' modLdasoutWb1d.mod1.fc <- ReadLdasoutWb("../RUN.MOD1/OUTPUT", "../DOMAIN/Fulldom_hires_hydrofile_4mile.nc", ncores=16)
+#' \dontrun{
+#' modLdasoutWb1d.mod1.fc <- 
+#'   ReadLdasoutWb("../RUN.MOD1/OUTPUT", "../DOMAIN/Fulldom_hires_hydrofile_4mile.nc", 
+#'                 ncores=16)
+#' }
 #' @keywords IO univar ts
-#' @concept aconcept
+#' @concept dataGet
+#' @family modelDataReads
 #' @export
-ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, aggfact=10, ncores=1) {
+ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk", 
+                          basid=1, aggfact=10, ncores=1, 
+                          pattern=glob2rx('*LDASOUT_DOMAIN*')) {
     if (ncores > 1) {
         doMC::registerDoMC(ncores)
         }
     # Setup mask
-    msk <- ncdf4::nc_open(pathDomfile)
-    mskvar <- ncdf4::ncvar_get(msk,mskvar)
-    # Subset to basinID
-    mskvar[which(mskvar != basid)] <- 0.0
-    mskvar[which(mskvar == basid)] <- 1.0
-    # Reverse y-direction for N->S hydro grids to S->N
-    mskvar <- mskvar[,order(ncol(mskvar):1)]
-    # Resample the high-res grid to the low-res LSM
-    mskvar <- raster::as.matrix(raster::aggregate(raster::raster(mskvar), fact=aggfact, fun=mean))
+    mskvar <- CreateBasinMask(pathDomfile, mskvar=mskvar, basid=basid, aggfact=aggfact)
+    # Calculate basin area as a cell count
+    basarea <- sum(mskvar)
     # Setup basin mean function
     basin_avg <- function(myvar, minValid=-1e+30) {
         myvar[which(myvar<minValid)]<-NA
@@ -146,14 +152,20 @@ ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, a
     names(ldasoutInd) <- names(ldasoutVars)
     ldasoutIndexList <- list( ldasout = ldasoutInd )
     # Run GetMultiNcdf
-    ldasoutFilesList <- list( ldasout = list.files(path=pathOutdir, pattern=glob2rx('*LDASOUT*'), full.names=TRUE))
+    ldasoutFilesList <- list( ldasout = list.files(path=pathOutdir, pattern=pattern, full.names=TRUE))
     if (ncores > 1) {
-        ldasoutDF <- GetMultiNcdf(ind=ldasoutIndexList, var=ldasoutVariableList, files=ldasoutFilesList, parallel=T )
+        ldasoutDF <- GetMultiNcdf(indexList=ldasoutIndexList, 
+                                  variableList=ldasoutVariableList, 
+                                  filesList=ldasoutFilesList, parallel=TRUE )
         }
     else {
-        ldasoutDF <- GetMultiNcdf(ind=ldasoutIndexList, var=ldasoutVariableList, files=ldasoutFilesList, parallel=F )
+        ldasoutDF <- GetMultiNcdf(indexList=ldasoutIndexList, 
+                                  variableList=ldasoutVariableList, 
+                                  filesList=ldasoutFilesList, parallel=FALSE )
         }
     outDf <- ReshapeMultiNcdf(ldasoutDF)
+    outDf <- CalcNoahmpFluxes(outDf)
+    attr(outDf, "area_cellcnt") <- basarea
     outDf
 }
 
@@ -187,9 +199,14 @@ ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, a
 #' ## and create a new dataframe containing the basin-wide mean values for the major water budget
 #' ## components over the time series.
 #'
-#' modRtout1h.mod1.fc <- ReadRtout("../RUN.MOD1/OUTPUT", "../DOMAIN/Fulldom_hires_hydrofile_4mile.nc", basid=1, ncores=16)
+#' \dontrun{
+#' modRtout1h.mod1.fc <- 
+#'   ReadRtout("../RUN.MOD1/OUTPUT", "../DOMAIN/Fulldom_hires_hydrofile_4mile.nc", 
+#'             basid=1, ncores=16)
+#' }
 #' @keywords IO univar ts
-#' @concept aconcept
+#' @concept dataGet
+#' @family modelDataReads
 #' @export
 ReadRtout <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, ncores=1) {
     if (ncores > 1) {
@@ -222,12 +239,61 @@ ReadRtout <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, ncore
     # Run GetMultiNcdf
     chrtoutFilesList <- list( chrtout = list.files(path=pathOutdir, pattern=glob2rx('*.RTOUT_DOMAIN*'), full.names=TRUE))
     if (ncores > 1) {
-        chrtoutDF <- GetMultiNcdf(ind=chrtoutIndexList, var=chrtoutVariableList, files=chrtoutFilesList, parallel=T )
+        chrtoutDF <- GetMultiNcdf(indexList=chrtoutIndexList, 
+                                  variableList=chrtoutVariableList, 
+                                  filesList=chrtoutFilesList, parallel=TRUE )
         }
     else {
-        chrtoutDF <- GetMultiNcdf(ind=chrtoutIndexList, var=chrtoutVariableList, files=chrtoutFilesList, parallel=F )
+        chrtoutDF <- GetMultiNcdf(indexList=chrtoutIndexList, 
+                                  variableList=chrtoutVariableList, 
+                                  filesList=chrtoutFilesList, parallel=FALSE )
         }
     outDf <- ReshapeMultiNcdf(chrtoutDF)
     outDf
 }
+
+#' Create a coarse-resolution basin mask grid.
+#'
+#' \code{CreateBasinMask} reads in a high-res domain file and outputs a resampled
+#' weighted basin mask grid for generating LSM-grid statistics.
+#'
+#' \code{CreateBasinMask} reads in a high-res domain file and outputs a resampled
+#' weighted basin mask grid for generating LSM-grid statistics. The output grid will
+#' contain 1 for cells that are completely within the basin, 0 for cells that are
+#' completely outside of the basin, and fractions (based on area) for cells that are 
+#' partially within and partially outside of the basin.
+#' 
+#' @param ncfile The full pathname to the WRF-Hydro high-res routing domain file.
+#' @param mskvar The variable name for the high-res basin mask (DEFAULT="basn_msk")
+#' @param basid The basin ID to generate a mask file for (DEFAULT=1)
+#' @param aggfact The aggregation factor for downsampling the high-res grid (e.g.,
+#' aggfact=1 for going from a 100-m routing grid to a 1km geogrid) (DEFAULT=1)
+#' @return A matrix containing the basin mask weights on the resampled grid.
+#'
+#' @examples
+#' ## Take the high-res 100-m routing domain for Fourmile and generate a matrix of
+#' ## area weights on the 1km geogrid domain.
+#' \dontrun{
+#' geoMsk <- CreateBasinMask("~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/Fulldom_hydro_OrodellBasin_100m.nc", aggFact=10)
+#' }
+#' @keywords IO
+#' @concept dataGet
+#' @family modelDataReads
+#' @export
+ CreateBasinMask <- function(ncfile, mskvar="basn_msk", basid=1, aggfact=1) {
+   # Setup mask
+   nc <- ncdf4::nc_open(ncfile)
+   basnmsk <- ncdf4::ncvar_get(nc, mskvar)
+   ncdf4::nc_close(nc)
+   # Subset to basinID
+   basnmsk[which(basnmsk != basid)] <- 0.0
+   basnmsk[which(basnmsk == basid)] <- 1.0
+   # Reverse y-direction for N->S hydro grids to S->N
+   basnmsk <- basnmsk[,order(ncol(basnmsk):1)]
+   # Resample the high-res grid to the low-res LSM
+   if (aggfact > 1) {
+     basnmsk <- raster::as.matrix(raster::aggregate(raster::raster(basnmsk), fact=aggfact, fun=mean))
+   }
+   basnmsk
+ }
 

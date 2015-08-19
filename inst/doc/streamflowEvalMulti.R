@@ -1,0 +1,401 @@
+#' ---
+#' title: "Evaluate streamflow simulations over multiple basins with rwrfhydro"
+#' author: "Aubrey Dugger"
+#' date: "`r Sys.Date()`"
+#' output: rmarkdown::html_vignette
+#' vignette: >
+#'   %\VignetteIndexEntry{Streamflow Evaluation - Multi-Basin}
+#'   %\VignetteEngine{knitr::rmarkdown}
+#'   \usepackage[utf8]{inputenc}
+#' ---
+#' 
+#' # Background
+#' We are using WRF-Hydro to predict streamflow for multiple basins in the Upper Rio Grande for 2004-2014. We ran WRF-Hydro in LSM-only mode (no routing) with NoahMP as the LSM for the 10-year period with daily output. We want to evaluate model performance at various gage stations in the domain.
+#' 
+#' # Setup
+#' Load the rwrfhydro package. 
+## ------------------------------------------------------------------------
+library("rwrfhydro")
+
+#' 
+## ----, echo=FALSE--------------------------------------------------------
+options(width = 190)
+#library(printr)
+
+#' 
+#' Set the data paths for the Upper Rio Grande.
+## ------------------------------------------------------------------------
+# Where streamflow obs files live
+obsPath <- '~/wrfHydroTestCases/Upper_RioGrande/OBS/STRFLOW'
+# Where model output files live
+outPath <- '~/wrfHydroTestCases/Upper_RioGrande/OUTPUT_WY2014'
+# Where basin mask files live
+mskPath <- '~/wrfHydroTestCases/Upper_RioGrande/DOMAIN/MASKS'
+# Where to put plot files
+plotPath <- '~/wrfHydroTestCases/Upper_RioGrande/ANALYSIS'
+
+#' 
+#' If you want to use R's multi-core capability (make sure  doMC is installed) specify the number of cores.
+## ------------------------------------------------------------------------
+library(doMC)
+registerDoMC(8)
+
+#' 
+#' Create a lookup list to match basin mask ID to gage ID.
+## ------------------------------------------------------------------------
+idList <- list("alamosa_1k"="ALATERCO", 
+               "conejos_1k"="CONMOGCO", 
+               "s_frk_1k"="RIOSFKCO", 
+               "rio_wagw_1k"="RIOWAGCO", 
+               "saguache_1k"="SAGSAGCO", 
+               "trinchera_1k"="TRITURCO")
+
+#' 
+#' # Import observed datasets
+#' 
+#' Import all gage data from data files we downloaded from the CO DWR website. First, we build a file list.
+## ------------------------------------------------------------------------
+obsList <- list.files(obsPath, pattern=glob2rx("*.txt"))
+
+#' 
+#' Then, we loop through the files and built a single dataframe with all the gage data. We use the ReadCoDwrGage tool to import the individual gage files.
+## ------------------------------------------------------------------------
+obsStr <- data.frame()
+for (i in 1:length(obsList)) {
+  tmp <- ReadCoDwrGage(paste0(obsPath, "/", obsList[i]))
+  obsStr <- plyr::rbind.fill(obsStr,tmp)
+}
+
+#' 
+#' To view the first few lines of our observed dataframe:
+## ------------------------------------------------------------------------
+head(obsStr)
+
+#' 
+#' Until we can automate this from the data download side, we will have to manually set the gage drainage areas. We will set it up as an attribute to the observation dataframe.
+## ------------------------------------------------------------------------
+attr(obsStr, "area_sqmi") <- c(ALATERCO=107, CONMOGCO=282, RIOSFKCO=216, 
+                               RIOWAGCO=780, SAGSAGCO=595, TRITURCO=45)
+attr(obsStr, "gage_name") <- c(ALATERCO="ALAMOSA RIVER ABOVE TERRACE RESERVOIR",
+                               CONMOGCO="CONEJOS RIVER NEAR MOGOTE",
+                               RIOSFKCO="SOUTH FORK RIO GRANDE RIVER AT SOUTH FORK",
+                               RIOWAGCO="RIO GRANDE RIVER AT WAGON WHEEL GAP",
+                               SAGSAGCO="SAGUACHE CREEK NEAR SAGUACHE",
+                               TRITURCO="TRINCHERA CREEK ABOVE TURNER'S RANCH")
+
+#' 
+#' To access this attribute:
+## ------------------------------------------------------------------------
+attributes(obsStr)$area_sqmi
+
+#' 
+#' We can double-check to make sure we have all of the gages we expect.
+## ------------------------------------------------------------------------
+unique(obsStr$Station)
+
+#' 
+#' And we can plot hydrographs for the gages for WY 2014.
+## ----plotHydro_OBS, fig.width = 12, fig.height = 6, out.width='700', out.height='350'----
+library(ggplot2)
+ggplot(subset(obsStr, obsStr$wy==2014), aes(x=POSIXct, y=q_cms, color=Station)) + geom_line() + ylim(0,100)
+
+#' 
+#' # Import model results
+#' 
+#' We loop through the predefined basin masks and use ReadLdasoutWb to calculate the basin-averaged water budget components. Since we have already resampled the high-res basins to the low-res geogrid and set each mask value to 1, we set basid to 1 and aggfact to 1 (no aggregation). We will also grab the basin area for each mask (as a cell count) and track it as an attribute to the output dataframe.
+## ------------------------------------------------------------------------
+mskList <- list.files(mskPath, pattern=glob2rx("*.nc"))
+modLdasout <- data.frame()
+tmparea<-data.frame(matrix(nrow=1,ncol=0))
+for (i in 1:length(mskList)) {
+  tmp <- ReadLdasoutWb(outPath, paste0(mskPath, "/", mskList[i]), 
+                       mskvar="basn_msk", basid=1, aggfact=1, ncores=8)
+  tmp$Station <- idList[[unlist(strsplit(mskList[i], "[.]"))[1]]]
+  modLdasout <- rbind(modLdasout, tmp)
+  tmparea[,idList[[unlist(strsplit(mskList[i], "[.]"))[1]]]] <- attributes(tmp)$area_cellcnt
+  rm(tmp)
+}
+attr(modLdasout, "area_cellcnt") <- tmparea
+rm(tmparea)
+
+#' 
+#' To view the first few lines of our model output dataframe:
+## ------------------------------------------------------------------------
+head(modLdasout)
+
+#' 
+#' And to view the basin area attribute:
+## ------------------------------------------------------------------------
+attributes(modLdasout)$area_cellcnt
+
+#' 
+#' This model output gives us accumulated mm and mm per time step. We need to calcuate flowrates in cms. The ReadLdasoutWb returns the basin area as a (geogrid) cell count, and since we know the cellsize to be 1km, we can calculate flowrate as a volume.
+## ------------------------------------------------------------------------
+basList <- unique(modLdasout$Station)
+modLdasout$q_cms <- NA
+for (i in 1:length(basList)) {
+  basarea <- attributes(modLdasout)$area_cellcnt[[basList[i]]]
+  timestep <- as.integer(difftime(modLdasout$POSIXct[2], modLdasout$POSIXct[1], units="secs"))
+  # Conversion: 1000 = mm * km^2 to m^3
+  modLdasout$q_cms[modLdasout$Station==basList[i]] <- 
+                                with(subset(modLdasout, modLdasout$Station==basList[i]), 
+                                (DEL_SFCRNOFF+DEL_UGDRNOFF) * basarea / timestep * 1000)           
+  rm(basarea, timestep)
+}
+
+#' 
+#' Conversion to daily volume in acre-ft.
+## ------------------------------------------------------------------------
+modLdasout$qvol_acft <- modLdasout$q_cms * 86400 * 0.3048^3 / 43560
+
+#' 
+#' Calculate cumulative volume for each water year.
+## ------------------------------------------------------------------------
+wyList <- unique(modLdasout$wy)
+basList <- unique(modLdasout$Station)
+modLdasout$cumqvol_acft <- 0
+for (i in 1:length(basList)) {
+  tmpgage <- subset(modLdasout, modLdasout$Station==basList[i])
+  for (j in 1:length(wyList)) {
+    tmpgagewy <- subset(tmpgage, tmpgage$wy==wyList[j])
+    modLdasout$cumqvol_acft[modLdasout$Station==basList[i] & 
+                              modLdasout$wy==wyList[j]] <- CumsumNa(tmpgagewy$qvol_acft)
+    rm(tmpgagewy)
+  }
+  rm(tmpgage)
+}
+
+#' 
+#' # Plot hydrographs 
+#' 
+#' Compare hydrographs for a single basin.
+## ----plotHydro_ALATERCO, fig.width = 12, fig.height = 6, out.width='700', out.height='350'----
+stnid <- "ALATERCO"
+PlotFluxCompare(subset(obsStr, obsStr$Station==stnid), "q_cms", 
+                subset(modLdasout, modLdasout$Station==stnid), "q_cms", 
+                labelObs=paste0("Observed at ", stnid), labelMod1="Model", 
+                title=paste0("Streamflow: ", attributes(obsStr)$gage_name[[stnid]]))
+
+#' 
+#' Or create a loop to output PNGs for each basin.
+## ------------------------------------------------------------------------
+for (i in 1:length(basList)) {
+  png(paste0(plotPath, "/hydro_wy2014_", basList[i], ".png"), width = 700, height = 350)
+  PlotFluxCompare(subset(obsStr, obsStr$Station==basList[i]), "q_cms", 
+                  subset(modLdasout, modLdasout$Station==basList[i]), "q_cms", 
+                  labelObs=paste0("Observed at ", basList[i]), labelMod1="Model", 
+                  title=paste0("Streamflow: ", attributes(obsStr)$gage_name[[basList[i]]]))
+  dev.off()
+}
+
+#' 
+#' # Calculate daily and cumulative daily observation fluxes
+#' 
+#' We can aggregate the observed data to a daily timestep to match the model.
+## ------------------------------------------------------------------------
+obsStr$date <- as.Date(trunc(as.POSIXct(format(obsStr$POSIXct, tz="UTC"), tz="UTC"), "days"))
+obsStr.dy <- plyr::ddply(obsStr, plyr::.(Station, date), 
+                         plyr::summarise, mean_qcms=mean(q_cms, na.rm=TRUE), 
+                         .parallel=TRUE)
+# Unit conversion: m^3/s -> m^3/dy -> ft^3/dy -> ac-ft/dy
+obsStr.dy$qvol_acft <- obsStr.dy$mean_qcms * 86400 * 0.3048^3 / 43560
+
+#' 
+#' Let's add a POSIXct column for ease of calculations and plotting. We'll associate daily values with the NEXT day's 00:00 to match the model output.
+## ------------------------------------------------------------------------
+obsStr.dy$POSIXct <- as.POSIXct(paste0(obsStr.dy$date+1," 00:00", 
+                                       format="%Y-%m-%d %H:%M", tz="UTC"))
+
+#' 
+#' And we can calculate a cumulative volume for each water year
+## ------------------------------------------------------------------------
+obsStr.dy$wy <- CalcWaterYear(obsStr.dy$POSIXct)
+wyList <- unique(obsStr.dy$wy)
+gageList <- unique(obsStr.dy$Station)
+obsStr.dy$cumqvol_acft <- 0
+for (i in 1:length(gageList)) {
+  tmpgage <- subset(obsStr.dy, obsStr.dy$Station==gageList[i])
+  for (j in 1:length(wyList)) {
+    tmpgagewy <- subset(tmpgage, tmpgage$wy==wyList[j])
+    obsStr.dy$cumqvol_acft[obsStr.dy$Station==gageList[i] & 
+                             obsStr.dy$wy==wyList[j]] <- CumsumNa(tmpgagewy$qvol_acft)
+    rm(tmpgagewy)
+  }
+  rm(tmpgage)
+}
+
+#' 
+#' # Plot cumulative flow volumes by year in acre-ft
+#' 
+#' Plot all observed cumulative flows for the 2014 water year
+## ----plotObsCumFlow_WY2014, fig.width = 12, fig.height = 6, out.width='700', out.height='350'----
+n<-2014
+ggplot(subset(obsStr.dy, obsStr.dy$wy==n), aes(x=POSIXct, y=cumqvol_acft, color=Station)) + geom_line()
+
+#' 
+#' And plot modelled.
+## ----plotModCumFlow_WY2014, fig.width = 12, fig.height = 6, out.width='700', out.height='350'----
+ggplot(subset(modLdasout, modLdasout$wy==n), aes(x=POSIXct, y=cumqvol_acft, color=Station)) + geom_line()
+
+#' 
+#' Compare cumulative flow plots for all water years for a specific station
+## ----plotCumFlow_CONMOGCO, fig.width = 12, fig.height = 6, out.width='700', out.height='350'----
+stnid <- "CONMOGCO"
+ggplot(NULL, aes(x=POSIXct, y=cumqvol_acft)) + 
+  geom_line(data=subset(modLdasout, modLdasout$Station==stnid), aes(color='Model')) + 
+  geom_line(data=subset(obsStr.dy, obsStr.dy$Station==stnid & obsStr.dy$wy %in% unique(modLdasout$wy)), 
+            aes(color='Observed')) + 
+  scale_colour_discrete("")
+
+#' 
+#' Let's create a function to plot by station and water year.
+## ------------------------------------------------------------------------
+PlotCumFlow <- function(stnid, wyid) {
+  gg <- ggplot(NULL, aes(x=POSIXct, y=cumqvol_acft)) +
+    geom_line(data=subset(modLdasout, modLdasout$Station==stnid & modLdasout$wy==wyid), aes(color='Model')) +
+    geom_line(data=subset(obsStr.dy, obsStr.dy$Station==stnid & obsStr.dy$wy==wyid), aes(color='Observed')) +
+    scale_colour_discrete("") +
+    labs(x="Date", y="Cumulative Flow Volume (acre-ft)") +
+    ggtitle(paste0("Cumulative Flow Volume: ", stnid, "\nWY ", wyid)) +
+    theme(plot.title = element_text(face="bold", vjust=1))
+  return(gg)
+}
+
+#' 
+#' Output PNGs for every station and water year
+## ------------------------------------------------------------------------
+basList <- unique(modLdasout$Station)
+wyList <- unique(modLdasout$wy)
+for (i in 1:length(basList)) {
+  for (j in 1:length(wyList)) {
+    gg <- PlotCumFlow(basList[i], wyList[j])
+    ggsave(filename=paste0(plotPath, "/cumvol_wy", wyList[j],"_", basList[i], ".png"), plot=gg,
+           units="in", width=6, height=4, dpi=200)
+    }
+  }
+
+#' 
+#' # Run monthly aggregations
+#' 
+#' We can aggregate the observed data to a monthly timestep in acre-ft.
+## ------------------------------------------------------------------------
+obsStr$mo <- as.integer(format(obsStr$POSIXct, "%m", tz="UTC"))
+obsStr$yr <- as.integer(format(obsStr$POSIXct, "%Y", tz="UTC"))
+obsStr.mo <- plyr::ddply(obsStr, plyr::.(Station, yr, mo), 
+                         plyr::summarise, mean_qcms=mean(q_cms, na.rm=TRUE), 
+                         .parallel=TRUE)
+# Unit conversion: m^3/s -> m^3/mo -> ft^3/mo -> ac-ft/mo
+obsStr.mo$qvol_acft <- obsStr.mo$mean_qcms * 86400 *
+  CalcMonthDays(obsStr.mo$mo, obsStr.mo$yr) /
+  0.3048^3 / 43560
+
+#' 
+#' Which yields a new dataframe of monthly values:
+## ------------------------------------------------------------------------
+head(obsStr.mo)
+
+#' 
+#' Let's add a POSIXct column and a water year column for ease of plotting. We'll associate monthly vaues with the 1st day of each month for plotting.
+## ------------------------------------------------------------------------
+obsStr.mo$POSIXct <- as.POSIXct(paste0(obsStr.mo$yr,"-",obsStr.mo$mo,"-01", 
+                                       format="%Y-%m-%d", tz="UTC"))
+obsStr.mo$wy <- CalcWaterYear(obsStr.mo$POSIXct)
+
+#' 
+#' Also aggregate the model output to a monthly timestep in acre-ft.
+## ------------------------------------------------------------------------
+modLdasout$mo <- as.integer(format(modLdasout$POSIXct, "%m"))
+modLdasout$yr <- as.integer(format(modLdasout$POSIXct, "%Y"))
+modLdasout.mo <- plyr::ddply(modLdasout, plyr::.(Station, yr, mo), 
+                             plyr::summarise, mean_qcms=mean(q_cms, na.rm=TRUE),
+                             .parallel=TRUE)
+# Unit conversion: m^3/s -> m^3/mo -> ft^3/mo -> ac-ft/mo
+modLdasout.mo$qvol_acft <- modLdasout.mo$mean_qcms * 86400 * 
+  CalcMonthDays(modLdasout.mo$mo, modLdasout.mo$yr) / 
+  0.3048^3 / 43560
+
+#' 
+#' Which yields a new dataframe of monthly values:
+## ------------------------------------------------------------------------
+head(modLdasout.mo)
+
+#' 
+#' Again, add POSIXct and water year columns column for ease of plotting, associating monthly vaues with the 1st day of each month.
+## ------------------------------------------------------------------------
+modLdasout.mo$POSIXct <- as.POSIXct(paste0(modLdasout.mo$yr,"-",modLdasout.mo$mo,"-01", 
+                                           format="%Y-%m-%d", tz="UTC"))
+modLdasout.mo$wy <- CalcWaterYear(modLdasout.mo$POSIXct)
+
+#' 
+#' 
+#' # Plot monthly flow volumes
+#' 
+#' Now we can plot comparisons. We'll create a simple function to automate this for a specified station.
+## ------------------------------------------------------------------------
+PlotMoVolBasin <- function(stnid) {
+  gg <- ggplot(NULL, aes(x=POSIXct, y=qvol_acft)) + 
+            geom_line(data=subset(modLdasout.mo, modLdasout.mo$Station==stnid), aes(color='Model')) + 
+            geom_line(data=subset(obsStr.mo, obsStr.mo$Station==stnid & 
+                                    obsStr.mo$POSIXct>=min(modLdasout.mo$POSIXct) & 
+                                    obsStr.mo$POSIXct<=max(modLdasout.mo$POSIXct)), 
+                      aes(color='Observed')) + 
+            scale_colour_discrete("") + 
+            labs(x="Date", y="Monthly Flow Volume (acre-ft)") +
+            ggtitle(paste0("Monthly Flow Volume: ", stnid)) +
+            theme(plot.title = element_text(face="bold", vjust=1))
+  return(gg)
+}
+
+#' 
+#' Then we can plot to graphic:
+## ----flowMoVol_ALATERCO, fig.width = 12, fig.height = 6, out.width='700', out.height='350'----
+PlotMoVolBasin("ALATERCO")
+
+#' 
+#' Or plot to PNG file in batch:
+## ------------------------------------------------------------------------
+for (i in 1:length(basList)) {
+  gg <- PlotMoVolBasin(basList[i])
+  ggsave(filename=paste0(plotPath, "/qvol_wy2014_", basList[i], ".png"), plot=gg,
+           units="in", width=6, height=4, dpi=200)
+}
+
+#' 
+#' Or plot by water year for all basins in one image:
+## ------------------------------------------------------------------------
+PlotMoVolWY <- function(wyid) {
+  gg <- ggplot(NULL, aes(x=POSIXct, y=qvol_acft)) +
+           geom_line(data=subset(modLdasout.mo, modLdasout.mo$wy==wyid), aes(color='Model')) +
+           geom_line(data=subset(obsStr.mo, obsStr.mo$wy==wyid), aes(color='Observed')) +
+           facet_wrap(~Station) +
+           scale_colour_discrete("") + 
+           labs(x="Date", y="Monthly Flow Volume (acre-ft)") +
+           ggtitle(paste0("Monthly Flow Volume: WY ", wyid)) +
+           theme(plot.title = element_text(face="bold", vjust=1))
+  return(gg)
+  }
+
+#' 
+## ----flowMoVol_WY2014, fig.width = 12, fig.height = 6, out.width='700', out.height='350'----
+PlotMoVolWY(2014)
+
+#' 
+#' # Generate summary statistics
+#' 
+#' We use the CalModPerfMulti tool to generate statistics for each gage, then we stack the gage stat rows into a dataframe.
+## ----, results = "hide"--------------------------------------------------
+perfStats <- data.frame()
+for (i in 1:length(basList)) {
+	out <- CalcModPerfMulti( subset(modLdasout, modLdasout$Station==basList[i]), 
+                            subset(obsStr, obsStr$Station==basList[i]) )
+	out$Station <- basList[i]
+  perfStats <- rbind(perfStats, out)
+  }
+perfStats
+
+#' 
+## ----, , results = "asis", echo=FALSE------------------------------------
+#suppressPackageStartupMessages(library(pander))
+#pander::pandoc.table(perfStats, justify="left", caption="")
+
+#' 

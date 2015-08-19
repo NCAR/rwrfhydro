@@ -40,6 +40,7 @@
 #' 
 #' @examples
 #' ## See the vignette "WRF Hydro Domain and Channel Visualization", for details. 
+#' \dontrun{
 #' tcPath <- '~/wrfHydroTestCases/'
 #' fcPath <- paste0(tcPath,'Fourmile_Creek/')
 #' chrtFile <- paste0(fcPath,'/RUN.RTTESTS/OUTPUT_CHRT_DAILY/201308010000.CHRTOUT_DOMAIN1')
@@ -76,6 +77,7 @@
 #' ## Zoom to logan mill gauge
 #' LocLinkFun(zoom=15, gaugeShape=16, gaugeZoom='loganMill', pad=15)
 #' LocLinkFun(zoom=15, gaugeShape=16, gaugeZoom='loganMill', pad=15, click=TRUE)
+#' }
 #' @concept plot DART
 #' @keywords hplot
 #' @family domain
@@ -173,14 +175,14 @@ VisualizeChanNtwk <- function(file, gaugePts=NULL, excludeInds=NULL,
     if(length(gaugeZoom)) {
       if(gaugeZoom %in% gaugePtsBothDf$location) {
         subGaugeDf <- subset(gaugePtsBothDf, location==gaugeZoom)
-        plotLimX <- PadRange(range(subGaugeDf$lon),diff=padPlot)
-        plotLimY <- PadRange(range(subGaugeDf$lat),diff=padPlot)
+        plotLimX <- PadRange(range(subGaugeDf$lon),diffMult=padPlot)
+        plotLimY <- PadRange(range(subGaugeDf$lat),diffMult=padPlot)
         location <- c(lon=mean(range(subGaugeDf$lon)),
                       lat=mean(range(subGaugeDf$lat)) )
       }
     } else {
-      plotLimX <- PadRange(range(linkDf$lon),diff=padPlot)
-      plotLimY <- PadRange(range(linkDf$lat),diff=padPlot)
+      plotLimX <- PadRange(range(linkDf$lon),diffMult=padPlot)
+      plotLimY <- PadRange(range(linkDf$lat),diffMult=padPlot)
     }
     
     theMap <- ggmap::get_map(location, zoom = zoom, source = source, maptype=maptype)
@@ -246,6 +248,8 @@ VisualizeChanNtwk <- function(file, gaugePts=NULL, excludeInds=NULL,
       print(thePlot)
     } else print(thePlot)
    
+    ## The return value of the closure  
+    invisible(list(linkDf=linkDf, ggplot=thePlot))
   }
   
   if(plot) GetChanPoint() 

@@ -1,11 +1,3 @@
-# This code was pulled from
-# ~/R/jlm_lib/general/timeseriesMultiNcdf.r
-# /home/jamesmcc/R/jlm_lib/general/parseIndexArg.r
-# on hydro-c1 where there may remain other relevant code.
-
-## the premise is that the timeseries is strewn over multiple files and the 
-## time is either a global attribute or in the variable 'Times'
-
 #=====================================================================
 ParseIndexArg <- function( index, dimSize, ncid ) {
 
@@ -38,6 +30,7 @@ ParseIndexArg <- function( index, dimSize, ncid ) {
   dataEnd=NULL
   statFunc=NULL
   statChar=NULL
+  statArg=NULL
   
   if(is.list(index)) {
     if(!all(c('start','end','stat') %in% names(index))) {
@@ -49,6 +42,9 @@ ParseIndexArg <- function( index, dimSize, ncid ) {
     dataEnd <- index[['end']]
     statFunc <- CharToFunction(index[['stat']])
     statChar <- index[['stat']]
+    if ('arg' %in% names(index)) {
+      statArg <- index[['arg']]
+    }
   } else if(is.character(index)) {
     statFunc <- CharToFunction(index)
     statChar <- index
@@ -66,31 +62,32 @@ ParseIndexArg <- function( index, dimSize, ncid ) {
   }
   
   list(dataStart=dataStart, dataEnd=dataEnd,
-       statFunc=statFunc, statChar=statChar )
+       statFunc=statFunc, statChar=statChar, statArg=statArg )
 }
-#=====================================================================
 
 
 ##=====================================================================
-#' Open a netcdf file, extract specified indices for a variable, optionally apply a specified statistic.
-#'
-#' \code{GetFileStat} opens a netcdf file, extracts specified indices for
-#' a variable, and may apply a specified statistic. 
-#'
-#' @param theFile The file to open. 
+
+#' Open a netcdf file, extract specified indices for a variable, optionally
+#' apply a specified statistic.
+#' 
+#' \code{GetFileStat} opens a netcdf file, extracts specified indices for a
+#' variable, and may apply a specified statistic.
+#' 
+#' @param theFile The file to open.
 #' @param variable TODO
-#' @param index TODO 
+#' @param index TODO
 #' @param env The environment where the stat function lives
-#' @param ... Further arguments to be passsed to a statistic. 
+#' @param ... Further arguments to be passsed to a statistic.
 #' @return A dataframe with columns TODO
 
 #' @examples
-#' This is to do.
+#' #This is to do.
 #' @keywords internal
 #' @concept dataGet
 #' @family getMultiNcdf
 #' @export
-GetFileStat <- function(theFile, variable, index, env=parent.frame(), ...) {
+GetFileStat <- function(theFile, variable, index, env=parent.frame(), parallel=FALSE, ...) {
 
   if(!file.exists(theFile)) {
     warning('No such file: ',theFile)
@@ -122,38 +119,54 @@ GetFileStat <- function(theFile, variable, index, env=parent.frame(), ...) {
   
   dimSize <- ncid$var[[variable]]$size
 
-  ## Deal with various index possibilities. 
-  ## Dont accept functions/closures, i want their names so I can use that information.
-  ## Convert character strings to the associated closure/function, or die trying.
-  indexList <- ParseIndexArg(index, dimSize, ncid)
-  dataStart <- indexList$dataStart
-  dataEnd <- indexList$dataEnd
-  statFunc <- indexList$statFunc
-  statChar <- indexList$statChar
+  ApplyIndex <- function(i=NULL, index, label="-") {
+    ## Deal with various index possibilities. 
+    ## Dont accept functions/closures, i want their names so I can use that information.
+    ## Convert character strings to the associated closure/function, or die trying.
+    if (!is.null(i)) {
+      index <- index[[i]]
+      label <- label[i]
+    }
+    indexList <- ParseIndexArg(index, dimSize)
+    dataStart <- indexList$dataStart
+    dataEnd <- indexList$dataEnd
+    statFunc <- indexList$statFunc
+    statChar <- indexList$statChar
+    statArg <- indexList$statArg
+    ## sanity check the dimensions
+    #print(paste("i=", i, "label=", label, "dataStart=", length(dataStart), "dataEnd=", length(dataEnd), "dimSize=", length(dimSize)))
+    if( length(dataStart)!=length(dataEnd) | length(dataStart)!=length(dimSize) |
+        any(dataStart < 1) | any(dataStart > dimSize) |
+        any(dataEnd   < 1) | any(dataEnd   > dimSize) |
+        any(dataStart > dataEnd) ) {
+          ncdf4::nc_close(ncid)
+          stop("Error in passed index or its dimensions, variable has dimensions: ",
+              paste(dimSize,collapse=', '))
+        return(NULL)
+        }
   
-  ## sanity check the dimensions
-  if( length(dataStart)!=length(dataEnd) | length(dataStart)!=length(dimSize) |
-  any(dataStart < 1) | any(dataStart > dimSize) |
-     any(dataEnd   < 1) | any(dataEnd   > dimSize) |
-     any(dataStart > dataEnd) ) {
-    ncdf4::nc_close(ncid)
-    stop("Error in passed index or its dimensions, variable has dimensions: ",
-            paste(dimSize,collapse=', '))
-    return(NULL)
+    dataCount <- dataEnd-dataStart+1
+    data <- ncdf4::ncvar_get(ncid, variable, start=dataStart, count=dataCount)
+    outDf <- if(!is.null(statFunc))
+              data.frame( do.call(statFunc, append(list(data), statArg), envir=env) ) else data.frame(data)
+  
+    names(outDf) <- c(variable)
+    outDf$POSIXct <- time
+    outDf$inds <-paste( paste(dataStart,dataEnd,sep=':'), collapse=',' )
+    if(is.null(statChar)) statChar <- '-'
+    outDf$stat <- statChar
+    outDf$statArg <- label
+    outDf
+    } # end: ApplyIndex
+  
+  if (is.list(index[[1]])) {
+    i <- 1:length(index)
+    outDf <- plyr::ldply(i, ApplyIndex, index, label=names(index),
+                         .parallel=parallel)
+  } else {
+    outDf <- ApplyIndex(i=NULL, index)
   }
-  
-  dataCount <- dataEnd-dataStart+1
-  data <- ncdf4::ncvar_get(ncid, variable, start=dataStart, count=dataCount)
   ncdf4::nc_close(ncid)
-
-  outDf <- if(!is.null(statFunc))
-              data.frame( do.call(statFunc, list(data, ...), envir=env) ) else data.frame(data)
-  
-  names(outDf) <- c(variable)
-  outDf$POSIXct <- time
-  outDf$inds <-paste( paste(dataStart,dataEnd,sep=':'), collapse=',' )
-  if(is.null(statChar)) statChar <- '-'
-  outDf$stat <- statChar
   outDf
 }
 # end: getFileStat
@@ -182,7 +195,7 @@ GetMultiNcdfVariable <- function(varInd, indexList,
   outDf <- plyr::ldply(files, GetFileStat,
                        variableList[[varInd]], indexList[[varInd]],
                        env=env, .parallel=parallel) 
-  outDf <- reshape2::melt(outDf, c('POSIXct','inds','stat') )
+  outDf <- reshape2::melt(outDf, c('POSIXct','inds','stat','statArg') )
   outDf$variableGroup <- names(variableList)[varInd]
   outDf
 }
@@ -228,29 +241,34 @@ GetMultiNcdfFile <- function(filesInd, filesList,
 #=====================================================================
 
 #=====================================================================
+
 #' Get WRF Hydro output/restart (scalar) timeseries spread over multiple files.
-#'
-#' \code{GetMultiNcdf} is designed to get *all* your output/restart data which
-#' are spread over multiple files. Three collated lists specify
-#' 1) file groups, 2) variables for each file group, and 3) indices or statistics
-#' for each variable in each file group. The names of the lists must match. See 
-#' examples for details. While the routine can read and summarize raster data at
-#' each time via specificied statistics, it only returns scalar timeseries. (It
-#' may be possible to extend to return both scalar and raster data if there's
+#' 
+#' \code{GetMultiNcdf} is designed to get *all* your output/restart data which 
+#' are spread over multiple files. Three collated lists specify 1) file groups,
+#' 2) variables for each file group, and 3) indices or statistics for each
+#' variable in each file group. The names of the lists must match. See examples
+#' for details. While the routine can read and summarize raster data at each
+#' time via specificied statistics, it only returns scalar timeseries. (It may
+#' be possible to extend to return both scalar and raster data if there's 
 #' demand.)
-#'
-#' @param filesList The list of file groups. Names must match those in the other lists. 
-#' @param variableList The list of variables for each file group. Names must match filesList.
-#' @param indexList The list of indices or statistics to be applied to each variable.
+#' 
+#' @param filesList The list of file groups. Names must match those in the other
+#'   lists.
+#' @param variableList The list of variables for each file group. Names must
+#'   match filesList.
+#' @param indexList The list of indices or statistics to be applied to each
+#'   variable.
 #' @param env The environment where the stat function lives
-#' @param parallel Logical, this is the .parallel argument of plyr functions.
-#' Parallelization is at the file level (not file group).Typcially we achieve
-#' parallelization using the DoMC package. See examples. 
+#' @param parallel Logical, this is the .parallel argument of plyr functions. 
+#'   Parallelization is at the file level (not file group).Typcially we achieve 
+#'   parallelization using the DoMC package. See examples.
 #' @return A dataframe (in an awesome format).
-#'
+#'   
 #' @examples
 #' # This example only shows data for 3 dates, because of limitation of package data.
 #' # Find the package data directory on your machine
+#' \dontrun{
 #' tcPath <- '~/wrfHydroTestCases/'
 #' fcPath <- paste0(tcPath,'Fourmile_Creek/')
 #' dataPath <- paste0(fcPath,'/RUN.RTTESTS/OUTPUT_CHRT_DAILY/')
@@ -262,18 +280,19 @@ GetMultiNcdfFile <- function(filesInd, filesList,
 #' # varList - Define which variables are desired for each file group.
 #' lsmVars   <- list(TRAD='TRAD', SWE='SNEQV')
 #' ## smc1-4 will correspond to the vertical layers.
-#' hydroVars <- list(streamflow='qlink1', smc1='sh2ox', smc2='sh2ox', smc3='sh2ox', smc4='sh2ox')
+#' hydroVars <- list(streamflow='qlink1', smc1='sh2ox', smc2='sh2ox', 
+#'                   smc3='sh2ox', smc4='sh2ox')
 #' # Note that the outer names collate with fileList.
 #' variableList <- list(lsm=lsmVars, hydro=hydroVars)
 #' 
 #' # indexList - Define what indices/stats are desired for each variable.
-#' # Note that only scalars can be returned for each entry. Spatial fields can be summarized via statistics. 
+#' # Note that only scalars can be returned for each entry. Spatial fields can 
+#' # be summarized via statistics. 
 #' # Show how to define your own useful stats to use.
 #' # For basin average and max we need the basin mask (this is a non-standard
 #' # field in the fine grid file).
-#' library(ncdf4)
-#' fineGridNc <- nc_open(paste0(fcPath,'DOMAIN/hydro_OrodellBasin_100m.nc'))
-#' basinMask <- ncvar_get(fineGridNc, 'basn_msk_geogrid')
+#' basinMask <- ncdump(paste0(fcPath,'DOMAIN/hydro_OrodellBasin_100m.nc'), 
+#'                     'basn_msk_geogrid')
 #' nc_close(fineGridNc)
 #' basAvg <- function(var) sum(basinMask*var)/sum(basinMask)
 #' basMax <- function(var) max(ceiling(basinMask)*var)
@@ -304,7 +323,7 @@ GetMultiNcdfFile <- function(filesInd, filesList,
 #'   geom_line() + geom_point() +
 #'   facet_wrap(~variableGroup, scales='free_y', ncol=1) +
 #'   scale_x_datetime(breaks = date_breaks("5 days")) + theme_bw()
-#' 
+#' }
 #' @export
 GetMultiNcdf <- function(filesList, variableList, indexList, env=parent.frame(), parallel=FALSE) {
   ## Only do collated lists. Collation check at the file-variable level. 
@@ -316,6 +335,7 @@ GetMultiNcdf <- function(filesList, variableList, indexList, env=parent.frame(),
     stop("The input lists must be collated: their names do not match.")
   ## Due to some internal "deficiencies" of plyr, I find it's better to loop
   ## on index. This results in more coherent output.
+  #print("Starting")
   fileInd <- 1:length(filesList)
   outDf <- plyr::ldply(fileInd, GetMultiNcdfFile,
                        variableList=variableList,

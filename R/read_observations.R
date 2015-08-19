@@ -1,29 +1,39 @@
 #' Read standard-format text data table downloaded from USGS Water Data
-#'
-#' \code{ReadUsgsGage} reads USGS data table (streamflow and/or stage) and puts into a dataframe.
-#'
-#' \code{ReadUsgsGage} reads a streamflow or stage time series data table (standard USGS Water
-#' Data format) and outputs a dataframe with consistent date and data columns for use with other
-#' rwrfhydro tools.
 #' 
-#' @param pathGageData The full pathname to the streamflow/stage time series text file as
-#' downloaded from USGS Water Data. The file should include the standard USGS header info and
-#' the data time series with standard USGS columns.
+#' \code{ReadUsgsGage} reads USGS data table (streamflow and/or stage) and puts
+#' into a dataframe.
+#' 
+#' \code{ReadUsgsGage} reads a streamflow or stage time series data table
+#' (standard USGS Water Data format) and outputs a dataframe with consistent
+#' date and data columns for use with other rwrfhydro tools.
+#' 
+#' @param pathGageData The full pathname to the streamflow/stage time series
+#'   text file as downloaded from USGS Water Data. The file should include the
+#'   standard USGS header info and the data time series with standard USGS
+#'   columns.
 #' @param returnEnglish Logical: Return variables in english units (cfs and ft)?
 #' @param returnMetric  Logical: Return variables in these units (cms and m)?
-#' @param timeZone  (OPTIONAL) The time zone for the USGS gage data. Only necessary if tz code
-#' is NOT provided in the input file (e.g., daily streamflow gage data files).
-#' Time zone name must be R-friendly for your current OS. See: \url{http://stat.ethz.ch/R-manual/R-devel/library/base/html/timezones.html}
+#' @param timeZone  (OPTIONAL) The time zone for the USGS gage data. Only
+#'   necessary if tz code is NOT provided in the input file (e.g., daily
+#'   streamflow gage data files). Time zone name must be R-friendly for your
+#'   current OS. See:
+#'   \url{http://stat.ethz.ch/R-manual/R-devel/library/base/html/timezones.html}
 #' @return A dataframe containing the USGS flow and/or stage data.
-#'
+#'   
 #' @examples
-#' ## Take a text file downloaded from the USGS Water Data website for 5-minute flow at Fourmile Creek
-#' ## and create a dataframe called "obsStr5min.fc".
-#'
-#' obsStr5min.fc <- ReadUsgsGage("../OBS/STRFLOW/5min_str_06727500_110401_140810.txt")
-#' obsStr5min.fc <- ReadUsgsGage("../OBS/STRFLOW/5min_str_06727500_110401_140810.txt, returnEnglish=FALSE")
+#' ## Take a text file downloaded from the USGS Water Data website for 
+#' ## 5-minute flow at Fourmile Creekand create a dataframe called
+#' ## "obsStr5min.fc".
+#' \dontrun{
+#' obsStr5min.fc <- 
+#'   ReadUsgsGage("../OBS/STRFLOW/5min_str_06727500_110401_140810.txt")
+#' obsStr5min.fc <- 
+#'   ReadUsgsGage("../OBS/STRFLOW/5min_str_06727500_110401_140810.txt, 
+#'                returnEnglish=FALSE")
+#' }
 #' @keywords IO
-#' @concept aconcept
+#' @concept dataGet
+#' @family obsDataReads
 #' @export
 ReadUsgsGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, timeZone=NULL) {
 
@@ -103,29 +113,136 @@ ReadUsgsGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, ti
 }
 
 
-#' Read standard-format NetCDF data downloaded from Ameriflux
-#'
-#' \code{ReadAmerifluxNC} reads Ameriflux data table (Level 2 standardized NetCDF file) and creates
-#' a dataframe.
-#'
-#' \code{ReadAmerifluxNC} reads an Ameriflux Level 2 standardized NetCDF file and outputs a dataframe
-#' with consistent date and data columns for use with other rwrfhydro tools.
+#' Read standard-format text data table downloaded from CO DWR
 #' 
-#' @param pathFluxData The full pathname to the flux time series NetCDF file as downloaded from an
-#' Ameriflux data server.
-#' @param timeZone The time zone for the flux data. Time zone name must be R-friendly for your
-#' current OS. See: \url{http://stat.ethz.ch/R-manual/R-devel/library/base/html/timezones.html}
-#' @return A dataframe containing the Ameriflux data.
-#'
+#' \code{ReadCoDwrGage} reads CO DWR gage data table (streamflow and/or stage)
+#' and puts into a dataframe.
+#' 
+#' \code{ReadCoDwrGage} reads a streamflow or stage time series data table
+#' (standard CO DWR data format) and outputs a dataframe with consistent date
+#' and data columns for use with other rwrfhydro tools.
+#' 
+#' @param pathGageData The full pathname to the streamflow/stage time series
+#'   text file as downloaded from CO DWR. The file should include the standard
+#'   CO DWR header info and the data time series with standard CO DWR columns.
+#' @param returnEnglish Logical: Return variables in english units (cfs and ft)
+#' @param returnMetric  Logical: Return variables in these units (cms and m)
+#' @param timeZone  (OPTIONAL) The time zone for the gage data
+#'   (DEFAULT="America/Denver", which is MST/MDT). Time zone name must be
+#'   R-friendly for your current OS. See:
+#'   \url{http://stat.ethz.ch/R-manual/R-devel/library/base/html/timezones.html}
+#' @return A dataframe containing the flow and/or stage data.
+#'   
 #' @examples
-#' ## Takes a NetCDF file downloaded from the ORNL Amerifux website for US-NC2 (North Carolina Loblolly Pine)
-#' ## and returns a dataframe.
-#'
-#' obsFlux30min.usnc2 <- ReadAmerifluxNC("../OBS/FLUX/AMF_USNC2_2005_L2_WG_V003.nc", "America/New_York")
+#' ## Take a text file downloaded from the CO DWR website for 15-minute flow 
+#' ## at Alamosa River and create a dataframe called "obsStr15min.alaterco".
+#' 
+#' \dontrun{
+#' obsStr15min.alaterco <- 
+#'   ReadCoDwrGage("../OBS/STRFLOW/ALATERCO_41715103512.txt")
+#' obsStr15min.alaterco <- 
+#'   ReadCoDwrGage("../OBS/STRFLOW/ALATERCO_41715103512.txt", returnEnglish=FALSE)
+#' }
 #' @keywords IO
-#' @concept aconcept
+#' @concept dataGet
+#' @family obsDataReads
 #' @export
-ReadAmerifluxNC <- function(pathFluxData, timeZone) {
+ReadCoDwrGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, timeZone="America/Denver") {
+  # Manually remove commented lines since cannot automate due to mismatch between column names and column count
+  ncomm <- as.integer(system(paste('grep "#"', pathGageData, '| wc -l'), intern=TRUE))
+  outDf <- read.table(pathGageData, sep="\t", stringsAsFactors=F, skip=ncomm+1,
+                      na.strings=c("B","Bw","Dis","E","Eqp","Ice","M","na","nf","Prov","Rat","S","Ssn","wtr op","----"))
+  # Deal with header (not 1:1 with data columns)
+  outDf.tmp <- read.table(pathGageData, sep="\t", na.strings=c(""),
+                           stringsAsFactors=F, skip=ncomm, nrows=1)
+  outDf.head <- c()
+  outDf.units <- c()
+  for (i in 1:ncol(outDf.tmp)) {
+    outDf.head[i] <- unlist(strsplit(outDf.tmp[1,i], split=" ", fixed=TRUE))[1]
+    outDf.units[i] <- unlist(strsplit(outDf.tmp[1,i], split=" ", fixed=TRUE))[2]
+  }
+  # Deal with duplicate "Date/Time" header. We need to know the index so we can remove it from "units" too.
+  tmp<-grep("Date/Time", outDf.head, fixed=TRUE)
+  outDf.head[tmp[2]]<-"datetime"
+  outDf.head<-c(outDf.head[1:(tmp[1]-1)], outDf.head[(tmp[1]+1):length(outDf.head)])
+  outDf.units<-c(outDf.units[1:(tmp[1]-1)], outDf.units[(tmp[1]+1):length(outDf.units)])
+  colnames(outDf) <- outDf.head
+  names(outDf.units)<-outDf.head
+  attr(outDf, "units")<-outDf.units
+  
+  # Unit conversions
+  if ("DISCHRG" %in% names(outDf)) {
+      if (attributes(outDf)$units[["DISCHRG"]] == "(cfs)") {
+          if (returnMetric) { outDf$q_cms <- outDf$DISCHRG * (0.3048^3) }
+          if (returnEnglish) { outDf$q_cfs <- outDf$DISCHRG }
+          }
+      if (attributes(outDf)$units[["DISCHRG"]] == "(cms)") {
+            if (returnMetric) { outDf$q_cms <- outDf$DISCHRG }
+            if (returnEnglish) { outDf$q_cfs <- outDf$DISCHRG / (0.3048^3) }
+          }
+  }
+  if ("GAGE_HT" %in% names(outDf)) {
+    if (attributes(outDf)$units[["GAGE_HT"]] == "(ft)") {
+      if (returnMetric) { outDf$ht_m <- outDf$GAGE_HT * (0.3048) }
+      if (returnEnglish) { outDf$ht_ft <- outDf$GAGE_HT }
+    }
+    if (attributes(outDf)$units[["GAGE_HT"]] == "(m)") {
+      if (returnMetric) { outDf$ht_m <- outDf$GAGE_HT }
+      if (returnEnglish) { outDf$ht_ft <- outDf$GAGE_HT / (0.3048) }
+    }
+  }
+  # Deal with time
+  #if (is.null(timeZone)) { timeZone <- "MST" } # assuming local time for all gages, no daylight savings?
+  usgsTimeFmt <- if (grepl(" ",outDf$datetime[1])) {
+    "%Y-%m-%d %H:%M" # instantaneous
+  } else { "%Y-%m-%d" }  # daily avg
+  outDf$POSIXct <- as.POSIXct(as.character(outDf$datetime), format=usgsTimeFmt, tz=timeZone)
+  # Screen out NA times, since CO DWR leaves in null values for the missing daylight savings hour.
+  outDf <- subset(outDf, !is.na(outDf$POSIXct))
+  outDf$wy <- CalcWaterYear(outDf$POSIXct)
+  
+  outDf
+}
+
+
+#' Read standard-format NetCDF data downloaded from Ameriflux
+#' 
+#' \code{ReadAmerifluxNC} reads Ameriflux data table (Level 2 standardized
+#' NetCDF file) and creates a dataframe.
+#' 
+#' \code{ReadAmerifluxNC} reads an Ameriflux Level 2 standardized NetCDF file
+#' and outputs a dataframe with consistent date and data columns for use with
+#' other rwrfhydro tools.
+#' 
+#' @param pathFluxData The full pathname to the flux time series NetCDF file as
+#'   downloaded from an Ameriflux data server.
+#' @param timeZone The time zone for the flux site. Time zone name must be
+#'   R-friendly for your current OS. See:
+#'   \url{http://stat.ethz.ch/R-manual/R-devel/library/base/html/timezones.html}. 
+#'   Provide this OR a UTC offset. Note that Ameriflux data is (allegedly!) in local
+#'   time without daylight savings. 
+#' @param utcOffset The UTC offset for the flux site's local time. These should be in 
+#' positive or negative hours (e.g., -7 for "America/Denver" with no DST shift). 
+#' These values will supercede any provided time zones. See tzLookup for a list of 
+#' time zone UTC offsets.
+#' @return A dataframe containing the Ameriflux data.
+#'   
+#' @examples
+#' ## Takes a NetCDF file downloaded from the ORNL Amerifux website for US-NC2
+#' ## (North Carolina Loblolly Pine) and returns a dataframe.
+#' 
+#' \dontrun{
+#' obsFlux30min.usnc2 <- 
+#'   ReadAmerifluxNC("../OBS/FLUX/AMF_USNC2_2005_L2_WG_V003.nc", utcOffset=-5)
+#' }
+#' @keywords IO
+#' @concept dataGet
+#' @family obsDataReads
+#' @export
+ReadAmerifluxNC <- function(pathFluxData, timeZone=NULL, utcOffset=NULL) {
+    if ((is.null(utcOffset)) & (is.null(timeZone))) {
+      stop("No time zone or UTC offset provided. Please determine the site's local time zone and re-run the tool.")
+    }
     ncFile <- nc_open(pathFluxData)
     nc <- ncFile$nvars
     nr <- ncFile$var[[1]]$varsize
@@ -138,50 +255,75 @@ ReadAmerifluxNC <- function(pathFluxData, timeZone) {
     }
     colnames(outDf) <- ncVarList
     nc_close(ncFile)
-    outDf$POSIXct <- as.POSIXct( paste(as.character(outDf$YEAR), as.character(outDf$DOY),
-                        as.character(ifelse(substr(outDf$HRMIN,1,nchar(outDf$HRMIN)-2)=='', "00", substr(outDf$HRMIN,1,nchar(outDf$HRMIN)-2))),
-                        as.character(substr(outDf$HRMIN,nchar(outDf$HRMIN)-1,nchar(outDf$HRMIN))), sep="-"),
-                        format="%Y-%j-%H-%M", tz=timeZone )
-    outDf$wy <- ifelse(as.numeric(format(outDf$POSIXct, "%m"))>=10,
-                        as.numeric(format(outDf$POSIXct,"%Y"))+1,
-                        as.numeric(format(outDf$POSIXct,"%Y")))
+    if (is.null(utcOffset)) {
+      outDf$POSIXct <- as.POSIXct( paste(as.character(outDf$YEAR), as.character(outDf$DOY),
+                                         as.character(ifelse(substr(outDf$HRMIN,1,nchar(outDf$HRMIN)-2)=='', "00", substr(outDf$HRMIN,1,nchar(outDf$HRMIN)-2))),
+                                         as.character(substr(outDf$HRMIN,nchar(outDf$HRMIN)-1,nchar(outDf$HRMIN))), sep="-"),
+                                   format="%Y-%j-%H-%M", tz=timeZone )
+    } else {
+      outDf$POSIXct <- as.POSIXct( paste(as.character(outDf$YEAR), as.character(outDf$DOY),
+                                         as.character(ifelse(substr(outDf$HRMIN,1,nchar(outDf$HRMIN)-2)=='', "00", substr(outDf$HRMIN,1,nchar(outDf$HRMIN)-2))),
+                                         as.character(substr(outDf$HRMIN,nchar(outDf$HRMIN)-1,nchar(outDf$HRMIN))), sep="-"),
+                                   format="%Y-%j-%H-%M", tz="UTC" ) - (utcOffset*3600)
+    }
+    outDf$wy <- CalcWaterYear(outDf$POSIXct)
     outDf
 }
 
 
 
 #' Read standard-format CSV data downloaded from Ameriflux
-#'
-#' \code{ReadAmerifluxCSV} reads Ameriflux data table (Level 2 standardized CSV file) and creates
-#' a dataframe.
-#'
-#' \code{ReadAmerifluxCSV} reads an Ameriflux Level 2 standardized CSV file and outputs a dataframe
-#' with consistent date and data columns for use with other rwrfhydro tools.
 #' 
-#' @param pathFluxData The full pathname to the flux time series CSV file as downloaded from an
-#' Ameriflux data server.
-#' @param timeZone The time zone for the flux data. Time zone name must be R-friendly for your
-#' current OS. See: \url{http://stat.ethz.ch/R-manual/R-devel/library/base/html/timezones.html}
+#' \code{ReadAmerifluxCSV} reads Ameriflux data table (Level 2 standardized CSV
+#' file) and creates a dataframe.
+#' 
+#' \code{ReadAmerifluxCSV} reads an Ameriflux Level 2 standardized CSV file and
+#' outputs a dataframe with consistent date and data columns for use with other
+#' rwrfhydro tools.
+#' 
+#' @param pathFluxData The full pathname to the flux time series CSV file as
+#'   downloaded from an Ameriflux data server.
+#' @param timeZone The time zone for the flux site. Time zone name must be
+#'   R-friendly for your current OS. See:
+#'   \url{http://stat.ethz.ch/R-manual/R-devel/library/base/html/timezones.html}. 
+#'   Provide this OR a UTC offset. Note that Ameriflux data is (allegedly!) in local
+#'   time without daylight savings. 
+#' @param utcOffset The UTC offset for the flux site's local time. These should be in 
+#' positive or negative hours (e.g., -7 for "America/Denver" with no DST shift). 
+#' These values will supercede any provided time zones. See tzLookup for a list of 
+#' time zone UTC offsets.
 #' @return A dataframe containing the Ameriflux data.
-#'
+#'   
 #' @examples
 #' ## Takes a CSV file downloaded from the ORNL Amerifux website for US-NR1 (Niwot Ridge)
 #' ## and returns a dataframe.
-#'
-#' obsFlux30min.usnr1 <- ReadAmerifluxCSV("../OBS/FLUX/AMF_USNR1_2013_L2_GF_V008.csv", "America/Denver")
+#' 
+#' \dontrun{
+#' obsFlux30min.usnr1 <- 
+#'   ReadAmerifluxCSV("../OBS/FLUX/AMF_USNR1_2013_L2_GF_V008.csv", utcOffset=-7)
+#' }
 #' @keywords IO
-#' @concept aconcept
+#' @concept dataGet
+#' @family obsDataReads
 #' @export
-ReadAmerifluxCSV <- function(pathFluxData, timeZone) {
+ReadAmerifluxCSV <- function(pathFluxData, timeZone=NULL, utcOffset=NULL) {
+    if ((is.null(utcOffset)) & (is.null(timeZone))) {
+      stop("No time zone or UTC offset provided. Please determine the site's local time zone and re-run the tool.")
+    }
     outDf <- read.table(pathFluxData, sep=",", skip=20, na.strings=c(-6999,-9999), strip.white=T)
     outDf.head <- read.table(pathFluxData, sep=",", skip=17, nrows=1, strip.white=T)
     colnames(outDf) <- as.matrix(outDf.head)[1,]
-    outDf$POSIXct <- as.POSIXct( paste(as.character(outDf$YEAR), as.character(outDf$DOY),
+    if (is.null(utcOffset)) {
+      outDf$POSIXct <- as.POSIXct( paste(as.character(outDf$YEAR), as.character(outDf$DOY),
                         as.character(ifelse(substr(outDf$HRMIN,1,nchar(outDf$HRMIN)-2)=='', "00", substr(outDf$HRMIN,1,nchar(outDf$HRMIN)-2))),
                         as.character(substr(outDf$HRMIN,nchar(outDf$HRMIN)-1,nchar(outDf$HRMIN))), sep="-"),
                         format="%Y-%j-%H-%M", tz=timeZone )
-    outDf$wy <- ifelse(as.numeric(format(outDf$POSIXct, "%m"))>=10,
-                        as.numeric(format(outDf$POSIXct,"%Y"))+1,
-                        as.numeric(format(outDf$POSIXct,"%Y")))
+    } else {
+      outDf$POSIXct <- as.POSIXct( paste(as.character(outDf$YEAR), as.character(outDf$DOY),
+                                         as.character(ifelse(substr(outDf$HRMIN,1,nchar(outDf$HRMIN)-2)=='', "00", substr(outDf$HRMIN,1,nchar(outDf$HRMIN)-2))),
+                                         as.character(substr(outDf$HRMIN,nchar(outDf$HRMIN)-1,nchar(outDf$HRMIN))), sep="-"),
+                                   format="%Y-%j-%H-%M", tz="UTC" ) - (utcOffset*3600)
+      }
+    outDf$wy <- CalcWaterYear(outDf$POSIXct)
     outDf
 }
