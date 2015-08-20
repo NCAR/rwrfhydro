@@ -25,9 +25,7 @@ A list or a dataframe (if all variables are 1D of the same length.)
 This saves some annoying typing.
 }
 \examples{
-\dontrun{
 conn <- GetNcdfFile('~/wrfHydroTestCases/Fourmile_Creek/CHANNEL_CONNECTIVITY.nc')
-}
 }
 \seealso{
 Other ncdf: \code{\link{MkNcdf}}; \code{\link{ncdump}}
