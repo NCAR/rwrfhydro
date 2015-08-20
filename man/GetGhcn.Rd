@@ -31,12 +31,11 @@ For the full list of elemenst refer to
 
 \item{parallel}{Logical}
 
-\item{fileAdd}{Address to the directory containg all the daily GHCN data,
+\item{fileAdd}{Address to the url containg all the daily GHCN data,
 default is \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/all/}}
 }
 \value{
-A list of dataframes containing the date and the correponding daily GHCN value and the qFlag value.
-It removes the gauges with no observation from the list.
+A dataframes containing the date and the correponding daily GHCN value and the qFlag value.
 }
 \description{
 \code{\link{GetGhcn}} downloads the daily GHCN (Global Historic Climatology Network)
