@@ -10,8 +10,10 @@
 #' @param flip2D Logical, apply a vertical flip to 2D variables? (E.g. WRF Hydro geo grids)
 #' @return A list or a dataframe (if all variables are 1D of the same length.)
 #' @examples
+#' \dontrun{
 #' conn <- GetNcdfFile('~/wrfHydroTestCases/Fourmile_Creek/CHANNEL_CONNECTIVITY.nc')
-#  conn <- GetNcdfFile('~/wrfHydroTestCases/Fourmile_Creek/CHANNEL_CONNECTIVITY.nc', var='lambert_conformal_conic', exc=TRUE)
+#'  conn <- GetNcdfFile('~/wrfHydroTestCases/Fourmile_Creek/CHANNEL_CONNECTIVITY.nc', var='lambert_conformal_conic', exc=TRUE)
+#' }
 #' @concept ncdf 
 #' @family ncdf 
 #' @export
