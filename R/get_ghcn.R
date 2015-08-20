@@ -225,7 +225,7 @@ GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
 #' startDate="2000/02/01"
 #' endDate="2002/10/01"
 #' element="PRCP"
-#' obsPrcp<-GetGhcn(siteIds,element,startDate,endDate,parallel=FALSE)
+#' obsPrcp<-GetGhcn2(siteIds,element,startDate,endDate,parallel=FALSE)
 #'
 #' Or you would use the results of the SelectGhcnGauges
 #'
@@ -235,7 +235,7 @@ GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
 #' selectedGauges<-SelectGhcnGauges(countryCode=countryCodeList,
 #'                                  networkCode=networkCodeList,
 #'                                  states=statesList)
-#' obsPrcp<-GetGhcn(selectedGauges$siteIds,element,startDate,endDate,parallel=FALSE)
+#' obsPrcp<-GetGhcn2(selectedGauges$siteIds,element,startDate,endDate,parallel=FALSE)
 #' 
 
 GetGhcn2 <- function(siteIds,elements,startDate,endDate,parallel=FALSE,

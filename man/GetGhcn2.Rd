@@ -49,7 +49,7 @@ siteIds=c("ACW00011604","AJ000037579","AJ000037883","ASN00005095")
 startDate="2000/02/01"
 endDate="2002/10/01"
 element="PRCP"
-obsPrcp<-GetGhcn(siteIds,element,startDate,endDate,parallel=FALSE)
+obsPrcp<-GetGhcn2(siteIds,element,startDate,endDate,parallel=FALSE)
 
 Or you would use the results of the SelectGhcnGauges
 
@@ -59,6 +59,6 @@ statesList=c("WY")
 selectedGauges<-SelectGhcnGauges(countryCode=countryCodeList,
                                  networkCode=networkCodeList,
                                  states=statesList)
-obsPrcp<-GetGhcn(selectedGauges$siteIds,element,startDate,endDate,parallel=FALSE)
+obsPrcp<-GetGhcn2(selectedGauges$siteIds,element,startDate,endDate,parallel=FALSE)
 }
 
