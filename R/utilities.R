@@ -612,11 +612,16 @@ lsOS <- function(..., n=10) {
 #' @param n Number of records to use
 #' @param sides Whether to use both sides (2=past and 
 #' future) or just one side (1=past only).
+#' @param ts Flag whether or not to return a time
+#' series object or just a vector (DEFAULT=FALSE,
+#' which returns a vector)
 #' @return Vector of moving averages
 #' @keywords utilities internal
 #' @export
-CalcRunningMean <- function(x, n, sides=2) {
-  filter(x, rep(1/n,n), sides=sides, method="convolution")
+CalcRunningMean <- function(x, n, sides=2, ts=FALSE) {
+  out <- filter(x, rep(1/n,n), sides=sides, method="convolution")
+  if (!ts) out <- unclass(out)
+  return(out)
 }
 
 #' Fill outliers based on change between steps

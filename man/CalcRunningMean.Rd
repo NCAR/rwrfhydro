@@ -4,7 +4,7 @@
 \alias{CalcRunningMean}
 \title{Calculate a running mean}
 \usage{
-CalcRunningMean(x, n, sides = 2)
+CalcRunningMean(x, n, sides = 2, ts = FALSE)
 }
 \arguments{
 \item{x}{Vector of values}
@@ -13,6 +13,10 @@ CalcRunningMean(x, n, sides = 2)
 
 \item{sides}{Whether to use both sides (2=past and
 future) or just one side (1=past only).}
+
+\item{ts}{Flag whether or not to return a time
+series object or just a vector (DEFAULT=FALSE,
+which returns a vector)}
 }
 \value{
 Vector of moving averages
