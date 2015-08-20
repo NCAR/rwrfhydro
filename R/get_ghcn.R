@@ -105,12 +105,11 @@ SelectGhcnGauges <- function(countryCode=NULL,networkCode=NULL,states=NULL,
 #' \url{ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt}
 #' @param startDate,endDate Date.
 #' @param parallel Logical
-#' @param fileAdd Address to the directory containg all the daily GHCN data,
+#' @param fileAdd Address to the url containg all the daily GHCN data,
 #' default is \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/all/}
 #'
-#' @return A list of dataframes containing the date and the correponding daily GHCN value and the qFlag value.
-#' It removes the gauges with no observation from the list.
-#'
+#' @return A dataframes containing the date and the correponding daily GHCN value and the qFlag value.
+#' 
 #' @examples
 #' siteIds=c("ACW00011604","AJ000037579","AJ000037883","ASN00005095")
 #' startDate="1949/02/01"
@@ -187,10 +186,76 @@ GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
 }
 
 
+#' Get GHCN data for specified sitesId.
+#'
+#' \code{\link{GetGhcn2}} downloads the daily GHCN (Global Historic Climatology Network)
+#'  data for each siteIds, and creates a dataframe containing fields of siteIds, date, 
+#'  daily GHCN value, mFlag, qFlag, sFlag and reportTime. This is a fater function over
+#'  \code{\link{GetGhcn}} if you have many sites.
+#'  
+#' @param siteIds A single siteId or vector of siteIds to download and process. 
+#' SiteIds should match the standardized GHCN IDs (for example : ACW00011604).
+#' See \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt}
+#' for a list of siteIds.
+#' 
+#' 
+#' @param elements A Character vector defining what type of observation you 
+#' are interested in. There are five core elements as well as a number of 
+#' addition elements. The five core elements are:
+#' \describe{
+#' \item{PRCP}{ = Precipitation (tenths of mm)}
+#' \item{SNOW}{ = Snowfall (mm)}
+#' \item{SNWD}{ = Snow depth (mm)}
+#' \item{MAX}{ = Maximum temperature (tenths of degrees C)}
+#' \item{TMIN}{ = Minimum temperature (tenths of degrees C)}
+#'}
+#' For the full list of elemenst refer to 
+#' \url{ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt}
+#' @param startDate,endDate Date.
+#' @param parallel Logical.
+#' @param fileAdd Address to the url containg teh csv files of daily GHCN by year. 
+#' default is \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_year/}
+#'
+#' @return A dataframes containing the siteIds, date, daily GHCN, element,sFlag, qFlag, mFlag and reportTime.
+#' For more information on possible outcomes of flags and their meaning refer to
+#' \url{ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt} 
+#'
+#' @examples
+#' siteIds=c("ACW00011604","AJ000037579","AJ000037883","ASN00005095")
+#' startDate="2000/02/01"
+#' endDate="2002/10/01"
+#' element="PRCP"
+#' obsPrcp<-GetGhcn(siteIds,element,startDate,endDate,parallel=FALSE)
+#'
+#' Or you would use the results of the SelectGhcnGauges
+#'
+#' countryCodeList=c("US")
+#' networkCodeList=c("1")
+#' statesList=c("WY")
+#' selectedGauges<-SelectGhcnGauges(countryCode=countryCodeList,
+#'                                  networkCode=networkCodeList,
+#'                                  states=statesList)
+#' obsPrcp<-GetGhcn(selectedGauges$siteIds,element,startDate,endDate,parallel=FALSE)
+#' 
 
+GetGhcn2 <- function(siteIds,elements,startDate,endDate,parallel=FALSE,
+                    fileAdd="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/by_year/") {
+  
+# get all the years in the time period
+years<-as.list(seq(lubridate::year(as.Date(startDate)),lubridate::year(as.Date(endDate))))
+dat<-plyr::ldply(years,function(year) {
+  temp <- tempfile()  
+  download.file(paste0(fileAdd,year,".csv.gz"),temp, mode="wb")
+  dat <- read.csv(gzfile(temp), header = FALSE,
+                  col.names = c("siteIds","date","element","value","mFlag","qFlag","sFlag","reportTime"),
+                  colClasses = c(rep("character",3),"numeric",rep("character",4)))
+  unlink(temp)
+  dat$date<-as.Date(as.character(dat$date),"%Y%m%d")
+  dat<-subset(dat,dat$siteId %in% as.list(siteIds) & dat$element %in% elements)
+  dat<-subset(dat,dat$date >= as.Date(startDate) & dat$date <= as.Date(endDate))
+ },.parallel=parallel)
 
-
-
+}
 
 
 
