@@ -28,7 +28,7 @@
 #' @return Daily precipitation comparable with daily GHCN data. 
 #' 
 
-CalcDailyGhcn<-function(sg,prcp,sg$reportTime=NULL,reportTime=700){
+CalcDailyGhcn<-function(sg,prcp,reportTime=700){
   
   # Add timeZone if missing
   if (!("timeZone" %in% colnames(sg))) sg<-GetTimeZone(sg) 
@@ -46,7 +46,7 @@ CalcDailyGhcn<-function(sg,prcp,sg$reportTime=NULL,reportTime=700){
   prcp$lstTime<-as.POSIXct(prcp$POSIXct)+as.difftime(gsub("[+-]","",offset1[as.character(prcp$timeZone)]),format ="%H:%M") * ifelse(grepl("^-",offset1[as.character(prcp$timeZone)]),-1,1)
   
   # add a day index to each hour compatible with GHCN time stamp 
-  if (!("reportTime" %in% colnames(sg)))  {
+  if (!("reportTime" %in% colnames(sg))){
     # Add the report time column to prcp data 
     TZ<-sg$reportTime
     names(TZ)<-(sg$reportTime)

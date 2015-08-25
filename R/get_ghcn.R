@@ -255,6 +255,8 @@ dat<-plyr::ldply(years,function(year) {
   dat<-subset(dat,dat$date >= as.Date(startDate) & dat$date <= as.Date(endDate))
  },.parallel=parallel)
 
+if (element=="PRCP") dat$value<-dat$value/10
+
 }
 
 
