@@ -28,7 +28,7 @@
 #' @return Daily precipitation comparable with daily GHCN data. 
 #' 
 
-CalcDailyGhcn<-function(sg,prcp,reportTime=7){
+CalcDailyGhcn<-function(sg,prcp,reportTime=700){
   
   # Add timeZone if missing
   if (!("timeZone" %in% colnames(sg))) sg<-GetTimeZone(sg) 
@@ -52,9 +52,9 @@ CalcDailyGhcn<-function(sg,prcp,reportTime=7){
  
   # add a day index to each hour compatible with GHCN time stamp 
   if (!is.null()) {
-    prcp$ghcnDay<-as.Date(trunc(prcp$lstTime+as.difftime((23-as.numeric(prcp$reportTime)),units="hours"),"days"))
+    prcp$ghcnDay<-as.Date(trunc(prcp$lstTime+as.difftime((23-as.numeric(prcp$reportTime)/100),units="hours"),"days"))
   }else{
-    prcp$ghcnDay<-as.Date(trunc(prcp$lstTime+as.difftime((23-as.numeric(reportTime)),units="hours"),"days"))
+    prcp$ghcnDay<-as.Date(trunc(prcp$lstTime+as.difftime((23-as.numeric(reportTime)/100),units="hours"),"days"))
   }
   
   # calculate the daily precip form hourly prcp
