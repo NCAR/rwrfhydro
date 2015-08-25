@@ -41,7 +41,7 @@ CalcDailyGhcn<-function(sg,prcp,reportTime=700){
   
   # Add the time zone column to prcp data
   TZ<-sg$timeZone
-  names(TZ)<-(sg$siteId)
+  names(TZ)<-(sg$siteIds)
   prcp$timeZone<-TZ[as.character(prcp$statArg)]
   prcp$lstTime<-as.POSIXct(prcp$POSIXct)+as.difftime(gsub("[+-]","",offset1[as.character(prcp$timeZone)]),format ="%H:%M") * ifelse(grepl("^-",offset1[as.character(prcp$timeZone)]),-1,1)
   
@@ -51,7 +51,7 @@ CalcDailyGhcn<-function(sg,prcp,reportTime=700){
   prcp$reportTime<-TZ[as.character(prcp$statArg)]
  
   # add a day index to each hour compatible with GHCN time stamp 
-  if (!is.null()) {
+  if (!is.null(reportTime)) {
     prcp$ghcnDay<-as.Date(trunc(prcp$lstTime+as.difftime((23-as.numeric(prcp$reportTime)/100),units="hours"),"days"))
   }else{
     prcp$ghcnDay<-as.Date(trunc(prcp$lstTime+as.difftime((23-as.numeric(reportTime)/100),units="hours"),"days"))
