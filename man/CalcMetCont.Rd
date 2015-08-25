@@ -26,7 +26,7 @@ Pair matching is not done in this function. It assumes the two time series are
 comparable one by obe.
 }
 \examples{
-DF <- data.frame(obs=seq(1:5), mod=seq(6:11), stringsAsFactors=FALSE)
-stat<-CalMetVeriCont(DF$obs,DF$sim)
+DF <- data.frame(obs=seq(1,5), mod=seq(6,10), stringsAsFactors=FALSE)
+stat<-CalcMetCont(DF$obs,DF$mod)
 }
 

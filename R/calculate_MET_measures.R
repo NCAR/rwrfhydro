@@ -16,8 +16,8 @@
 #' for continuous variable.
 #'
 #' @examples
-#' DF <- data.frame(obs=seq(1:5), mod=seq(6:11), stringsAsFactors=FALSE)
-#' stat<-CalMetVeriCont(DF$obs,DF$sim)
+#' DF <- data.frame(obs=seq(1,5), mod=seq(6,10), stringsAsFactors=FALSE)
+#' stat<-CalcMetCont(DF$obs,DF$mod)
 
 CalcMetCont <- function(obs,mod,conRange=NULL){
   
