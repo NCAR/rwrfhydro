@@ -28,7 +28,7 @@
 #' @return Daily precipitation comparable with daily GHCN data. 
 #' 
 
-CalcDailyGhcn<-function(sg,prcp,reportTime=700){
+CalcDailyGhcn<-function(sg,prcp,reportTime=700,parallel=FALSE){
   
   # Add timeZone if missing
   if (!("timeZone" %in% colnames(sg))) sg<-GetTimeZone(sg) 
