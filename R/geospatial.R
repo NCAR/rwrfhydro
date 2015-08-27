@@ -45,7 +45,7 @@ ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, inLyr=NA) {
   inNC <- tryCatch(suppressWarnings(ncdf4::nc_open(inFile)),
                         error=function(cond) {message(cond); return(NA)})
 
-  if (!is.na(inNC)){
+  if (!all(is.na(inNC))){
   inNCVar <- ncdf4::ncvar_get(inNC, inVar)
   if (!is.na(inLyr)) inNCVar <- inNCVar[,inLyr,]
 	varList <- names(inNC$var)
@@ -132,7 +132,7 @@ ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, inLyr=NA) {
 	# Setup temp geotif
 	d.drv <- new("GDALDriver", "GTiff")
 
-	if (!is.na(inNC)) {
+	if (!all(is.na(inNC))) {
 	  typ<-typlist[[inNC$var[[inVar]]$prec]]
 	  }else{
 	  typ<-typlist[7]
@@ -149,7 +149,7 @@ ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, inLyr=NA) {
 	rgdal::putRasterData(tds.out, as.matrix(inNCVarRast))
 	rgdal::saveDataset(tds.out, outFile)
 	rgdal::GDAL.close(tds.out)
-	if (!is.na(inNC))  ncdf4::nc_close(inNC)
+	if (!all(is.na(inNC)))  ncdf4::nc_close(inNC)
 	if (!is.na(inCoordFile)) ncdf4::nc_close(coordNC)
 }
 
