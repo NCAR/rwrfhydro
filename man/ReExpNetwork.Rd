@@ -23,8 +23,8 @@ up- and down- stream traversal, depending on the upstream argument.
 \dontrun{
   library(rwrfhydro)
   doMC::registerDoMC(16)
-  ReExpNetwork("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reInd.Rdb")
-  ReExpNetwork("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reInd.Rdb", up=FALSE)
+  ReExpNetwork(reIndFile)
+  ReExpNetwork(reIndFile, up=FALSE)
 }
 }
 \seealso{
