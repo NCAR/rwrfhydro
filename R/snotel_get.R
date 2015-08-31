@@ -115,15 +115,19 @@ GetSnotel <- function(siteIDs,
         }
       if ("Site.Id" %in% names(tmpData)) names(tmpData)[which(names(tmpData)=="Site.Id")]<-"site_id"
       # Do unit conversions where necessary
-      if ("WTEQ.I.1..in." %in% names(tmpData)) tmpData$SWE_mm <- sapply(as.numeric(as.character(tmpData$WTEQ.I.1..in.)), 
-                                                                        FUN=function(x) max(x*25.4, 0.0))
+      if ("WTEQ.I.1..in." %in% names(tmpData)) {
+        tmpData$SWE_mm <- sapply(tmpData$WTEQ.I.1..in., FUN=function(x) max(x*25.4, 0.0))
+        tmpData$SWE_mm <- as.numeric(as.character(tmpData$SWE_mm))
+      }
       if ("PREC.I.1..in." %in% names(tmpData)) {
         tmpData$CumPrec_mm <- as.numeric(as.character(tmpData$PREC.I.1..in.)) * 25.4
         tmpData$Prec_mm[2:nrow(tmpData)] <- diff(tmpData$CumPrec_mm)
         tmpData$Prec_mm[tmpData$Prec_mm<0] <- 0.0
         }
-      if ("SNWD.I.1..in." %in% names(tmpData)) tmpData$SNWD_mm <- sapply(as.numeric(as.character(tmpData$SNWD.I.1..in.)), 
-                                                                         FUN=function(x) max(x*25.4, 0.0))
+      if ("SNWD.I.1..in." %in% names(tmpData)) {
+        tmpData$SNWD_mm <- sapply(tmpData$SNWD.I.1..in., FUN=function(x) max(x*25.4, 0.0))
+        tmpData$SNWD_mm <- as.numeric(as.character(tmpData$SNWD_mm))
+      }
       # Rename temperature fields (already in ok units)
       if ("TOBS.I.1..degC." %in% names(tmpData)) names(tmpData)[which(names(tmpData)=="TOBS.I.1..degC.")]<-"Tobs_C"
       if ("TMAX.D.1..degC." %in% names(tmpData)) names(tmpData)[which(names(tmpData)=="TMAX.D.1..degC.")]<-"Tmax_C"
