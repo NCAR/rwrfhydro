@@ -43,6 +43,17 @@
 #' thePlot <- PlotRouteLink(gageZoom=gagePoints2, pad=.02, zoom=12, 
 #' plotPath='~/WRF_Hydro/DOMAIN_library/FRNG_1km_100m_1sqkm_routing_NHD_2015_08_10/gageIdPlots/')
 #' thePlot <- PlotRouteLink(gageZoom=gagePoints2, pad=.02, zoom=12)
+#' # just show the boulder creek domain
+#' file <- '~/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.nc'
+#' PlotRouteLink <- VisualizeRouteLink(file, parallel=TRUE)
+#' foo <- PlotRouteLink()
+#' load('~/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.reInd.Rdb')
+#' foo$rl$link <- 1:nrow(reInd)
+#' foo$ggObj + ggplot2::geom_text(data=foo$rl, 
+#'                                ggplot2::aes(x=lon/2+to_lon/2, 
+#'                                             y=lat/2+to_lat/2, 
+#'                                label=as.character(link)), 
+#'                                color='darkred')
 #' }
 #' @export
 VisualizeRouteLink <- function(file, parallel=FALSE) {
@@ -96,6 +107,7 @@ VisualizeRouteLink <- function(file, parallel=FALSE) {
                               to_lon < plotLimX[2] & 
                               to_lat > plotLimY[1] & 
                               to_lat < plotLimY[2] )    )
+        if(nrow(rlSub)==0) next
       } else {
         plotLimX <- PadRange(range(rl$lon),diff=padPlot)
         plotLimY <- PadRange(range(rl$lat),diff=padPlot)
