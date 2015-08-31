@@ -32,7 +32,9 @@ obsFlux30min.usnr1 <- ReadAmerifluxCSV("../OBS/FLUX/AMF_USNR1_2013_L2_GF_V008.cs
 }
 \seealso{
 Other obsDataReads: \code{\link{ReadAmerifluxNC}};
-  \code{\link{ReadCoDwrGage}}; \code{\link{ReadUsgsGage}}
+  \code{\link{ReadCoDwrGage}};
+  \code{\link{ReadNearStationData}};
+  \code{\link{ReadUsgsGage}}
 }
 \concept{
 dataGet

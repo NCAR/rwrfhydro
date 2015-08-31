@@ -40,7 +40,9 @@ obsStr15min.alaterco <- ReadCoDwrGage("../OBS/STRFLOW/ALATERCO_41715103512.txt",
 }
 \seealso{
 Other obsDataReads: \code{\link{ReadAmerifluxCSV}};
-  \code{\link{ReadAmerifluxNC}}; \code{\link{ReadUsgsGage}}
+  \code{\link{ReadAmerifluxNC}};
+  \code{\link{ReadNearStationData}};
+  \code{\link{ReadUsgsGage}}
 }
 \concept{
 dataGet

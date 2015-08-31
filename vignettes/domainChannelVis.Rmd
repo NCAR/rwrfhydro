@@ -143,3 +143,76 @@ You can also click in the zoomed view.
  LocLinkFun(zoom=15, gaugeShape=16, gaugeZoom='loganMill', pad=15, click=TRUE)
 ```
 
+#Define gauge points for data assimilation on the gridded channel network (rough draft)
+
+assimQuery <- subset(QuerySiteInfo(c('station_nm','site_no','dec_lat_va','dec_long_va'),
+    path='~/wrfHydroTestCases/usgsDb/'), HUC8=='10190005' & product=='00060')
+
+assimGages <- plyr::dlply(assimQuery, 1, function(dd) 
+                      {dd<-dd[,c('dec_lat_va','dec_long_va')]; names(dd)<-c('lat','lon'); dd})
+names(assimGages) <- plyr::laply(names(assimGages), function(ch) gsub(' ', '_', gsub('[[:punct:]]', '', ch) ))
+## remove the attributes this way, they cause problems - should do this in the function automagically.
+assimGages<-assimGages[1:8]
+## 200302022100.CHRTOUT_DOMAIN1 is output from Yates' Boulder Creek Domain, channel grid however
+LocLinkFun <- VisualizeChanNtwk('~/200302022100.CHRTOUT_DOMAIN1', gaugePts = assimGages)
+## Plotting shows that this gage is on the wrong tributary. 
+LocLinkFun(gaugeZoom = "BOULDER_CREEK_AT_NORTH_75TH_ST_NEAR_BOULDER_CO",pad=15, zoom=14)
+## the gage location fix
+LocLinkFun(gaugeZoom = "BOULDER_CREEK_AT_NORTH_75TH_ST_NEAR_BOULDER_CO",pad=15, zoom=14, clickSelect=TRUE)
+#Please click on plot to select nearest point to your click...
+#Selected point (in cyan on plot) data:
+#  ind            lon           lat             q
+# 8846 -105.177848816 40.0434341431 1.52745711803
+assimGages$BOULDER_CREEK_AT_NORTH_75TH_ST_NEAR_BOULDER_CO[c('lat','lon')]=rev(c(-105.177848816, 40.0434341431))
+LocLinkFun <- VisualizeChanNtwk('~/200302022100.CHRTOUT_DOMAIN1', gaugePts = assimGages)
+## just keep the following gages
+assimGages = assimGages[c("BOULDER_CREEK_AT_NORTH_75TH_ST_NEAR_BOULDER_CO",
+                          "FOURMILE_CANYON_CREEK_NEAR_SUNSHINE_CO",
+                          "FOURMILE_CREEK_AT_LOGAN_MILL_ROAD_NEAR_CRISMAN_CO",
+                          "FOURMILE_CREEK_AT_ORODELL_CO")]
+## This first one is hard to see suggests some improvements to the pad keyword.
+LocLinkFun(gaugeZoom = "FOURMILE_CANYON_CREEK_NEAR_SUNSHINE_CO",           pad=10, zoom=14)
+LocLinkFun(gaugeZoom = "FOURMILE_CREEK_AT_LOGAN_MILL_ROAD_NEAR_CRISMAN_CO",pad=15, zoom=14)
+LocLinkFun(gaugeZoom = "FOURMILE_CREEK_AT_ORODELL_CO",                     pad=15, zoom=14)
+LocLinkFun <- VisualizeChanNtwk('~/200302022100.CHRTOUT_DOMAIN1', gaugePts = assimGages)
+## These look good. They will provide a nested set of gages for nudging.
+
+## Get the channel grid to make sure these points are on it and sane
+chan <- ncdump('~/Fulldom_hires_netcdf_file.extraFrxstPt.nc', 'CHANNELGRID', quiet=TRUE)
+## apparently the points are not on the same index/subset
+## just go with "geolocation". Use the model coords from
+LocLinkFun <- VisualizeChanNtwk('~/200302022100.CHRTOUT_DOMAIN1', gaugePts = assimGages)
+## b/c they are on the channel already.
+gridLon <- ncdump('~/Fulldom_hires_netcdf_file.extraFrxstPt.nc', 'LONGITUDE', quiet=TRUE)
+gridLat <- ncdump('~/Fulldom_hires_netcdf_file.extraFrxstPt.nc', 'LATITUDE', quiet=TRUE)
+gageLoc <- 
+  data.frame( lon= c(-105.177848816, -105.348739624, -105.364463806, -105.325675964),
+              lat= c( 40.0434341431,  40.0581130981,  40.0423851013,  40.0182723999) )
+gageLoc$stnId  <- c("BOULDER_CREEK_AT_NORTH_75TH_ST_NEAR_BOULDER_CO", 
+                    "FOURMILE_CANYON_CREEK_NEAR_SUNSHINE_CO",
+                    "FOURMILE_CREEK_AT_LOGAN_MILL_ROAD_NEAR_CRISMAN_CO",
+                    "FOURMILE_CREEK_AT_ORODELL_CO" )
+
+FindClosest <- function(df) which.min( sqrt( (gridLon-df$lon)^2 + (gridLat-df$lat)^2 ) - chan )
+whClosest <- plyr::ddply(gageLoc, plyr::.(stnId, lon, lat), FindClosest)
+## are these on the channel network? 
+##( put "-chan" above to ensure because sunshine was not on the channel network... strange)
+chan[whClosest$V1]
+
+ch2 <- chan
+ch2[which(ch2==-9999)]=NA
+ch2[whClosest$V1] = ch2[whClosest$V1]  + 1:4
+image(ch2, col = c('lightblue', 'red', 'orange', 'pink', 'purple' ))
+## looks good (enough for testing)!
+
+## forecast points layer to edit
+frx <- ncdump('~/Fulldom_hires_netcdf_file.extraFrxstPt.nc', 'frxst_pts', quiet=TRUE)
+frx2 <- frx*0
+frx2[whClosest$V1] = 1:4
+image(frx2, col = c('lightblue', 'red', 'orange', 'pink', 'purple' ))
+## Open the file to edit
+ncid <- nc_open('~/Fulldom_hires_netcdf_file.extraFrxstPt.nc', write=TRUE )
+iret <- ncvar_put(ncid, 'frxst_pts', frx2)
+nc_close(ncid)
+frx3 <- ncdump('~/Fulldom_hires_netcdf_file.extraFrxstPt.nc', 'frxst_pts', quiet=TRUE)
+image(frx3, col = c('lightblue', 'red', 'orange', 'pink', 'purple' ))

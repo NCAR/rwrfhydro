@@ -142,4 +142,23 @@ VisualizeRouteLink <- function(file, parallel=FALSE) {
   
   invisible(PlotRouteLink)  ## return the function
 }    
-    
+   
+
+#'Visualize upstream or downstream links determined from GatherStream
+#'
+#'@param indDist List containing indies and accumulated distance from start, obtained from GatherStream
+#'@param ncFile Route Link file read in/initially processed with VisualizeRouteLink()
+#'
+#'@return Map of Route Links with selected upstream/downstream links highlighted in red, starting location in black
+#'
+VisualizeSubsetStream <- function(indDist,ncFile){
+  Plot <- VisualizeRouteLink(ncFile)
+  PlotData <- Plot()
+  PlotData$rl$ind <- 1:nrow(PlotData$rl)
+  selectlinks <- PlotData$rl[(PlotData$rl$ind %in% indDist$ind),]
+  startlink <- PlotData$rl[(PlotData$rl$ind %in% indDist$startInd),]
+  PlotData$ggObj + ggplot2::geom_segment(data=selectlinks,ggplot2::aes(x=lon,y=lat,xend=to_lon,yend=to_lat),color="red1") + 
+        ggplot2::geom_text(data=selectlinks,ggplot2::aes(x=lon/2+to_lon/2,y=lat/2+to_lat/2,label=as.character(ind)),color="red1") +
+        ggplot2::geom_text(data=startlink,ggplot2::aes(x=lon/2+to_lon/2,y=lat/2+to_lat/2,label=as.character(ind)))
+
+  } 
