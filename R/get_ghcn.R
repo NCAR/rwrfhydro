@@ -262,5 +262,3 @@ if (element=="PRCP") dat$value<-dat$value/10
 return(dat)
 }
 
-
-obs
