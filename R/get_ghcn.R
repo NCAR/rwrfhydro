@@ -238,10 +238,10 @@ GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
 #' obsPrcp<-GetGhcn2(selectedGauges$siteIds,element,startDate,endDate,parallel=FALSE)
 #' 
 
-GetGhcn2 <- function(siteIds,elements,startDate,endDate,parallel=FALSE,
+GetGhcn2 <- function(ids,elements,startDate,endDate,parallel=FALSE,
                     fileAdd="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/by_year/") {
   
-# get all the years in the time period
+ # get all the years in the time period
 years<-as.list(seq(lubridate::year(as.Date(startDate)),lubridate::year(as.Date(endDate))))
 dat<-plyr::ldply(years,function(year) {
   temp <- tempfile()  
@@ -250,8 +250,10 @@ dat<-plyr::ldply(years,function(year) {
                   col.names = c("siteIds","date","element","value","mFlag","qFlag","sFlag","reportTime"),
                   colClasses = c(rep("character",3),"numeric",rep("character",4)))
   unlink(temp)
+  
+  # subset based on siteIds, element, date
   dat$date<-as.Date(as.character(dat$date),"%Y%m%d")
-  dat<-subset(dat,dat$siteId %in% as.list(siteIds) & dat$element %in% elements)
+  dat<-subset(dat,dat$siteIds %in% ids & dat$element %in% elements)
   dat<-subset(dat,dat$date >= as.Date(startDate) & dat$date <= as.Date(endDate))
  },.parallel=parallel)
 
@@ -261,4 +263,4 @@ return(dat)
 }
 
 
-
+obs
