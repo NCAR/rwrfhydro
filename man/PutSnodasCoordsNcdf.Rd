@@ -21,7 +21,8 @@ unlink(outFile)
 Other SNODAS: \code{\link{CalcSnodasCoords}};
   \code{\link{GetSnodasDepthSweDate}};
   \code{\link{PutSnodasNcdf}};
-  \code{\link{ReadSnodasDepthSweDate}}
+  \code{\link{ReadSnodasDepthSweDate}};
+  \code{\link{getSnodasPointTs}}
 }
 \concept{
 SNODAS
