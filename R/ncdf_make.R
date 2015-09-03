@@ -116,10 +116,12 @@ MkNcdf <- function( varList, filename,
           dim$units=''  ## required if this condition.
           dim$values=1:length(dim$values)          
         }
+        
         ncdf4::ncdim_def(name=dim$name, units=dim$units,
                          vals=dim$values, unlim=dim$unlim,
                          create_dimvar=dim$create_dimvar)
       }
+      
       dimList <- plyr::llply( var$dimensionList, doDimDef )
       
       ncdf4::ncvar_def(var$name, var$units, dimList, var$missing,
@@ -163,6 +165,7 @@ MkNcdf <- function( varList, filename,
       varDimInfo <- ncid$var[[var$name]]$dim
       names(varDimInfo) <- plyr::laply(varDimInfo, '[[', 'name')
       unlimDimName <- subset(plyr::ldply(varDimInfo,'[[','unlim'),`[[`)$.id
+      
       ncdf4::ncvar_put( ncid, unlimDimName, 
                         var$dimensionList[[unlimDimName]]$values,
                         start=varDimInfo[[unlimDimName]]$len+1, 

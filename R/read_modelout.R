@@ -296,4 +296,3 @@ ReadRtout <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, ncore
    }
    basnmsk
  }
-

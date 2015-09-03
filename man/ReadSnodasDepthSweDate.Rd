@@ -28,7 +28,8 @@ unlink(path.expand('~/us_ssmv1103*.dat.gz'))
 Other SNODAS: \code{\link{CalcSnodasCoords}};
   \code{\link{GetSnodasDepthSweDate}};
   \code{\link{PutSnodasCoordsNcdf}};
-  \code{\link{PutSnodasNcdf}}
+  \code{\link{PutSnodasNcdf}};
+  \code{\link{getSnodasPointTs}}
 }
 \concept{
 SNODAS

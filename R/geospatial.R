@@ -186,3 +186,158 @@ GetGeogridIndex <- function(xy, ncfile, x="lon", y="lat", proj4='+proj=longlat +
   outDf$col<-NULL
   outDf
 }
+#' Pull necessary geospatial information from geogrid file used for
+#' regridding and deprojection.
+#' 
+#' \code{geogridSpatialInfo} Pull geospatial information about WRF-Hydro
+#'  modeling domain from geogrid file.
+#'  
+#' @param geoFile The geogrid file information is being pulled from
+#' @return spatialDF data frame containing geospatial information
+#' @examples
+#' \dontrun{
+#' lccGeoDF <- geogridSpatialInfo('./geo_em.d02.nc')
+#' }
+#' @keywords GEOSPATIAL METADATA
+#' @concept GEOSPATIAL
+#' @family METADATA
+#' @export
+geogridSpatialInfo <- function(geoFile){
+  #First check for existence of file
+  if(!file.exists(geoFile)){
+    warning(paste0('ERROR: Geogrid file: ',geoFile,' not found.'))
+    return(0)
+  }
+  
+  #Open geogrid file
+  ncid <- ncdf4::nc_open(geoFile)
+  
+  #Pull grid type. Currently, only lambert conformal is accepted
+  mapProj <- ncdf4::ncatt_get(ncid,varid=0,'MAP_PROJ')$value
+  
+  #Only support lambert conformal for now
+  if(mapProj != 1){
+    warning('ERROR: Geogrid either missing MAP_PROJ or contains invalid value.')
+    warning('ERROR: Only MAP_PROJ of 1 (lambert conformal) is supported at this time')
+    return(0)
+  }
+  
+  if(mapProj == 1){
+    #Create data frame to hold information
+    dataOut = data.frame(matrix(NA, nrow=1, ncol=14))
+    names(dataOut) <- c('DX','DY','GRID_TYPE','LAT1','LON1',
+                        'REF_LAT','REF_LON',
+                        'SPLAT1','SPLAT2','POLE_LAT','POLE_LON',
+                        'MAP_PROJ','NCOL','NROW')
+    
+    #DX = Horizontal resolution in meters
+    #DY = Vertical resoltuion in meters
+    #GRID_TYPE = Type of staggered WRF grid - should be C
+    #LAT1 = Latitude of lower left pixel cell in degrees
+    #LON1 = Longitude of lower left pixel cell in degrees
+    #REF_LAT = Reference latitude of domain in degrees
+    #REF_LON = Reference longitude of domain in degrees
+    #SPLAT1 = Standard parallel latitude 1 in degrees
+    #SPLAT2 = Standard parallel latitude 2 in degrees.
+    #         Note that SPLAT2 may be equal to SPLAT1
+    #POLE_LAT = Latitude of the pole used.
+    #POLE_LON = Longitude of the pole used.
+    #MAP_PROJ = WRF defined map projection, should be 1
+    #           for lambert conformal grids
+    #NCOL = Number of columns in the WRF-Hydro domain
+    #NROW = Number of rows in the WRF-Hydro domain
+    
+    dataOut$MAP_PROJ <- mapProj
+    
+    #Pull geospatial information important to the map projection
+    #Grid type - only 'C' supported at this time
+    gridType <- ncdf4::ncatt_get(ncid,varid=0,'GRIDTYPE')$value
+    if(gridType != "C"){
+      warning('ERROR: Only GRIDTYPE of C supported at this time')
+      return(0)
+    }
+    dataOut$GRID_TYPE <- gridType
+    
+    #Resolution - should be in meters
+    xRes <- ncdf4::ncatt_get(ncid,varid=0,'DX')$value
+    yRes <- ncdf4::ncatt_get(ncid,varid=0,'DY')$value
+    if((xRes != yRes) | (xRes <= 0) | (yRes <= 0)){
+      warning('ERROR: Invalid DX or DY values')
+      return(0)
+    }
+    dataOut$DX <- xRes
+    dataOut$DY <- yRes
+    
+    #Extract lat/lon values from lower left pixel cell
+    latArr <- ncdf4::ncvar_get(ncid,'XLAT_M')
+    lonArr <- ncdf4::ncvar_get(ncid,'XLONG_M')
+    lat1 <- latArr[1,1]
+    lon1 <- lonArr[1,1]
+    if((lat1 > 90.0) | (lat1 < -90.0)){
+      warning('ERROR: Invalid LL latitude value')
+      return(0)
+    }
+    if((lon1 > 360.0) | (lon1 < -180.0)){
+      warning('ERROR: Invalid LL longitude value')
+      return(0)
+    }
+    dataOut$LAT1 <- lat1
+    dataOut$LON1 <- lon1
+    
+    #Reference (center) latitude
+    refLat <- ncdf4::ncatt_get(ncid,varid=0,'MOAD_CEN_LAT')$value
+    if((refLat > 90.0) | (refLat < -90.0)){
+      warning('ERROR: Invalid reference latitude')
+      return(0)
+    }
+    dataOut$REF_LAT <- refLat
+    
+    #Reference (center) longitude
+    refLon <- ncdf4::ncatt_get(ncid,varid=0,'STAND_LON')$value
+    if((refLon > 360.0) | (refLon < -180.0)){
+      warning('ERROR: Invalid reference longitude')
+      return(0)
+    }
+    dataOut$REF_LON <- refLon
+    
+    #Standard parallel latitude values. It's possible these two would be
+    #equal.
+    stdLat1 <- ncdf4::ncatt_get(ncid,varid=0,'TRUELAT1')$value
+    stdLat2 <- ncdf4::ncatt_get(ncid,varid=0,'TRUELAT2')$value
+    if((stdLat1 > 90.0) | (stdLat1 < -90.0)){
+      warning('ERROR: Invalid standard parallel latitude 1')
+      return(0)
+    }
+    if((stdLat2 > 90.0) | (stdLat2 < -90.0)){
+      warning('ERROR: Invalid standard parallel latitude 2')
+      return(0)
+    }
+    dataOut$SPLAT1 <- stdLat1
+    dataOut$SPLAT2 <- stdLat2
+    
+    #Pole lat/lon
+    poleLat <- ncdf4::ncatt_get(ncid,varid=0,'POLE_LAT')$value
+    poleLon <- ncdf4::ncatt_get(ncid,varid=0,'POLE_LON')$value
+    if((poleLat > 90.0) | (poleLon < -90.0)){
+      warning('ERROR: Invalid pole latitude')
+      return(0)
+    }
+    if((poleLon > 360.0) | (poleLon < -180.0)){
+      warning('ERROR: Invalid pole longitude')
+      return(0)
+    }
+    dataOut$POLE_LAT <- poleLat
+    dataOut$POLE_LON <- poleLon
+    
+    #Grid dimensions
+    nx <- ncdf4::ncatt_get(ncid,varid=0,'WEST-EAST_PATCH_END_UNSTAG')$value
+    ny <- ncdf4::ncatt_get(ncid,varid=0,'SOUTH-NORTH_PATCH_END_UNSTAG')$value
+    if((nx <= 0) | (ny <= 0)){
+      warnings('ERROR: Invalid x or y dimension values')
+      return(0)
+    }
+    dataOut$NCOL <- nx
+    dataOut$NROW <- ny
+  }
+  return(dataOut)
+} 

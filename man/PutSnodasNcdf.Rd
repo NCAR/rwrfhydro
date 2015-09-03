@@ -28,7 +28,8 @@ PutSnodasNcdf(snodasList)
 Other SNODAS: \code{\link{CalcSnodasCoords}};
   \code{\link{GetSnodasDepthSweDate}};
   \code{\link{PutSnodasCoordsNcdf}};
-  \code{\link{ReadSnodasDepthSweDate}}
+  \code{\link{ReadSnodasDepthSweDate}};
+  \code{\link{getSnodasPointTs}}
 }
 \concept{
 SNODAS

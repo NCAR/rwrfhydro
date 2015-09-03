@@ -40,7 +40,8 @@ snodasGot <- GetSnodasDepthSweDate(as.POSIXct('2015-02-28'),
 Other SNODAS: \code{\link{CalcSnodasCoords}};
   \code{\link{PutSnodasCoordsNcdf}};
   \code{\link{PutSnodasNcdf}};
-  \code{\link{ReadSnodasDepthSweDate}}
+  \code{\link{ReadSnodasDepthSweDate}};
+  \code{\link{getSnodasPointTs}}
 }
 \concept{
 SNODAS
