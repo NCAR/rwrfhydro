@@ -178,22 +178,8 @@ ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk",
 #' \code{ReadLdasoutAll} reads standard-format WRF-Hydro (w/NoahMP) LDASOUT NetCDF files and calculates
 #' basin-wide mean values for each time step.
 #'
-#' OUTPUT NoahMP LDASOUT water budget variables:
-#' \itemize{
-#'    \item ACCECAN: Mean accumulated canopy evaporation (mm)
-#'    \item ACCEDIR: Mean accumulated surface evaporation (mm)
-#'    \item ACCETRAN: Mean accumulated transpiration (mm)
-#'    \item ACCPRCP: Mean accumulated precipitation (mm)
-#'    \item CANICE: Mean canopy ice storage (mm)
-#'    \item CANLIQ: Mean canopy liquid water storage (mm)
-#'    \item SFCRNOFF: Mean surface runoff from LSM \emph{(meaningful for an LSM-only run)} (mm)
-#'    \item SNEQV: Mean snowpack snow water equivalent (mm)
-#'    \item UGDRNOFF: Mean subsurface runoff from LSM \cr \emph{(meaningful for an LSM-only run)} (mm)
-#'    \item SOIL_M1: Mean soil moisture storage in soil layer 1 (top) (mm)
-#'    \item SOIL_M2: Mean soil moisture storage in soil layer 2 (mm)
-#'    \item SOIL_M3: Mean soil moisture storage in soil layer 3 (mm)
-#'    \item SOIL_M4: Mean soil moisture storage in soil layer 4 (bottom) (mm)
-#' }
+#' OUTPUT NoahMP LDASOUT variables:
+#' SEE NOAHMP DOCUMENTATION
 #'
 #' @param pathOutdir The full pathname to the output directory containing the LDASOUT files.
 #' @param pathDomfile The full pathname to the high-res hydro domain NetCDF file used in
@@ -213,7 +199,7 @@ ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk",
 #' ## over the time series.
 #'
 #' \dontrun{
-#' modLdasoutWb1d.mod1.fc <- 
+#' modLdasout1d.mod1.fc <- 
 #'   ReadLdasoutAll("../RUN.MOD1/OUTPUT", "../DOMAIN/Fulldom_hires_hydrofile_4mile.nc", 
 #'                 ncores=16)
 #' }
