@@ -56,7 +56,14 @@ q()
 On a clean R install, the above will ask the user to create a new, writable Library path. This will be the first in the R_LIBS path (in R: `.libPath()`).
 
 
-Next, we'll return to the shell and install the `ncdf4` package against the correct-for-R (gcc) build on the system. Again, in the terminal:
+Next, we'll return to the shell and install the `ncdf4` package against the correct-for-R (gcc) build on the system. 
+
+For Windows, users can download the appropriate binary ncdf4 file from the following link: [http://cirrus.ucsd.edu/~pierce/ncdf/](http://cirrus.ucsd.edu/~pierce/ncdf/). Then the following command, it will open a window for you to choose the downloaded zip file and will install it:
+```{bash, eval=FALSE}
+install.packages(file.choose(), repos=NULL, type = "binary")
+```
+
+For linux and OSX, in the terminal:
 ```{bash, eval=FALSE}
 wget http://cran.r-project.org/src/contrib/ncdf4_1.13.tar.gz
 R CMD INSTALL \\

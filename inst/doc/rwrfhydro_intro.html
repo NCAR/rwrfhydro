@@ -169,7 +169,10 @@ img {
 install.packages(&quot;devtools&quot;, repos=&quot;http://cran.at.r-project.org/&quot;)
 q()</code></pre>
 <p>On a clean R install, the above will ask the user to create a new, writable Library path. This will be the first in the R_LIBS path (in R: <code>.libPath()</code>).</p>
-<p>Next, we’ll return to the shell and install the <code>ncdf4</code> package against the correct-for-R (gcc) build on the system. Again, in the terminal:</p>
+<p>Next, we’ll return to the shell and install the <code>ncdf4</code> package against the correct-for-R (gcc) build on the system.</p>
+<p>For Windows, users can download the appropriate binary ncdf4 file from the following link: <a href="http://cirrus.ucsd.edu/~pierce/ncdf/"><a href="http://cirrus.ucsd.edu/~pierce/ncdf/" class="uri">http://cirrus.ucsd.edu/~pierce/ncdf/</a></a>. Then the following command, it will open a window for you to choose the downloaded zip file and will install it:</p>
+<pre class="bash"><code>install.packages(file.choose(), repos=NULL, type = &quot;binary&quot;)</code></pre>
+<p>For linux and OSX, in the terminal:</p>
 <pre class="bash"><code>wget http://cran.r-project.org/src/contrib/ncdf4_1.13.tar.gz
 R CMD INSTALL \\
 --configure-args=&quot;--with-nc-config=/usr/local/netcdf-4.3.2-gcc/bin/nc-config&quot; ncdf4_1.13.tar.gz</code></pre>
@@ -265,7 +268,7 @@ identical(result1,result2)</code></pre>
 ##  $ result: num 9
 ##  $ func  :function (x)  
 ##   ..- attr(*, &quot;srcref&quot;)=Class 'srcref'  atomic [1:8] 1 14 4 1 14 1 1 4
-##   .. .. ..- attr(*, &quot;srcfile&quot;)=Classes 'srcfilecopy', 'srcfile' &lt;environment: 0x7ff8643dca40&gt;</code></pre>
+##   .. .. ..- attr(*, &quot;srcfile&quot;)=Classes 'srcfilecopy', 'srcfile' &lt;environment: 0x7ffdab10c5c0&gt;</code></pre>
 <p>The result of this function is not a scalar or vector, it is a <code>list</code> object which contains a possibly arbitrary collection of things. The <code>list</code> object is the fundamental way to get more than a single object out of a function. The <code>str()</code> function reveals the structure of objects, including <code>lists</code>. It helps structure complicated, hierarchical items as we’ll see later. It also provides object type and class information.</p>
 <p><a id="Lists"></a></p>
 </div>
@@ -303,7 +306,7 @@ str(result1)</code></pre>
 ##  $ names.b  : num 9
 ##  $ names.(c):function (x)  
 ##   ..- attr(*, &quot;srcref&quot;)=Class 'srcref'  atomic [1:8] 1 14 4 1 14 1 1 4
-##   .. .. ..- attr(*, &quot;srcfile&quot;)=Classes 'srcfilecopy', 'srcfile' &lt;environment: 0x7ff8643dca40&gt;</code></pre>
+##   .. .. ..- attr(*, &quot;srcfile&quot;)=Classes 'srcfilecopy', 'srcfile' &lt;environment: 0x7ffdab10c5c0&gt;</code></pre>
 <pre class="r"><code>result1$names.b</code></pre>
 <pre><code>## [1] 9</code></pre>
 <pre class="r"><code>result1$`names.(c)`(2)   ## backquote can handle illegal names </code></pre>
@@ -10026,7 +10029,7 @@ print(try(ttt))</code></pre>
 ##         z$qr &lt;- NULL
 ##     z
 ## }
-## &lt;bytecode: 0x7ff86681cc08&gt;
+## &lt;bytecode: 0x7ffdab8cc110&gt;
 ## &lt;environment: namespace:stats&gt;</code></pre>
 <p>Beyond reading the body of the text, note that the arguments are listed at the top with default values following <code>=</code>. The <code>...</code> argument is for passing arguments to “low-level” regression functions (described in <code>?lm</code>). We also see that the function belongs to the <code>stats</code> namespace.</p>
 <p>See also (not run here):</p>
@@ -10046,7 +10049,7 @@ print(try(ttt))</code></pre>
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>## R version 3.2.0 (2015-04-16)
 ## Platform: x86_64-apple-darwin13.4.0 (64-bit)
-## Running under: OS X 10.10.2 (Yosemite)
+## Running under: OS X 10.10.4 (Yosemite)
 ## 
 ## locale:
 ## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
@@ -10058,16 +10061,16 @@ print(try(ttt))</code></pre>
 ## [1] ncdf4_1.13
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] plyr_1.8.2        formatR_1.2       tools_3.2.0      
-##  [4] htmltools_0.2.6   yaml_2.1.13       rwrfhydro_1.0.0  
-##  [7] Rcpp_0.11.5       rmarkdown_0.5.3.2 knitr_1.10       
-## [10] stringr_0.6.2     digest_0.6.8      evaluate_0.7</code></pre>
+##  [1] plyr_1.8.2         formatR_1.2        tools_3.2.0       
+##  [4] htmltools_0.2.6    yaml_2.1.13        rwrfhydro_1.0.9000
+##  [7] Rcpp_0.11.5        rmarkdown_0.5.3.2  knitr_1.10        
+## [10] stringr_0.6.2      digest_0.6.8       evaluate_0.7</code></pre>
 <pre class="r"><code>library(rwrfhydro)  ## this adds rwrfhydro to the 'other attached packages' list</code></pre>
 <pre><code>## To check rwrfhydro updates run: CheckForUpdates()</code></pre>
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>## R version 3.2.0 (2015-04-16)
 ## Platform: x86_64-apple-darwin13.4.0 (64-bit)
-## Running under: OS X 10.10.2 (Yosemite)
+## Running under: OS X 10.10.4 (Yosemite)
 ## 
 ## locale:
 ## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
@@ -10076,7 +10079,7 @@ print(try(ttt))</code></pre>
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] rwrfhydro_1.0.0 ncdf4_1.13     
+## [1] rwrfhydro_1.0.9000 ncdf4_1.13        
 ## 
 ## loaded via a namespace (and not attached):
 ##  [1] plyr_1.8.2        formatR_1.2       tools_3.2.0      
@@ -10084,23 +10087,27 @@ print(try(ttt))</code></pre>
 ##  [7] rmarkdown_0.5.3.2 knitr_1.10        stringr_0.6.2    
 ## [10] digest_0.6.8      evaluate_0.7</code></pre>
 <pre class="r"><code>PlotFdc  ## this function is available in the global environment.</code></pre>
-<pre><code>## function(strDf, strCol=&quot;q_cms&quot;, spline=TRUE, fdcProb=NULL) {
-##     plot(strDf[,paste0(strCol,&quot;.fdc&quot;)], strDf[,strCol], log='y', 
-##          xlab=&quot;Probability of Exceedance&quot;, ylab=c(&quot;Flow (log scale)&quot;), 
-##          main=c(paste(&quot;Flow Duration Curve: &quot;, deparse(substitute(strDf)), &quot;:&quot;, 
-##                       deparse(substitute(strCol)), &quot;, n=&quot;, sum(!is.na(strDf[,strCol])))))
+<pre><code>## function (strDf, strCol = &quot;q_cms&quot;, spline = TRUE, fdcProb = NULL) 
+## {
+##     plot(strDf[, paste0(strCol, &quot;.fdc&quot;)], strDf[, strCol], log = &quot;y&quot;, 
+##         xlab = &quot;Probability of Exceedance&quot;, ylab = c(&quot;Flow (log scale)&quot;), 
+##         main = c(paste(&quot;Flow Duration Curve: &quot;, deparse(substitute(strDf)), 
+##             &quot;:&quot;, deparse(substitute(strCol)), &quot;, n=&quot;, sum(!is.na(strDf[, 
+##                 strCol])))))
 ##     if (spline | !is.null(fdcProb)) {
-##         fdcSplineFun &lt;- splinefun(strDf[,paste0(strCol,&quot;.fdc&quot;)], strDf[,strCol], method='natural')
+##         fdcSplineFun &lt;- splinefun(strDf[, paste0(strCol, &quot;.fdc&quot;)], 
+##             strDf[, strCol], method = &quot;natural&quot;)
 ##         if (spline) {
-##             curve(fdcSplineFun(x), col='red', lwd=2, lty=1, add=T)
-##             }
-##         if (!is.null(fdcProb)) {
-##             abline(v=fdcProb,h=fdcSplineFun(fdcProb),col='grey')
-##             text(fdcProb,fdcSplineFun(fdcProb),
-##                  labels=paste(&quot;P =&quot;,fdcProb*100,&quot;%, Q=&quot;,round(fdcSplineFun(fdcProb),2)), 
-##                  adj=c(-0.05,-1), cex=0.9)
-##             }
+##             curve(fdcSplineFun(x), col = &quot;red&quot;, lwd = 2, lty = 1, 
+##                 add = T)
 ##         }
+##         if (!is.null(fdcProb)) {
+##             abline(v = fdcProb, h = fdcSplineFun(fdcProb), col = &quot;grey&quot;)
+##             text(fdcProb, fdcSplineFun(fdcProb), labels = paste(&quot;P =&quot;, 
+##                 fdcProb * 100, &quot;%, Q=&quot;, round(fdcSplineFun(fdcProb), 
+##                   2)), adj = c(-0.05, -1), cex = 0.9)
+##         }
+##     }
 ## }
 ## &lt;environment: namespace:rwrfhydro&gt;</code></pre>
 <p>Now all the functions in the rwrfhydro namespace are available because it is attached.</p>
@@ -10117,7 +10124,7 @@ head(reshape2::melt(mtcars[,c(&quot;mpg&quot;,&quot;cyl&quot;,&quot;disp&quot;,&
 <pre class="r"><code>sessionInfo() ## attaches plyr, reshape2, Rcpp,  &amp; stringr (some already attached.)</code></pre>
 <pre><code>## R version 3.2.0 (2015-04-16)
 ## Platform: x86_64-apple-darwin13.4.0 (64-bit)
-## Running under: OS X 10.10.2 (Yosemite)
+## Running under: OS X 10.10.4 (Yosemite)
 ## 
 ## locale:
 ## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
@@ -10126,7 +10133,7 @@ head(reshape2::melt(mtcars[,c(&quot;mpg&quot;,&quot;cyl&quot;,&quot;disp&quot;,&
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] rwrfhydro_1.0.0 ncdf4_1.13     
+## [1] rwrfhydro_1.0.9000 ncdf4_1.13        
 ## 
 ## loaded via a namespace (and not attached):
 ##  [1] plyr_1.8.2        formatR_1.2       tools_3.2.0      
