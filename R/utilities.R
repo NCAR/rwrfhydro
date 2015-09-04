@@ -78,15 +78,15 @@ RotateCcw <- function(matrix) apply(matrix, 1, rev)
 
 #' Flip a matrix upside down.
 #' 
-#' \code{flipUD} Flips a matrix upside down.
+#' \code{FlipUD} Flips a matrix upside down.
 #' @param matrix A matrix.
 #' @examples
 #' x <- matrix[1:9, 3]
 #' x
-#' flipUD(x)
+#' FlipUD(x)
 #' @keywords internal
 #' @export
-flipUD <- function(matrix) apply(matrix,2,rev)
+FlipUD <- function(matrix) apply(matrix,2,rev)
 
 #' Translate (i.e. invert) timezones to the so calle Olson names used by
 #' POSIXct.

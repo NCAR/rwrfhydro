@@ -1,7 +1,7 @@
 #' Get and unpack National Water Center SWE and snow depth 
 #' point observations for a given hour.
 #' 
-#' \code{getNWCSnowPoints} Get and unpack National Water Center
+#' \code{GetNWCSnowPoints} Get and unpack National Water Center
 #' snow observations for a given hour and unpack the data. Data
 #' is stored in text file format.
 #' 
@@ -18,13 +18,13 @@
 #' @param quiet logical passed to curl , to show it's progress.
 #' @return Logical was the file "got".
 #' @examples
-#' NWCSnowGot <- getNWCSnowPoints(as.POSIXct('2015-02-01 12:00:00'),
+#' NWCSnowGot <- GetNWCSnowPoints(as.POSIXct('2015-02-01 12:00:00'),
 #'  outDir = '/home/karsten/snow_obs')
 #' @keywords IO
 #' @concept OBSERVATION NWC
 #' @family OBSERVATION
 #' @export
-getNWCSnowPoints <- function(datePOSIXct, outDir='.', overwrite=FALSE,
+GetNWCSnowPoints <- function(datePOSIXct, outDir='.', overwrite=FALSE,
                              quiet=TRUE){
   #Date parameters
   dYYYYMMDDHH <- strftime(datePOSIXct, "%Y%m%d%H")
@@ -34,24 +34,21 @@ getNWCSnowPoints <- function(datePOSIXct, outDir='.', overwrite=FALSE,
   sweFile0 <- paste0('swe_',dYYYYMMDDHH,'.txt.gz')
   #Snow depth file on NWC FTP
   depthFile0 <- paste0('snowdepth_',dYYYYMMDDHH,'.txt.gz')
-  
-  #Go to the correct directory for archiving the data
-  origDir <- getwd()
-  setwd(outDir)
 
   #SWE Data-----------------------------------------
   #If gz SWE or snow depth files exists on system, skip download unless told
   #to override
-  if( (file.exists(sweFile0) | file.exists(depthFile0)) & !overwrite) return(0)
+  if( (file.exists(paste0(outDir,"/", sweFile0)) | file.exists(paste0(outDir,"/",depthFile0))) & !overwrite ) return(0)
   
-  if(!file.exists(sweFile0) | overwrite){
+  if(!file.exists(paste0(outDir,"/", sweFile0)) | overwrite){
     theURL <- paste0('ftp://ftp.nohrsc.noaa.gov/pub/data/snow/',
                      sweFile0)
     if(!quiet) print(paste('Pulling SWE Obs for ', date2))
-    try(curl::curl_download(theURL, sweFile0, quiet=quiet))
-    if(!file.exists(sweFile0)){
+    out <- tryCatch(curl::curl_download(theURL, paste0(outDir, "/", sweFile0), quiet=quiet), 
+                    error=function(cond) {message(cond); return(NA)})
+    if(is.na(out)){
       warning(paste0('Error: File not obtained via FTP: ', sweFile0))
-      setwd(origDir)
+      if (!(file.info(paste0(outDir, "/", sweFile0))$size>0)) file.remove(paste0(outDir, "/", sweFile0))
       return(FALSE)
     }
   }
@@ -59,17 +56,17 @@ getNWCSnowPoints <- function(datePOSIXct, outDir='.', overwrite=FALSE,
   #Snow Depth Data-----------------------------------
   #Already checked for either file existence earlier, will not
   #repeat here
-  if(!file.exists(depthFile0) | overwrite){
+  if(!file.exists(paste0(outDir,"/", depthFile0)) | overwrite){
     theURL <- paste0('ftp://ftp.nohrsc.noaa.gov/pub/data/snow/',
                      depthFile0)
     if(!quiet) print(paste('Pulling Snow Depth Obs for ', date2))
-    try(curl::curl_download(theURL, depthFile0, quiet=quiet))
-    if(!file.exists(depthFile0)){
+    out <- tryCatch(curl::curl_download(theURL, paste0(outDir, "/", depthFile0), quiet=quiet), 
+                    error=function(cond) {message(cond); return(NA)})
+    if(is.na(out)){
       warning(paste0('Error: File not obtained via FTP: ', depthFile0))
-      setwd(origDir)
+      if (!(file.info(paste0(outDir, "/", depthFile0))$size>0)) file.remove(paste0(outDir, "/", depthFile0))
       return(FALSE)
     }
   }
-  setwd(origDir)
-  TRUE
+  return(TRUE)
 }

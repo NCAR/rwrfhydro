@@ -189,20 +189,20 @@ GetGeogridIndex <- function(xy, ncfile, x="lon", y="lat", proj4='+proj=longlat +
 #' Pull necessary geospatial information from geogrid file used for
 #' regridding and deprojection.
 #' 
-#' \code{geogridSpatialInfo} Pull geospatial information about WRF-Hydro
+#' \code{GetGeogridSpatialInfo} Pull geospatial information about WRF-Hydro
 #'  modeling domain from geogrid file.
 #'  
 #' @param geoFile The geogrid file information is being pulled from
 #' @return spatialDF data frame containing geospatial information
 #' @examples
 #' \dontrun{
-#' lccGeoDF <- geogridSpatialInfo('./geo_em.d02.nc')
+#' lccGeoDF <- GetGeogridSpatialInfo('./geo_em.d02.nc')
 #' }
 #' @keywords GEOSPATIAL METADATA
 #' @concept GEOSPATIAL
 #' @family METADATA
 #' @export
-geogridSpatialInfo <- function(geoFile){
+GetGeogridSpatialInfo <- function(geoFile){
   #First check for existence of file
   if(!file.exists(geoFile)){
     warning(paste0('ERROR: Geogrid file: ',geoFile,' not found.'))

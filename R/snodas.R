@@ -314,7 +314,7 @@ PutSnodasCoordsNcdf <- function() {
 }
 #' Pull SNODAS snowdepth and SWE time series for a given lat/lon pair.
 #' 
-#' \code{getSnodasPointTs} Pull SWE and snow depth values for a specific
+#' \code{GetSnodasPointTs} Pull SWE and snow depth values for a specific
 #' point for a given time period.
 #' 
 #' @param bDatePOSIXct The date in POSIXct format for the beginning of
@@ -327,14 +327,14 @@ PutSnodasCoordsNcdf <- function() {
 #' @param quiet logical to print updates to screen. Default is TRUE
 #' @return Data frame with time series of SWE and snow depth data.
 #' @examples
-#' snodasExtracted <- getSnodasPointTs(as.POSIXct('2014-12-01'),as.POSIXct('2015-04-01'),
+#' snodasExtracted <- GetSnodasPointTs(as.POSIXct('2014-12-01'),as.POSIXct('2015-04-01'),
 #'                                     snodasDir='/d4/karsten/snodas',lat=39.9,
 #'                                     lon=-105.1)
 #' @keywords IO
 #' @concept SNODAS
 #' @family SNODAS
 #' @export
-getSnodasPointTs <- function(bDatePOSIXct,eDatePOSIXct,snodasDir,lat,lon,quiet=TRUE){
+GetSnodasPointTs <- function(bDatePOSIXct,eDatePOSIXct,snodasDir,lat,lon,quiet=TRUE){
   #First, calculate SNODAS lat/lon coordinates
   snodasCoords <- CalcSnodasCoords()
   latMin <- snodasCoords$Lat[which.min(snodasCoords$Lat)]
