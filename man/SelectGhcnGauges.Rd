@@ -6,19 +6,18 @@
 \usage{
 SelectGhcnGauges(countryCode = NULL, networkCode = NULL, states = NULL,
   domain = FALSE, minLat = NULL, maxLat = NULL, minLon = NULL,
-  maxLon = NULL,
-  fileAdd = "ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt")
+  maxLon = NULL, fileAdd = NULL)
 }
 \arguments{
 \item{countryCode}{A vector of desired countries like
 countryCode=c("US","UK").}
 
-\item{networkCode}{A vector of desired networke type like Coop and CoCoRaHS
+\item{networkCode}{A vector of desired networke type like COOP and CoCoRaHS
 networkCode=c("C","1").}
 
-\item{states}{A vector of desired states if in US like states=c("OK","TX").}
+\item{states}{A vector of desired states if country is US like states=c("OK","TX").}
 
-\item{domain}{Logical (true if you want to cut over a rectangle domain).}
+\item{domain}{Logical, true if you want to cut over a rectangle domain.}
 
 \item{minLat,maxLat,minLon,maxLon}{Numerics defining the boundary of the
 rectangle if domain=TRUE.}
@@ -28,7 +27,7 @@ is "ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt".}
 }
 \value{
 A dataframe of the selected gauges based on user's criteria containing
- the following fileds: country, network type, stationID, lat/lon, elevation,
+ the following fields: country, network type, stationID, lat/lon, elevation,
  state, description, GSN flag, HCN/CRN flag, WMO ID and
  siteIds=[country,ntework,stationID]
 }
@@ -41,18 +40,18 @@ siteIds=[country,ntework,stationID]
 }
 \section{Selection criteria }{
  Selection can be based on the following
- criteria: \enumerate{ \item Based on a list of countries : for the full list
+ criteria: \enumerate{ \item A list of countries : for the full list
  of countries refer to
- ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-countries.txt example:
- countryCode=c("US","UK")
+ \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-countries.txt},
+ example: countryCode=c("US","UK")
 
- \item Based on a list of states, in this case the country will be
+ \item A list of states, in this case the country will be
  automatically set to US for the full list of states refer to
- ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-states.txt example:
- states=c("OK","TX")
+ \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-states.txt},
+ example: states=c("OK","TX")
 
- \item Based on a specific type of the netwrok for for list of networkCode
- plesae refere to ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt The
+ \item A specific type of the netwrok for for list of networkCode
+ plesae refere to \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt} The
  options are the following: \itemize{ \item  0 = unspecified (station
  identified by up to eight alphanumeric characters) \item  1 = Community
  Collaborative Rain, Hail,and Snow (CoCoRaHS) based identification number. To
@@ -69,9 +68,10 @@ siteIds=[country,ntework,stationID]
  = U.S. Interagency Remote Automatic Weather Station (RAWS) identifier \item
  S = U.S. Natural Resources Conservation Service SNOwpack TELemtry (SNOTEL)
  station identifier \item  W = WBAN identification number (last five
- characters of the GHCN-Daily ID) example: networkCode=c("C","1") } \item
- Based on a domain if domain is true,then you need min and max latitude and
- logitude for a enclosing rectangle }
+ characters of the GHCN-Daily ID)
+ \item example: networkCode=c("C","1") }
+ \item Based on a domain if domain is true,then you need min and max latitude and
+ logitude for the enclosing rectangle }
 }
 \examples{
 countryCodeList=c("US")

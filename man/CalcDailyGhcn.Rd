@@ -2,19 +2,16 @@
 % Please edit documentation in R/calculate_daily_ghcn.R
 \name{CalcDailyGhcn}
 \alias{CalcDailyGhcn}
-\title{To aggregate the hourly data into daily coparable to GHCN daily data.}
+\title{To aggregate the hourly data into daily data comparable to GHCN daily data.}
 \usage{
-CalcDailyGhcn(sg, prcp, reportTime = 7)
+CalcDailyGhcn(sg, prcp, reportTime = 700, parallel = FALSE)
 }
 \arguments{
-\item{sg}{A dataframe of the selectedGauges, it should have at least two columns with names
-of siteIds and reportTime.
-SiteIds should match the the standardized GHCN IDs (for example : ACW00011604).
+\item{sg}{A dataframe of the selectedGauges, it should have at least one column
+with name of siteIds.
+siteIds should match the the standardized GHCN IDs (for example : ACW00011604).
 See \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt}
-for a list of siteIds.
-reportTime is a unique reporting time for each gauges which may vary for different elemenets
-for a single gauge. The report time values are retrived when reading the daily GHCN data
-using  \code{GetGhcn2}. Note, use 7 for wherever the report time is missing.}
+for a list of siteIds.}
 
 \item{prcp}{A dataframe of hourly data. It should have at least two columns of POSIXct,
 statArg, and DEL_ACCPRCP.POSIXct has the timing at UTC. statArg has the siteIds, and
@@ -23,17 +20,20 @@ one extra step is required to calculate the depth of rainfall for an interval.
 The column will be with the same name if one use GetMultiNcdf, ReshapeMultiNcdf and
 CalcNoahmpFluxes to get the precipitation from WRF_hydro files.}
 
-\item{reportTime}{A vector of reportTime matching with sg$siteIds, or a number
-such as 7 is all gauges report at the same time. You can leave it NULL is sg has a
-column of reportTime.}
+\item{reportTime}{A vector of reportTime matching with sg$siteIds.
+reportTime is a unique reporting time for each elelment of each gauge.
+It may vary for different elemenets for a single gauge.
+The report time values are retrived when reading the daily GHCN data
+using  \code{GetGhcn2}. Note, use 700 wherever the report time is missing.
+It will be overwritten if sg$reportTime exits.}
 }
 \value{
 Daily precipitation comparable with daily GHCN data.
 }
 \description{
 This function inputs the hourly data and aggregate the hourly data into daily info.
-GHCN gauges report data usually at 7:00 AM, hoowever, taht is not the case for all
+GHCN gauges report data usually at 7:00 AM, however, taht is not the case for all
 gauges. The reporting time may even differ for the same gauge but different elements.
-One can obtain the report time when using \code{GetGhcn2}.
+One can obtain the report time using \code{GetGhcn2}.
 }
 

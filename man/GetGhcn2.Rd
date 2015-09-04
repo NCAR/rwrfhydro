@@ -4,15 +4,10 @@
 \alias{GetGhcn2}
 \title{Get GHCN data for specified sitesId.}
 \usage{
-GetGhcn2(siteIds, elements, startDate, endDate, parallel = FALSE,
-  fileAdd = "ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/by_year/")
+GetGhcn2(ids, elements, startDate, endDate, parallel = FALSE,
+  fileAdd = NULL)
 }
 \arguments{
-\item{siteIds}{A single siteId or vector of siteIds to download and process.
-SiteIds should match the standardized GHCN IDs (for example : ACW00011604).
-See \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt}
-for a list of siteIds.}
-
 \item{elements}{A Character vector defining what type of observation you
 are interested in. There are five core elements as well as a number of
 addition elements. The five core elements are:
@@ -32,17 +27,23 @@ For the full list of elemenst refer to
 
 \item{fileAdd}{Address to the url containg teh csv files of daily GHCN by year.
 default is \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_year/}}
+
+\item{siteIds}{A single siteId or vector of siteIds to download and process.
+SiteIds should match the standardized GHCN IDs (for example : ACW00011604).
+See \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt}
+for a list of siteIds.}
 }
 \value{
 A dataframes containing the siteIds, date, daily GHCN, element,sFlag, qFlag, mFlag and reportTime.
+If the element is PRCP, then divide the numbers by 10 to convert to mm.
 For more information on possible outcomes of flags and their meaning refer to
 \url{ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt}
 }
 \description{
 \code{\link{GetGhcn2}} downloads the daily GHCN (Global Historic Climatology Network)
  data for each siteIds, and creates a dataframe containing fields of siteIds, date,
- daily GHCN value, mFlag, qFlag, sFlag and reportTime. This is a fater function over
- \code{\link{GetGhcn}} if you have many sites.
+ daily GHCN value, mFlag, qFlag, sFlag and reportTime. This is a faster function compared
+ to \code{\link{GetGhcn}} if you have many sites.
 }
 \examples{
 siteIds=c("ACW00011604","AJ000037579","AJ000037883","ASN00005095")

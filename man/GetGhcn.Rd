@@ -5,12 +5,11 @@
 \title{Get GHCN data for specified sitesId.}
 \usage{
 GetGhcn(siteIds, elements, startDate = NULL, endDate = NULL,
-  parallel = FALSE,
-  fileAdd = "http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/all/")
+  parallel = FALSE, fileAdd = NULL)
 }
 \arguments{
 \item{siteIds}{A single siteId or vector of siteIds to download and process.
-Site IDs should match the standardized GHCN IDs (for example : ACW00011604).
+SiteIds should match the standardized GHCN IDs (for example : ACW00011604).
 See \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt}
 for a list of siteIds.}
 
@@ -40,7 +39,8 @@ A dataframes containing the date and the correponding daily GHCN value and the q
 \description{
 \code{\link{GetGhcn}} downloads the daily GHCN (Global Historic Climatology Network)
  data for each siteIds, and creates a dataframe containing four fields of siteIds, date,
- daily GHCN value and the qFlag.
+ daily GHCN value and the qFlag. If there are so many gauges, then
+ \code{\link{GetGhcn2}} would be much faster.
 }
 \examples{
 siteIds=c("ACW00011604","AJ000037579","AJ000037883","ASN00005095")
@@ -49,7 +49,7 @@ endDate="1949/10/01"
 element="PRCP"
 obsPrcp<-GetGhcn(siteIds,element,startDate,endDate,parallel=FALSE)
 
-Or you would use the results of the SelectGhcnGauges
+Or you could use the results of the SelectGhcnGauges
 
 countryCodeList=c("US")
 networkCodeList=c("1")

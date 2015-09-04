@@ -13,7 +13,9 @@ fields of latitude ad longitude in the dataframe.}
 \item{address}{Address to where polygonShapeFile is located.}
 
 \item{polygonShapeFile}{Polygon shapefile containing the boundaries of
-timezones (can be downloaded from \url{http://efele.net/maps/tz/world/}.}
+timezones (can be downloaded from \url{http://efele.net/maps/tz/world/}.
+The TimeZone polygon has been included in rwrfhydro package. therefore,address and
+polygonShapeFile doen not have to be specified unless user has a different shapefile.}
 }
 \value{
 Point datafram with an extra column having the time zone for each gauge.

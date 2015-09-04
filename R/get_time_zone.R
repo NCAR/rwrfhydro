@@ -26,6 +26,8 @@
 #' @param address Address to where polygonShapeFile is located.
 #' @param polygonShapeFile Polygon shapefile containing the boundaries of
 #' timezones (can be downloaded from \url{http://efele.net/maps/tz/world/}.
+#' The TimeZone polygon has been included in rwrfhydro package. therefore,address and 
+#' polygonShapeFile doen not have to be specified unless user has a different shapefile.
 #'
 #' @return  Point datafram with an extra column having the time zone for each gauge.
 #
@@ -53,3 +55,25 @@ inside.timeZone <- !is.na(sp::over(points, as(timeZone, "SpatialPolygons")))
 points$timeZone <- sp::over(points, timeZone)$TZID
 return(as.data.frame(points))
 }
+
+
+
+#' Time zone polygon
+#' 
+#' Polygon shapefile of world time zone classification.
+#' 
+#' @usage
+#'  timeZone
+#'  
+#' @format
+#' data.frame
+#' 
+#' @section Citation:
+#' Online_Linkage: \link[http://efele.net/maps/tz/world/]{http://efele.net/maps/tz/world/} \cr
+#' @family GetTimeZone
+#' @concept data
+#' @keywords data
+"timeZone"
+
+
+

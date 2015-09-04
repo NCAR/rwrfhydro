@@ -1,18 +1,15 @@
-#' To aggregate the hourly data into daily coparable to GHCN daily data.
+#' To aggregate the hourly data into daily data comparable to GHCN daily data.
 #' 
 #' This function inputs the hourly data and aggregate the hourly data into daily info. 
-#' GHCN gauges report data usually at 7:00 AM, hoowever, taht is not the case for all
+#' GHCN gauges report data usually at 7:00 AM, however, taht is not the case for all
 #' gauges. The reporting time may even differ for the same gauge but different elements.
-#' One can obtain the report time when using \code{GetGhcn2}. 
+#' One can obtain the report time using \code{GetGhcn2}. 
 #' 
-#' @param sg A dataframe of the selectedGauges, it should have at least two columns with names 
-#' of siteIds and reportTime.
-#' SiteIds should match the the standardized GHCN IDs (for example : ACW00011604).
+#' @param sg A dataframe of the selectedGauges, it should have at least one column
+#' with name of siteIds.
+#' siteIds should match the the standardized GHCN IDs (for example : ACW00011604).
 #' See \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt}
 #' for a list of siteIds.
-#' reportTime is a unique reporting time for each gauges which may vary for different elemenets
-#' for a single gauge. The report time values are retrived when reading the daily GHCN data 
-#' using  \code{GetGhcn2}. Note, use 7 for wherever the report time is missing. 
 #' 
 #' @param prcp A dataframe of hourly data. It should have at least two columns of POSIXct, 
 #' statArg, and DEL_ACCPRCP.POSIXct has the timing at UTC. statArg has the siteIds, and 
@@ -22,7 +19,10 @@
 #' CalcNoahmpFluxes to get the precipitation from WRF_hydro files.
 #' 
 #' @param reportTime A vector of reportTime matching with sg$siteIds. 
-#' I cal be also a number, default is 700 which indicates 7:00 AM. 
+#' reportTime is a unique reporting time for each elelment of each gauge.
+#' It may vary for different elemenets for a single gauge. 
+#' The report time values are retrived when reading the daily GHCN data 
+#' using  \code{GetGhcn2}. Note, use 700 wherever the report time is missing. 
 #' It will be overwritten if sg$reportTime exits.
 #' 
 #' @return Daily precipitation comparable with daily GHCN data. 

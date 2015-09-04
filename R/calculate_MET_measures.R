@@ -13,8 +13,33 @@
 #' 
 #' 
 #' @return A matrix containing most of the MET verification measures
-#' for continuous variable.
-#'
+#' for continuous variable. It includes \itemize{
+#' \item NO: number of datapoint
+#' \item minObs: min of observation time series}
+#' \item minMod: min of model simulation/forecast time series
+#' \item maxObs: max of observation time series
+#' \item maxMod: Max of model simulation/forecast time series
+#' \item meanObs: Mean of observation time series
+#' \item meanMod: Mean of model simulation/forecast time series
+#' \item stdObs: Standard deviation of observation time series
+#' \item stdMod: Standard deviation of
+#' \item pearsonCor: Peason correlation coefficient
+#' \item SpearmanCor: Spearman correlation coefficient
+#' \item KendallCor: Kendall tau correlation coefficient (tau-b)
+#' \item ME:Mean Error
+#' \item MultiBias: Mutliplicative bias
+#' \item MSE: Mean Square Error
+#' \item RMSE: Root Mean Square Error
+#' \item MAE: Mean Absolute Error
+#' \item MAD: Median Absolute Deviation
+#' \item IQR: Inter Quantile Range of the Errors
+#' \item E10: 10 percen of Errors 
+#' \item E25: 25 percent of Errors 
+#' \item E50  50 percent of Errors 
+#' \item E75: 75 percent of Errors 
+#' \item E90: 90 percent of Errors
+#' 
+#' 
 #' @examples
 #' DF <- data.frame(obs=seq(1,5), mod=seq(6,10), stringsAsFactors=FALSE)
 #' stat<-CalcMetCont(DF$obs,DF$mod)

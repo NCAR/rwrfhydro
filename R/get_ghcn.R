@@ -7,18 +7,18 @@
 #'siteIds=[country,ntework,stationID]
 #'
 #'@section Selection criteria : Selection can be based on the following 
-#'  criteria: \enumerate{ \item Based on a list of countries : for the full list
+#'  criteria: \enumerate{ \item A list of countries : for the full list
 #'  of countries refer to 
-#'  ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-countries.txt example: 
-#'  countryCode=c("US","UK")
+#'  \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-countries.txt},
+#'  example: countryCode=c("US","UK")
 #'  
-#'  \item Based on a list of states, in this case the country will be 
+#'  \item A list of states, in this case the country will be 
 #'  automatically set to US for the full list of states refer to 
-#'  ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-states.txt example: 
-#'  states=c("OK","TX")
+#'  \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-states.txt},
+#'  example: states=c("OK","TX")
 #'  
-#'  \item Based on a specific type of the netwrok for for list of networkCode 
-#'  plesae refere to ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt The 
+#'  \item A specific type of the netwrok for for list of networkCode 
+#'  plesae refere to \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt} The 
 #'  options are the following: \itemize{ \item  0 = unspecified (station 
 #'  identified by up to eight alphanumeric characters) \item  1 = Community 
 #'  Collaborative Rain, Hail,and Snow (CoCoRaHS) based identification number. To
@@ -35,21 +35,22 @@
 #'  = U.S. Interagency Remote Automatic Weather Station (RAWS) identifier \item 
 #'  S = U.S. Natural Resources Conservation Service SNOwpack TELemtry (SNOTEL) 
 #'  station identifier \item  W = WBAN identification number (last five 
-#'  characters of the GHCN-Daily ID) example: networkCode=c("C","1") } \item 
-#'  Based on a domain if domain is true,then you need min and max latitude and 
-#'  logitude for a enclosing rectangle }
+#'  characters of the GHCN-Daily ID) 
+#'  \item example: networkCode=c("C","1") } 
+#'  \item Based on a domain if domain is true,then you need min and max latitude and 
+#'  logitude for the enclosing rectangle }
 #'@param countryCode A vector of desired countries like 
 #'  countryCode=c("US","UK").
-#'@param networkCode A vector of desired networke type like Coop and CoCoRaHS 
+#'@param networkCode A vector of desired networke type like COOP and CoCoRaHS 
 #'  networkCode=c("C","1").
-#'@param states A vector of desired states if in US like states=c("OK","TX").
-#'@param domain Logical (true if you want to cut over a rectangle domain).
+#'@param states A vector of desired states if country is US like states=c("OK","TX").
+#'@param domain Logical, true if you want to cut over a rectangle domain.
 #'@param minLat,maxLat,minLon,maxLon Numerics defining the boundary of the 
 #'  rectangle if domain=TRUE.
 #'@param fileAdd Provide the address to the daily GHCN ghcnd-states.txt, default
 #'  is "ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt".
 #'@return A dataframe of the selected gauges based on user's criteria containing
-#'  the following fileds: country, network type, stationID, lat/lon, elevation, 
+#'  the following fields: country, network type, stationID, lat/lon, elevation, 
 #'  state, description, GSN flag, HCN/CRN flag, WMO ID and 
 #'  siteIds=[country,ntework,stationID]
 #'  
@@ -63,9 +64,10 @@
 
 SelectGhcnGauges <- function(countryCode=NULL,networkCode=NULL,states=NULL,
                              domain=FALSE,minLat=NULL,maxLat=NULL,minLon=NULL,
-                             maxLon=NULL,fileAdd="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt") {
+                             maxLon=NULL,fileAdd=NULL) {
 # Setup
-#fileAdd="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt"
+  if (is.null(fileAdd)) fileAdd <- "ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt"
+
   selectedGauges <- read.fwf(fileAdd,widths=c(2,1,8,-1,8,-1,9,-1,6,-1,2,-1,30,-1,3,-1,3,-1,4),
                  colClasses=c(rep("character",3),rep("numeric",3),rep("character",5)),comment.char = "")
   names(selectedGauges)<- c('country','network','stationID','latitude','longitude',
@@ -84,10 +86,11 @@ SelectGhcnGauges <- function(countryCode=NULL,networkCode=NULL,states=NULL,
 #'
 #' \code{\link{GetGhcn}} downloads the daily GHCN (Global Historic Climatology Network)
 #'  data for each siteIds, and creates a dataframe containing four fields of siteIds, date, 
-#'  daily GHCN value and the qFlag.
+#'  daily GHCN value and the qFlag. If there are so many gauges, then 
+#'  \code{\link{GetGhcn2}} would be much faster.
 #'
 #' @param siteIds A single siteId or vector of siteIds to download and process. 
-#' Site IDs should match the standardized GHCN IDs (for example : ACW00011604).
+#' SiteIds should match the standardized GHCN IDs (for example : ACW00011604).
 #' See \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt}
 #' for a list of siteIds.
 #'
@@ -117,7 +120,7 @@ SelectGhcnGauges <- function(countryCode=NULL,networkCode=NULL,states=NULL,
 #' element="PRCP"
 #' obsPrcp<-GetGhcn(siteIds,element,startDate,endDate,parallel=FALSE)
 #'
-#' Or you would use the results of the SelectGhcnGauges
+#' Or you could use the results of the SelectGhcnGauges
 #'
 #' countryCodeList=c("US")
 #' networkCodeList=c("1")
@@ -129,10 +132,10 @@ SelectGhcnGauges <- function(countryCode=NULL,networkCode=NULL,states=NULL,
 
 
 GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
-                    fileAdd="http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/all/") {
+                    fileAdd=NULL) {
 
   # Setup
-  #fileAdd="http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/all/"
+  if (is.null(fileAdd)) fileAdd="http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/all/"
 
   getSite <- function(siteId) {
     urlAdd=paste0(fileAdd,siteId,'.dly') 
@@ -190,8 +193,8 @@ GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
 #'
 #' \code{\link{GetGhcn2}} downloads the daily GHCN (Global Historic Climatology Network)
 #'  data for each siteIds, and creates a dataframe containing fields of siteIds, date, 
-#'  daily GHCN value, mFlag, qFlag, sFlag and reportTime. This is a fater function over
-#'  \code{\link{GetGhcn}} if you have many sites.
+#'  daily GHCN value, mFlag, qFlag, sFlag and reportTime. This is a faster function compared
+#'  to \code{\link{GetGhcn}} if you have many sites.
 #'  
 #' @param siteIds A single siteId or vector of siteIds to download and process. 
 #' SiteIds should match the standardized GHCN IDs (for example : ACW00011604).
@@ -217,6 +220,7 @@ GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
 #' default is \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_year/}
 #'
 #' @return A dataframes containing the siteIds, date, daily GHCN, element,sFlag, qFlag, mFlag and reportTime.
+#' If the element is PRCP, then divide the numbers by 10 to convert to mm.
 #' For more information on possible outcomes of flags and their meaning refer to
 #' \url{ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt} 
 #'
@@ -239,8 +243,8 @@ GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
 #' 
 
 GetGhcn2 <- function(ids,elements,startDate,endDate,parallel=FALSE,
-                    fileAdd="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/by_year/") {
-  
+                    fileAdd=NULL) {
+ if (is.null(fileAdd)) fileAdd="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/by_year/"
  # get all the years in the time period
 years<-as.list(seq(lubridate::year(as.Date(startDate)),lubridate::year(as.Date(endDate))))
 dat<-plyr::ldply(years,function(year) {
