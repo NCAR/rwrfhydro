@@ -17,16 +17,27 @@ If conditioning only at one tail, leave the second value as NA.}
 }
 \value{
 A matrix containing most of the MET verification measures
-for continuous variable. It includes \itemize{
+for continuous variable.
+}
+\description{
+It inputs two times series of observation and model/forecast and
+computes the MET verification measures for continous variables.
+Pair matching is not done in this function. It assumes the two time series are
+comparable one by obe.
+}
+\details{
+
+
+The calculated statistics are the following: \itemize{
 \item NO: number of datapoint
-\item minObs: min of observation time series}
+\item minObs: min of observation time series
 \item minMod: min of model simulation/forecast time series
 \item maxObs: max of observation time series
 \item maxMod: Max of model simulation/forecast time series
 \item meanObs: Mean of observation time series
 \item meanMod: Mean of model simulation/forecast time series
 \item stdObs: Standard deviation of observation time series
-\item stdMod: Standard deviation of
+\item stdMod: Standard deviation of model simulation/forecast time series
 \item pearsonCor: Peason correlation coefficient
 \item SpearmanCor: Spearman correlation coefficient
 \item KendallCor: Kendall tau correlation coefficient (tau-b)
@@ -42,12 +53,7 @@ for continuous variable. It includes \itemize{
 \item E50  50 percent of Errors
 \item E75: 75 percent of Errors
 \item E90: 90 percent of Errors
-}
-\description{
-It inputs two times series of observation and model/forecast and
-computes the MET verification measures for continous variables.
-Pair matching is not done in this function. It assumes the two time series are
-comparable one by obe.
+} For more information refer to Model Evaluation Tool (MET) documentation
 }
 \examples{
 DF <- data.frame(obs=seq(1,5), mod=seq(6,10), stringsAsFactors=FALSE)

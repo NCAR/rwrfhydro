@@ -1,28 +1,22 @@
 #' Calculate the MET verification measures for continuous variables.
 #' 
 #' It inputs two times series of observation and model/forecast and 
-#' computes the MET verification measures for continous variables. 
+#' computes the MET verification measures for continous variables.
 #' Pair matching is not done in this function. It assumes the two time series are 
 #' comparable one by obe.
 #' 
-#' @param obs A numeric vector of observation time series.
-#' @param mod A numeric vector of model simulation or forecast time series.
-#' @param conRange A numeric vector containing two elements. 
-#' Values are used as the lower and upper boundary for conditional statistics. 
-#' If conditioning only at one tail, leave the second value as NA.
 #' 
 #' 
-#' @return A matrix containing most of the MET verification measures
-#' for continuous variable. It includes \itemize{
+#' The calculated statistics are the following: \itemize{
 #' \item NO: number of datapoint
-#' \item minObs: min of observation time series}
+#' \item minObs: min of observation time series
 #' \item minMod: min of model simulation/forecast time series
 #' \item maxObs: max of observation time series
 #' \item maxMod: Max of model simulation/forecast time series
 #' \item meanObs: Mean of observation time series
 #' \item meanMod: Mean of model simulation/forecast time series
 #' \item stdObs: Standard deviation of observation time series
-#' \item stdMod: Standard deviation of
+#' \item stdMod: Standard deviation of model simulation/forecast time series
 #' \item pearsonCor: Peason correlation coefficient
 #' \item SpearmanCor: Spearman correlation coefficient
 #' \item KendallCor: Kendall tau correlation coefficient (tau-b)
@@ -38,7 +32,20 @@
 #' \item E50  50 percent of Errors 
 #' \item E75: 75 percent of Errors 
 #' \item E90: 90 percent of Errors
+#' } For more information refer to Model Evaluation Tool (MET) documentation
+#'  
 #' 
+#' 
+
+#' @param obs A numeric vector of observation time series.
+#' @param mod A numeric vector of model simulation or forecast time series.
+#' @param conRange A numeric vector containing two elements. 
+#' Values are used as the lower and upper boundary for conditional statistics. 
+#' If conditioning only at one tail, leave the second value as NA.
+#' 
+#' 
+#' @return A matrix containing most of the MET verification measures
+#' for continuous variable. 
 #' 
 #' @examples
 #' DF <- data.frame(obs=seq(1,5), mod=seq(6,10), stringsAsFactors=FALSE)
