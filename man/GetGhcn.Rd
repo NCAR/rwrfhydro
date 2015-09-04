@@ -2,7 +2,7 @@
 % Please edit documentation in R/get_ghcn.R
 \name{GetGhcn}
 \alias{GetGhcn}
-\title{Get GHCN data for specified sitesId.}
+\title{Get GHCN data for specified siteIds.}
 \usage{
 GetGhcn(siteIds, elements, startDate = NULL, endDate = NULL,
   parallel = FALSE, fileAdd = NULL)

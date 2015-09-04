@@ -82,7 +82,7 @@ SelectGhcnGauges <- function(countryCode=NULL,networkCode=NULL,states=NULL,
   return(selectedGauges)
 }
 
-#' Get GHCN data for specified sitesId.
+#' Get GHCN data for specified siteIds.
 #'
 #' \code{\link{GetGhcn}} downloads the daily GHCN (Global Historic Climatology Network)
 #'  data for each siteIds, and creates a dataframe containing four fields of siteIds, date, 
@@ -189,7 +189,7 @@ GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
 }
 
 
-#' Get GHCN data for specified sitesId.
+#' Get GHCN data for specified siteIds.
 #'
 #' \code{\link{GetGhcn2}} downloads the daily GHCN (Global Historic Climatology Network)
 #'  data for each siteIds, and creates a dataframe containing fields of siteIds, date, 
