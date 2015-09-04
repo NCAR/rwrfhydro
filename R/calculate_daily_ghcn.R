@@ -49,7 +49,7 @@ CalcDailyGhcn<-function(sg,prcp,reportTime=700,parallel=FALSE){
   if ("reportTime" %in% colnames(sg)){
     # Add the report time column to prcp data 
     TZ<-sg$reportTime
-    names(TZ)<-(sg$reportTime)
+    names(TZ)<-(sg$siteIds)
     prcp$reportTime<-TZ[as.character(prcp$statArg)]
     
     prcp$ghcnDay<-as.Date(trunc(prcp$lstTime+as.difftime((23-as.numeric(prcp$reportTime)/100),units="hours"),"days"))
