@@ -1,4 +1,20 @@
 
+*SelectGhcnGauges: Reads the daily GHNC metadata and select gauges based on the user criteria.
+
+*GetGhcn: Get GHCN data for specified siteIds.
+
+*GetGhcn2: Get GHCN data for specified siteIds.
+
+*GetTimeZone: Return the time zone for gauge locations.
+
+*timeZone: Polygon shapefile of world time zone classification.
+
+*CalcDailyGhcn: Aggregate the hourly data into daily data comparable to GHCN daily data.
+
+*CalcMetCont: Calculate the MET verification measures for continuous variables.
+
+
+
 # rwrfhydro 1.0.0
 2015-05-01. WRF-Hydro v3.0.0.
 
