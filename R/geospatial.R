@@ -3,8 +3,8 @@
 #' \code{ExportGeogrid} takes a NetCDF geogrid and converts the specified
 #' variable into a georeferenced TIF file.
 #'
-#' \code{ExportGeogrid} takes a standard geogrid in NetCDF format and 
-#' converts the specified variable to a georeferenced geoTiff for use 
+#' \code{ExportGeogrid} takes a standard geogrid in NetCDF format and
+#' converts the specified variable to a georeferenced geoTiff for use
 #' in standard GIS tools.
 #'
 #' @param inFile The geogrid NetCDF file.
@@ -24,13 +24,13 @@
 #' ## to a geoTiff called geogrid_hgt.tif.
 #'
 #' \dontrun{
-#' ExportGeogrid("~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/geo_em.d01_1km_nlcd11.nc", 
+#' ExportGeogrid("~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/geo_em.d01_1km_nlcd11.nc",
 #'              "HGT_M", "geogrid_hgt.tif")
-#' ExportGeogrid("~/wrfHydroTestCases/Fourmile_Creek/RUN.RTTESTS/OUTPUT_ALLRT_DAILY/2013031500.LDASOUT_DOMAIN1", 
+#' ExportGeogrid("~/wrfHydroTestCases/Fourmile_Creek/RUN.RTTESTS/OUTPUT_ALLRT_DAILY/2013031500.LDASOUT_DOMAIN1",
 #'              inVar="SOIL_M",
-#'              outFile="20130315_soilm3.tif", 
-#'              inCoordFile="~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/geo_em.d01_1km_nlcd11.nc", 
-#'              inLyr=3) 
+#'              outFile="20130315_soilm3.tif",
+#'              inCoordFile="~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/geo_em.d01_1km_nlcd11.nc",
+#'              inLyr=3)
 #' }
 #' @keywords IO
 #' @concept dataMgmt
@@ -40,11 +40,18 @@ ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, inLyr=NA) {
 	# Check packages
     if (!(require("rgdal") & require("raster") & require("ncdf4") )) {
         stop("Required packages not found. Must have R packages: rgdal (requires GDAL system install), raster, ncdf4")
-	}
-	inNC <- ncdf4::nc_open(inFile)
-	inNCVar <- ncdf4::ncvar_get(inNC, inVar)
+    }
+
+  inNC <- tryCatch(suppressWarnings(ncdf4::nc_open(inFile)),
+                        error=function(cond) {message(cond); return(NA)})
+
+  if (!all(is.na(inNC))){
+  inNCVar <- ncdf4::ncvar_get(inNC, inVar)
   if (!is.na(inLyr)) inNCVar <- inNCVar[,inLyr,]
 	varList <- names(inNC$var)
+  }else{
+    inNCVar<-inFile
+  }
 	# Data types
 	typlist <- list("byte"="Byte",
 					"short"="Int16",
@@ -77,7 +84,7 @@ ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, inLyr=NA) {
 		inNCLat <- ncdf4::ncvar_get(coordNC, "lat")
 	} else {
 		stop('Error: Latitude and longitude fields not found (tried: XLAT_M/XLONG_M, XLAT/XLONG, lat/lon')
-	} 
+	}
 	# Reverse column order to get UL in UL
 	x <- as.vector(inNCLon[,ncol(inNCLon):1])
 	y <- as.vector(inNCLat[,ncol(inNCLat):1])
@@ -92,9 +99,9 @@ ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, inLyr=NA) {
 	truelat1 <- ncdf4::ncatt_get(coordNC, varid=0, attname="TRUELAT1")$value
 	truelat2 <- ncdf4::ncatt_get(coordNC, varid=0, attname="TRUELAT2")$value
 	if (map_proj==1) {
-		geogrd.proj <- paste0("+proj=lcc +lat_1=", 
-                          truelat1, " +lat_2=", truelat2, " +lat_0=", 
-                          cen_lat, " +lon_0=", cen_lon, 
+		geogrd.proj <- paste0("+proj=lcc +lat_1=",
+                          truelat1, " +lat_2=", truelat2, " +lat_0=",
+                          cen_lat, " +lon_0=", cen_lon,
                           " +x_0=0 +y_0=0 +a=6370000 +b=6370000 +units=m +no_defs")
 	#geogrd.crs <- CRS(geogrd.proj)
     } else {
@@ -124,9 +131,15 @@ ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, inLyr=NA) {
 	gt = c(gt0,gt1,gt2,gt3,gt4,gt5)
 	# Setup temp geotif
 	d.drv <- new("GDALDriver", "GTiff")
-	tds.out <- new("GDALTransientDataset", driver = d.drv, 
-				   rows = dim(inNCVar)[2], cols = dim(inNCVar)[1], 
-				   bands = 1, type = typlist[[inNC$var[[inVar]]$prec]])
+
+	if (!all(is.na(inNC))) {
+	  typ<-typlist[[inNC$var[[inVar]]$prec]]
+	  }else{
+	  typ<-typlist[7]
+	  }
+	tds.out <- new("GDALTransientDataset", driver = d.drv,
+				   rows = dim(inNCVar)[2], cols = dim(inNCVar)[1],
+				   bands = 1, type = typ)
 	.Call("RGDAL_SetGeoTransform", tds.out, gt, PACKAGE = "rgdal")
 	.Call("RGDAL_SetProject", tds.out, geogrd.proj, PACKAGE = "rgdal")
 	# Prep NC variable
@@ -136,25 +149,25 @@ ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, inLyr=NA) {
 	rgdal::putRasterData(tds.out, as.matrix(inNCVarRast))
 	rgdal::saveDataset(tds.out, outFile)
 	rgdal::GDAL.close(tds.out)
-	ncdf4::nc_close(inNC)
+	if (!all(is.na(inNC)))  ncdf4::nc_close(inNC)
 	if (!is.na(inCoordFile)) ncdf4::nc_close(coordNC)
 }
 
 #' Get geogrid cell indices from lat/lon (or other) coordinates.
 #'
-#' \code{GetGeogridIndex} reads in a set of lat/lon (or other) coordinates and 
+#' \code{GetGeogridIndex} reads in a set of lat/lon (or other) coordinates and
 #' generates a corresponding set of geogrid index pairs.
 #'
-#' \code{GetGeogridIndex} reads in a set of lat/lon (or other real-world) 
-#' coordinates and a geogrid file and generates a corresponding set of 
+#' \code{GetGeogridIndex} reads in a set of lat/lon (or other real-world)
+#' coordinates and a geogrid file and generates a corresponding set of
 #' geogrid index pairs.
-#' 
-#' @param xy The dataframe of lat/lon (or other) coordinates. The dataframe  
+#'
+#' @param xy The dataframe of lat/lon (or other) coordinates. The dataframe
 #' must contain one "x" and one "y" column at a minimum.
 #' @param ncfile The full pathname to the WRF-Hydro geogrid domain file.
 #' @param x The column name for the x coordinate value (DEFAULT="lon")
 #' @param y The column name for the y coordinate value (DEFAULT="lat")
-#' @param proj4 The proj4 string for the x/y coordinate projection 
+#' @param proj4 The proj4 string for the x/y coordinate projection
 #' (DEFAULT='+proj=longlat +datum=WGS84')
 #' @return A dataframe containing the i, j indices (row, column).
 #'
@@ -186,6 +199,7 @@ GetGeogridIndex <- function(xy, ncfile, x="lon", y="lat", proj4='+proj=longlat +
   outDf$col<-NULL
   outDf
 }
+
 #' Pull necessary geospatial information from geogrid file used for
 #' regridding and deprojection.
 #' 
