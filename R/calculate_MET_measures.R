@@ -1,10 +1,9 @@
-#' Calculate the MET verification measures for continuous variables.
+#' Calculate MET verification measures for continuous variables.
 #' 
-#' It inputs two times series of observation and model/forecast and 
-#' computes the MET verification measures for continous variables.
+#' \code{CalcMetCont} inputs two times series of observation and model/forecast and 
+#' computes MET verification measures for continous variables.
 #' Pair matching is not done in this function. It assumes the two time series are 
-#' comparable one by obe.
-#' 
+#' comparable one by one.
 #' 
 #' 
 #' The calculated statistics are the following: \itemize{
@@ -27,7 +26,7 @@
 #' \item MAE: Mean Absolute Error
 #' \item MAD: Median Absolute Deviation
 #' \item IQR: Inter Quantile Range of the Errors
-#' \item E10: 10 percen of Errors 
+#' \item E10: 10 percent of Errors 
 #' \item E25: 25 percent of Errors 
 #' \item E50  50 percent of Errors 
 #' \item E75: 75 percent of Errors 
@@ -35,8 +34,6 @@
 #' } For more information refer to Model Evaluation Tool (MET) documentation
 #'  
 #' 
-#' 
-
 #' @param obs A numeric vector of observation time series.
 #' @param mod A numeric vector of model simulation or forecast time series.
 #' @param conRange A numeric vector containing two elements. 
@@ -50,6 +47,10 @@
 #' @examples
 #' DF <- data.frame(obs=seq(1,5), mod=seq(6,10), stringsAsFactors=FALSE)
 #' stat<-CalcMetCont(DF$obs,DF$mod)
+#' @keywords univar ts
+#' @concept modelEval
+#' @family modelEvaluation
+#' @export
 
 CalcMetCont <- function(obs,mod,conRange=NULL){
   

@@ -40,7 +40,8 @@ GetGeogridIndex(data.frame(lon=-105.54, lat=40.04), "~/wrfHydroTestCases/Fourmil
 }
 }
 \seealso{
-Other geospatial: \code{\link{ExportGeogrid}}
+Other geospatial: \code{\link{ExportGeogrid}};
+  \code{\link{GetTimeZone}}
 }
 \concept{
 dataMgmt

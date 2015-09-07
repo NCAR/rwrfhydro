@@ -107,7 +107,8 @@ min10_n min10_nse min10_nselog min10_cor min10_rmse min10_rmsenorm min10_bias mi
 }
 }
 \seealso{
-Other modelEvaluation: \code{\link{CalcModPerf}};
+Other modelEvaluation: \code{\link{CalcMetCont}};
+  \code{\link{CalcModPerf}};
   \code{\link{CalcNoahmpFluxes}};
   \code{\link{CalcNoahmpWatBudg}}
 }

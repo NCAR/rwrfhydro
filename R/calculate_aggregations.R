@@ -1,9 +1,11 @@
-#' To aggregate the hourly data into daily data comparable to GHCN daily data.
+#' To aggregate model output hourly precipitation data into daily values 
+#' comparable to GHCN daily data.
 #' 
-#' This function inputs the hourly data and aggregate the hourly data into daily info. 
-#' GHCN gauges report data usually at 7:00 AM, however, taht is not the case for all
-#' gauges. The reporting time may even differ for the same gauge but different elements.
-#' One can obtain the report time using \code{GetGhcn2}. 
+#' This function inputs the model output hourly data and aggregate the  
+#' hourly data into daily info. GHCN gauges report data usually at 7:00 AM, 
+#' however, that is not the case for all gauges. The reporting time may 
+#' even differ for the same gauge but different elements. One can obtain the 
+#' report time using \code{GetGhcn2}. 
 #' 
 #' @param sg A dataframe of the selectedGauges, it should have at least one column
 #' with name of siteIds.
@@ -11,12 +13,11 @@
 #' See \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt}
 #' for a list of siteIds.
 #' 
-#' @param prcp A dataframe of hourly data. It should have at least two columns of POSIXct, 
-#' statArg, and DEL_ACCPRCP.POSIXct has the timing at UTC. statArg has the siteIds, and 
-#' DEL_ACCPRCP is the depth of rainfall since wrf_hydro report the accumulated rainfall, 
-#' one extra step is required to calculate the depth of rainfall for an interval.
-#' The column will be with the same name if one use GetMultiNcdf, ReshapeMultiNcdf and
-#' CalcNoahmpFluxes to get the precipitation from WRF_hydro files.
+#' @param prcp A dataframe of hourly data. It should have at least three columns:  
+#' POSIXct, statArg, and DEL_ACCPRCP. POSIXct has the time in UTC, statArg has the 
+#' site ID, and DEL_ACCPRCP is the depth of rainfall for that hour. The DEL_ACCPRCP  
+#' column will be with the same name if you use GetMultiNcdf, ReshapeMultiNcdf and
+#' CalcNoahmpFluxes to get the precipitation from WRF-Hydro output files.
 #' 
 #' @param reportTime A vector of reportTime matching with sg$siteIds. 
 #' reportTime is a unique reporting time for each elelment of each gauge.
@@ -25,10 +26,19 @@
 #' using  \code{GetGhcn2}. Note, use 700 wherever the report time is missing. 
 #' It will be overwritten if sg$reportTime exits.
 #' 
-#' @return Daily precipitation comparable with daily GHCN data. 
+#' @param parallel Logical (DEFAULT=FALSE)
 #' 
+#' @return Daily precipitation comparable with daily GHCN data. 
+#' @examples
+#' \dontrun{
+#' #ADD EXAMPLE HERE
+#' }
+#' @keywords manip
+#' @concept GHCN
+#' @family GHCN
+#' @export
 
-CalcDailyGhcn<-function(sg,prcp,reportTime=700,parallel=FALSE){
+CalcDailyGhcn<-function(sg, prcp, reportTime=700, parallel=FALSE){
   
   # Add timeZone if missing
   if (!("timeZone" %in% colnames(sg))) sg<-GetTimeZone(sg) 

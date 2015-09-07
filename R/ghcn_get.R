@@ -1,28 +1,28 @@
-#'Reads the daily GHNC metadata and select gauges based on the user criteria.
+#' Read the daily GHNC metadata and select gauges based on user criteria.
 #'
-#'\code{SelectGhcnGauges} is designed to create a dataframe of the selected 
-#'gauges based on user's criteria which keeps the important information about 
-#'each gauges required such as country, network type, stationID, lat/lon, 
-#'elevation, state, description, GSN flag, HCN/CRN flag, WMO ID and 
-#'siteIds=[country,ntework,stationID]
+#' \code{SelectGhcnGauges} is designed to create a dataframe of the selected 
+#' gauges based on the user's criteria. The dataframe stores important information  
+#' about each gauge such as country, network type, stationID, lat/lon, 
+#' elevation, state, description, GSN flag, HCN/CRN flag, WMO ID and 
+#' siteIds=[country,ntework,stationID]
 #'
-#'@section Selection criteria : Selection can be based on the following 
-#'  criteria: \enumerate{ \item A list of countries : for the full list
+#' @section Selection criteria : Selection can be based on the following 
+#'  criteria: \enumerate{ \item A list of countries. For the full list
 #'  of countries refer to 
 #'  \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-countries.txt},
 #'  example: countryCode=c("US","UK")
 #'  
-#'  \item A list of states, in this case the country will be 
-#'  automatically set to US for the full list of states refer to 
+#'  \item A list of states (in this case the country will be 
+#'  automatically set to US). For the full list of states refer to 
 #'  \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-states.txt},
 #'  example: states=c("OK","TX")
 #'  
-#'  \item A specific type of the netwrok for for list of networkCode 
-#'  plesae refere to \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt} The 
-#'  options are the following: \itemize{ \item  0 = unspecified (station 
+#'  \item A specific type of the network. For a list of network codes, 
+#'  please refer to \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt} The 
+#'  options are as follows: \itemize{ \item  0 = unspecified (station 
 #'  identified by up to eight alphanumeric characters) \item  1 = Community 
 #'  Collaborative Rain, Hail,and Snow (CoCoRaHS) based identification number. To
-#'  ensure consistency with with GHCN Daily, all numbers in the original 
+#'  ensure consistency with GHCN Daily, all numbers in the original 
 #'  CoCoRaHS IDs have been left-filled to make them all four digits long. In 
 #'  addition, the characters "-" and "_" have been removed to ensure that the 
 #'  IDs do not exceed 11 characters when preceded by "US1". For example, the 
@@ -37,30 +37,37 @@
 #'  station identifier \item  W = WBAN identification number (last five 
 #'  characters of the GHCN-Daily ID) 
 #'  \item example: networkCode=c("C","1") } 
-#'  \item Based on a domain if domain is true,then you need min and max latitude and 
-#'  logitude for the enclosing rectangle }
-#'@param countryCode A vector of desired countries like 
+#'  \item Based on a domain. If domain is true, then you need min and max latitude and 
+#'  logitude for the enclosing rectangle. }
+#'@param countryCode A vector of desired countries, e.g., 
 #'  countryCode=c("US","UK").
-#'@param networkCode A vector of desired networke type like COOP and CoCoRaHS 
-#'  networkCode=c("C","1").
-#'@param states A vector of desired states if country is US like states=c("OK","TX").
-#'@param domain Logical, true if you want to cut over a rectangle domain.
+#'@param networkCode A vector of desired network type, e.g., for COOP and CoCoRaHS 
+#'  use networkCode=c("C","1").
+#'@param states A vector of desired states if country is US, e.g., states=c("OK","TX").
+#'@param domain Logical. Set to TRUE if you want to cut over a rectangle domain. 
+#'  (DEAFULT=FALSE)
 #'@param minLat,maxLat,minLon,maxLon Numerics defining the boundary of the 
 #'  rectangle if domain=TRUE.
-#'@param fileAdd Provide the address to the daily GHCN ghcnd-states.txt, default
+#'@param fileAdd Provide the address to the daily GHCN ghcnd-states.txt. Default
 #'  is "ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt".
-#'@return A dataframe of the selected gauges based on user's criteria containing
+#'@return A dataframe of the selected gauges based on the user's criteria containing
 #'  the following fields: country, network type, stationID, lat/lon, elevation, 
 #'  state, description, GSN flag, HCN/CRN flag, WMO ID and 
 #'  siteIds=[country,ntework,stationID]
 #'  
 #' @examples
+#' \dontrun{
 #' countryCodeList=c("US")
 #' networkCodeList=c("1")
 #' statesList=c("WY")
 #' selectedGauges<-SelectGhcnGauges(countryCode=countryCodeList,
 #'                                  networkCode=networkCodeList,
 #'                                  states=statesList)
+#' }
+#' @keywords IO
+#' @concept GHCN
+#' @family GHCN
+#' @export
 
 SelectGhcnGauges <- function(countryCode=NULL,networkCode=NULL,states=NULL,
                              domain=FALSE,minLat=NULL,maxLat=NULL,minLon=NULL,
@@ -85,18 +92,17 @@ SelectGhcnGauges <- function(countryCode=NULL,networkCode=NULL,states=NULL,
 #' Get GHCN data for specified siteIds.
 #'
 #' \code{\link{GetGhcn}} downloads the daily GHCN (Global Historic Climatology Network)
-#'  data for each siteIds, and creates a dataframe containing four fields of siteIds, date, 
-#'  daily GHCN value and the qFlag. If there are so many gauges, then 
+#'  data for each site in siteIds and creates a dataframe containing four fields: siteIds, date, 
+#'  daily GHCN value and the qFlag. If there are many gauges, then 
 #'  \code{\link{GetGhcn2}} would be much faster.
 #'
-#' @param siteIds A single siteId or vector of siteIds to download and process. 
+#' @param siteIds A single site ID or vector of site IDs to download and process. 
 #' SiteIds should match the standardized GHCN IDs (for example : ACW00011604).
 #' See \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt}
 #' for a list of siteIds.
-#'
-#' @param elements A Character vector defining what type of observation you 
+#' @param elements A character vector defining what type of observation you 
 #' are interested in. There are five core elements as well as a number of 
-#' addition elements. The five core elements are:
+#' additional elements. The five core elements are:
 #' \describe{
 #' \item{PRCP}{ = Precipitation (tenths of mm)}
 #' \item{SNOW}{ = Snowfall (mm)}
@@ -107,21 +113,24 @@ SelectGhcnGauges <- function(countryCode=NULL,networkCode=NULL,states=NULL,
 #' For the full list of elemenst refer to 
 #' \url{ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt}
 #' @param startDate,endDate Date.
-#' @param parallel Logical
+#' @param parallel Logical (DEFAULT=FALSE)
 #' @param fileAdd Address to the url containg all the daily GHCN data,
 #' default is \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/all/}
 #'
-#' @return A dataframes containing the date and the correponding daily GHCN value and the qFlag value.
+#' @return A dataframe containing the date, correponding daily GHCN value,
+#'  and the qFlag value.
 #' 
 #' @examples
+#' \dontrun{
 #' siteIds=c("ACW00011604","AJ000037579","AJ000037883","ASN00005095")
 #' startDate="1949/02/01"
 #' endDate="1949/10/01"
 #' element="PRCP"
 #' obsPrcp<-GetGhcn(siteIds,element,startDate,endDate,parallel=FALSE)
+#' }
 #'
-#' Or you could use the results of the SelectGhcnGauges
-#'
+#' Or you could use the results of SelectGhcnGauges:
+#' \dontrun{
 #' countryCodeList=c("US")
 #' networkCodeList=c("1")
 #' statesList=c("WY")
@@ -129,7 +138,11 @@ SelectGhcnGauges <- function(countryCode=NULL,networkCode=NULL,states=NULL,
 #'                                  networkCode=networkCodeList,
 #'                                  states=statesList)
 #' obsPrcp<-GetGhcn(selectedGauges$siteIds,element,startDate,endDate,parallel=FALSE)
-
+#' }
+#' @keywords IO
+#' @concept GHCN
+#' @family GHCN
+#' @export
 
 GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
                     fileAdd=NULL) {
@@ -192,19 +205,17 @@ GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
 #' Get GHCN data for specified siteIds.
 #'
 #' \code{\link{GetGhcn2}} downloads the daily GHCN (Global Historic Climatology Network)
-#'  data for each siteIds, and creates a dataframe containing fields of siteIds, date, 
+#'  data for each site in siteIds and creates a dataframe containing the fields: siteIds, date, 
 #'  daily GHCN value, mFlag, qFlag, sFlag and reportTime. This is a faster function compared
 #'  to \code{\link{GetGhcn}} if you have many sites.
 #'  
-#' @param siteIds A single siteId or vector of siteIds to download and process. 
+#' @param siteIds A single site ID or vector of site IDs to download and process. 
 #' SiteIds should match the standardized GHCN IDs (for example : ACW00011604).
 #' See \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt}
 #' for a list of siteIds.
-#' 
-#' 
-#' @param elements A Character vector defining what type of observation you 
+#' @param elements A character vector defining what type of observation you 
 #' are interested in. There are five core elements as well as a number of 
-#' addition elements. The five core elements are:
+#' additional elements. The five core elements are:
 #' \describe{
 #' \item{PRCP}{ = Precipitation (tenths of mm)}
 #' \item{SNOW}{ = Snowfall (mm)}
@@ -215,24 +226,27 @@ GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
 #' For the full list of elemenst refer to 
 #' \url{ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt}
 #' @param startDate,endDate Date.
-#' @param parallel Logical.
-#' @param fileAdd Address to the url containg teh csv files of daily GHCN by year. 
+#' @param parallel Logical (DEFAULT=FALSE)
+#' @param fileAdd Address to the url containg the csv files of daily GHCN by year. 
 #' default is \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_year/}
 #'
-#' @return A dataframes containing the siteIds, date, daily GHCN, element,sFlag, qFlag, mFlag and reportTime.
+#' @return A dataframe containing the siteIds, date, daily GHCN, element,sFlag, qFlag, 
+#'  mFlag and reportTime.
 #' If the element is PRCP, then divide the numbers by 10 to convert to mm.
-#' For more information on possible outcomes of flags and their meaning refer to
+#' For more information on possible outcomes of flags and their meaning, refer to
 #' \url{ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt} 
 #'
 #' @examples
+#'\dontrun{
 #' siteIds=c("ACW00011604","AJ000037579","AJ000037883","ASN00005095")
 #' startDate="2000/02/01"
 #' endDate="2002/10/01"
 #' element="PRCP"
 #' obsPrcp<-GetGhcn2(siteIds,element,startDate,endDate,parallel=FALSE)
+#' }
 #'
-#' Or you would use the results of the SelectGhcnGauges
-#'
+#' Or you could use the results of SelectGhcnGauges:
+#' \dontrun{
 #' countryCodeList=c("US")
 #' networkCodeList=c("1")
 #' statesList=c("WY")
@@ -240,9 +254,13 @@ GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
 #'                                  networkCode=networkCodeList,
 #'                                  states=statesList)
 #' obsPrcp<-GetGhcn2(selectedGauges$siteIds,element,startDate,endDate,parallel=FALSE)
-#' 
+#' }
+#' @keywords IO
+#' @concept GHCN
+#' @family GHCN
+#' @export
 
-GetGhcn2 <- function(ids,elements,startDate,endDate,parallel=FALSE,
+GetGhcn2 <- function(siteIds, elements, startDate, endDate, parallel=FALSE,
                     fileAdd=NULL) {
  if (is.null(fileAdd)) fileAdd="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/by_year/"
  # get all the years in the time period
@@ -257,7 +275,7 @@ dat<-plyr::ldply(years,function(year) {
   
   # subset based on siteIds, element, date
   dat$date<-as.Date(as.character(dat$date),"%Y%m%d")
-  dat<-subset(dat,dat$siteIds %in% ids & dat$element %in% elements)
+  dat<-subset(dat,dat$siteIds %in% siteIds & dat$element %in% elements)
   dat<-subset(dat,dat$date >= as.Date(startDate) & dat$date <= as.Date(endDate))
  },.parallel=parallel)
 
