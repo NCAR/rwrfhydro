@@ -1,18 +1,20 @@
 
-*SelectGhcnGauges: Reads the daily GHNC metadata and select gauges based on the user criteria.
+* New functions to import data from the GHCN network of stations, including:
+    + SelectGhcnGauges: Reads the daily GHNC metadata and select gauges based on the user criteria.
+    + GetGhcn and GetGhcn2: Get GHCN data for specified siteIds.
+    + GetTimeZone: Return the time zone for gauge locations (includes a timeZone polygon shapefile of world time zone classifications).
+    + CalcDailyGhcn: Aggregate the hourly data into daily data comparable to GHCN daily data.
+    + CalcMetCont: Calculate the MET verification measures for continuous variables.
 
-*GetGhcn: Get GHCN data for specified siteIds.
+* New functions to download and process Ameriflux, SNOTEL, and Colorado DWR data from online data feeds.
 
-*GetGhcn2: Get GHCN data for specified siteIds.
+* New geospatial tools to export LDASOUT files to geotiffs, obtain geogrid i,j indices from lat/lon coords, and get geospatial info for geogrids.
 
-*GetTimeZone: Return the time zone for gauge locations.
+* New function to read all LDASOUT variables (instead of just water budget vars): ReadLdasoutAll.
 
-*timeZone: Polygon shapefile of world time zone classification.
+* New function to create coarse-resolution (i.e., geogrid) version of high-resolution basin masks: CreateBasinMask.
 
-*CalcDailyGhcn: Aggregate the hourly data into daily data comparable to GHCN daily data.
-
-*CalcMetCont: Calculate the MET verification measures for continuous variables.
-
+* Update to getMultiNetcdf to allow indexes as lists to permit passing variable function arguments to stats.
 
 
 # rwrfhydro 1.0.0
