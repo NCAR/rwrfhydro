@@ -13,7 +13,7 @@ FlipUD(matrix)
 \code{FlipUD} Flips a matrix upside down.
 }
 \examples{
-x <- matrix[1:9, 3]
+x <- matrix(1:9, 3)
 x
 FlipUD(x)
 }

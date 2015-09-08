@@ -52,7 +52,7 @@ element="PRCP"
 obsPrcp<-GetGhcn(siteIds,element,startDate,endDate,parallel=FALSE)
 }
 
-Or you could use the results of SelectGhcnGauges:
+# Or you could use the results of SelectGhcnGauges:
 \dontrun{
 countryCodeList=c("US")
 networkCodeList=c("1")

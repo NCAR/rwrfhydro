@@ -39,18 +39,18 @@
 #'  \item example: networkCode=c("C","1") } 
 #'  \item Based on a domain. If domain is true, then you need min and max latitude and 
 #'  logitude for the enclosing rectangle. }
-#'@param countryCode A vector of desired countries, e.g., 
+#' @param countryCode A vector of desired countries, e.g., 
 #'  countryCode=c("US","UK").
-#'@param networkCode A vector of desired network type, e.g., for COOP and CoCoRaHS 
+#' @param networkCode A vector of desired network type, e.g., for COOP and CoCoRaHS 
 #'  use networkCode=c("C","1").
-#'@param states A vector of desired states if country is US, e.g., states=c("OK","TX").
-#'@param domain Logical. Set to TRUE if you want to cut over a rectangle domain. 
+#' @param states A vector of desired states if country is US, e.g., states=c("OK","TX").
+#' @param domain Logical. Set to TRUE if you want to cut over a rectangle domain. 
 #'  (DEAFULT=FALSE)
-#'@param minLat,maxLat,minLon,maxLon Numerics defining the boundary of the 
+#' @param minLat,maxLat,minLon,maxLon Numerics defining the boundary of the 
 #'  rectangle if domain=TRUE.
-#'@param fileAdd Provide the address to the daily GHCN ghcnd-states.txt. Default
+#' @param fileAdd Provide the address to the daily GHCN ghcnd-states.txt. Default
 #'  is "ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt".
-#'@return A dataframe of the selected gauges based on the user's criteria containing
+#' @return A dataframe of the selected gauges based on the user's criteria containing
 #'  the following fields: country, network type, stationID, lat/lon, elevation, 
 #'  state, description, GSN flag, HCN/CRN flag, WMO ID and 
 #'  siteIds=[country,ntework,stationID]
@@ -109,7 +109,7 @@ SelectGhcnGauges <- function(countryCode=NULL,networkCode=NULL,states=NULL,
 #' \item{SNWD}{ = Snow depth (mm)}
 #' \item{MAX}{ = Maximum temperature (tenths of degrees C)}
 #' \item{TMIN}{ = Minimum temperature (tenths of degrees C)}
-#'}
+#' }
 #' For the full list of elemenst refer to 
 #' \url{ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt}
 #' @param startDate,endDate Date.
@@ -129,7 +129,7 @@ SelectGhcnGauges <- function(countryCode=NULL,networkCode=NULL,states=NULL,
 #' obsPrcp<-GetGhcn(siteIds,element,startDate,endDate,parallel=FALSE)
 #' }
 #'
-#' Or you could use the results of SelectGhcnGauges:
+#' # Or you could use the results of SelectGhcnGauges:
 #' \dontrun{
 #' countryCodeList=c("US")
 #' networkCodeList=c("1")
@@ -222,7 +222,7 @@ GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
 #' \item{SNWD}{ = Snow depth (mm)}
 #' \item{MAX}{ = Maximum temperature (tenths of degrees C)}
 #' \item{TMIN}{ = Minimum temperature (tenths of degrees C)}
-#'}
+#' }
 #' For the full list of elemenst refer to 
 #' \url{ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt}
 #' @param startDate,endDate Date.
@@ -237,7 +237,7 @@ GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
 #' \url{ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt} 
 #'
 #' @examples
-#'\dontrun{
+#' \dontrun{
 #' siteIds=c("ACW00011604","AJ000037579","AJ000037883","ASN00005095")
 #' startDate="2000/02/01"
 #' endDate="2002/10/01"
@@ -245,7 +245,7 @@ GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
 #' obsPrcp<-GetGhcn2(siteIds,element,startDate,endDate,parallel=FALSE)
 #' }
 #'
-#' Or you could use the results of SelectGhcnGauges:
+#' # Or you could use the results of SelectGhcnGauges:
 #' \dontrun{
 #' countryCodeList=c("US")
 #' networkCodeList=c("1")
@@ -264,23 +264,23 @@ GetGhcn2 <- function(siteIds, elements, startDate, endDate, parallel=FALSE,
                     fileAdd=NULL) {
  if (is.null(fileAdd)) fileAdd="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/by_year/"
  # get all the years in the time period
-years<-as.list(seq(lubridate::year(as.Date(startDate)),lubridate::year(as.Date(endDate))))
-dat<-plyr::ldply(years,function(year) {
-  temp <- tempfile()  
-  download.file(paste0(fileAdd,year,".csv.gz"),temp, mode="wb")
-  dat <- read.csv(gzfile(temp), header = FALSE,
+ years<-as.list(seq(lubridate::year(as.Date(startDate)),lubridate::year(as.Date(endDate))))
+ dat<-plyr::ldply(years, function(year) {
+    temp <- tempfile()  
+    download.file(paste0(fileAdd,year,".csv.gz"),temp, mode="wb")
+    dat <- read.csv(gzfile(temp), header = FALSE,
                   col.names = c("siteIds","date","element","value","mFlag","qFlag","sFlag","reportTime"),
                   colClasses = c(rep("character",3),"numeric",rep("character",4)))
-  unlink(temp)
+    unlink(temp)
   
-  # subset based on siteIds, element, date
-  dat$date<-as.Date(as.character(dat$date),"%Y%m%d")
-  dat<-subset(dat,dat$siteIds %in% siteIds & dat$element %in% elements)
-  dat<-subset(dat,dat$date >= as.Date(startDate) & dat$date <= as.Date(endDate))
- },.parallel=parallel)
+    # subset based on siteIds, element, date
+    dat$date<-as.Date(as.character(dat$date),"%Y%m%d")
+    dat<-subset(dat,dat$siteIds %in% siteIds & dat$element %in% elements)
+    dat<-subset(dat,dat$date >= as.Date(startDate) & dat$date <= as.Date(endDate))
+    },.parallel=parallel)
 
-if (element=="PRCP") dat$value<-dat$value/10
+ if (element=="PRCP") dat$value<-dat$value/10
 
-return(dat)
+ return(dat)
 }
 

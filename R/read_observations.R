@@ -243,7 +243,7 @@ ReadAmerifluxNC <- function(pathFluxData, timeZone=NULL, utcOffset=NULL) {
     if ((is.null(utcOffset)) & (is.null(timeZone))) {
       stop("No time zone or UTC offset provided. Please determine the site's local time zone and re-run the tool.")
     }
-    ncFile <- nc_open(pathFluxData)
+    ncFile <- ncdf4::nc_open(pathFluxData)
     nc <- ncFile$nvars
     nr <- ncFile$var[[1]]$varsize
     outDf <- as.data.frame(matrix(nrow=nr, ncol=nc))
@@ -251,10 +251,10 @@ ReadAmerifluxNC <- function(pathFluxData, timeZone=NULL, utcOffset=NULL) {
     for (i in 1:nc ) {
         ncVar <- ncFile$var[[i]]
         ncVarList[i] <- ncVar$name
-        outDf[,i] <- ncvar_get( ncFile, ncVar )
+        outDf[,i] <- ncdf4::ncvar_get( ncFile, ncVar )
     }
     colnames(outDf) <- ncVarList
-    nc_close(ncFile)
+    ncdf4::nc_close(ncFile)
     if (is.null(utcOffset)) {
       outDf$POSIXct <- as.POSIXct( paste(as.character(outDf$YEAR), as.character(outDf$DOY),
                                          as.character(ifelse(substr(outDf$HRMIN,1,nchar(outDf$HRMIN)-2)=='', "00", substr(outDf$HRMIN,1,nchar(outDf$HRMIN)-2))),

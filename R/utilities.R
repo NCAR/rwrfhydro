@@ -81,7 +81,7 @@ RotateCcw <- function(matrix) apply(matrix, 1, rev)
 #' \code{FlipUD} Flips a matrix upside down.
 #' @param matrix A matrix.
 #' @examples
-#' x <- matrix[1:9, 3]
+#' x <- matrix(1:9, 3)
 #' x
 #' FlipUD(x)
 #' @keywords internal

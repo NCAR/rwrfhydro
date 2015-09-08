@@ -189,9 +189,9 @@ GetGeogridIndex <- function(xy, ncfile, x="lon", y="lat", proj4='+proj=longlat +
   file.remove(paste0("tmp_", randnum, ".tif"))
   # Setup coords
   sp<-sp::SpatialPoints(data.frame(x=xy[,x], y=xy[,y]))
-  crs(sp)<-proj4
+  raster::crs(sp)<-proj4
   sp2 <- sp::spTransform(sp, crs(geohgt))
-  outDf <- as.data.frame(rowColFromCell(geohgt, cellFromXY(geohgt, sp2)))
+  outDf <- as.data.frame(raster::rowColFromCell(geohgt, raster::cellFromXY(geohgt, sp2)))
   outDf$ew <- outDf$col
   # Change row count from N->S to S->N
   outDf$sn <- dim(geohgt)[1] - outDf$row + 1

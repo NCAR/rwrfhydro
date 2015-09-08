@@ -53,7 +53,7 @@ GetAmeriflux <- function(siteIDs, gaps=TRUE,
   
   # download file directory
   tmp <- RCurl::getURL(server)
-  tmp <- read.table(textConnection(tmp), sep = ",", stringsAsFactor=FALSE)
+  tmp <- read.table(textConnection(tmp), sep = ",", stringsAsFactors=FALSE)
   tmp <- tmp$V1
   tmp[grep(".txt",tmp)] <- NA
   tmp[grep(".doc",tmp)] <- NA
@@ -96,7 +96,7 @@ GetAmeriflux <- function(siteIDs, gaps=TRUE,
       next
     }
     # Process file list
-    fluxFiles <- read.table(textConnection(fluxFiles), sep = ",", stringsAsFactor=FALSE)
+    fluxFiles <- read.table(textConnection(fluxFiles), sep = ",", stringsAsFactors=FALSE)
     fluxFiles <- fluxFiles$V1
     fluxFiles <- fluxFiles[grep('*.csv',fluxFiles)]
     if (length(fluxFiles)==0) {

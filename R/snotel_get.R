@@ -97,7 +97,7 @@ GetSnotel <- function(siteIDs,
                           strip.white=T, stringsAsFactors=FALSE,
                           na.strings=c(-99.9))
       tmpData$X <- NULL
-      tmpHead <- read.table(textConnection(tmp), sep = "\t", nrow=1, strip.white=T, 
+      tmpHead <- read.table(textConnection(tmp), sep = "\t", nrows=1, strip.white=T, 
                             stringsAsFactors=FALSE)
       # Process time. Note that we are using "Date" not "POSIXct" format for daily data
       if (length(grep("Hour", series))>0) {
