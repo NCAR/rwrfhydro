@@ -1,5 +1,7 @@
 #' Visualize RouteLink.nc files. 
 #' 
+#' @param file Character path/file to the desired Route_Link.nc netcdf file. 
+#' @param parallel Logical, use a registerred parallel backend for plyr?
 #' @examples
 #' \dontrun{
 #' library(rwrfhydro)
@@ -43,6 +45,7 @@
 #' thePlot <- PlotRouteLink(gageZoom=gagePoints2, pad=.02, zoom=12, 
 #' plotPath='~/WRF_Hydro/DOMAIN_library/FRNG_1km_100m_1sqkm_routing_NHD_2015_08_10/gageIdPlots/')
 #' thePlot <- PlotRouteLink(gageZoom=gagePoints2, pad=.02, zoom=12)
+#' 
 #' # just show the boulder creek domain
 #' file <- '~/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.nc'
 #' PlotRouteLink <- VisualizeRouteLink(file, parallel=TRUE)
@@ -55,8 +58,11 @@
 #'                                label=as.character(link)), 
 #'                                color='darkred')
 #' }
+#' @keywords manip vis
+#' @concept dataMgmt dataVis
+#' @family networkExpression nudging
 #' @export
-VisualizeRouteLink <- function(file, parallel=FALSE) {
+VisualizeRouteLink <- function(file='Route_Link.nc', parallel=FALSE) {
   
   if(!length(grep(tolower('RouteLink|Route_Link'), tolower(file))))
       warning('Input files generally have names like "RouteLink" or "Route_Link')
@@ -77,6 +83,8 @@ VisualizeRouteLink <- function(file, parallel=FALSE) {
   
   PlotRouteLink <- function(location=c(lon=mean(range(rl$lon)),
                                        lat=mean(range(rl$lat)) ),
+                            indices=FALSE,
+                            comIds=FALSE,
                             zoom=if(length(gageZoom)) 13 else 8,
                             source='google', 
                             maptype='terrain',
@@ -87,9 +95,11 @@ VisualizeRouteLink <- function(file, parallel=FALSE) {
                             gageShape=9,
                             gageZoom=NULL,
                             plotPath=NULL, 
-                            plotType='pdf') {
+                            plotType='pdf', 
+                            doPlot=TRUE) {
 
     nGage <- if(length(gageZoom)) nrow(gageZoom)-1 else 0
+    rl$ind <- 1:nrow(rl)
     rlSub <- rl
     
     for(gg in 0:nGage) {
@@ -126,24 +136,58 @@ VisualizeRouteLink <- function(file, parallel=FALSE) {
         #ggplot2::scale_x_continuous(expand=c(0,0), limits=plotLimX) +
         #ggplot2::scale_y_continuous(expand=c(0,0), limits=plotLimY) 
       
-      if(length(gageZoom)) 
+      if(length(gageZoom)) {
         ggObj <- ggObj + 
           ggplot2::geom_point(data=subGageZoom, ggplot2::aes(x=lon, y=lat), 
-                              color=gageColor, size=7, shape=gageShape) +
-          ggplot2::geom_text(data=rlSub, 
-                             ggplot2::aes(x=lon/2+to_lon/2, 
-                                          y=lat/2+to_lat/2, 
-                                          label=as.character(link)), 
-                             color=textColor) +
-          ggplot2::ggtitle(paste0(subGageZoom$gageId, ' - ', subGageZoom$name))
-          
+                              color=gageColor, size=7, shape=gageShape)
+        if(indices) {
+          ggObj <- ggObj +
+            ggplot2::geom_text(data=rlSub, 
+                               ggplot2::aes(x=lon/2+to_lon/2, 
+                                            y=lat/2+to_lat/2, 
+                                            label=as.character(ind)), 
+                               color=textColor) + 
+            ggplot2::ggtitle(paste0('Indices: ', subGageZoom$gageId, ' - ', subGageZoom$name))
+        } else {
+          ggObj <- ggObj +
+            ggplot2::geom_text(data=rlSub, 
+                               ggplot2::aes(x=lon/2+to_lon/2, 
+                                            y=lat/2+to_lat/2, 
+                                            label=as.character(link)), 
+                               color=textColor) + 
+            ggplot2::ggtitle(paste0('ComIds: ', subGageZoom$gageId, ' - ', subGageZoom$name))
+        }
+      } else {
+        if(indices) {
+          ggObj <- ggObj +
+            ggplot2::geom_text(data=rlSub, 
+                               ggplot2::aes(x=lon/2+to_lon/2, 
+                                            y=lat/2+to_lat/2, 
+                                            label=as.character(ind)), 
+                               color=textColor) + 
+            ggplot2::ggtitle(paste0('Indices'))
+        } else {
+          if(comIds){
+            ggObj <- ggObj +
+              ggplot2::geom_text(data=rlSub, 
+                                 ggplot2::aes(x=lon/2+to_lon/2, 
+                                              y=lat/2+to_lat/2, 
+                                              label=as.character(link)), 
+                                 color=textColor) + 
+              ggplot2::ggtitle(paste0('ComIds'))
+          }
+        }
+      }
+      
       if(!is.null(plotPath)) { 
         print(plotFileName <- paste0(plotPath,
                                      subGageZoom$gageId,'_',
                                      gsub(',|\\.','',gsub(' ', '_', subGageZoom$name)),'.', 
                                      plotType))
         ggObj <- ggObj + ggplot2::ggsave(plotFileName)
-       } else print(ggObj)
+      } else {
+        if(doPlot) print(ggObj)
+      }
         
       if(nGage > 0 & gg != nGage & is.null(plotPath)) readline("Return to continue...")
       
@@ -154,23 +198,3 @@ VisualizeRouteLink <- function(file, parallel=FALSE) {
   
   invisible(PlotRouteLink)  ## return the function
 }    
-   
-
-#'Visualize upstream or downstream links determined from GatherStream
-#'
-#'@param indDist List containing indies and accumulated distance from start, obtained from GatherStream
-#'@param ncFile Route Link file read in/initially processed with VisualizeRouteLink()
-#'
-#'@return Map of Route Links with selected upstream/downstream links highlighted in red, starting location in black
-#'
-VisualizeSubsetStream <- function(indDist,ncFile){
-  Plot <- VisualizeRouteLink(ncFile)
-  PlotData <- Plot()
-  PlotData$rl$ind <- 1:nrow(PlotData$rl)
-  selectlinks <- PlotData$rl[(PlotData$rl$ind %in% indDist$ind),]
-  startlink <- PlotData$rl[(PlotData$rl$ind %in% indDist$startInd),]
-  PlotData$ggObj + ggplot2::geom_segment(data=selectlinks,ggplot2::aes(x=lon,y=lat,xend=to_lon,yend=to_lat),color="red1") + 
-        ggplot2::geom_text(data=selectlinks,ggplot2::aes(x=lon/2+to_lon/2,y=lat/2+to_lat/2,label=as.character(ind)),color="red1") +
-        ggplot2::geom_text(data=startlink,ggplot2::aes(x=lon/2+to_lon/2,y=lat/2+to_lat/2,label=as.character(ind)))
-
-  } 

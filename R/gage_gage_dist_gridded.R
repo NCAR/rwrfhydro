@@ -334,39 +334,4 @@ ncdump(paste0('~/ncar/WRF_Hydro/DOMAIN_library/Col_Bldr_Creek/',
 
 
 
-#'  Gather upstream or downstream distance from a given starting location
-#'  
-#'  @param stream list of stream information containing either from/to and start and end positions
-#'  @param length vector of lengths for each re-indexed reach
-#'  @param start Indexed location (NOT comID) of where stream starts
-#'  
-#'  @return List containing indices and accumulated distance from start
-#'  
-GatherStream <- function(stream, length,
-                         start, indDist = list(ind = c(), dist = c())) {
-  anyStream <- stream$start[start] > 0
-  if (!anyStream) return(indDist)
-  
-  whGo <- which(!(names(stream) %in% c('start','end')))
-  names(stream)[whGo] <- 'go'
-  streamInds <- stream$go[stream$start[start]:stream$end[start]]
-  
-  print(streamInds)
-  for (ss in streamInds) {
-      if (length(indDist$dist) == 0) {
-        indDist$ind  <- ss
-        startDist = 0
-        indDist$dist <- startDist + length[ss]/2 + length[start]/2
-      } else {
-        indDist$ind  <- append(indDist$ind,  ss)
-        startDist <- indDist$dist[which(indDist$ind == start)]
-        if(!length(startDist)) startDist=0
-        if (length(startDist) > 1)
-          warning('Problem with input topology', immediate. = TRUE)
-        indDist$dist <- append(indDist$dist, startDist + length[ss]/2 + length[start]/2)
-      }
-      indDist <- GatherStream(stream, length, ss, indDist = indDist)
-  }
-  indDist$startInd <- start
-  indDist
-}
+

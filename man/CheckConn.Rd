@@ -25,11 +25,6 @@ Logical, code halts at first FALSE.
   for (ii in seq(1,2000)) { print(ii); print(CheckConn(ii),up=FALSE) }
   }
 }
-\seealso{
-Other networkExpression: \code{\link{ReExpNetwork}};
-  \code{\link{ReExpressGridChanConn}};
-  \code{\link{ReIndexRouteLink}}
-}
 \concept{
 dataMgmt
 }

@@ -4,12 +4,14 @@
 \alias{ReExpNetwork}
 \title{ReExpress stream networks indexed network traversal.}
 \usage{
-ReExpNetwork(routeLinkReInd, upstream = TRUE)
+ReExpNetwork(routeLinkReInd, upstream = TRUE, parallel = FALSE)
 }
 \arguments{
 \item{routeLinkReInd}{The netcdf routelink file to process.}
 
 \item{upstream}{Logical, re-express connectivity upstream (TRUE) or downstream (FALSE).}
+
+\item{parallel}{Logical use a registered backend for plyr?}
 }
 \value{
 The resulting file which was written to disk, of the form the "infile.reExpTo.nc"
@@ -28,9 +30,10 @@ up- and down- stream traversal, depending on the upstream argument.
 }
 }
 \seealso{
-Other networkExpression: \code{\link{CheckConn}};
-  \code{\link{ReExpressGridChanConn}};
-  \code{\link{ReIndexRouteLink}}
+Other networkExpression nudging: \code{\link{NtwKReExToNcdf}};
+  \code{\link{ReExpressRouteLink}};
+  \code{\link{ReIndexRouteLink}};
+  \code{\link{VisualizeRouteLink}}
 }
 \concept{
 dataMgmt

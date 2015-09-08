@@ -1,3 +1,31 @@
+#' ReExpress the Route_Link.nc file.
+#' 
+#' A wrapper on the individual functions which perform this full reexpression and generate the netcdf file. 
+#' @param routeLink.nc Character path/file to the desired Route_link.nc netcdf file for the link/reach-based routing.
+#' @param parallel Logical use a registered backend for plyr?
+#' @return Named Character vector for each of the 4 files created as outputs with full paths. 
+#' @examples 
+#' \dontrun{
+#' ReExpressRouteLink("~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.nc")
+#' ReExpressRouteLink() # if there is a Route_Link.nc file in getwd() (the current directory).
+#' }
+#' @keywords manip
+#' @concept dataMgmt
+#' @family networkExpression nudging
+#' @export
+ReExpressRouteLink <- function(routeLink.nc='Route_Link.nc', parallel=FALSE) {
+  reInd.Rdb  <- ReIndexRouteLink(routeLink.nc)
+  upstream.Rdb   <- ReExpNetwork(reInd.Rdb, parallel=parallel)
+  downstream.Rdb <- ReExpNetwork(reInd.Rdb, up=FALSE, parallel=parallel)
+  reExp.nc    <- NtwKReExToNcdf(downstream.Rdb, upstream.Rdb)
+  outPath <- dirname(routeLink.nc)
+  if(outPath==".") outPath <- getwd()
+  outFiles <- paste0(outPath,'/',basename(c(reInd.Rdb, upstream.Rdb, downstream.Rdb, reExp.nc)))
+  cat("Created the following files: ", outFiles, sep = '\n')
+  names(outFiles) <- c('reInd.Rdb', 'upstream.Rdb', 'downstream.Rdb', 'reExp.nc')
+  invisible(outFiles)
+}
+
 #' ReIndex RouteLink.nc (netcdf) files for indexed network traversal.
 #' 
 #' \code{ReIndexRouteLink} reIndexes by order in the RouteLink file,
@@ -19,7 +47,7 @@
 #' }
 #' @keywords manip
 #' @concept dataMgmt
-#' @family networkExpression
+#' @family networkExpression nudging
 #' @export
 ReIndexRouteLink <- function(routeLinkFile) {
   ncid <- ncdf4::nc_open(routeLinkFile)
@@ -62,6 +90,7 @@ ReIndexRouteLink <- function(routeLinkFile) {
 #' 
 #' @param routeLinkReInd The netcdf routelink file to process.
 #' @param upstream Logical, re-express connectivity upstream (TRUE) or downstream (FALSE).
+#' @param parallel Logical use a registered backend for plyr?
 #' @return The resulting file which was written to disk, of the form the "infile.reExpTo.nc"
 #'         (downstream) or "infile.reExpFrom.nc" (upstream).
 #' @examples
@@ -73,9 +102,9 @@ ReIndexRouteLink <- function(routeLinkFile) {
 #' }
 #' @keywords manip
 #' @concept dataMgmt
-#' @family networkExpression
+#' @family networkExpression nudging
 #' @export
-ReExpNetwork <- function(routeLinkReInd, upstream=TRUE) {
+ReExpNetwork <- function(routeLinkReInd, upstream=TRUE, parallel=FALSE) {
   load(routeLinkReInd)
   
   ## Reexpress the network
@@ -98,7 +127,7 @@ ReExpNetwork <- function(routeLinkReInd, upstream=TRUE) {
   FindFunc <- if(upstream) { FindUpstream } else { FindDownstream }
 
   theList <- plyr::llply( 1:length(reInd$to), FindFunc,
-                         .parallel=foreach::getDoParWorkers() > 1)
+                         .parallel=parallel)
   
   theLen <- plyr::laply( theList, function(ll) if(ll[1]==0) 0 else length(ll) )
   whLenPos <- which(theLen > 0)
@@ -182,8 +211,8 @@ ReExpNetwork <- function(routeLinkReInd, upstream=TRUE) {
 # }
 #' @keywords manip
 #' @concept dataMgmt
-#' @family networkExpression
-#' @export
+#' @family networkExpression nudging
+#' # @export
 CheckConn <- function(ind, upstream=TRUE, printInds=FALSE) {
   newWay <- if(upstream) {
     if(from$start[ind] >0) from$from[from$start[ind]:from$end[ind]] else 0
@@ -255,16 +284,28 @@ CheckRouteLink <- function(routeLinkFile) {
 }
 
 
-fromFile <- "~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink.reExpFrom.Rdb"
-toFile <- "~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink.reExpTo.Rdb"
-
-fromFile <- "~/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.reExpFrom.Rdb"
-toFile <- "~/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.reExpTo.Rdb"
+# fromFile <- "~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink.reExpFrom.Rdb"
+# toFile <- "~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink.reExpTo.Rdb"
+# 
+# fromFile <- "~/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.reExpFrom.Rdb"
+# toFile <- "~/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.reExpTo.Rdb"
 
 
 ##----------------------
-## Output the network reexpression
-## This results in 3 files 
+#' Output the network reexpression to netcdf.
+#' 
+#' @param  toFile The Rdb (r binary file) for the downstream connectivity created by ReExpNetwork.
+#' @param  fromFile The Rdb (r binary file) for the upstream connectivity created by ReExpNetwork.
+#' @return Character path/file for the resulting netcdf file. 
+#' 
+#' @examples 
+#' \dontrun{
+#' reExp.nc    <- NtwKReExToNcdf(downstream.Rdb, upstream.Rdb)
+#' }
+#' @keywords manip
+#' @concept dataMgmt
+#' @family networkExpression nudging
+#' @export
 NtwKReExToNcdf <- function(toFile, fromFile) {
 
   load(toFile)
@@ -359,92 +400,103 @@ NtwKReExToNcdf <- function(toFile, fromFile) {
   paste0(dir,'/',base,'.reExp.nc')
 }
 
+#============================================
+#'  Gather upstream or downstream distance from a given starting location
+#'  
+#'  @param stream List of stream information containing either from/to and start and end positions, returned from ReExpNetwork.
+#'  @param start Indexed location (NOT comID) of where stream starts
+#'  @param length Vector of link lengths for each re-indexed reach, contained in reExp.nc.
+#'  @param indDist Optional list of indices and distance to that index. Typically not used externally to the recursion.
+#'  
+#'  @return List containing indices and accumulated distance from start
+#'  @examples 
+#'  \dontrun{
+#'      PlotRouteLink <- 
+#'          VisualizeRouteLink(file='~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.nc')
+#'      PlotRouteLink()
+#'      PlotRouteLink(comId=TRUE)
+#'      PlotRouteLink(indices=TRUE)
+#'      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reInd.Rdb')
+#'      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reExpFrom.Rdb')
+#'      upstreamInds <- GatherStreamInds(from, 379, length=reInd$length)
+#'      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reExpTo.Rdb')
+#'      downstreamInds <- GatherStreamInds(to, 91, length=reInd$length)
+#'  }
+#'  @export
+GatherStreamInds <- function(stream, start, length=0,
+                             indDist = list(ind = c(), dist = c())) {
+  anyStream <- stream$start[start] > 0
+  if (!anyStream) return(indDist)
+  
+  whGo <- which(!(names(stream) %in% c('start','end')))
+  if(!(names(stream)[whGo] %in% c('to','from','go'))) 
+    warning('Something wrong with stream variable.', immediate.=TRUE)
+  names(stream)[whGo] <- 'go'
+  streamInds <- stream$go[stream$start[start]:stream$end[start]]
+  
+  for (ss in streamInds) {
+    if (length(indDist$dist) == 0) {
+      indDist$ind  <- ss
+      startDist = 0
+      indDist$dist <- startDist + length[ss]/2 + length[start]/2
+    } else {
+      indDist$ind  <- append(indDist$ind,  ss)
+      startDist <- indDist$dist[which(indDist$ind == start)]
+      if(!length(startDist)) startDist=0
+      if (length(startDist) > 1)
+        warning('Problem with input topology', immediate. = TRUE)
+      indDist$dist <- append(indDist$dist, startDist + length[ss]/2 + length[start]/2)
+    }
+    indDist <- GatherStreamInds(stream, start=ss, length=length, indDist=indDist)
+  }
+  indDist$startInd <- start
+  indDist
+}
 
-##==================================================================================================
-#' ReExpress *gridded* stream networks indexed network traversal.
-#' 
-#' \code{ReExpNetwork} re-expresses topological relationships between two variables, 
-#  [from, to] (used by WRF Hydro gridded channel model) into separate lists for index based
-#' up- and down- stream traversal, depending on the upstream argument. 
-#' 
-#' @param upstream Integer, the index of the upstream chan grid from the index.
-#' @param downstream Integer, the index of the downstream chan grid from the index. 
-#' @return ... have to run this to correctly describe... JLM TODO
+
+#========================================================
+#'Visualize upstream or downstream links determined from GatherStreamInds
+#'
+#' @param indDist List containing indies and accumulated distance from start, obtained from GatherStreamInds
+#' @param ncFile Route Link file read in/initially processed with VisualizeRouteLink()
+#' @param comIds Logical, show the comIds or the link indices in the Route_Link.nc file?
+#' @param ... arguments to the function returned by VisualizeRouteLink.
+#' @return Map of Route Links with selected upstream/downstream links highlighted in red, starting location in black
 #' @examples
 #' \dontrun{
-#'   library(rwrfhydro)
-#'   ncdump('~/ncar/WRF_Hydro/DOMAIN_library/Col_Bldr_Creek/CHANNEL_CONNECTIVITY.nc')
-#'   TO_NODE <- 
-#'   ncdump('~/ncar/WRF_Hydro/DOMAIN_library/Col_Bldr_Creek/CHANNEL_CONNECTIVITY.nc',
-#'          'TO_NODE', quiet=TRUE)
-#'   FROM_NODE <- 
-#'   ncdump('~/ncar/WRF_Hydro/DOMAIN_library/Col_Bldr_Creek/CHANNEL_CONNECTIVITY.nc',
-#'          'FROM_NODE', quiet=TRUE)
-#'   doMC::registerDoMC(4)
-#'   newCon <- ReExpressGridChanConn(FROM_NODE, TO_NODE)
-#'   upstream <- newCon$upstream
-#'   downstream <- newCon$downstream
-#'   TO_NODE[which(is.na(TO_NODE))] <- 0
-#'   done <- for(ii in 1:length(TO_NODE)) CheckReGridConnUp(ii)
-#'   done <- for(ii in 1:length(TO_NODE)) CheckReGridConnDown(ii)
-#'  save(upstream,downstream, 
-#'       file='~/ncar/WRF_Hydro/DOMAIN_library/Col_Bldr_Creek/newConnectivity.Rdb')
+#'  ## see example for GatherStream
+#'  file <- '~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.nc'
+#'  VisualizeSubsetStream(upstreamInds, file)
+#'  VisualizeSubsetStream(upstreamInds, file, com=FALSE, zoom=10, textColor='purple')
+#'  VisualizeSubsetStream(downstreamInds, file, com=TRUE, zoom=10)
+#'  VisualizeSubsetStream(downstreamInds, file, com=FALSE, zoom=10, linkColor='lightblue', maptype='satellite')
 #' }
-#' @keywords manip
-#' @concept dataMgmt
-#' @family networkExpression
 #' @export
-ReExpressGridChanConn <- function(upstream, downstream) {
+VisualizeSubsetStream <- function(indDist,ncFile, comIds=TRUE, ...){
+  plotData <- VisualizeRouteLink(ncFile)(doPlot=FALSE, ...)
+  plotData$rl$ind <- 1:nrow(plotData$rl)
+  selectLinks <- plotData$rl[(plotData$rl$ind %in% indDist$ind),]
+  startLink <- plotData$rl[(plotData$rl$ind %in% indDist$startInd),]
+  
+  ggObj <-
+    plotData$ggObj + 
+    ggplot2::geom_segment(data=selectLinks,ggplot2::aes(x=lon,y=lat,xend=to_lon,yend=to_lat),color="red1")
     
-  FindUpstream   <- function(down) list(upstream[which(downstream==down)])
-  FindDownstream <- function(up) list(downstream[which(upstream==up)])
+    if(comIds) { # convert to comId by default
+      ggObj <- ggObj + 
+        ggplot2::geom_text(data=selectLinks,ggplot2::aes(x=lon/2+to_lon/2,y=lat/2+to_lat/2,label=as.character(link)),color="darkred") +
+        ggplot2::geom_text(data=startLink,ggplot2::aes(x=lon/2+to_lon/2,y=lat/2+to_lat/2,label=as.character(link))) + 
+        ggplot2::ggtitle("Link comIds")
+    } else {
+      ggObj <- ggObj + 
+        ggplot2::geom_text(data=selectLinks,ggplot2::aes(x=lon/2+to_lon/2,y=lat/2+to_lat/2,label=as.character(ind)),color="darkred") +
+        ggplot2::geom_text(data=startLink,ggplot2::aes(x=lon/2+to_lon/2,y=lat/2+to_lat/2,label=as.character(ind))) + 
+        ggplot2::ggtitle("Link indices")
+    }
   
-  downstream[which(is.na(downstream))] <- 0
-  
-  ## re express 
-  for(ff in c(FindUpstream,FindDownstream)) {
-    connList <- plyr::llply( upstream, ff, 
-                             .parallel=foreach::getDoParWorkers() >1 )
-    connLen <- plyr::laply( connList, function(ll) length(ll[[1]]) )
-    whLenPos <- which(connLen > 0)
-    cumSumLenPos <- cumsum(connLen[whLenPos])
-    connStart <- as.integer(0*(1:length(connLen)))
-    connStart[whLenPos] <- cumSumLenPos
-    ## the cumulative sum dosent give the start, it gives the last in each range. fix
-    whLenGt1 <- which(connLen > 1)
-    cumAdj <- as.integer(0*(1:length(connLen)))
-    cumAdj[whLenGt1] = cumAdj[whLenGt1] - connLen[whLenGt1] + 1
-    connStart <- connStart + cumAdj
-    conn <- unlist(connList)
-    conn[which(is.na(conn))] <- 0
-    connEnd <- connStart+connLen-1
-    connEnd[which(connEnd < 0)] <- 0
-    if(formalArgs(ff)[1]=='down') 
-      upstreamList = list( upstream=conn, start=connStart, end=connEnd)
-    if(formalArgs(ff)[1]=='up') 
-      downstreamList = list( downstream=conn, start=connStart, end=connEnd)
-  }
-  list(upstream = upstreamList, downstream = downstreamList)
-}
- 
-#'Check for re-rxpressed grid connectivity upstream. 
-#'@export
-CheckReGridConnUp <- function(ind, printInds=FALSE) {
- ogWay <-  FROM_NODE[which(TO_NODE==ind)]
- newWay <- upstream$upstream[upstream$start[ind]:upstream$end[ind]]
- if(!( all(ogWay %in% newWay) & all(newWay %in% ogWay))) stop('test failed upstream')
- if(printInds) print(paste(ind, ':', paste(newWay,collapse=', ')))
- TRUE
-}
+  print(ggObj)
+  invisible(ggObj)
+} 
 
-#'Check for re-expressed grid connectivity downstream. 
-#'@export
-CheckReGridConnDown <- function(ind, printInds=FALSE) {
-  ogWay <-  TO_NODE[which(FROM_NODE==ind)]
-  newWay <- downstream$downstream[downstream$start[ind]:(downstream$end[ind])]
-  if(!( all(ogWay %in% newWay) & all(newWay %in% ogWay))) stop('test failed downstream')
-  if(printInds) print(paste(ind, ':', paste(newWay,collapse=', ')))
-  TRUE
-}
 
 

@@ -29,9 +29,10 @@ reIndFile <-
 }
 }
 \seealso{
-Other networkExpression: \code{\link{CheckConn}};
+Other networkExpression nudging: \code{\link{NtwKReExToNcdf}};
   \code{\link{ReExpNetwork}};
-  \code{\link{ReExpressGridChanConn}}
+  \code{\link{ReExpressRouteLink}};
+  \code{\link{VisualizeRouteLink}}
 }
 \concept{
 dataMgmt
