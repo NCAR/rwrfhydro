@@ -11,6 +11,9 @@
 #'   outputDir <- '~/WRF_Hydro/testChanobs/timeSliceTest/'
 #'   ChanObsToTimeSlice(files, sliceResolutionMin, outputDir) 
 #' } 
+#' @keywords manip IO
+#' @concept nudging 
+#' @family nudging
 #' @export
 ChanObsToTimeSlice <- function(files, sliceResolutionMin, outputDir) {
   
@@ -49,26 +52,3 @@ ChanObsToTimeSlice <- function(files, sliceResolutionMin, outputDir) {
   
   plyr::dlply(fileDf, plyr::.(dateTimeRound), MkTimeSlice)
 }
-
-
-
-# #' frxstPtsToTimeSlice
-# #' 
-# #' 
-# #' @examples 
-# files <- list.files('/Users/jamesmcc/WRF_Hydro/testFrxstPts/', pattern='frxst', full.names=TRUE)
-# data <- plyr::ldply(NamedList(files), ReadFrxstPts)
-# ggplot2::ggplot(data, ggplot2::aes(x=POSIXct, y=q_cms, color=.id)) +
-#   ggplot2::geom_line() +
-#   ggplot2::facet_wrap(~st_id, ncol=1, scales='free_y') +
-#   ggplot2::theme_bw()
-
-
-
-
-
-
-
-
-
-

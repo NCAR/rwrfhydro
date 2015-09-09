@@ -10,7 +10,7 @@
 #' ReExpressRouteLink() # if there is a Route_Link.nc file in getwd() (the current directory).
 #' }
 #' @keywords manip
-#' @concept dataMgmt
+#' @concept dataMgmt nudging
 #' @family networkExpression nudging
 #' @export
 ReExpressRouteLink <- function(routeLink.nc='Route_Link.nc', parallel=FALSE) {
@@ -101,7 +101,7 @@ ReIndexRouteLink <- function(routeLinkFile) {
 #'   ReExpNetwork(reIndFile, up=FALSE)
 #' }
 #' @keywords manip
-#' @concept dataMgmt
+#' @concept dataMgmt nudging
 #' @family networkExpression nudging
 #' @export
 ReExpNetwork <- function(routeLinkReInd, upstream=TRUE, parallel=FALSE) {
@@ -165,8 +165,9 @@ ReExpNetwork <- function(routeLinkReInd, upstream=TRUE, parallel=FALSE) {
 #' 
 #' \code{CheckConn} checks that a re-expressed network matches it's original expression.
 #' 
-#' @param index
+#' @param ind The indices to check. 
 #' @param upstream Logical, check connectivity upstream (TRUE) or downstream (FALSE).
+#' @param printInds Logical, print the indices checked.
 #' @return Logical, code halts at first FALSE.
 #' @examples
 #' \dontrun{
@@ -210,7 +211,7 @@ ReExpNetwork <- function(routeLinkReInd, upstream=TRUE, parallel=FALSE) {
 # load("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reInd.Rdb")
 # }
 #' @keywords manip
-#' @concept dataMgmt
+#' @concept dataMgmt nudging
 #' @family networkExpression nudging
 #' # @export
 CheckConn <- function(ind, upstream=TRUE, printInds=FALSE) {
@@ -303,7 +304,7 @@ CheckRouteLink <- function(routeLinkFile) {
 #' reExp.nc    <- NtwKReExToNcdf(downstream.Rdb, upstream.Rdb)
 #' }
 #' @keywords manip
-#' @concept dataMgmt
+#' @concept dataMgmt nudging
 #' @family networkExpression nudging
 #' @export
 NtwKReExToNcdf <- function(toFile, fromFile) {
@@ -422,6 +423,9 @@ NtwKReExToNcdf <- function(toFile, fromFile) {
 #'      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reExpTo.Rdb')
 #'      downstreamInds <- GatherStreamInds(to, 91, length=reInd$length)
 #'  }
+#' @keywords manip
+#' @concept nudging dataMgmt
+#' @family networkExpression nudging
 #'  @export
 GatherStreamInds <- function(stream, start, length=0,
                              indDist = list(ind = c(), dist = c())) {
@@ -471,6 +475,9 @@ GatherStreamInds <- function(stream, start, length=0,
 #'  VisualizeSubsetStream(downstreamInds, file, com=TRUE, zoom=10)
 #'  VisualizeSubsetStream(downstreamInds, file, com=FALSE, zoom=10, linkColor='lightblue', maptype='satellite')
 #' }
+#' @keywords hplot
+#' @concept nudging plot
+#' @family networkExpression nudging
 #' @export
 VisualizeSubsetStream <- function(indDist,ncFile, comIds=TRUE, ...){
   plotData <- VisualizeRouteLink(ncFile)(doPlot=FALSE, ...)

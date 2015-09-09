@@ -33,7 +33,7 @@
 #'              inLyr=3)
 #' }
 #' @keywords IO
-#' @concept dataMgmt
+#' @concept dataMgmt geospatial
 #' @family geospatial
 #' @export
 ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, inLyr=NA) {
@@ -178,7 +178,7 @@ ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, inLyr=NA) {
 #' GetGeogridIndex(data.frame(lon=-105.54, lat=40.04), "~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/geo_em.d01_1km_nlcd11.nc")
 #' }
 #' @keywords IO
-#' @concept dataMgmt
+#' @concept dataGet geospatial
 #' @family geospatial
 #' @export
 GetGeogridIndex <- function(xy, ncfile, x="lon", y="lat", proj4='+proj=longlat +datum=WGS84') {
@@ -212,9 +212,9 @@ GetGeogridIndex <- function(xy, ncfile, x="lon", y="lat", proj4='+proj=longlat +
 #' \dontrun{
 #' lccGeoDF <- GetGeogridSpatialInfo('./geo_em.d02.nc')
 #' }
-#' @keywords GEOSPATIAL METADATA
-#' @concept GEOSPATIAL
-#' @family METADATA
+#' @keywords IO
+#' @concept geospatial getData
+#' @family geospatial
 #' @export
 GetGeogridSpatialInfo <- function(geoFile){
   #First check for existence of file

@@ -322,7 +322,8 @@ ReadLdasoutAll <- function(pathOutdir, pathDomfile, mskvar="basn_msk",
 #' \itemize{
 #'    \item QSTRMVOLRT: Mean accumulated depth of stream channel inflow (mm)
 #'    \item SFCHEADSUBRT: Mean depth of ponded water (mm)
-#'    \item QBDRYRT: Mean accumulated flow volume routed outside of the domain from the boundary cells (mm)
+#'    \item QBDRYRT: Mean accumulated flow volume routed outside of the domain from the 
+#'    boundary cells (mm)
 #' }
 #'
 #' @param pathOutdir The full pathname to the output directory containing the RTOUT files.
@@ -330,14 +331,14 @@ ReadLdasoutAll <- function(pathOutdir, pathDomfile, mskvar="basn_msk",
 #' the model run (for grabbing the basin mask).
 #' @param mskvar The variable name in pathDomfile to use for the mask (DEFAULT="basn_msk").
 #' @param basid The basin ID to use (DEFAULT=1)
-#' @param ncores If multi-core processing is available, the number of cores to use (DEFAULT=1).
+#' @param ncores If multi-core processing is available, the number of cores to use (DEFAULT=1).    
 #' Must have doMC installed if ncores is more than 1.
 #' @return A dataframe containing a time series of basin-wide mean water budget variables.
 #'
 #' @examples
-#' ## Take an OUTPUT directory for an hourly routing timestep model run of Fourmile Creek (Basin ID = 1)
-#' ## and create a new dataframe containing the basin-wide mean values for the major water budget
-#' ## components over the time series.
+#' ## Take an OUTPUT directory for an hourly routing timestep model run of Fourmile Creek 
+#' ## (Basin ID = 1)and create a new dataframe containing the basin-wide mean values for the 
+#' ## major water budget components over the time series.
 #'
 #' \dontrun{
 #' modRtout1h.mod1.fc <- 
@@ -365,7 +366,8 @@ ReadRtout <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, ncore
         myvar[which(myvar<minValid)]<-NA
         sum(mskvar*myvar, na.rm=TRUE)/sum(mskvar, na.rm=TRUE)
         }
-    basin.surf <-  list(start=c(1,1,1), end=c(dim(mskvar)[1],dim(mskvar)[2],1), stat='basin_avg', mskvar, env=environment())
+    basin.surf <-  list(start=c(1,1,1), end=c(dim(mskvar)[1],dim(mskvar)[2],1), 
+                        stat='basin_avg', mskvar, env=environment())
     # Setup RTOUT variables to use
     variableNames <- c('QSTRMVOLRT','SFCHEADSUBRT','QBDRYRT')
     chrtoutVars <- as.list( variableNames )
@@ -377,7 +379,9 @@ ReadRtout <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, ncore
     names(chrtoutInd) <- names(chrtoutVars)
     chrtoutIndexList <- list( chrtout = chrtoutInd )
     # Run GetMultiNcdf
-    chrtoutFilesList <- list( chrtout = list.files(path=pathOutdir, pattern=glob2rx('*.RTOUT_DOMAIN*'), full.names=TRUE))
+    chrtoutFilesList <- list( chrtout = list.files(path=pathOutdir, 
+                                                   pattern=glob2rx('*.RTOUT_DOMAIN*'), 
+                                                   full.names=TRUE))
     if (ncores > 1) {
         chrtoutDF <- GetMultiNcdf(indexList=chrtoutIndexList, 
                                   variableList=chrtoutVariableList, 
@@ -414,7 +418,9 @@ ReadRtout <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, ncore
 #' ## Take the high-res 100-m routing domain for Fourmile and generate a matrix of
 #' ## area weights on the 1km geogrid domain.
 #' \dontrun{
-#' geoMsk <- CreateBasinMask("~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/Fulldom_hydro_OrodellBasin_100m.nc", aggFact=10)
+#' geoMsk <- 
+#' CreateBasinMask("~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/Fulldom_hydro_OrodellBasin_100m.nc",
+#' aggFact=10)
 #' }
 #' @keywords IO
 #' @concept dataGet
@@ -432,7 +438,8 @@ ReadRtout <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, ncore
    basnmsk <- basnmsk[,order(ncol(basnmsk):1)]
    # Resample the high-res grid to the low-res LSM
    if (aggfact > 1) {
-     basnmsk <- raster::as.matrix(raster::aggregate(raster::raster(basnmsk), fact=aggfact, fun=mean))
+     basnmsk <- raster::as.matrix(raster::aggregate(raster::raster(basnmsk), 
+                                                    fact=aggfact, fun=mean))
    }
    basnmsk
  }

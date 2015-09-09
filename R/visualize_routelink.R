@@ -58,8 +58,8 @@
 #'                                label=as.character(link)), 
 #'                                color='darkred')
 #' }
-#' @keywords manip vis
-#' @concept dataMgmt dataVis
+#' @keywords manip hplot
+#' @concept dataMgmt plot
 #' @family networkExpression nudging
 #' @export
 VisualizeRouteLink <- function(file='Route_Link.nc', parallel=FALSE) {

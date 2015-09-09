@@ -23,6 +23,9 @@
 #' newCopyId <- 'threeRealGagesTEST'
 #' AddRouteLinkGage(rlFile, gageIds, comIds, new=identifier)
 #' }
+#' @keywords manip IO
+#' @concept nudging dataMgmt
+#' @family nudging
 #' @export
 AddRouteLinkGage <- function(rlFile, gageIds, comIds, newCopyId, gageMiss='', overwrite=FALSE) {
 
@@ -92,6 +95,9 @@ AddRouteLinkGage <- function(rlFile, gageIds, comIds, newCopyId, gageMiss='', ov
 #'              frxstInds=as.integer(c(500,160,200)), 
 #'              overwrite=TRUE)
 #' }
+#' @keywords manip IO
+#' @concept nudging dataMgmt
+#' @family nudging
 #' @export
 EditFrxstPts <- function(fullDomFile, newCopyId, gridInds, frxstInds, keep=FALSE, overwrite=FALSE) {
 
