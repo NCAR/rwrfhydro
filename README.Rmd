@@ -53,12 +53,16 @@ Importantly, beta functionality can be installed using:
 ``` R
 devtools::install_github("mccreigh/rwrfhydro", ref='devBranch')
 ```
-
+We are finally gaining some Windows users and have attempted to improve portability of rwrfhydro to this system. A primary dependence of rwrfhydro is ncdf4. This ncdf4 package binary can be installed in the following way: First, obtain the binary from [http://cirrus.ucsd.edu/~pierce/ncdf/](http://cirrus.ucsd.edu/~pierce/ncdf/). Then in an R session 
+``` R
+install.packages(file.choose(), repos=NULL, type = "binary")
+``` 
+R will open a window for you to choose the downloaded zip file and will install it.
 
 
 # Using
 After the one-time install or any subsequent re-installs/updates, simply load the rwrfhydro library in an R session:
-```
+``` R
 library(rwrfhydro)
 ```
 and now the package (namespace) is available. 
@@ -120,21 +124,21 @@ Workflow is approximately this:
 * Checkout your devBranch (`git checkout devBranch`)
 
 * Development cycles:
-  * Optional: Create a topic branch off of devBranch in git (e.g. `git checkout -b myBranch`) and push this to github (`git push origin myBranch`). 
-  * Write code (in these dirs: R/, NAMESPACE, src/, data/, inst/).
-  * Write documentation (in these dirs: man/, vignettes/).
-  * Write tests (in this dir: test/).
-  * Document and check with devtools: `devtools::document(); devtools::check_doc(); devtools::check()`
-  * Commit to your branch with git. (`git commit -am 'Some cool features were needed.'`)
-  * Push to github (`git push origin branch`). If Travis-CI is configured, this can trigger an `R CMD check` on Travis. 
+    * Optional: Create a topic branch off of devBranch in git (e.g. `git checkout -b myBranch`) and push this to github (`git push origin myBranch`). 
+    * Write code (in these dirs: R/, NAMESPACE, src/, data/, inst/).
+    * Write documentation (in these dirs: man/, vignettes/).
+    * Write tests (in this dir: test/).
+    * Document and check with devtools: `devtools::document(); devtools::check_doc(); devtools::check()`
+    * Commit to your branch with git. (`git commit -am 'Some cool features were needed.'`)
+    * Push to github (`git push origin branch`). If Travis-CI is configured, this can trigger an `R CMD check` on Travis. 
 
-To get code back to the main reposiory/fork:  
-  * If on myBranch: You probably want to mege devBranch into myBranch: `git pull upstream devBranch`.
-  * If on myBranch: `checkout devBranch`. The either wholsale merge your work from origin (`git pull origin myBranch`) or cherry pick files (`git check out myBranch -- path/to/file` for eac file) it into devBranch.
-  * if on myBranch: commit, `git commit -am'Fixes and new features'`.
-  * If not previously on myBranch and did not do a wholesale merge in previous step: Sync with the "upstream" devBranch: [See here.](https://help.github.com/articles/syncing-a-fork/) If upstream repo is set: `git pull upstream devBranch`.
-  * Push your devBranch to your fork on github: `git push origin devBranch`.
-  * Submit a [pull request on github](https://help.github.com/articles/using-pull-requests/) on devBranch to upstream (mccreigh/rwrfhydro).
+* To get code back to the main reposiory/fork:  
+    * If on myBranch: You probably want to mege devBranch into myBranch: `git pull upstream devBranch`.
+    * If on myBranch: `checkout devBranch`. The either wholsale merge your work from origin (`git pull origin myBranch`) or cherry pick files (`git check out myBranch -- path/to/file` for eac file) it into devBranch.
+    * if on myBranch: commit, `git commit -am'Fixes and new features'`.
+    * If not previously on myBranch and did not do a wholesale merge in previous step: Sync with the "upstream" devBranch: [See here.](https://help.github.com/articles/syncing-a-fork/) If upstream repo is set: `git pull upstream devBranch`.
+    * Push your devBranch to your fork on github: `git push origin devBranch`.
+    * Submit a [pull request on github](https://help.github.com/articles/using-pull-requests/) on devBranch to upstream (mccreigh/rwrfhydro).
 
 
 ## Our best practices
@@ -144,17 +148,20 @@ To get code back to the main reposiory/fork:
 
 #### Organizing functions
 [http://r-pkgs.had.co.nz/r.html#r-organising](http://r-pkgs.had.co.nz/r.html#r-organising)
+
 * Do NOT put all functions in a single file, nor each in their own file. Functions should be grouped by files and may occasionally need moved to new or different files as new functions are written.
 * File names end in .R and are all lowercase with _ used to separate words. (All lowercase (except the .R) helps ensure compatibility with Windows developers.)
 
 #### R code style
 [http://r-pkgs.had.co.nz/r.html#style](http://r-pkgs.had.co.nz/r.html#style)
+
 * Generally follow Google’s R style guide with preference for variableName (first-lower camel case) over variable.name (period distinction). Note that functions are first-upper camel case, e.g. FunctionName.  [https://google-styleguide.googlecode.com/svn/trunk/Rguide.xml](https://google-styleguide.googlecode.com/svn/trunk/Rguide.xml)
 * Variables are nouns. Functions are verbs.
 * Lots of other style considerations to learn: indents, braces, line length, assignment, comment style.
 
 #### Packages are NOT scripts
 [http://r-pkgs.had.co.nz/r.html#r-differences](http://r-pkgs.had.co.nz/r.html#r-differences)
+
 * Don’t use library() or require(). Use the DESCRIPTION to specify your package’s requirements.
 * Use package::function() to use function from external packages. Make sure the package and version are listed in DESCRIPTION.
 * Never use source() to load code from a file. Rely on devtools::load_all() to automatically source all files in R/.
@@ -163,6 +170,7 @@ To get code back to the main reposiory/fork:
 
 #### Documentation with roxygen
 [http://r-pkgs.had.co.nz/man.html](http://r-pkgs.had.co.nz/man.html)
+
 Once you get used to this, you will love writing documentation as you go for your R functions. 
 
 * Roxygen comments start with #' and come before a function. All the roxygen lines preceding a function are called ablock. Each line should be wrapped in the same way as your code, normally at 80 characters.
@@ -172,8 +180,48 @@ Once you get used to this, you will love writing documentation as you go for you
 * The second paragraph is the description: this comes first in the documentation and should briefly describe what the function does.
 * The third and subsequent paragraphs go into the details: this is a (often long) section that is shown after the argument description and should go into detail about how the function works.
 * All objects must have a title and description. Details are optional.
-* GetPkgMeta: NOTE that this function only works for packages _not_ installed by devtools::load_all(). The function analzes the @keywords and @concepts tags supplied in the roxygen documentation to categorize and relate functions and objects in rwrfhydro (or any other package). Keywords follow R conventions (see this obscure link which I need to find). Concepts are customized and the current list of concepts in use is here:
-    * TBD!
+* GetPkgMeta: NOTE that this function only works for packages _not_ installed by devtools::load_all(). The function analzes the @keywords and @concepts tags supplied in the roxygen documentation to categorize and relate functions and objects in rwrfhydro (or any other package). Keywords follow R conventions (see this obscure link which I need to find). Concepts are customized to rwrfhydro. The current list of keywords and concepts can be gathered from the latest version of devBranch, using the following command, which gives as of this writing:
+
+``` R
+> GetPkgMeta(listMetaOnly=TRUE)
+-----------------------------------
+rwrfhydro concepts
+-----------------------------------
+Ameriflux
+DART
+data
+dataAnalysis
+dataGet
+dataMgmt
+geospatial
+getData
+GHCN
+modelEval
+MODIS
+ncdf
+nudging
+plot
+SNODAS
+SNOTEL
+Streamflow
+usgs
+usgsStreamObs
+
+-----------------------------------
+rwrfhydro keywords
+-----------------------------------
+data
+database
+hplot
+internal
+IO
+manip
+smooth
+ts
+univar
+utilities
+```
+
 
 ### Objects in rwrfhydro
 We will probably need to develop some s3 classes or reuse some from other packages.
