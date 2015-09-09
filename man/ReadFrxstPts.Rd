@@ -4,11 +4,14 @@
 \alias{ReadFrxstPts}
 \title{Read WRF-Hydro standard-format forecast points output text file.}
 \usage{
-ReadFrxstPts(pathOutfile)
+ReadFrxstPts(pathOutfile, stIdType = "character")
 }
 \arguments{
 \item{pathOutfile}{The full pathname to the WRF-Hydro forecast points text file
 (frxst_pts_out.txt).}
+
+\item{stIdType}{Character describing the variable type desired for the stn_id variable,
+defaults to "character" but can also be "integer".}
 }
 \value{
 A dataframe containing the forecast points output flow data.

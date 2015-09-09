@@ -58,7 +58,8 @@ GetNcdfFile <- function(file, variables, exclude=FALSE, quiet=FALSE, flip2D=TRUE
 }
 
 ##=========================================================================================================
-#' Emulate ncdump -h.
+#' Emulate ncdump -h and -v.
+#' 
 #' I just hacked print.ncdf4 just to make it look more like unix output. 
 #'
 #' @param file Character, the file to inspect. 

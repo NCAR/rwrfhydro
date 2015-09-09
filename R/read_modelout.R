@@ -8,6 +8,8 @@
 #' 
 #' @param pathOutfile The full pathname to the WRF-Hydro forecast points text file
 #' (frxst_pts_out.txt).
+#' @param stIdType Character describing the variable type desired for the stn_id variable, 
+#' defaults to "character" but can also be "integer".
 #' @return A dataframe containing the forecast points output flow data.
 #'
 #' @examples
@@ -20,11 +22,14 @@
 #' @concept dataGet
 #' @family modelDataReads
 #' @export
-ReadFrxstPts <- function(pathOutfile) {
-    myobj <- read.table(pathOutfile, header=F, sep=",", colClasses=c("character","character","integer","numeric","numeric","numeric","numeric","numeric"), na.strings=c("********","*********","************"))
+ReadFrxstPts <- function(pathOutfile, stIdType='character') {
+    myobj <- read.table(pathOutfile, header=F, sep=",", 
+                        colClasses=c("character","character",stIdType,"numeric","numeric","numeric","numeric","numeric"), 
+                        na.strings=c("********","*********","************"))
     colnames(myobj) <- c("secs","timest","st_id","st_lon","st_lat","q_cms","q_cfs","dpth_m")
     myobj$POSIXct <- as.POSIXct(as.character(myobj$timest), format="%Y-%m-%d %H:%M:%S", tz="UTC")
-    myobj$wy <- ifelse(as.numeric(format(myobj$POSIXct,"%m"))>=10, as.numeric(format(myobj$POSIXct,"%Y"))+1, as.numeric(format(myobj$POSIXct,"%Y")))
+    myobj$wy <- ifelse(as.numeric(format(myobj$POSIXct,"%m"))>=10, as.numeric(format(myobj$POSIXct,"%Y"))+1, 
+                       as.numeric(format(myobj$POSIXct,"%Y")))
 myobj
 }
 

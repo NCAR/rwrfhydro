@@ -48,7 +48,8 @@ EditFrxstPts(fullDomFile, newCopyId,
 }
 \seealso{
 Other nudging: \code{\link{AddRouteLinkGage}};
-  \code{\link{ChanObsToTimeSlice}}
+  \code{\link{ChanObsToTimeSlice}};
+  \code{\link{MkNudgingParams}}
 }
 \concept{
 nudging dataMgmt

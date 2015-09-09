@@ -42,7 +42,7 @@ AddRouteLinkGage(rlFile, gageIds, comIds, new=identifier)
 }
 \seealso{
 Other nudging: \code{\link{ChanObsToTimeSlice}};
-  \code{\link{EditFrxstPts}}
+  \code{\link{EditFrxstPts}}; \code{\link{MkNudgingParams}}
 }
 \concept{
 nudging dataMgmt

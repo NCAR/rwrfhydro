@@ -27,9 +27,9 @@ ChanObsToTimeSlice <- function(files, sliceResolutionMin, outputDir) {
     
   fileDf <- data.frame(file=files, time=fileTimes, dateTimeRound=fileRoundTimes, stringsAsFactors=FALSE)  
   
-  GetChanObs <- function(chobsFile, code=1) {
+  GetChanObs <- function(chobsFile, code=100) {
     chobs <- as.data.frame(GetNcdfFile(chobsFile, quiet=TRUE)[,c('station_id', 'time_observation', 'streamflow')])
-    #'\code{site_no}, \code{dateTime}, \code{code}, \code{queryTime}, \code{discharge.cms}, 
+    #'\code{site_no}, \code{dateTime}, \code{code}, \code{queryTime}, \code{discharge.cms}
     
     ncid <- ncdf4::nc_open(chobsFile)
     origin <- substr(ncid$var$time_observation$units, 15, 30)
@@ -39,7 +39,7 @@ ChanObsToTimeSlice <- function(files, sliceResolutionMin, outputDir) {
     
     renamer <- c('station_id'='site_no', 'time_observation'='dateTime', 'streamflow'='discharge.cms')
     chobs <- plyr::rename(chobs, renamer)
-    chobs$queryTime <- file.mtime(chobsFile)
+    chobs$queryTime <- lubridate::with_tz(file.mtime(chobsFile), tz='UTC')
     chobs$code <- code
     chobs
   }

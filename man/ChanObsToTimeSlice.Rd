@@ -26,7 +26,7 @@ Process model *CHANOBS* to observation timeSlice format for nudging DA.
 }
 \seealso{
 Other nudging: \code{\link{AddRouteLinkGage}};
-  \code{\link{EditFrxstPts}}
+  \code{\link{EditFrxstPts}}; \code{\link{MkNudgingParams}}
 }
 \concept{
 nudging
