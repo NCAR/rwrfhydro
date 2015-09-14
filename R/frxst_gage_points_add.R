@@ -119,7 +119,7 @@ EditFrxstPts <- function(fullDomFile, newCopyId, gridInds, frxstInds, keep=FALSE
     frxstPts[] <-  as.integer(-9999)
   } 
   frxstPts[gridInds] = as.integer(frxstInds)
-  gages <- ncdf4::ncvar_def('gages', 'usgsId', list(idDim,link), formatC(gageMiss, width=15))
+  #gages <- ncdf4::ncvar_def('gages', 'usgsId', list(idDim,link), formatC(gageMiss, width=15))
   ret <- ncdf4::ncvar_put( ncid, 'frxst_pts', frxstPts)
   ncdf4::nc_close(ncid)
 

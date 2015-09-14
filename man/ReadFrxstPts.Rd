@@ -14,7 +14,8 @@ ReadFrxstPts(pathOutfile, stIdType = "character")
 defaults to "character" but can also be "integer".}
 }
 \value{
-A dataframe containing the forecast points output flow data.
+A dataframe containing the forecast points output flow data. Note that POSIXct is the valid
+time for the flow but timest is not, it is the LSM time prior to the flow at POSIXct.
 }
 \description{
 \code{ReadFrxstPts} reads in WRF-Hydro forecast points output text file.

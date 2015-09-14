@@ -18,14 +18,10 @@
 ChanObsToTimeSlice <- function(files, sliceResolutionMin, outputDir) {
   
   if(sliceResolutionMin > 60 | (60 %% sliceResolutionMin)!=0 )
-      warning('silceResolution is too large OR does not deivide 60 evenly.', immediate.=TRUE)
+      warning('silceResolution is too large OR does not divide 60 evenly.', immediate.=TRUE)
   
   fileBase <- basename(files)
-  ## get the times for all files
-  fileTimes <- as.POSIXct(substr(fileBase,1,12), format='%Y%m%d%H%M', tz='UTC')
-  fileRoundTimes <- RoundMinutes(fileTimes)
-    
-  fileDf <- data.frame(file=files, time=fileTimes, dateTimeRound=fileRoundTimes, stringsAsFactors=FALSE)  
+  fileDf <- data.frame(files=files, stringsAsFactors=FALSE)  
   
   GetChanObs <- function(chobsFile, code=100) {
     chobs <- as.data.frame(GetNcdfFile(chobsFile, quiet=TRUE)[,c('station_id', 'time_observation', 'streamflow')])
@@ -45,10 +41,12 @@ ChanObsToTimeSlice <- function(files, sliceResolutionMin, outputDir) {
   }
   
   MkTimeSlice <- function(sliceDf) {
-    chanObsSlice <- plyr::ldply(as.list(sliceDf$file), GetChanObs)
-    chanObsSlice$dateTimeRound <- format(sliceDf$dateTimeRound[1], '%Y-%m-%d_%H:%M:%S')
+    chanObsSlice <- plyr::ldply(as.list(sliceDf$files), GetChanObs)
+    chanObsSlice$dateTimeRound <- format(RoundMinutes(chanObsSlice$dateTime, nearest=sliceResolutionMin),
+                                         '%Y-%m-%d_%H:%M:%S')
     WriteNcTimeSlice(chanObsSlice, outputDir, sliceResolutionMin) 
   }
   
-  plyr::dlply(fileDf, plyr::.(dateTimeRound), MkTimeSlice)
+  plyr::dlply(fileDf, plyr::.(files), MkTimeSlice)
 }
+
