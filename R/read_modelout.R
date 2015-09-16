@@ -10,6 +10,7 @@
 #' (frxst_pts_out.txt).
 #' @param stIdType Character describing the variable type desired for the stn_id variable, 
 #' defaults to "character" but can also be "integer".
+#' @param adjPosix If the first timest in the file matches the model init time, then set this to TRUE.
 #' @return A dataframe containing the forecast points output flow data. Note that POSIXct is the valid
 #' time for the flow but timest is not, it is the LSM time prior to the flow at POSIXct.
 #'
@@ -23,16 +24,15 @@
 #' @concept dataGet
 #' @family modelDataReads
 #' @export
-ReadFrxstPts <- function(pathOutfile, stIdType='character') {
+ReadFrxstPts <- function(pathOutfile, stIdType='character', adjPosix=FALSE) {
     myobj <- read.table(pathOutfile, header=F, sep=",", 
                         colClasses=c("character","character",stIdType,"numeric","numeric","numeric","numeric","numeric"), 
                         na.strings=c("********","*********","************"))
     colnames(myobj) <- c("secs","timest","st_id","st_lon","st_lat","q_cms","q_cfs","dpth_m")
 
-    ## The old and hopefully future way, once the file changes
-    #myobj$POSIXct <- as.POSIXct(as.character(myobj$timest), format="%Y-%m-%d %H:%M:%S", tz="UTC")
-    ## The hopefully temporary, new way: 
-      myobj$POSIXct <- as.POSIXct(as.character(myobj$timest), format="%Y-%m-%d %H:%M:%S", tz="UTC")
+    myobj$POSIXct <- as.POSIXct(as.character(myobj$timest), format="%Y-%m-%d %H:%M:%S", tz="UTC")
+    # The above may not give the valid times of the flows.
+    if(adjPosix)
       myobj$POSIXct <- myobj$POSIXct + lubridate::period(as.integer(myobj$secs[1]), 'seconds')
     
     myobj$wy <- ifelse(as.numeric(format(myobj$POSIXct,"%m"))>=10, as.numeric(format(myobj$POSIXct,"%Y"))+1, 
