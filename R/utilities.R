@@ -561,7 +561,8 @@ CalcMonthDays <- function(mo, yr) {
 #' @keywords utilities internal
 #' @export
 CalcDateTrunc <- function(timePOSIXct, timeZone="UTC") {
-  timeDate <- as.Date(trunc(as.POSIXct(format(timePOSIXct, tz=timeZone), tz=timeZone), "days"))
+  timeDate <- as.Date(trunc(as.POSIXct(format(timePOSIXct, tz=timeZone), 
+                                       tz=timeZone), "days"))
   return(timeDate)
 }
 

@@ -2,42 +2,45 @@
 % Please edit documentation in R/read_modelout.R
 \name{ReadLdasoutAll}
 \alias{ReadLdasoutAll}
-\title{Read WRF-Hydro (w/NoahMP) LDASOUT data files and generate basin-wide mean of all variables.}
+\title{Read WRF-Hydro (w/NoahMP) LDASOUT data files and generate basin-wide mean of all
+variables.}
 \usage{
 ReadLdasoutAll(pathOutdir, pathDomfile, mskvar = "basn_msk", basid = 1,
   aggfact = 10, ncores = 1, pattern = glob2rx("*LDASOUT_DOMAIN*"))
 }
 \arguments{
-\item{pathOutdir}{The full pathname to the output directory containing the LDASOUT files.}
+\item{pathOutdir}{The full pathname to the output directory containing the LDASOUT
+files.}
 
 \item{pathDomfile}{The full pathname to the high-res hydro domain NetCDF file used in
 the model run (for grabbing the basin mask).}
 
-\item{mskvar}{The variable name in pathDomfile to use for the mask (DEFAULT="basn_msk").}
+\item{mskvar}{The variable name in pathDomfile to use for the mask
+(DEFAULT="basn_msk").}
 
 \item{basid}{The basin ID to use (DEFAULT=1)}
 
-\item{aggfact}{The high-res (hydro) to low-res (LSM) aggregation factor (e.g., for a 100-m
-routing grid and a 1-km LSM grid, aggfact = 10)}
+\item{aggfact}{The high-res (hydro) to low-res (LSM) aggregation factor (e.g., for a
+100-m routing grid and a 1-km LSM grid, aggfact = 10)}
 
-\item{ncores}{If multi-core processing is available, the number of cores to use (DEFAULT=1).
-Must have doMC installed if ncores is more than 1.}
+\item{ncores}{If multi-core processing is available, the number of cores to use
+(DEFAULT=1). Must have doMC installed if ncores is more than 1.}
 
-\item{pattern}{Pattern to match in the model output (DEFAULT=glob2rx('*LDASOUT_DOMAIN*'))}
+\item{pattern}{Pattern to match in the model output
+(DEFAULT=glob2rx('*LDASOUT_DOMAIN*'))}
 }
 \value{
 A dataframe containing a time series of basin-wide mean water budget variables.
 }
 \description{
-\code{ReadLdasoutAll} reads in WRF-Hydro (w/NoahMP) LDASOUT files and outputs a time series of
-basin-wide mean variables.
+\code{ReadLdasoutAll} reads in WRF-Hydro (w/NoahMP) LDASOUT files and outputs a time
+series of basin-wide mean variables.
 }
 \details{
-\code{ReadLdasoutAll} reads standard-format WRF-Hydro (w/NoahMP) LDASOUT NetCDF files and calculates
-basin-wide mean values for each time step.
+\code{ReadLdasoutAll} reads standard-format WRF-Hydro (w/NoahMP) LDASOUT NetCDF files
+and calculates basin-wide mean values for each time step.
 
-OUTPUT NoahMP LDASOUT variables:
-SEE NOAHMP DOCUMENTATION
+OUTPUT NoahMP LDASOUT variables: SEE NOAHMP DOCUMENTATION
 }
 \examples{
 ## Take an OUTPUT directory for a daily LSM timestep model run of Fourmile Creek and

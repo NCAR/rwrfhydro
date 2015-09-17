@@ -8,20 +8,23 @@ ReadRtout(pathOutdir, pathDomfile, mskvar = "basn_msk", basid = 1,
   ncores = 1)
 }
 \arguments{
-\item{pathOutdir}{The full pathname to the output directory containing the RTOUT files.}
+\item{pathOutdir}{The full pathname to the output directory containing the
+RTOUT files.}
 
-\item{pathDomfile}{The full pathname to the high-res hydro domain NetCDF file used in
-the model run (for grabbing the basin mask).}
+\item{pathDomfile}{The full pathname to the high-res hydro domain NetCDF file
+used in the model run (for grabbing the basin mask).}
 
-\item{mskvar}{The variable name in pathDomfile to use for the mask (DEFAULT="basn_msk").}
+\item{mskvar}{The variable name in pathDomfile to use for the mask
+(DEFAULT="basn_msk").}
 
 \item{basid}{The basin ID to use (DEFAULT=1)}
 
-\item{ncores}{If multi-core processing is available, the number of cores to use (DEFAULT=1).
-Must have doMC installed if ncores is more than 1.}
+\item{ncores}{If multi-core processing is available, the number of cores to
+use (DEFAULT=1). Must have doMC installed if ncores is more than 1.}
 }
 \value{
-A dataframe containing a time series of basin-wide mean water budget variables.
+A dataframe containing a time series of basin-wide mean water budget
+variables.
 }
 \description{
 \code{ReadRtout} reads in WRF-Hydro RTOUT files and outputs a time series of
@@ -35,13 +38,15 @@ OUTPUT RTOUT water budget variables:
 \itemize{
    \item QSTRMVOLRT: Mean accumulated depth of stream channel inflow (mm)
    \item SFCHEADSUBRT: Mean depth of ponded water (mm)
-   \item QBDRYRT: Mean accumulated flow volume routed outside of the domain from the boundary cells (mm)
+   \item QBDRYRT: Mean accumulated flow volume routed outside of the domain
+             from the boundary cells (mm)
 }
 }
 \examples{
-## Take an OUTPUT directory for an hourly routing timestep model run of Fourmile Creek (Basin ID = 1)
-## and create a new dataframe containing the basin-wide mean values for the major water budget
-## components over the time series.
+## Take an OUTPUT directory for an hourly routing timestep model run of
+## Fourmile Creek (Basin ID = 1) and create a new dataframe containing the
+## basin-wide mean values for the major water budget components over the
+## time series.
 
 \dontrun{
 modRtout1h.mod1.fc <-

@@ -17,8 +17,9 @@
 #' \item "MC" (monthly climatology)}
 #' @param outDir Output directory. This directory will be checked to see if the file
 #' already exists.
-#' @param startDate 
-#' @param endDate
+#' @param startDate Date to start downloading data
+#' @param endDate Date to end downloading data
+#' @param quiet Flag whether or not to output messages (DEFAULT=TRUE)
 #' @return raster stack object
 #' @examples
 #' sno.santafe <- GetSnotel(c("921","922"), series="Daily", startYr=2009, endYr=2010)
@@ -29,15 +30,14 @@
 #' @family NLDAS
 #' @export
 
-GetNldas2 <- function(prodName, timeInt, outDir, startDate, endDate, quiet=TRUE) {
-  
-  # test: siteIDs="663"; report="STAND"; series="Hourly"; intervaltype="Historic"; current="DAY"; duration="WY"; startYr=NULL; endYr=NULL; month=NULL; day=NULL
-  # test: siteIDs=c("663","922"); report="STAND"; series="Hourly"; intervaltype="Historic"; current="DAY"; duration="WY"; startYr=2005; endYr=2015; month=NULL; day=NULL
-  #"http://www.wcc.nrcs.usda.gov/nwcc/view?intervalType=$INTERVALTYPE+&report=$REPORT&timeseries=$SERIES&format=copy&sitenum=$STATION&year=$YEAR&month=$MONTH&day=$DAY"
+GetNldas2 <- function(prodName, timeInt, outDir, 
+                      startDate, endDate, quiet=TRUE) {
   
   # Check arguments
-  if (!(prodName %in% c("FORA","FORB","MOS","NOAH","VIC"))) stop("Incorrect product name. Options are: FORA, FORB, MOS, NOAH, VIC.")
-  if (!(prodName %in% c("H","M","MC"))) stop("Incorrect time interval. Options are: H, M, MC.")
+  if (!(prodName %in% c("FORA","FORB","MOS","NOAH","VIC"))) {
+    stop("Incorrect product name. Options are: FORA, FORB, MOS, NOAH, VIC.")}
+  if (!(prodName %in% c("H","M","MC"))) {
+    stop("Incorrect time interval. Options are: H, M, MC.")}
   
   # Setup
   inServer="ftp://hydro1.sci.gsfc.nasa.gov/data/s4pa/NLDAS/"

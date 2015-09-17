@@ -16,7 +16,8 @@
  \item{tz_glob}{General time zones for all sites (no daylight savings)}
  \item{UTC_offset}{UTC offset w/o daylight savings}
  \item{UTC_DST_offset}{UTC offset with daylight savings}
- \item{UTC_offset_int}{UTC offset w/o daylight savings in integer format (for manual time adjustments to UTC)}
+ \item{UTC_offset_int}{UTC offset w/o daylight savings in integer format
+ (for manual time adjustments to UTC)}
 }}
 \usage{
 amfMeta

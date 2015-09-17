@@ -104,8 +104,9 @@ lai.b <- ConvertRS2Stack("/d6/adugger/WRF_Hydro/RS/MODIS_ARC/PROCESSED/BCNED_LAI
 }
 \seealso{
 Other MODIS: \code{\link{CalcStatsRS}};
-  \code{\link{ConvertStack2NC}}; \code{\link{GetMODIS}};
-  \code{\link{InsertRS}}; \code{\link{SmoothStack}}
+  \code{\link{ConvertStack2NC}}; \code{\link{GapFillRS}};
+  \code{\link{GetMODIS}}; \code{\link{InsertRS}};
+  \code{\link{SmoothStack}}
 }
 \concept{
 MODIS dataMgmt

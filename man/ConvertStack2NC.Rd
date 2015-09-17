@@ -41,8 +41,9 @@ ConvertStack2NC(lai.b, outFile="BCNED_LAI.nc", varName="LAI",
 }
 \seealso{
 Other MODIS: \code{\link{CalcStatsRS}};
-  \code{\link{ConvertRS2Stack}}; \code{\link{GetMODIS}};
-  \code{\link{InsertRS}}; \code{\link{SmoothStack}}
+  \code{\link{ConvertRS2Stack}}; \code{\link{GapFillRS}};
+  \code{\link{GetMODIS}}; \code{\link{InsertRS}};
+  \code{\link{SmoothStack}}
 }
 \concept{
 MODIS dataMgmt

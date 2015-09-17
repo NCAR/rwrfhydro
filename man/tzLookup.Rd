@@ -22,7 +22,8 @@ Originator: Paul Eggert/IANA \cr
 Publication_Date: 20140325 \cr
 Title: Time Zone Database \cr
 List of time zones in the tz database release 2014b
-Online_Linkage: \link[http://en.wikipedia.org/wiki/List_of_tz_database_time_zones]{http://en.wikipedia.org/wiki/List_of_tz_database_time_zones} \cr
+Online_Linkage: \link[http://en.wikipedia.org/wiki/List_of_tz_database_time_zones]{
+http://en.wikipedia.org/wiki/List_of_tz_database_time_zones} \cr
 Online_Linkage: \link[http://www.iana.org/time-zones]{http://www.iana.org/time-zones} \cr
 }
 \seealso{

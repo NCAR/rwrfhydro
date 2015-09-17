@@ -14,22 +14,22 @@ ExportGeogrid(inFile, inVar, outFile, inCoordFile = NA, inLyr = NA)
 \item{outFile}{The geoTiff filename to create.}
 
 \item{inCoordFile}{(OPTIONAL) The netcdf file containing the lat/lon
-coordinates if they are not included in the inFile. This is useful,
-for example, when creating a geotiff from an LDASOUT output file which
-does not contain lat/lon coordinates but matches the spatial coordinate
-system of the geogrid input file.}
+coordinates if they are not included in the inFile. This is useful, for
+example, when creating a geotiff from an LDASOUT output file which does not
+contain lat/lon coordinates but matches the spatial coordinate system of
+the geogrid input file.}
 
-\item{inLyr}{(OPTIONAL) The layer number to export if the variable has
-more than 2 dimensions, e.g., for soil or snow layer variables.}
+\item{inLyr}{(OPTIONAL) The layer number to export if the variable has more
+than 2 dimensions, e.g., for soil or snow layer variables.}
 }
 \description{
 \code{ExportGeogrid} takes a NetCDF geogrid and converts the specified
 variable into a georeferenced TIF file.
 }
 \details{
-\code{ExportGeogrid} takes a standard geogrid in NetCDF format and
-converts the specified variable to a georeferenced geoTiff for use
-in standard GIS tools.
+\code{ExportGeogrid} takes a standard geogrid in NetCDF format and converts
+the specified variable to a georeferenced geoTiff for use in standard GIS
+tools.
 }
 \examples{
 ## Export the HGT_M field from the geogrid file geo_em.d01_1km.nc

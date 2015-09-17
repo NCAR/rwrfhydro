@@ -34,7 +34,8 @@ partially within and partially outside of the basin.
 ## Take the high-res 100-m routing domain for Fourmile and generate a matrix of
 ## area weights on the 1km geogrid domain.
 \dontrun{
-geoMsk <- CreateBasinMask("~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/Fulldom_hydro_OrodellBasin_100m.nc", aggFact=10)
+geoMsk <- CreateBasinMask("~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/Fulldom_hydro_OrodellBasin_100m.nc",
+                           aggFact=10)
 }
 }
 \seealso{

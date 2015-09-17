@@ -36,8 +36,9 @@ with(stats.lai.b, plot(POSIXct, mean, typ='l'))
 }
 \seealso{
 Other MODIS: \code{\link{ConvertRS2Stack}};
-  \code{\link{ConvertStack2NC}}; \code{\link{GetMODIS}};
-  \code{\link{InsertRS}}; \code{\link{SmoothStack}}
+  \code{\link{ConvertStack2NC}}; \code{\link{GapFillRS}};
+  \code{\link{GetMODIS}}; \code{\link{InsertRS}};
+  \code{\link{SmoothStack}}
 }
 \concept{
 MODIS dataAnalysis

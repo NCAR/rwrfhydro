@@ -130,8 +130,8 @@ GetMODIS(geogrdPath="/d1/WRF_Hydro/Fourmile_fire/DOMAIN/geo_em.d01.nc",
 \seealso{
 Other MODIS: \code{\link{CalcStatsRS}};
   \code{\link{ConvertRS2Stack}};
-  \code{\link{ConvertStack2NC}}; \code{\link{InsertRS}};
-  \code{\link{SmoothStack}}
+  \code{\link{ConvertStack2NC}}; \code{\link{GapFillRS}};
+  \code{\link{InsertRS}}; \code{\link{SmoothStack}}
 }
 \concept{
 MODIS dataGet

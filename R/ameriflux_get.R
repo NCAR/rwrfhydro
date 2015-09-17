@@ -60,7 +60,8 @@ GetAmeriflux <- function(siteIDs, gaps=TRUE,
   tmp <- na.omit(tmp)
   # tease out site names and correct link locations
   # use server_unix as download.file() doesn't handle symlinks!
-  fileLocs <- paste(server_unix, unlist(lapply(tmp, function(x) substring(x,70,200))), sep="") 
+  fileLocs <- paste(server_unix, unlist(lapply(tmp, function(x) substring(x,70,200))), 
+                    sep="") 
   siteNames <- unlist(lapply(tmp, function(x) substring(x,57,62)))
       
   # download a list of all files to download
@@ -87,7 +88,8 @@ GetAmeriflux <- function(siteIDs, gaps=TRUE,
         next
         }
     }
-    print(paste("Time zone: tz=", ifelse(is.null(tz), "NA", tz), ", UTC offset=", ifelse(is.null(uo), "NA", uo))) 
+    print(paste("Time zone: tz=", ifelse(is.null(tz), "NA", tz), ", UTC offset=", 
+                ifelse(is.null(uo), "NA", uo))) 
     # Query for files
     fluxFiles <- tryCatch(suppressWarnings(RCurl::getURL(siteDir)), 
                           error=function(cond) {message(cond); return(NA)}) 
@@ -112,7 +114,8 @@ GetAmeriflux <- function(siteIDs, gaps=TRUE,
       fluxFiles <- subset(fluxFiles, fluxFiles$yr>=startYr & fluxFiles$yr<=endYr)
     }
     if (nrow(fluxFiles)==0) {
-      print(paste("No files found for site", siteID, "within the year range", startYr, "to", endYr))
+      print(paste("No files found for site", siteID, "within the year range", 
+                  startYr, "to", endYr))
       next
     }
     for (f in 1:nrow(fluxFiles)) {
@@ -121,18 +124,33 @@ GetAmeriflux <- function(siteIDs, gaps=TRUE,
       fluxFileLoc <- paste(siteDir, fluxFiles$file[f], sep="")
       # download and process data
       tmp <- RCurl::getURL(fluxFileLoc)
-      tmpData <- read.table(textConnection(tmp), sep = ",", skip=20, na.strings=c(-6999,-9999), strip.white=T, stringsAsFactors=FALSE)
-      tmpHead <- read.table(textConnection(tmp), sep = ",", skip=17, nrows=1, strip.white=T, stringsAsFactors=FALSE)
+      tmpData <- read.table(textConnection(tmp), sep = ",", skip=20, 
+                            na.strings=c(-6999,-9999), strip.white=T, 
+                            stringsAsFactors=FALSE)
+      tmpHead <- read.table(textConnection(tmp), sep = ",", skip=17, nrows=1, 
+                            strip.white=T, stringsAsFactors=FALSE)
       colnames(tmpData)<-as.matrix(tmpHead)[1,]
       if (is.null(uo)) {
-        tmpData$POSIXct <- as.POSIXct( paste(as.character(tmpData$YEAR), as.character(tmpData$DOY),
-                                  as.character(ifelse(substr(tmpData$HRMIN,1,nchar(tmpData$HRMIN)-2)=='', "00", substr(tmpData$HRMIN,1,nchar(tmpData$HRMIN)-2))),
-                                  as.character(substr(tmpData$HRMIN,nchar(tmpData$HRMIN)-1,nchar(tmpData$HRMIN))), sep="-"),
+        tmpData$POSIXct <- as.POSIXct( paste(as.character(tmpData$YEAR), 
+                                             as.character(tmpData$DOY),
+                                  as.character(ifelse(substr(tmpData$HRMIN, 1, 
+                                                             nchar(tmpData$HRMIN)-2)=='', "00", 
+                                                      substr(tmpData$HRMIN,1,
+                                                             nchar(tmpData$HRMIN)-2))),
+                                  as.character(substr(tmpData$HRMIN,
+                                                      nchar(tmpData$HRMIN)-1,
+                                                      nchar(tmpData$HRMIN))), sep="-"),
                                   format="%Y-%j-%H-%M", tz=tz )
       } else {
-        tmpData$POSIXct <- as.POSIXct( paste(as.character(tmpData$YEAR), as.character(tmpData$DOY),
-                                  as.character(ifelse(substr(tmpData$HRMIN,1,nchar(tmpData$HRMIN)-2)=='', "00", substr(tmpData$HRMIN,1,nchar(tmpData$HRMIN)-2))),
-                                  as.character(substr(tmpData$HRMIN,nchar(tmpData$HRMIN)-1,nchar(tmpData$HRMIN))), sep="-"),
+        tmpData$POSIXct <- as.POSIXct( paste(as.character(tmpData$YEAR), 
+                                             as.character(tmpData$DOY),
+                                  as.character(ifelse(substr(tmpData$HRMIN,1,
+                                                             nchar(tmpData$HRMIN)-2)=='', "00", 
+                                                      substr(tmpData$HRMIN,1,
+                                                             nchar(tmpData$HRMIN)-2))),
+                                  as.character(substr(tmpData$HRMIN,
+                                                      nchar(tmpData$HRMIN)-1,
+                                                      nchar(tmpData$HRMIN))), sep="-"),
                                   format="%Y-%j-%H-%M", tz="UTC" ) - (uo*3600)
       }
       tmpData$wy <- CalcWaterYear(tmpData$POSIXct)
@@ -164,7 +182,8 @@ GetAmeriflux <- function(siteIDs, gaps=TRUE,
 #'  \item{tz_glob}{General time zones for all sites (no daylight savings)}
 #'  \item{UTC_offset}{UTC offset w/o daylight savings}
 #'  \item{UTC_DST_offset}{UTC offset with daylight savings}
-#'  \item{UTC_offset_int}{UTC offset w/o daylight savings in integer format (for manual time adjustments to UTC)}
+#'  \item{UTC_offset_int}{UTC offset w/o daylight savings in integer format 
+#'  (for manual time adjustments to UTC)}
 #' }
 #' 
 #' @family Ameriflux
@@ -192,7 +211,8 @@ GetAmeriflux <- function(siteIDs, gaps=TRUE,
 #' Publication_Date: 20140325 \cr
 #' Title: Time Zone Database \cr
 #' List of time zones in the tz database release 2014b
-#' Online_Linkage: \link[http://en.wikipedia.org/wiki/List_of_tz_database_time_zones]{http://en.wikipedia.org/wiki/List_of_tz_database_time_zones} \cr
+#' Online_Linkage: \link[http://en.wikipedia.org/wiki/List_of_tz_database_time_zones]{
+#' http://en.wikipedia.org/wiki/List_of_tz_database_time_zones} \cr
 #' Online_Linkage: \link[http://www.iana.org/time-zones]{http://www.iana.org/time-zones} \cr
 #' @family Ameriflux
 #' @concept data

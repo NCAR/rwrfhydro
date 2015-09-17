@@ -241,12 +241,15 @@ ConvertRS2Stack <- function(inPath, matchStr, begin=NULL, end=NULL,
                             varNA=-1.e+36) {
     # Get file list
     if (!is.null(begin) & !is.null(end)) {
-        beginDt <- format(as.POSIXct(begin, format="%Y.%m.%d", tz="UTC"), "%Y%j", tz="UTC")
-        endDt <- format(as.POSIXct(end, format="%Y.%m.%d", tz="UTC"), "%Y%j", tz="UTC")
+        beginDt <- format(as.POSIXct(begin, format="%Y.%m.%d", tz="UTC"), 
+                          "%Y%j", tz="UTC")
+        endDt <- format(as.POSIXct(end, format="%Y.%m.%d", tz="UTC"), 
+                        "%Y%j", tz="UTC")
         timeInfo <- MODIS::orgTime(MODIS::preStack(path=inPath, pattern=matchStr), 
                                    begin=beginDt, end=endDt, pillow=0)
     } else {
-        timeInfo <- MODIS::orgTime(MODIS::preStack(path=inPath, pattern=matchStr), pillow=0)
+        timeInfo <- MODIS::orgTime(MODIS::preStack(path=inPath, pattern=matchStr), 
+                                   pillow=0)
         }
     rsFilelist <- MODIS::preStack(path=inPath, pattern=matchStr, timeInfo=timeInfo)
     #rsFilelist <- list.files(path=inPath, pattern=glob2rx(matchStr), full.names=TRUE)
@@ -427,10 +430,12 @@ SmoothStack <- function(inStack, w=NULL, t=NULL, lambda = 5000, nIter= 3,
     if (!file.exists(outDirPath)) {
       dir.create(outDirPath, showWarnings = FALSE)
     }
-    timeInfo <- MODIS::orgTime(inStack, pos1 = 3, pos2 = 13, format = "%Y.%m.%d", pillow=0)
+    timeInfo <- MODIS::orgTime(inStack, pos1 = 3, pos2 = 13, format = "%Y.%m.%d", 
+                               pillow=0)
     resultList <- MODIS::whittaker.raster(vi=inStack, w=w, t=t, 
                                           timeInfo=timeInfo, lambda=lambda, 
-                                          nIter=nIter, outputAs=outputAs, collapse=collapse, 
+                                          nIter=nIter, outputAs=outputAs, 
+                                          collapse=collapse, 
                                           outDirPath=outDirPath, 
                                           removeOutlier=removeOutlier, 
                                           outlierThreshold=outlierThreshold, 
@@ -505,12 +510,14 @@ InsertRS <- function(inFile, forcPath, forcName="LDASIN_DOMAIN1",
             dtStrForc <- paste0(unlist(strsplit(dtStr,"[.]"))[1], 
                                 unlist(strsplit(dtStr,"[.]"))[2], 
                                 unlist(strsplit(dtStr,"[.]"))[3], "00")
-            ncFile <- ncdf4::nc_open(paste0(forcPath,"/",dtStrForc,".",forcName), write=TRUE)
+            ncFile <- ncdf4::nc_open(paste0(forcPath,"/",dtStrForc,".",forcName), 
+                                     write=TRUE)
             dimT <- ncdf4::ncdim_def( "Time", "", 1, unlim=TRUE, create_dimvar=T)
             dimY <- ncdf4::ncdim_def( "south_north", "", 1:dim(inFile)[1], create_dimvar=T)
             dimX <- ncdf4::ncdim_def( "west_east", "", 1:dim(inFile)[2], create_dimvar=T)
             # NOTE: ncdf4 reads dimensions in reverse order from ncdump!
-            varNew <- ncdf4::ncvar_def(name=varName, units=varUnit, dim=list(dimX, dimY, dimT), 
+            varNew <- ncdf4::ncvar_def(name=varName, units=varUnit, 
+                                       dim=list(dimX, dimY, dimT), 
                                        missval=varNA, longname=varLong)
             if ( (varName %in% names(ncFile$var)) ) {
                 if (overwrite) {
@@ -527,7 +534,8 @@ InsertRS <- function(inFile, forcPath, forcName="LDASIN_DOMAIN1",
             ncdf4::ncvar_add(ncFile, varNew)
             # Close and re-open, otherwise ncdf4 throws error
             ncdf4::nc_close(ncFile)
-            ncFile <- ncdf4::nc_open(paste0(forcPath,"/",dtStrForc,".",forcName), write=TRUE)
+            ncFile <- ncdf4::nc_open(paste0(forcPath,"/",dtStrForc,".",forcName), 
+                                     write=TRUE)
             ncdf4::ncvar_put(ncFile, varNew, RotateCw(raster::as.matrix(inFile[[i]])))
             ncdf4::nc_close(ncFile)
             }
@@ -596,3 +604,125 @@ CalcStatsRS <- function(inStack) {
     statDf
     }
 
+
+#' Gap fill a series of MODIS images using interpolation.
+#' 
+#' \code{GapFillRS} takes a set of pre-processed MODIS TIF files and
+#' fills no-data gaps using interpolation.
+#' 
+#' \code{GapFillRS} scans the specified directory and runs the GDAL python
+#' script gdal_fillnodata.py. If a mask file is provided, GapFillRS will
+#' convert specified mask cells to specified values AFTER the gap-filling.
+#' 
+#' @param inPath The path to the directory that holds the already processed
+#'   MODIS TIF files.
+#' @param matchStr The regular expression for filename matching (e.g.,
+#'   "*Lai_1km.tif").
+#' @param outDir Pathname to the directory to store the output files.
+#' @param begin Date string for the start date to include. The date string
+#'   should follow \href{http://r-forge.r-project.org/projects/modis/}{MODIS}
+#'   package convention (e.g., "2011.06.01"). (DEFAULT=NULL, all files are
+#'   processed).
+#' @param end Date string for the end date to include. The date string should
+#'   follow \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package
+#'   convention (e.g., "2011.06.01"). (DEFAULT=NULL, all files are processed).
+#' @param maskFile Mask grid file. File must be in a GDAL-friendly format and 
+#'   should match the dimensions and resolution of the inputs.
+#' @param maskVals List of value sets to pull from mask file and convert. 
+#'   The list should be in the form: list("maskValue"=outputValue), 
+#'   e.g., list("1"=0, "16"=0) to convert all cells in the mask grid with mask 
+#'   values of 1 and 16 to 0 in the output files.
+#' @param nodataVal Value to use to represent no data. Make sure this value 
+#'   is NOT in your mask raster. (DEFAULT=-9999) 
+#' @param scriptPath OPTIONAL path to where gdal_calc.py script lives in case
+#'   it is not in the same default path as gdal executables
+#' @return null
+#'   
+#' @examples
+#' ## Gap fill a set of MODIS LAI images. We will convert all non-vegetation 
+#' ## land use types into 0.
+#' 
+#' \dontrun{ 
+#' maskVals <- list("1"=0, "16"=0, "19"=0, "23"=0, 
+#'                  "24"=0, "25"=0, "26"=0, "27"=0)
+#' GapFillRS("~/wrfHydroTestCases/MODIS_ARC/PROCESSED/FOURMILE_LAI",
+#'                          outDir="~/wrfHydroTestCases/MODIS_ARC/PROCESSED/FOURMILE_LAI_GAPFILL",
+#'                          matchStr="*Lai_1km.tif", 
+#'                          begin="2013.05.01", end="2013.07.31", 
+#'                          maskFile="~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/geo_LUINDEX.tif",
+#'                          maskVals=maskVals)
+#' }
+#' @keywords IO
+#' @concept MODIS dataMgmt
+#' @family MODIS
+#' @export
+GapFillRS <- function(inPath, matchStr, outDir, 
+                            begin=NULL, end=NULL,
+                            maskFile=NULL, maskVals=NULL, 
+                            nodataVal=-9999, scriptPath=NULL) {
+  # Setup
+  if (!is.null(scriptPath)) scriptPath <- paste0(scriptPath, "/")
+  inPath <- path.expand(inPath)
+  outDir <- path.expand(outDir)
+  if (!is.null(maskFile)) maskFile <- path.expand(maskFile)
+  if (!file.exists(outDir)) {
+    dir.create(outDir, showWarnings = FALSE)
+  }
+  
+  # Get file list
+  if (!is.null(begin) & !is.null(end)) {
+    beginDt <- format(as.POSIXct(begin, format="%Y.%m.%d", tz="UTC"), "%Y%j", tz="UTC")
+    endDt <- format(as.POSIXct(end, format="%Y.%m.%d", tz="UTC"), "%Y%j", tz="UTC")
+    timeInfo <- MODIS::orgTime(MODIS::preStack(path=inPath, pattern=matchStr), 
+                               begin=beginDt, end=endDt, pillow=0)
+  } else {
+    timeInfo <- MODIS::orgTime(MODIS::preStack(path=inPath, pattern=matchStr), pillow=0)
+  }
+  rsFilelist <- MODIS::preStack(path=inPath, pattern=matchStr, timeInfo=timeInfo)
+  #rsFilelist <- list.files(path=inPath, pattern=glob2rx(matchStr), full.names=TRUE)
+
+  # Mask case
+  if (!is.null(maskFile)) {
+    # Setup mask calc string
+    calcStr1 <- ''
+    calcStr2 <- ''
+    for (i in 1:length(maskVals)) {
+      maskIn <- names(maskVals)[i]
+      maskOut <- maskVals[[maskIn]]
+      if (calcStr1=='') {
+        calcStr1 <- paste0(maskOut, "*(A==", maskIn, ")")
+        calcStr2 <- paste0("+(", nodataVal, ")*((A!=", maskIn)
+      } else {
+        calcStr1 <- paste0(calcStr1, "+", maskOut, "*(A==", maskIn, ")")
+        calcStr2 <- paste0(calcStr2, ")&(A!=", maskIn)
+      }
+    }
+    calcStr <- paste0(calcStr1, calcStr2, "))")
+    # Create mask
+    tmpMask <- tempfile(fileext=".tif")
+    cmd_calc <- paste0(scriptPath,"gdal_calc.py ", 
+                     "-A ", "'", maskFile, "'",
+                     " --outfile=", "'", tmpMask, "'",
+                     " --calc='", calcStr, 
+                     "' --NoDataValue=", as.character(nodataVal), 
+                     " --overwrite")
+    system(cmd_calc)
+  }
+  
+  # Loop through files
+  for (rsFile in rsFilelist) {
+    cmd_fill <- paste0(scriptPath,"gdal_fillnodata.py ", 
+                      rsFile, " ", outDir, "/", basename(rsFile))
+    system(cmd_fill)
+    # Mask case
+    if (!is.null(maskFile)) {
+      cmd_merge <- paste0(scriptPath,"gdal_merge.py ", 
+                       " -o ", "'", paste0(outDir, "/", basename(rsFile)), "'",
+                       " -n ", as.character(nodataVal),
+                       " '", paste0(outDir, "/", basename(rsFile)), 
+                       "' '", tmpMask, "'")
+      system(cmd_merge)
+      file.remove(tmpMask)
+    }
+  }
+}
