@@ -722,7 +722,7 @@ GapFillRS <- function(inPath, matchStr, outDir,
                        " '", paste0(outDir, "/", basename(rsFile)), 
                        "' '", tmpMask, "'")
       system(cmd_merge)
-      file.remove(tmpMask)
     }
   }
+  file.remove(tmpMask)
 }
