@@ -51,13 +51,12 @@ AddRouteLinkGage <- function(rlFile, gageIds, comIds, newCopyId, gageMiss='', ov
   }
   
   file.copy(rlFile, newFile, overwrite = TRUE)
-  if(gagesInOrig) system(paste0('ncks -O -x -v gages ',newFile,' ',newFile))
-         
+  
   ncid <- ncdf4::nc_open(newFile, write=TRUE)
   link <- ncid$dim[['linkDim']]
   idDim <- ncdf4::ncdim_def( 'IDLength', '', 1:15)
   gages <- ncdf4::ncvar_def('gages', 'usgsId', list(idDim,link), formatC(gageMiss, width=15))
-  ncid <- ncdf4::ncvar_add(ncid, gages)
+  if(!gagesInOrig) ncid <- ncdf4::ncvar_add(ncid, gages)
   ret <- ncdf4::ncvar_put( ncid, 'gages', rl$gages)
   ncdf4::nc_close(ncid)
   newFile
