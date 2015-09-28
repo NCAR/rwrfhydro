@@ -35,6 +35,7 @@ AddRouteLinkGage <- function(rlFile, gageIds, comIds, newCopyId, gageMiss='', ov
   if(missing(newCopyId)) warning('A newCopyId required to distinguish the output file with gages.')
   
   rl <- as.data.frame(GetNcdfFile(rlFile, quiet=TRUE))
+  gagesInOrig <- any(names(rl)=='gages')
   rl$gages <- formatC(gageMiss, width=15) ## populate with missing
   
   for(ii in 1:length(gageIds)) {
@@ -50,7 +51,8 @@ AddRouteLinkGage <- function(rlFile, gageIds, comIds, newCopyId, gageMiss='', ov
   }
   
   file.copy(rlFile, newFile, overwrite = TRUE)
-  
+  if(gagesInOrig) system(paste0('ncks -O -x -v gages ',newFile,' ',newFiles))
+         
   ncid <- ncdf4::nc_open(newFile, write=TRUE)
   link <- ncid$dim[['linkDim']]
   idDim <- ncdf4::ncdim_def( 'IDLength', '', 1:15)
