@@ -167,6 +167,7 @@ ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, inLyr=NA) {
 #' @param ncfile The full pathname to the WRF-Hydro geogrid domain file.
 #' @param x The column name for the x coordinate value (DEFAULT="lon")
 #' @param y The column name for the y coordinate value (DEFAULT="lat")
+#' @param y The unique ID field value (DEFAULT="id")
 #' @param proj4 The proj4 string for the x/y coordinate projection 
 #'   (DEFAULT='+proj=longlat +datum=WGS84')
 #' @return A dataframe containing the i (we=west->east), j (sn=south->north)
@@ -183,13 +184,13 @@ ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, inLyr=NA) {
 #' @concept dataMgmt
 #' @family geospatial
 #' @export
-GetGeogridIndex <- function(xy, ncfile, x="lon", y="lat", 
+GetGeogridIndex <- function(xy, ncfile, x="lon", y="lat", id="id",
                             proj4='+proj=longlat +datum=WGS84') {
   # Create temp geogrid tif
-  randnum <- round(runif(1)*10^8,0)
-  ExportGeogrid(ncfile, "HGT_M", paste0("tmp_", randnum, ".tif"))
-  geohgt <- raster::raster(paste0("tmp_", randnum, ".tif"))
-  file.remove(paste0("tmp_", randnum, ".tif"))
+  tmpfile <- tempfile(fileext=".tif")
+  ExportGeogrid(ncfile, "HGT_M", tmpfile)
+  geohgt <- raster::raster(tmpfile)
+  file.remove(tmpfile)
   # Setup coords
   sp<-sp::SpatialPoints(data.frame(x=xy[,x], y=xy[,y]))
   raster::crs(sp)<-proj4
@@ -198,6 +199,7 @@ GetGeogridIndex <- function(xy, ncfile, x="lon", y="lat",
   outDf$we <- outDf$col
   # Change row count from N->S to S->N
   outDf$sn <- dim(geohgt)[1] - outDf$row + 1
+  outDf$id <- xy[,id]
   outDf$row<-NULL
   outDf$col<-NULL
   outDf
