@@ -26,7 +26,7 @@
 #' @export
 ReadFrxstPts <- function(pathOutfile, stIdType='character', adjPosix=FALSE) {
     myobj <- read.table(pathOutfile, header=F, sep=",", 
-                        colClasses=c("character","character",stIdType,"numeric","numeric","numeric","numeric","numeric"), 
+                        colClasses=c("integer","character",stIdType,"numeric","numeric","numeric","numeric","numeric"), 
                         na.strings=c("********","*********","************"))
     colnames(myobj) <- c("secs","timest","st_id","st_lon","st_lat","q_cms","q_cfs","dpth_m")
 
