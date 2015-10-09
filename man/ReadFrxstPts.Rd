@@ -4,14 +4,20 @@
 \alias{ReadFrxstPts}
 \title{Read WRF-Hydro standard-format forecast points output text file.}
 \usage{
-ReadFrxstPts(pathOutfile)
+ReadFrxstPts(pathOutfile, stIdType = "character", adjPosix = FALSE)
 }
 \arguments{
 \item{pathOutfile}{The full pathname to the WRF-Hydro forecast points text file
 (frxst_pts_out.txt).}
+
+\item{stIdType}{Character describing the variable type desired for the stn_id variable,
+defaults to "character" but can also be "integer".}
+
+\item{adjPosix}{If the first timest in the file matches the model init time, then set this to TRUE.}
 }
 \value{
-A dataframe containing the forecast points output flow data.
+A dataframe containing the forecast points output flow data. Note that POSIXct is the valid
+time for the flow but timest is not, it is the LSM time prior to the flow at POSIXct.
 }
 \description{
 \code{ReadFrxstPts} reads in WRF-Hydro forecast points output text file.

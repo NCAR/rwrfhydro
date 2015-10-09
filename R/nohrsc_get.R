@@ -18,11 +18,13 @@
 #' @param quiet logical passed to curl , to show it's progress.
 #' @return Logical was the file "got".
 #' @examples
+#' \dontrun{
 #' NWCSnowGot <- GetNWCSnowPoints(as.POSIXct('2015-02-01 12:00:00'),
 #'  outDir = '/home/karsten/snow_obs')
+#'  }
 #' @keywords IO
-#' @concept OBSERVATION NWC
-#' @family OBSERVATION
+#' @concept dataGet
+#' @family observations SNODAS
 #' @export
 GetNWCSnowPoints <- function(datePOSIXct, outDir='.', overwrite=FALSE,
                              quiet=TRUE){

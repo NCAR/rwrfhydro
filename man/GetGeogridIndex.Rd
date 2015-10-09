@@ -4,7 +4,7 @@
 \alias{GetGeogridIndex}
 \title{Get geogrid cell indices from lat/lon (or other) coordinates.}
 \usage{
-GetGeogridIndex(xy, ncfile, x = "lon", y = "lat",
+GetGeogridIndex(xy, ncfile, x = "lon", y = "lat", id = "id",
   proj4 = "+proj=longlat +datum=WGS84")
 }
 \arguments{
@@ -16,6 +16,8 @@ contain one "x" and one "y" column at a minimum.}
 \item{x}{The column name for the x coordinate value (DEFAULT="lon")}
 
 \item{y}{The column name for the y coordinate value (DEFAULT="lat")}
+
+\item{id}{The unique ID field value (DEFAULT="id")}
 
 \item{proj4}{The proj4 string for the x/y coordinate projection
 (DEFAULT='+proj=longlat +datum=WGS84')}
@@ -43,10 +45,11 @@ GetGeogridIndex(data.frame(lon=-105.54, lat=40.04),
 }
 \seealso{
 Other geospatial: \code{\link{ExportGeogrid}};
+  \code{\link{GetGeogridSpatialInfo}};
   \code{\link{GetTimeZone}}
 }
 \concept{
-dataMgmt
+dataGet geospatial
 }
 \keyword{IO}
 

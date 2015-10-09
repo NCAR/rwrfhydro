@@ -33,11 +33,13 @@ snow observations for a given hour and unpack the data. Data
 is stored in text file format.
 }
 \examples{
+\dontrun{
 NWCSnowGot <- GetNWCSnowPoints(as.POSIXct('2015-02-01 12:00:00'),
  outDir = '/home/karsten/snow_obs')
+ }
 }
 \concept{
-OBSERVATION NWC
+dataGet
 }
 \keyword{IO}
 

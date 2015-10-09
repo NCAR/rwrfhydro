@@ -1,18 +1,36 @@
+# For the next release 
+Add your new features and bug fixes to the top of the following list:
 
-* New functions to import data from the GHCN network of stations, including:
-    + SelectGhcnGauges: Reads the daily GHNC metadata and select gauges based on the user criteria.
-    + GetGhcn and GetGhcn2: Get GHCN data for specified siteIds.
-    + GetTimeZone: Return the time zone for gauge locations (includes a timeZone polygon shapefile of world time zone classifications).
-    + CalcDailyGhcn: Aggregate the hourly data into daily data comparable to GHCN daily data.
-    + CalcMetCont: Calculate the MET verification measures for continuous variables.
+* VisualizeRouteLink: Visualize a Route_Link.nc file.
 
-* New functions to download and process Ameriflux, SNOTEL, and Colorado DWR data from online data feeds.
+* Adding the "gage" variable to Route_Link.nc files (reach-based routing) or editing the frxst_pts layer in Fulldom domain files: AddRouteLinkGage, EditFrxstPts. 
 
-* New geospatial tools to export LDASOUT files to geotiffs, obtain geogrid i,j indices from lat/lon coords, and get geospatial info for geogrids.
+* ChanObsToTimeSlice: convert *CHANOBS_DOMAIN* files to timeSlice files for perfect model obsercation experiments with WRF Hydro nudging.
 
-* New function to read all LDASOUT variables (instead of just water budget vars): ReadLdasoutAll.
+* Route_Link.nc network re-expression for indexed traversal of the stream network:
+    * ReIndexRouteLink.Rd: Reindex routelink. 
+    * ReExpNetwork.Rd: 
+    * ReExpressRouteLink.Rd: Wrapper on previous two.
+    * NtwKReExToNcdf.Rd: Output reexpressions to a netcdf file. <br><br>
+    
+*	GatherStreamInds: traverse up/down stream from a point.
 
-* New function to create coarse-resolution (i.e., geogrid) version of high-resolution basin masks: CreateBasinMask.
+* VisualizeSubsetStream: Visualize the up/downstream network from a point. 
+
+* Functions to import data from the GHCN network of stations, including:
+    * SelectGhcnGauges: Reads the daily GHNC metadata and select gauges based on the user criteria.
+    * GetGhcn and GetGhcn2: Get GHCN data for specified siteIds.
+    * GetTimeZone: Return the time zone for gauge locations (includes a timeZone polygon shapefile of world time zone classifications).
+    * CalcDailyGhcn: Aggregate the hourly data into daily data comparable to GHCN daily data.
+    * CalcMetCont: Calculate the MET verification measures for continuous variables.  <br><br>
+          
+* NewFunctions to download and process Ameriflux, SNOTEL, and Colorado DWR data from online data feeds.
+
+* Geospatial tools to export LDASOUT files to geotiffs, obtain geogrid i,j indices from lat/lon coords, and get geospatial info for geogrids.
+
+* Function to read all LDASOUT variables (instead of just water budget vars): ReadLdasoutAll.
+
+* Function to create coarse-resolution (i.e., geogrid) version of high-resolution basin masks: CreateBasinMask.
 
 * Update to getMultiNetcdf to allow indexes as lists to permit passing variable function arguments to stats.
 

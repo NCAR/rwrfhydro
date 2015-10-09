@@ -35,7 +35,8 @@ Original R-script is from
 }
 \seealso{
 Other geospatial: \code{\link{ExportGeogrid}};
-  \code{\link{GetGeogridIndex}}
+  \code{\link{GetGeogridIndex}};
+  \code{\link{GetGeogridSpatialInfo}}
 }
 \concept{
 dataMgmt

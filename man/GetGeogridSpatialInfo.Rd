@@ -22,9 +22,12 @@ spatialDF data frame containing geospatial information
 lccGeoDF <- GetGeogridSpatialInfo('./geo_em.d02.nc')
 }
 }
-\concept{
-GEOSPATIAL
+\seealso{
+Other geospatial: \code{\link{ExportGeogrid}};
+  \code{\link{GetGeogridIndex}}; \code{\link{GetTimeZone}}
 }
-\keyword{GEOSPATIAL}
-\keyword{METADATA}
+\concept{
+geospatial getData
+}
+\keyword{IO}
 

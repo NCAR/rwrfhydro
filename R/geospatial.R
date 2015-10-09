@@ -33,7 +33,7 @@
 #'              inLyr=3)
 #' }
 #' @keywords IO
-#' @concept dataMgmt
+#' @concept dataMgmt geospatial
 #' @family geospatial
 #' @export
 ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, inLyr=NA) {
@@ -167,7 +167,7 @@ ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, inLyr=NA) {
 #' @param ncfile The full pathname to the WRF-Hydro geogrid domain file.
 #' @param x The column name for the x coordinate value (DEFAULT="lon")
 #' @param y The column name for the y coordinate value (DEFAULT="lat")
-#' @param y The unique ID field value (DEFAULT="id")
+#' @param id The unique ID field value (DEFAULT="id")
 #' @param proj4 The proj4 string for the x/y coordinate projection 
 #'   (DEFAULT='+proj=longlat +datum=WGS84')
 #' @return A dataframe containing the i (we=west->east), j (sn=south->north)
@@ -181,7 +181,7 @@ ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, inLyr=NA) {
 #'    "~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/geo_em.d01_1km_nlcd11.nc")
 #' }
 #' @keywords IO
-#' @concept dataMgmt
+#' @concept dataGet geospatial
 #' @family geospatial
 #' @export
 GetGeogridIndex <- function(xy, ncfile, x="lon", y="lat", id="id",
@@ -217,9 +217,9 @@ GetGeogridIndex <- function(xy, ncfile, x="lon", y="lat", id="id",
 #' \dontrun{
 #' lccGeoDF <- GetGeogridSpatialInfo('./geo_em.d02.nc')
 #' }
-#' @keywords GEOSPATIAL METADATA
-#' @concept GEOSPATIAL
-#' @family METADATA
+#' @keywords IO
+#' @concept geospatial getData
+#' @family geospatial
 #' @export
 GetGeogridSpatialInfo <- function(geoFile){
   #First check for existence of file
