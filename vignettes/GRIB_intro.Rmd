@@ -1,0 +1,85 @@
+---
+title: "Open and read GRIB files"
+author: Logan Karsten
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Open up and read GRIB files}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+# Background
+With the ability to call Fortran shared objects, this tool represents an interface
+to the [ECMWF GRIB API](https://software.ecmwf.int/wiki/display/GRIB/Home). The user
+can use this tool on either GRIB1 or GRIB2 files of most common projections, such as
+lambert conformal conic, regular gaussian, polar stereographic, and equidistant
+cylindrical. 
+
+# Setup
+Load the rwrfhydro package.
+```{r, results='hide'}
+library("rwrfhydro")
+```
+
+First step is to establish a GRIB file to open. The GRIB file can be either GRIB
+edition 1 or 2. The API will recognize either edition. Additionally, some 
+information on which variable you are interested in is needed. The ECMWF GRIB
+API offers a couple tools for examining a GRIB inventory. The easiest and
+quickest is 'grib_ls'. A variable short name, level, and level type is needed
+for proper extraction.
+```{r, eval=FALSE}
+fileIn <- './hrrr.t02z.wrfsfcf02.grib2'
+var <- '2t'
+levelType <- 'heightAboveGround'
+level <- 2
+```
+
+# Determine GRIB projection
+Next step is to determine the grid type using GRIBgridType. Possible results include
+gaussian, regular lat/lon grids, lamert conformal, and polar stererographic.
+```{r, eval=FALSE}
+gridType <- GRIBgridType(fileIn)
+```
+
+# Extract geospatial metadata
+Along with the projection, there is metadata associated with the grid and projection
+information that can be extracted. Meta data may include number of rows/columns,
+grid spacing, corner lat/lon information, parallel lat/lon values (lambert conformal).
+The extent of the meta-data depends on the grid type, which was derived in the previous
+step. The output of this call is a data frame that contains relevant information.
+```{r, eval=FALSE}
+gridMeta <- GRIBgeospatial(gridType,fileIn)
+```
+
+# Extract number of forecast times
+Some GRIB files may contain multiple time steps of a variable in one file. For example,
+CFS files are devided by ensemble member and contain an entire forecast out to 30 days.
+In some NWP output GRIB files, accumulation variables may show up more than once. For
+example, for a six-hour forecast GRIB file, there may be two 'total precipitation' 
+variables. The first represents total precipitation from the beginning of the 
+model cycle (I.E. from 0-6 hours). The second instance would represent precipitation
+accumulation from the previous forecast step to the current one (I.E. from 5-6 hours).
+For most cases, there will be only one time instance of a variable as most GRIB
+files are broken up by forecast times. If you are unsure though, therer is a tool
+to determine this. 
+```{r, eval=FALSE}
+nTimes <- GRIBNumForecastTimes(fileIn,var,levelType,level)
+```
+
+# Extract GRIB data and relevant metadata
+The final step is to use previous function calls to extract the grid of data. If
+there are multiple steps, they will all be read in at once. The 'numFTimes'
+argument is optional. If it's not specified, the default is 1. Bewayre though, if
+there are multiple steps and you specify 1, The function will only read in the 
+first instance of the variable it encounters. Output will include not only
+the grid, but the missing value, long name, units, model cycle, and 
+additional time stamp information.
+```{r, eval=FALSE}
+dataOut <- extractGRIBGrid(fileIn,var,levelType,level,gridMeta$NX,gridMeta$NY,
+                           numFTimes=nTimes)
+```
+
+Congratulations! You now have GRIB data and it's associated metadata in R
+for analysis!
+
