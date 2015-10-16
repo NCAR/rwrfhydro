@@ -180,7 +180,6 @@ ReadSnodasDepthSweDate <- function(datePOSIXct, outputDir='.') {
 PutSnodasNcdf <- function(snodasList, outputDir='.') {
   ## make it a vanilla date... 
   theDate <- as.POSIXct(format(snodasList$datePOSIXct,'%Y-%m-%d'),'UTC')
-  print(dim(snodasList$swe.m))
   varList = list()
   varList[[1]] <- list( name='SNEQV', #Name to be consistent with LDASOUT files
                        longname='Snow water equivalent',

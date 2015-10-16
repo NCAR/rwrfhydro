@@ -4,7 +4,7 @@
 \alias{regrid}
 \title{High level call to regrid data to WRF-Hydro domain.}
 \usage{
-regrid(dataIn, latIn, lonIn, geoFile, method)
+regrid(dataIn, latIn, lonIn, geoFile, method, ndvSrc)
 }
 \arguments{
 \item{dataIn}{the stack of matrices of data to be regridded.}
@@ -17,8 +17,11 @@ of each pixel cell of the data being regridded.}
 
 \item{geoFile}{geogrid file of WRF-Hydro domain.}
 
-\item{Integer}{method of regridding. Options are 2 - "conserve",
+\item{method}{integer of regridding. Options are 2 - "conserve",
 1 - "bilinear", 3 - "nneighbor".}
+
+\item{ndvSrc}{Missing value of source data being regridded.
+used as a mask value during regridding calls.}
 }
 \value{
 dataOut the stack of regridded matrices.

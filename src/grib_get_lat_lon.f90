@@ -3,7 +3,7 @@
 ! Research Applications Laboratory
 !-------------------------------------------------------------------------
 
-subroutine grib_get_lat_lon(len1,fileIn,nx,ny,lat,lon,error)
+subroutine grib_get_lat_lon(len1,fileIn,nx,ny,lat,lon,iret)
 
   !DESCRIPTION:
   ! Subroutine to extract lat/lon coordinates from the first GRIB message.
@@ -16,7 +16,7 @@ subroutine grib_get_lat_lon(len1,fileIn,nx,ny,lat,lon,error)
   ! ny - Integer specifying the number of rows of GRIB data.
   ! lat - Real 2D array of latitude values for each pixel cell.
   ! lon - Real 2D array of longitude values for each pixel cell.
-  ! error - Integer value specifying errors for diagnostics.
+  ! iret - Integer value specifying errors for diagnostics.
 
   !AUTHOR:
   ! Logan Karsten
@@ -36,10 +36,10 @@ subroutine grib_get_lat_lon(len1,fileIn,nx,ny,lat,lon,error)
   integer, intent(in)         :: nx, ny
   real*8, intent(inout)       :: lat(nx,ny)
   real*8, intent(inout)       :: lon(nx,ny)
-  integer, intent(inout)      :: error
+  integer, intent(inout)      :: iret 
 
   !LOCAL VARIABLES:
-  integer :: iret, ftn, igrib
+  integer :: ftn, igrib
   logical :: file_exists
   real, allocatable :: latTemp(:)
   real, allocatable :: lonTemp(:)
@@ -49,21 +49,23 @@ subroutine grib_get_lat_lon(len1,fileIn,nx,ny,lat,lon,error)
 
   !Inquire for file existence
   inquire(file=trim(fileIn),exist=file_exists)
+  if(iret .ne. 0) return
 
   if(file_exists) then
     !Open GRIB file
     call grib_open_file(ftn,trim(fileIn),'r',iret)
+    if(iret .ne. 0) return
     
     !Pull first GRIB message (variable)
     call grib_new_from_file(ftn,igrib,iret)
+    if(iret .ne. 0) return
 
     !NOTE THIS ASSUMES ALL VARIABLES IN GRIB
     !ARE OF SAME DIMENSION.
   
     !Pull total number of points
-    call grib_get(igrib,'numberOfPoints',nPoints)
-
-    error = iret
+    call grib_get(igrib,'numberOfPoints',nPoints,iret)
+    if(iret .ne. 0) return
     
     !Double check to make sure things match
     if((nx*ny) .eq. nPoints) then
@@ -74,7 +76,8 @@ subroutine grib_get_lat_lon(len1,fileIn,nx,ny,lat,lon,error)
 
       !Pull lat/lon data as 1D arrays, then loop 
       !through grid and place them into output grid
-      call grib_get_data(igrib,latTemp,lonTemp,valTemp)
+      call grib_get_data(igrib,latTemp,lonTemp,valTemp,iret)
+      if(iret .ne. 0) return
     
       i = 1
       do r=1,ny
@@ -93,9 +96,8 @@ subroutine grib_get_lat_lon(len1,fileIn,nx,ny,lat,lon,error)
   
     !Close GRIB file
     call grib_close_file(ftn,iret)
-    error = iret
+    if(iret .ne. 0) return
  
-    print*, error
   endif
            
 end subroutine grib_get_lat_lon

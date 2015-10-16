@@ -10,7 +10,7 @@
 #' @param lev The vertical level being regridded
 #' @param geoFile The Geogrid LSM file needed for regridding.
 #' @param method Method of regridding. Current acceptable values are 
-#' "bilinear", and "conserve"
+#' "bilinear"
 #' @return A dataframe containing the regridded stack.
 #' @keywords internal
 #' @concept dataRegrid
@@ -23,8 +23,7 @@ RegridGRIB <- function(files,var,levType,lev,geoFile,method){
   }
   
   #Check for a valid method
-  if((method != "bilinear") & (method != "nneighbor") &
-     (method != "conserve")){
+  if(method != "bilinear"){
     stop(paste0(method," regridding is not currently supported in this function."))
   }
   
@@ -33,13 +32,7 @@ RegridGRIB <- function(files,var,levType,lev,geoFile,method){
   if(method == "bilinear"){
     methodInt <- 1
   }
-  if(method == "nneighbor"){
-    methodInt <- 3
-  }
-  if(method == "conserve"){
-    methodInt <- 5
-  }
-  #Calculate number of time steps
+  #Calculate number of file steps
   nSteps <- length(files)
   
   #Extract metadata from the first GRIB file in the list. This information
@@ -51,7 +44,11 @@ RegridGRIB <- function(files,var,levType,lev,geoFile,method){
   projection <- GRIBgridType(fileInit)
   geospatialDf <- GRIBgeospatial(projection,fileInit)
   
-  latLonGRIB <- gribLatLon(fileInit,geospatialDf$NX,geospatialDf$NY)
+  #Extract number of 'forecast times per variable. For most cases, this
+  #will be 1.
+  numFTimes <- GRIBNumForecastTimes(fileInit,var,levType,lev)
+  
+  latLonGRIB <- GRIBLatLon(fileInit,geospatialDf$NX,geospatialDf$NY)
   latGRIB <- latLonGRIB[,,1]
   lonGRIB <- latLonGRIB[,,2]
   
@@ -62,27 +59,41 @@ RegridGRIB <- function(files,var,levType,lev,geoFile,method){
   }
   
   #Establish input data stack
-  dataIn <- array(-9999.0,c(geospatialDf$NX,geospatialDf$NY,nSteps))
+  dataIn <- array(-9999.0,c(geospatialDf$NX,geospatialDf$NY,numFTimes,nSteps))
+  
+  #Establish date arrays
+  cycleOut <- data.frame(NA,matrix(nrow=numFTimes,ncol=nSteps))
+  verOut <- data.frame(NA,matrix(nrow=numFTimes,ncol=nSteps))
+  bVerOut <- data.frame(NA,matrix(nrow=numFTimes,ncol=nSteps))
   
   #Loop through files and extract GRIB data for parent GRIB domain
   for(step in 1:length(files)){
+    cycleOut[,step] <- as.POSIXct('1900-01-01')
+    verOut[,step] <- as.POSIXct('1900-01-01')
+    bVerOut[,step] <- as.POSIXct('1900-01-01')
+    
     file <- files[step]
     dataTemp <- extractGRIBGrid(file,var,levType,lev,geospatialDf$NX,
-                                geospatialDf$NY)
+                                geospatialDf$NY,numFTimes=numFTimes)
     #Flip if read in north-south
-    dataGrid <- as.matrix(dataTemp$data)
-    if(geospatialDf$SNFLAG == 0){
-      dataGrid <- flipLR(dataGrid)
+    for(fTime in 1:numFTimes){
+      dataGrid <- as.matrix(dataTemp$data[,,fTime])
+      if(geospatialDf$SNFLAG == 0){
+        dataGrid <- flipLR(dataGrid)
+      }
+      dataIn[,,fTime,step] <- dataGrid
+      cycleOut[fTime,step] <- dataTemp$cycle[fTime]
+      verOut[fTime,step] <- dataTemp$verTime[fTime]
+      bVerOut[fTime,step] <- dataTemp$begVerTime[fTime]
     }
-    dataIn[,,step] <- dataGrid 
     #Establish metadata from 1st time step
     if(step == 1){
       longName <- dataTemp$longName
       units <- dataTemp$units
       ndv <- dataTemp$ndv
     }
+    #Place date/time information into output arrays
   }
-
   #Regrid data stack
   dataOut <- regrid(dataIn,latGRIB,lonGRIB,geoFile,methodInt,ndv)
   
@@ -96,8 +107,14 @@ RegridGRIB <- function(files,var,levType,lev,geoFile,method){
                   dimensionList = 
                   list(
                           x=list(name='west_east',values=1:nxOut),
-                          y=list(name='south_north',values=1:nyOut)),
-                  data=dataOut)
+                          y=list(name='south_north',values=1:nyOut),
+                          t=list(name='time',values=1:numFTimes),
+                          f=list(name='files',values=1:length(files))),
+                  data=dataOut,
+                  cyclePOSIXct=cycleOut,
+                  verifPOSIXct=verOut,
+                  begVerifPOSIXct=bVerOut,
+                  nativeFiles=files)
   
   outList
   
@@ -115,7 +132,7 @@ RegridGRIB <- function(files,var,levType,lev,geoFile,method){
 #' @param files The files vector.
 #' @param geoFile The Geogrid LSM file for regridding.
 #' @param method Method of regridding. Current acceptable values are 
-#' "bilinear", and "conserve"
+#' "bilinear"
 #' @return A dataframe
 #' @keywords internal
 #' @keywords dataRegrid
@@ -135,12 +152,13 @@ RegridMultiGRIBVar <- function(varInd, varList, levTypeList, levList, files,
   if(length(varList) != length(levTypeList)){
     stop("Length of the variable and levTypeList are not equal.")
   }
-  
-  outList <- plyr::llply(files, RegridGRIB,
-                         var = varList[[varInd]],
+ 
+  #outList <- plyr::llply(ind, RegridGRIB,
+  outList <-  RegridGRIB(var = varList[[varInd]],
                          levType = levTypeList[[varInd]],
                          lev = levList[[varInd]],
                          geoFile = geoFile,
+                         files = files,
                          method=method)
   outList
 }
@@ -162,7 +180,7 @@ RegridMultiGRIBVar <- function(varInd, varList, levTypeList, levList, files,
 #' @param levList The vertical level list.
 #' @param geoFile The geofile needed for regridding.
 #' @param method Method of regridding. Current acceptable values are 
-#' "bilinear", and "conserve"
+#' "bilinear".
 #' @return A dataframe
 #' @keywords internal
 #' @keywords dataRegrid
@@ -174,7 +192,7 @@ RegridMultiGRIBFile <- function(fileInd, fileList, varList, levTypeList,
   if(!file.exists(geoFile)){
     stop(paste0('ERROR: ',geoFile,' not found.'))
   }
-  #Enforce collation at the variable-level level: (for this file groud)
+  #Enforce collation at the variable-level level: (for this file group)
   #each variable has a co-located level index.
   if (length(varList) != length(levList)){
     stop(paste0("for file set ",names(fileList)[fileInd]," (#",fileInd,") ",
@@ -202,37 +220,38 @@ RegridMultiGRIBFile <- function(fileInd, fileList, varList, levTypeList,
                          varList = varList[[fileInd]],
                          levTypeList = levTypeList[[fileInd]],
                          levList = levList[[fileInd]],
-                         files = fileList,
+                         files = fileList[[fileInd]],
                          geoFile = geoFile,
                          method=method)
-  #outDf$fileGroup <- names(fileList)[filesInd]
+  
   outList
 } 
 
 
 
-#' Regrid multiple variables across variaous GRIB file groups to the
+#' Regrid multiple variables across various GRIB file groups to the
 #' WRF-Hydro domain.
 #' 
 #' \code{RegridMultiGRIB} is designed to regrid multiple variables across
-#' multiple GRIB files. Three collated lists specify 1) file groups,
-#' 2) variables for each file group, 3) levels for each variable groudp. 
+#' multiple GRIB files. Four collated lists specify 1) file groups,
+#' 2) variables for each file group, 3) Level types for each variable group,
+#' and 4) levels for each variable group. 
 #' The names of the lists must match. 
 #' In addition, a Geo LSM file must be presented for regridding to the
 #' WRF-Hydro domain. Also, a regridding method must be provided to specify
-#' how ESMF will regrid the data. Valid options currently include "bilinear",
-#' "conserve", and "nneighbor". See examples for details.
+#' how ESMF will regrid the data. Valid options currently include "bilinear".
+#' See examples for details.
 #' 
 #' @param fileList The list of file groups. Names must match those in 
 #'   the other lists.
-#' @param variableList The list of GRIB variables for each file group.
+#' @param varList The list of GRIB variables for each file group.
 #'   Names must match fileList.
 #' @param levTypeList The list of level types for each variable.
-#' @param levelList The list of GRIB levels for each variable group.
+#' @param levList The list of GRIB levels for each variable group.
 #'   Names must match fileList.
 #' @param geoFile The path to the Geo LSM file used for regridding.
 #' @param method Method of regridding. Current acceptable values are 
-#' "bilinear", and "conserve"
+#' "bilinear".
 #' @return A dataframe containing regridded data along with meta-data.
 #' 
 #' @examples
@@ -257,7 +276,7 @@ RegridMultiGRIBFile <- function(fileInd, fileList, varList, levTypeList,
 #' levelList <- list(GRIBList1 = GRIBLevels )
 #' geoFile <- '/d4/karsten/geospatial/geo_em.d01.nc'
 #' regridData <- regridMultiGRIB(fileList=fileList,varList=variableList,
-#'                               levList=levelList,geoFile=geoFile)
+#'                               levList=levelList,geoFile=geoFile,'bilinear')
 #'                               
 #' }
 #' @export

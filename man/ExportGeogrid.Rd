@@ -46,8 +46,8 @@ ExportGeogrid("~/wrfHydroTestCases/Fourmile_Creek/RUN.RTTESTS/OUTPUT_ALLRT_DAILY
 }
 }
 \seealso{
-Other geospatial: \code{\link{GetGeogridIndex}};
-  \code{\link{gribLatLon}}
+Other geospatial: \code{\link{GRIBLatLon}};
+  \code{\link{GetGeogridIndex}}
 }
 \concept{
 dataMgmt

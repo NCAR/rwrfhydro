@@ -20,7 +20,6 @@ GRIBgridType <- function(fileIn){
     return(FALSE)
   }
  
-  #BLAH BLAH BLAH 
   #Establish variables
   error <- as.integer(0)
   projection <- "" #Need to establish empty character string to pass to Fortran
@@ -43,7 +42,6 @@ GRIBgridType <- function(fileIn){
 }
 
 #' Use projection information to extract geospatial information from a GRIB file.
-#' SYSTEM INSTALLATION OF GRIB_API REQUIRED
 #' 
 #' \code{GRIBgeospatial} Extract relevant geospatial information associated with a 
 #' GRIB file based on it's projection
@@ -339,6 +337,8 @@ GRIBgeospatialPolar <- function(fileIn){
 #' @param level GRIB level to be extracted.
 #' @param nx Integer number of GRIB data columns.
 #' @param ny Integer number of GRIB data rows.
+#' @param numFTimes Optional number of forecast times in 
+#' GRIB file. If not specified, defaults to 1. 
 #' @return dataOut List of metadata and data to user.
 #'  
 #' @examples
@@ -350,7 +350,7 @@ GRIBgeospatialPolar <- function(fileIn){
 #' @family IO
 #' @useDynLib rwrfhydro
 #' @export
-extractGRIBGrid <- function(fileIn,var,levType,level,nx,ny){
+extractGRIBGrid <- function(fileIn,var,levType,level,nx,ny,numFTimes=1){
   #Check for existence of GRIB file
   if(!file.exists(fileIn)){
     stop(paste0('ERROR: GRIB file: ',fileIn,' not found'))
@@ -365,6 +365,11 @@ extractGRIBGrid <- function(fileIn,var,levType,level,nx,ny){
   levelTemp <- as.integer(level)
   longName <- "" #Initiate strings as empty before passing to Fortran
   units <- ""
+  dateCycleYYYYMMDD <- as.integer(array(-9999,c(numFTimes)))
+  dateHHMM <- as.integer(array(-9999,c(numFTimes)))
+  bStep <- as.integer(array(-9999,c(numFTimes)))
+  eStep <- as.integer(array(-9999,c(numFTimes)))
+  stepRange <- character(length=numFTimes*4)
   l4 <- as.integer(0) #These will be updated for string lengths in Fortran
   l5 <- as.integer(0)
   ndv <- as.numeric(-9999.0)
@@ -374,35 +379,58 @@ extractGRIBGrid <- function(fileIn,var,levType,level,nx,ny){
   names(metaDF) <- c("LONGNAME","UNITS","NDV")
   
   #Establish matrix to hold grid
-  gridOut <- matrix(nrow=nx, ncol=ny)
-  gridOut[,] <- ndv
+  gridOut <- array(ndv,c(nx,ny,numFTimes))
   
   #Call Fortran shared object
   dataTemp <- .Fortran('grib_grid_extract',l1,fileIn,l2,var,nxTemp,
                        nyTemp,gridOut,l3,levType,levelTemp,longName,
-                       units,ndv,l4,l5,error)
+                       units,ndv,l4,l5,numFTimes,dateCycleYYYYMMDD,
+                       dateHHMM,bStep,eStep,error)
   
-  error <- dataTemp[[16]]
+  error <- dataTemp[[21]]
+  dateCycleYYYYMMDD <- dataTemp[[17]]
+  dateHHMM <- dataTemp[[18]]
+  bStep <- dataTemp[[19]]
+  eStep <- dataTemp[[20]]
+  l4 <- dataTemp[[14]]
+  l5 <- dataTemp[[15]]
   if(error != 0){
     stop(paste0('ERROR: grib_grid_extract returned exist status of: ',error))
   }
   
+  #Calculate date-time information based on cycle/steprange information.
+  dateCycle <- as.POSIXct(array(NA,c(numFTimes)))
+  dateVer <- as.POSIXct(array(NA,c(numFTimes)))
+  dateBVer <- as.POSIXct(array(NA,c(numFTimes)))
+  
+  for (fStep in 1:numFTimes){
+    #Cycle time
+    dateTempYYYYMMDD <- dateCycleYYYYMMDD[fStep]
+    dateTempYYYYMMDD <- as.Date(toString(dateTempYYYYMMDD),format="%Y%m%d")
+    dateTempYYYYMMDD <- as.POSIXct(dateTempYYYYMMDD)
+    hourTemp <- floor(dateHHMM[fStep]/100)
+    dTempPOSIXct <- dateTempYYYYMMDD + hourTemp*3600
+    dateCycle[fStep] <- dTempPOSIXct
+    #Verification time (I.E. cycle time + forecast hour)
+    dateVer[fStep] <- dTempPOSIXct + eStep[fStep]*3600
+    dateBVer[fStep] <- dTempPOSIXct + bStep[fStep]*3600
+  }
   #Create list to return to the user
   strTemp <- stringr::str_split(dataTemp[11], "")
-  lNameStr <- stringr::str_c(strTemp[[1]][1:l4],sep=" ",collapse=" ")
+  lNameStr <- stringr::str_c(strTemp[[1]][1:l4],sep=" ",collapse="")
   strTemp <- stringr::str_split(dataTemp[12],"")
-  unitsStr <- stringr::str_c(strTemp[[1]][1:l5],sep=" ",collapse=" ")
-  print(lNameStr)
-  print(unitsStr)
+  unitsStr <- stringr::str_c(strTemp[[1]][1:l5],sep=" ",collapse="")
+  
   dataOut <- list(data=dataTemp[[7]],ndv=dataTemp[[13]],longName=lNameStr,
-                  units=unitsStr)
+                  units=unitsStr,cycle=dateCycle,begVerTime=dateBVer,
+                  verTime=dateVer)
   
   return(dataOut)
   
 }
 #' Extract lat/lon values as a grid from a GRIB file.
 #'
-#' \code{gribLatLon} Extract lat/lon grids from GRIB file.
+#' \code{GRIBLatLon} Extract lat/lon grids from GRIB file.
 #'
 #' @param fileIn GRIB file to extract values from.
 #' @param nx number of columns of GRIB data.
@@ -410,13 +438,13 @@ extractGRIBGrid <- function(fileIn,var,levType,level,nx,ny){
 #' @return dataOut 3D grid (nx,ny,2) of lat/lon values. 
 #'  (,,1) is latitude, (,,2) is longitude.
 #' @examples
-#' latLon <- gribLatLon('hrrr.grib2',1200,800)
+#' latLon <- GRIBLatLon('hrrr.grib2',1200,800)
 #' @keywords GRIB geospatial
 #' @family geospatial
 #' @family metadata
 #' @useDynLib rwrfhydro
 #' @export
-gribLatLon <- function(fileIn,nx,ny){
+GRIBLatLon <- function(fileIn,nx,ny){
   #Check for existence of GRIB file.
   if(!file.exists(fileIn)){
     warning(paste0('ERROR: GRIB file: ',fileIn,' not found.'))
@@ -441,7 +469,7 @@ gribLatLon <- function(fileIn,nx,ny){
   
   error <- dataTemp[[7]]
   if(error != 0){
-    stop(paste0('ERROR: grib_get_lat_lon returned exist status of: ',error))
+    stop(paste0('ERROR: grib_get_lat_lon returned exit status of: ',error))
   }
 
   latLon[,,1] <- dataTemp[[5]]
@@ -449,4 +477,51 @@ gribLatLon <- function(fileIn,nx,ny){
 
   return(latLon)
 
+}
+
+#' Extract number of forecast times for a particular variable from
+#' a GRIB file.
+#'
+#' \code{GRIBNumForecastTimes} Extract number of forecast times
+#' from a GRIB file.
+#'
+#' @param fileIn GRIB file to extract times from.
+#' @param var Variable of interest.
+#' @param levType Level type variable resides on.
+#' @param lev Level variable resides on.
+#' @return numTimes Number of variable steps in file.
+#' @keywords GRIB IO
+#' @family metadata
+#' @useDynLib rwrfhydro
+#' @export
+GRIBNumForecastTimes <- function(fileIn,var,levType,lev){
+  #Check for existence of GRIB file.
+  if(!file.exists(fileIn)){
+    stop(paste0('ERROR: GRIB file: ',fileIn,' not found.'))
+  }
+  
+  #Establish variables to be passed to Fortran
+  len1 <- as.integer(nchar(fileIn))
+  len2 <- as.integer(nchar(var))
+  len3 <- as.integer(nchar(levType))
+  lev <- as.integer(lev)
+  numTimes <- as.integer(0)
+  error <- as.integer(0)
+  
+  #Call Fortran shared object
+  dataTemp <- .Fortran('grib_get_steps',len1,fileIn,len2,var,
+                       len3,levType,lev,numTimes,error)
+  
+  error <- dataTemp[9]
+  if(error != 0){
+    stop(paste0('ERROR: grib_get_steps returned exit status of: ',error))
+  } 
+  
+  numTimes <- dataTemp[[8]]
+  if(numTimes == 0){
+    stop(paste0('ERROR: variable ',var,' found 0 steps in the GRIB file.'))
+  } 
+  
+  return(numTimes)
+  
 }
