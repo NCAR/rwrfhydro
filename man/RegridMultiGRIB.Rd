@@ -2,7 +2,7 @@
 % Please edit documentation in R/regrid_multi_GRIB.R
 \name{RegridMultiGRIB}
 \alias{RegridMultiGRIB}
-\title{Regrid multiple variables across variaous GRIB file groups to the
+\title{Regrid multiple variables across various GRIB file groups to the
 WRF-Hydro domain.}
 \usage{
 RegridMultiGRIB(fileList, varList, levTypeList, levList, geoFile, method)
@@ -11,31 +11,32 @@ RegridMultiGRIB(fileList, varList, levTypeList, levList, geoFile, method)
 \item{fileList}{The list of file groups. Names must match those in
 the other lists.}
 
+\item{varList}{The list of GRIB variables for each file group.
+Names must match fileList.}
+
 \item{levTypeList}{The list of level types for each variable.}
+
+\item{levList}{The list of GRIB levels for each variable group.
+Names must match fileList.}
 
 \item{geoFile}{The path to the Geo LSM file used for regridding.}
 
 \item{method}{Method of regridding. Current acceptable values are
-"bilinear", and "conserve"}
-
-\item{variableList}{The list of GRIB variables for each file group.
-Names must match fileList.}
-
-\item{levelList}{The list of GRIB levels for each variable group.
-Names must match fileList.}
+"bilinear".}
 }
 \value{
 A dataframe containing regridded data along with meta-data.
 }
 \description{
 \code{RegridMultiGRIB} is designed to regrid multiple variables across
-multiple GRIB files. Three collated lists specify 1) file groups,
-2) variables for each file group, 3) levels for each variable groudp.
+multiple GRIB files. Four collated lists specify 1) file groups,
+2) variables for each file group, 3) Level types for each variable group,
+and 4) levels for each variable group.
 The names of the lists must match.
 In addition, a Geo LSM file must be presented for regridding to the
 WRF-Hydro domain. Also, a regridding method must be provided to specify
-how ESMF will regrid the data. Valid options currently include "bilinear",
-"conserve", and "nneighbor". See examples for details.
+how ESMF will regrid the data. Valid options currently include "bilinear".
+See examples for details.
 }
 \examples{
 # This example shows extracting temperature, pressure, and downward
@@ -59,7 +60,7 @@ GRIBLevels <- list(level=0, level=0, level=0)
 levelList <- list(GRIBList1 = GRIBLevels )
 geoFile <- '/d4/karsten/geospatial/geo_em.d01.nc'
 regridData <- regridMultiGRIB(fileList=fileList,varList=variableList,
-                              levList=levelList,geoFile=geoFile)
+                              levList=levelList,geoFile=geoFile,'bilinear')
 
 }
 }

@@ -41,9 +41,13 @@ GetGeogridIndex(data.frame(lon=-105.54, lat=40.04), "~/wrfHydroTestCases/Fourmil
 }
 \seealso{
 Other geospatial: \code{\link{ExportGeogrid}};
+<<<<<<< HEAD
   \code{\link{GetGeogridSpatialInfo}};
   \code{\link{GetPoly}}; \code{\link{GetRfc}};
   \code{\link{GetTimeZone}}
+=======
+  \code{\link{GRIBLatLon}}
+>>>>>>> Official v1.0 release of ESMF/GRIB regridding!
 }
 \concept{
 dataGet geospatial

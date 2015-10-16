@@ -3,7 +3,7 @@
 ! Research Applications Laboratory
 !-------------------------------------------------------------------------
 
-subroutine grib_grid_type(len1,fileIn,gridType,error)
+subroutine grib_grid_type(len1,fileIn,gridType,iret)
 
   !DESCRIPTION:
   !  Subroutine that opens GRIB file and determines grid type based
@@ -14,7 +14,7 @@ subroutine grib_grid_type(len1,fileIn,gridType,error)
   !  gridType - Character string out of grid type. Common values include:
   !             regular_ll, mercator, lambert, polar_stereographic, UTM,
   !             rotated_ll, regular_gg
-  !  error - Error value out. 0 for success, greater than 0 for error.
+  !  iret - Error value out. 0 for success, greater than 0 for error.
 
   !AUTHOR:
   ! Logan Karsten
@@ -32,10 +32,10 @@ subroutine grib_grid_type(len1,fileIn,gridType,error)
   integer, intent(in)          :: len1
   character(len1), intent(in)  :: fileIn
   character(30), intent(inout) :: gridType
-  integer, intent(inout)       :: error
+  integer, intent(inout)       :: iret 
 
   !LOCAL VARIABLES:
-  integer :: iret, ftn, nvars, igrib
+  integer :: ftn, nvars, igrib
   logical :: file_exists
 
   !Inquire for file existence
@@ -44,27 +44,29 @@ subroutine grib_grid_type(len1,fileIn,gridType,error)
   if(file_exists) then
     !Open GRIB file
     call grib_open_file(ftn,trim(fileIn),'r',iret)
-    error = iret
+    if(iret .ne. 0) return
   else
-    error = 1
+    iret = 1
+    return
   endif
 
   !Pull the first message (variable) as we are only interested in grid type information
   call grib_count_in_file(ftn,nvars,iret)
   if(nvars .le. 0) then
-    error = 1
+    iret = 1
+    return
   else
     !Pull grid type from first message
     call grib_new_from_file(ftn,igrib,iret)
-    error = iret
+    if(iret .ne. 0) return
 
     call grib_get(igrib,'gridType',gridType,iret)
-    error = iret
+    if(iret .ne. 0) return
     gridType = trim(gridType)
   endif
 
   !Close GRIB file
   call grib_close_file(ftn,iret)
-  error = iret
+  if(iret .ne. 0) return
 
 end subroutine grib_grid_type

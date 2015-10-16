@@ -21,7 +21,7 @@ RegridMultiGRIBVar(varInd, varList, levTypeList, levList, files, geoFile,
 \item{geoFile}{The Geogrid LSM file for regridding.}
 
 \item{method}{Method of regridding. Current acceptable values are
-"bilinear", and "conserve"}
+"bilinear"}
 }
 \value{
 A dataframe

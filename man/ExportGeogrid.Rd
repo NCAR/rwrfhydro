@@ -46,10 +46,15 @@ ExportGeogrid("~/wrfHydroTestCases/Fourmile_Creek/RUN.RTTESTS/OUTPUT_ALLRT_DAILY
 }
 }
 \seealso{
+<<<<<<< HEAD
 Other geospatial: \code{\link{GetGeogridIndex}};
   \code{\link{GetGeogridSpatialInfo}};
   \code{\link{GetPoly}}; \code{\link{GetRfc}};
   \code{\link{GetTimeZone}}
+=======
+Other geospatial: \code{\link{GRIBLatLon}};
+  \code{\link{GetGeogridIndex}}
+>>>>>>> Official v1.0 release of ESMF/GRIB regridding!
 }
 \concept{
 dataMgmt geospatial

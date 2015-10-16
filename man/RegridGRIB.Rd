@@ -19,7 +19,7 @@ be "surface", "cloudTop", "heightAboveGround"}
 \item{geoFile}{The Geogrid LSM file needed for regridding.}
 
 \item{method}{Method of regridding. Current acceptable values are
-"bilinear", and "conserve"}
+"bilinear"}
 }
 \value{
 A dataframe containing the regridded stack.

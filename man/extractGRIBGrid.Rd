@@ -4,7 +4,7 @@
 \alias{extractGRIBGrid}
 \title{Extract grid of GRIB data given a variable name and level.}
 \usage{
-extractGRIBGrid(fileIn, var, levType, level, nx, ny)
+extractGRIBGrid(fileIn, var, levType, level, nx, ny, numFTimes = 1)
 }
 \arguments{
 \item{fileIn}{GRIB file to be opened for reading.}
@@ -19,15 +19,18 @@ levType are "surface", "heightAboveGround","cloudTop"}
 \item{nx}{Integer number of GRIB data columns.}
 
 \item{ny}{Integer number of GRIB data rows.}
+
+\item{numFTimes}{Optional number of forecast times in
+GRIB file. If not specified, defaults to 1.}
 }
 \value{
-gridOut Float matrix of GRIB data
+dataOut List of metadata and data to user.
 }
 \description{
 \code{extractGRIBGrid} Extract grid of GRIB data.
 }
 \examples{
-gridOut <- extractGRIBGrid('rap.t01z.awp130bgrbf16.grib2','acpcp',
+datOut <- extractGRIBGrid('rap.t01z.awp130bgrbf16.grib2','acpcp',
            'surface',0,451,337)
 }
 \concept{

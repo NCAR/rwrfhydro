@@ -2,8 +2,7 @@
 % Please edit documentation in R/grib_mod.R
 \name{GRIBgeospatial}
 \alias{GRIBgeospatial}
-\title{Use projection information to extract geospatial information from a GRIB file.
-SYSTEM INSTALLATION OF GRIB_API REQUIRED}
+\title{Use projection information to extract geospatial information from a GRIB file.}
 \usage{
 GRIBgeospatial(proj, fileIn)
 }
