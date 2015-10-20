@@ -42,6 +42,10 @@ CalcNoahmpFluxes <- function(ldasoutDf, idCol=NULL) {
       ldasoutDf$DEL_ACSNOM[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACSNOM) }
     if ("ACSNOW" %in% colnames(ldasoutDf)) { 
       ldasoutDf$DEL_ACSNOW[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACSNOW) }
+    if ("SNEQV" %in% colnames(ldasoutDf)) { 
+      ldasoutDf$DEL_SNEQV[2:nrow(ldasoutDf)] <- diff(ldasoutDf$SNEQV) }
+    if ("SNOWH" %in% colnames(ldasoutDf)) { 
+      ldasoutDf$DEL_SNOWH[2:nrow(ldasoutDf)] <- diff(ldasoutDf$SNOWH) }
   } else {
     idList <- unique(ldasoutDf[,idCol])
     for (i in 1:length(idList)) {
@@ -77,6 +81,14 @@ CalcNoahmpFluxes <- function(ldasoutDf, idCol=NULL) {
         tmp <- subset(ldasoutDf$ACSNOW, ldasoutDf[,idCol]==idList[i])
         tmp <- c(NA, diff(tmp))
         ldasoutDf$DEL_ACSNOW[ldasoutDf[,idCol]==idList[i]] <- tmp }
+      if ("SNEQV" %in% colnames(ldasoutDf)) {
+        tmp <- subset(ldasoutDf$SNEQV, ldasoutDf[,idCol]==idList[i])
+        tmp <- c(NA, diff(tmp))
+        ldasoutDf$DEL_SNEQV[ldasoutDf[,idCol]==idList[i]] <- tmp }
+      if ("SNOWH" %in% colnames(ldasoutDf)) {
+        tmp <- subset(ldasoutDf$SNOWH, ldasoutDf[,idCol]==idList[i])
+        tmp <- c(NA, diff(tmp))
+        ldasoutDf$DEL_SNOWH[ldasoutDf[,idCol]==idList[i]] <- tmp }
     }
     ldasoutDf <- ldasoutDf[order(ldasoutDf[,idCol], ldasoutDf[,"POSIXct"]),]
   }
