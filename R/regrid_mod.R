@@ -104,10 +104,10 @@ regrid <- function(dataIn,latIn,lonIn,geoFile,method,wghtFile,ndvSrc){
   #Call Fortran shared object. Call special regrid for 'conserve' method given
   #it requires additional arguments.
   if(method == 5){
-    dataTemp <- .Fortran('regrid_conserve',nxIn,nyIn,nFTimes,nSteps,
-                         dataIn,nxGeo,nyGeo,dataOut,
-                         fctLen,factorList,
-                         factorIndexList,ndvSrc,error)
+    #dataTemp <- .Fortran('regrid_conserve',nxIn,nyIn,nFTimes,nSteps,
+    #                     dataIn,nxGeo,nyGeo,dataOut,
+    #                     fctLen,factorList,
+    #                     factorIndexList,ndvSrc,error)
     error <- dataTemp[[13]]
     if(error != 0){
       stop(paste0('ERROR: regridConserve returned exit status of: ',error))
@@ -115,11 +115,11 @@ regrid <- function(dataIn,latIn,lonIn,geoFile,method,wghtFile,ndvSrc){
     dataOut <- dataTemp[[8]]
   } else {
     dataTemp <- .Fortran('regrid',nxIn,nyIn,nFTimes,nSteps,
-                         dataIn,nxGeo,nyGeo,dataOut,method,
+                         dataIn,nxGeo,nyGeo,dataOut,
                          fctLen,factorList,factorIndexList,
                          ndvSrc,error)
 
-    error <- dataTemp[[14]]
+    error <- dataTemp[[13]]
     if(error != 0){
       stop(paste0('ERROR: regrid returned exist status of: ',error))
     }
@@ -186,21 +186,29 @@ genWghtFile <- function(geoFile,nxIn,nyIn,latSrc,lonSrc,method,srcDummy,
   method <- as.integer(method)
   ndv <- as.numeric(ndv)
   fctLen <- as.integer(0)
-  factIndTemp <- array(-9999,c(2,(nxIn*nyIn))) #-9999 because a positive 9999
+  lTest1 <- nxIn*nyIn*4
+  lTest2 <- nxGeo*nyGeo*4
+  if(lTest1 > lTest2){
+    fctLenTemp <- as.integer(lTest1)
+  } else {
+    fctLenTemp <- as.integer(lTest2)
+  }
+
+  factIndTemp <- array(-9999,c(2,fctLenTemp)) #-9999 because a positive 9999
   #is a possible index value
-  factTemp <- array(ndv,c(nxIn*nyIn))
+  factTemp <- array(ndv,c(fctLenTemp))
   mskArray <- array(ndv,c(nxIn,nyIn))  
   error <- as.integer(0)
   
   dataTemp <- .Fortran('generate_weights',nxIn,nyIn,nxGeo,nyGeo,
-                       srcDummy,latSrc,lonSrc,latGeo,lonGeo,
+                       fctLenTemp,srcDummy,latSrc,lonSrc,latGeo,lonGeo,
                        method,ndv,fctLen,factTemp,factIndTemp,
                        error)
   
-  error <- dataTemp[[15]]
-  fctLen <- dataTemp[[12]]
-  factTemp <-dataTemp[[13]]
-  factIndTemp <- dataTemp[[14]]
+  error <- dataTemp[[16]]
+  fctLen <- dataTemp[[13]]
+  factTemp <-dataTemp[[14]]
+  factIndTemp <- dataTemp[[15]]
   if(error != 0){
     stop(paste0('ERROR: generate_weights returned an exit error of: ',error))
   }
@@ -225,7 +233,6 @@ genWghtFile <- function(geoFile,nxIn,nyIn,latSrc,lonSrc,method,srcDummy,
                    create_dimvar=FALSE)
   ncdim6 <- ncdf4::ncdim_def(name='factor_dim_2',units='',vals=1:2,
                    create_dimvar=FALSE)
-  
   
   #Define NetCDF variables
   varid1 <- ncdf4::ncvar_def('latSrc','Degrees',list(ncdim1,ncdim2),

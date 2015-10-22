@@ -3,7 +3,7 @@
 ! Research Applications Laboratory
 !-------------------------------------------------------------------------
 
-subroutine generate_weights(nxSrc,nySrc,nxDst,nyDst,srcDummy,latSrc,&
+subroutine generate_weights(nxSrc,nySrc,nxDst,nyDst,fctLenTemp,srcDummy,latSrc,&
                             lonSrc,latDst,lonDst,method,ndvSrc,fctLen,&
                             factorList,factorIndexList,ier)
 
@@ -16,6 +16,7 @@ subroutine generate_weights(nxSrc,nySrc,nxDst,nyDst,srcDummy,latSrc,&
   ! nySrc - Integer number of rows of the source data.
   ! nxDst - Integer number of columns of the destination data.
   ! nyDst - Integer number of rows of the destination data.
+  ! fctLenTemp - Integer number specifying the length of temporary weight arrays coming in.
   ! srcDummy - Real 2D array of sample source data necessary to generate mask.
   ! latSrc - Real 2D array of center-stagger latitude values of source grid.
   ! lonSrc - Real 2D array of center-stagger longitude values of source grid.
@@ -50,6 +51,7 @@ subroutine generate_weights(nxSrc,nySrc,nxDst,nyDst,srcDummy,latSrc,&
   
   !ARGUMENTS:
   integer, intent(in)                  :: nxSrc, nySrc, nxDst, nyDst
+  integer*4, intent(in)                :: fctLenTemp
   real(ESMF_KIND_R8), intent(in)       :: srcDummy(nxSrc,nySrc)
   real(ESMF_KIND_R8), intent(in)       :: latSrc(nxSrc,nySrc)
   real(ESMF_KIND_R8), intent(in)       :: lonSrc(nxSrc,nySrc)
@@ -57,9 +59,9 @@ subroutine generate_weights(nxSrc,nySrc,nxDst,nyDst,srcDummy,latSrc,&
   real(ESMF_KIND_R8), intent(in)       :: lonDst(nxDst,nyDst)
   integer, intent(in)                  :: method
   real(ESMF_KIND_R8), intent(in)       :: ndvSrc
-  integer, intent(inout)               :: fctLen
-  real*8, intent(inout)                :: factorList(nxSrc*nySrc)
-  real*8, intent(inout)                :: factorIndexList(2,nxSrc*nySrc)
+  integer*4, intent(inout)             :: fctLen
+  real*8, intent(inout)                :: factorList(fctLenTemp)
+  real*8, intent(inout)                :: factorIndexList(2,fctLenTemp)
   integer, intent(inout)               :: ier
 
   !LOCAL VARIABLES:
@@ -217,7 +219,6 @@ subroutine generate_weights(nxSrc,nySrc,nxDst,nyDst,srcDummy,latSrc,&
     factorIndexList(2,i) = factorIndexListTemp(2,i)
   enddo
 
-  print*, 'DESTROYING ESMF OBJECTS'
   !Destroy ESMF objects
   call ESMF_DistGridDestroy(srcDistGrid,rc=ier)
   if(ier .ne. 0) return

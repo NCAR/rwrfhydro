@@ -112,7 +112,6 @@ RegridGRIB <- function(files,var,levType,lev,wghtFile,geoFile,method){
       stop(paste0('ERROR: genWghtFile failed to create: ',wghtFile))
     }
   }
-  
   #Regrid data stack
   dataOut <- regrid(dataIn,latGRIB,lonGRIB,geoFile,methodInt,wghtFile,ndv)
   
