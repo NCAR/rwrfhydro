@@ -5,7 +5,8 @@
 \title{Regrid multiple variables across various GRIB file groups to the
 WRF-Hydro domain.}
 \usage{
-RegridMultiGRIB(fileList, varList, levTypeList, levList, geoFile, method)
+RegridMultiGRIB(fileList, varList, levTypeList, levList, wghtList, geoFile,
+  method)
 }
 \arguments{
 \item{fileList}{The list of file groups. Names must match those in
@@ -18,6 +19,11 @@ Names must match fileList.}
 
 \item{levList}{The list of GRIB levels for each variable group.
 Names must match fileList.}
+
+\item{wghtList}{The list of weight files for each FILE group. If
+you have two different groups of regridding files, you must specify
+two different weight files. If they aren't found, they are created on
+the first iteration.}
 
 \item{geoFile}{The path to the Geo LSM file used for regridding.}
 
@@ -58,9 +64,13 @@ levTypeList <- list(GRIBList1 = GRIBLevTypes)
 #levelList <- Define which vertical levels for each variable.
 GRIBLevels <- list(level=0, level=0, level=0)
 levelList <- list(GRIBList1 = GRIBLevels )
+#wghtList <- Define which weight file for each file group.
+weightFiles <- list(w1='./hrrr_ioc_1km_wghts.nc')
+wghtList <- list(GRIBList1 = weightFiles )
 geoFile <- '/d4/karsten/geospatial/geo_em.d01.nc'
 regridData <- regridMultiGRIB(fileList=fileList,varList=variableList,
-                              levList=levelList,geoFile=geoFile,'bilinear')
+                              levList=levelList,wghtList=wghtList,
+                              geoFile=geoFile,'bilinear')
 
 }
 }

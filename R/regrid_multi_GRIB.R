@@ -8,6 +8,8 @@
 #' @param levType Level type to extract GRIB data. Examples of levType would
 #' be "surface", "cloudTop", "heightAboveGround"
 #' @param lev The vertical level being regridded
+#' @param wghtFile The weight regridding file. If it does not exist, it will 
+#' be created.
 #' @param geoFile The Geogrid LSM file needed for regridding.
 #' @param method Method of regridding. Current acceptable values are 
 #' "bilinear"
@@ -16,7 +18,7 @@
 #' @concept dataRegrid
 #' @family regridMultiGRIB
 #' @export
-RegridGRIB <- function(files,var,levType,lev,geoFile,method){
+RegridGRIB <- function(files,var,levType,lev,wghtFile,geoFile,method){
   #Check for existence of GeoFile
   if(!file.exists(geoFile)){
     stop(paste0('ERROR: ',geoFile,' not found.'))
@@ -94,8 +96,25 @@ RegridGRIB <- function(files,var,levType,lev,geoFile,method){
     }
     #Place date/time information into output arrays
   }
+  #Check for existence of weight file. If it's not present, create one 
+  #Using ESMF
+  if(!file.exists(wghtFile)){
+    #Note we are passing the first slice of GRIB data. This is used
+    #conjunction with NDV information to generate a mask during the
+    #weight generation.
+    srcDummy <- array(ndv,c(geospatialDf$NX,geospatialDf$NY))
+    srcDummy[,] <- dataIn[,,1,1]
+    
+    genWghtFile(geoFile,geospatialDf$NX,geospatialDf$NY,latGRIB,lonGRIB,
+                methodInt,srcDummy,ndv,wghtFile)
+    #Double check to make sure file was created.
+    if(!file.exists(wghtFile)){
+      stop(paste0('ERROR: genWghtFile failed to create: ',wghtFile))
+    }
+  }
+  
   #Regrid data stack
-  dataOut <- regrid(dataIn,latGRIB,lonGRIB,geoFile,methodInt,ndv)
+  dataOut <- regrid(dataIn,latGRIB,lonGRIB,geoFile,methodInt,wghtFile,ndv)
   
   nxOut <- dim(dataOut)[1]
   nyOut <- dim(dataOut)[2]
@@ -130,6 +149,7 @@ RegridGRIB <- function(files,var,levType,lev,geoFile,method){
 #' @param levList The vertical level list.
 #' @param varList The variable list.
 #' @param files The files vector.
+#' @param wghtFile The weight file used for regridding.
 #' @param geoFile The Geogrid LSM file for regridding.
 #' @param method Method of regridding. Current acceptable values are 
 #' "bilinear"
@@ -139,7 +159,7 @@ RegridGRIB <- function(files,var,levType,lev,geoFile,method){
 #' @family regridMultiGRIB
 #' @export 
 RegridMultiGRIBVar <- function(varInd, varList, levTypeList, levList, files,
-                               geoFile,method){
+                               wghtFile,geoFile,method){
   #Check for existence of GeoFile
   if(!file.exists(geoFile)){
     stop(paste0('ERROR: ',geoFile,' not found.'))
@@ -157,6 +177,7 @@ RegridMultiGRIBVar <- function(varInd, varList, levTypeList, levList, files,
   outList <-  RegridGRIB(var = varList[[varInd]],
                          levType = levTypeList[[varInd]],
                          lev = levList[[varInd]],
+                         wghtFile = wghtFile,
                          geoFile = geoFile,
                          files = files,
                          method=method)
@@ -178,6 +199,7 @@ RegridMultiGRIBVar <- function(varInd, varList, levTypeList, levList, files,
 #' @param varList The variable list.
 #' @param levTypeList The level type list.
 #' @param levList The vertical level list.
+#' @param wghtList The weight file list.
 #' @param geoFile The geofile needed for regridding.
 #' @param method Method of regridding. Current acceptable values are 
 #' "bilinear".
@@ -187,7 +209,7 @@ RegridMultiGRIBVar <- function(varInd, varList, levTypeList, levList, files,
 #' @keywords regridMultiGRIB
 #' @export
 RegridMultiGRIBFile <- function(fileInd, fileList, varList, levTypeList,
-                                levList,geoFile,method){
+                                levList,wghtList,geoFile,method){
   #Check for existence of GeoFile
   if(!file.exists(geoFile)){
     stop(paste0('ERROR: ',geoFile,' not found.'))
@@ -204,23 +226,39 @@ RegridMultiGRIBFile <- function(fileInd, fileList, varList, levTypeList,
                 "The variable and level type lists must be collated: their
                 lengths do not match."))
   }
+  if (length(varList) != length(wghtList)){
+    stop(paste0("For file set ",names(fileList)[fileInd]," (#",fileInd,") ",
+                "The variable and weight lists must be collagted: their
+                lengths do not match."))
+  }
   if (all(names(varList) != names(levList))){
     stop(paste0("For file set ",names(fileList)[fileInd]," (#",fileInd,") ",
                 "The variable and level lists must be collated: their 
                 names do not match."))
   }
   if (all(names(levTypeList) != names(varList))){
-    stope(paste0("For file set ",names(fileList)[fileInd]," (#",fileInd,") ",
+    stop(paste0("For file set ",names(fileList)[fileInd]," (#",fileInd,") ",
                  "The variable and level type lists must be collated: their
                  names do not match."))
   }
+  if (all(names(varList) != names(wghtList))){
+    stop(paste0("For file set ",names(fileList)[fileInd]," (#",fileInd,") ",
+                "The variable and weight type lists must be collated: their
+                names do not match."))
+  }
   varInd <- 1:length(varList[[fileInd]])
   
+  #Check to make 1 and only 1 weight file per file group specified.
+  if (length(wghtList[[fileInd]]) != 1){
+    stop(paste0("ERROR: Only 1 weight file acceptable per file group. A 
+                value of",length(wghtList[[fileInd]])," was found."))
+  }
   outList <- plyr::llply(varInd, RegridMultiGRIBVar,
                          varList = varList[[fileInd]],
                          levTypeList = levTypeList[[fileInd]],
                          levList = levList[[fileInd]],
                          files = fileList[[fileInd]],
+                         wghtFile = wghtList[[fileInd]][[1]],
                          geoFile = geoFile,
                          method=method)
   
@@ -249,6 +287,10 @@ RegridMultiGRIBFile <- function(fileInd, fileList, varList, levTypeList,
 #' @param levTypeList The list of level types for each variable.
 #' @param levList The list of GRIB levels for each variable group.
 #'   Names must match fileList.
+#' @param wghtList The list of weight files for each FILE group. If
+#' you have two different groups of regridding files, you must specify
+#' two different weight files. If they aren't found, they are created on 
+#' the first iteration.
 #' @param geoFile The path to the Geo LSM file used for regridding.
 #' @param method Method of regridding. Current acceptable values are 
 #' "bilinear".
@@ -274,14 +316,18 @@ RegridMultiGRIBFile <- function(fileInd, fileList, varList, levTypeList,
 #' #levelList <- Define which vertical levels for each variable.
 #' GRIBLevels <- list(level=0, level=0, level=0)
 #' levelList <- list(GRIBList1 = GRIBLevels )
+#' #wghtList <- Define which weight file for each file group.
+#' weightFiles <- list(w1='./hrrr_ioc_1km_wghts.nc')
+#' wghtList <- list(GRIBList1 = weightFiles )
 #' geoFile <- '/d4/karsten/geospatial/geo_em.d01.nc'
 #' regridData <- regridMultiGRIB(fileList=fileList,varList=variableList,
-#'                               levList=levelList,geoFile=geoFile,'bilinear')
+#'                               levList=levelList,wghtList=wghtList,
+#'                               geoFile=geoFile,'bilinear')
 #'                               
 #' }
 #' @export
 RegridMultiGRIB <- function(fileList,varList,levTypeList,levList,
-                            geoFile,method){
+                            wghtList,geoFile,method){
   #Check for existence of GeoFile
   if(!file.exists(geoFile)){
     stop(paste0('ERROR: ',geoFile,' not found.'))
@@ -290,12 +336,14 @@ RegridMultiGRIB <- function(fileList,varList,levTypeList,levList,
   if (length(varList) != length(levList) |
       length(varList) != length(fileList) |
       length(levList) != length(fileList) |
+      length(fileList) != length(wghtList) |
       length(levTypeList) != length(fileList)){
     stop("The input lists must be collated: their lengths do not match.")
   }
   if (all(names(varList) != names(fileList)) |
       all(names(varList) != names(levList)) |
       all(names(levList) != names(fileList)) |
+      all(names(fileList) != names(wghtList)) |
       all(names(levTypeList) != names(fileList))){
     stop("The input lists must be collated: their names do not match.")
   }
@@ -306,6 +354,7 @@ RegridMultiGRIB <- function(fileList,varList,levTypeList,levList,
                          levTypeList=levTypeList,
                          levList=levList,
                          fileList=fileList,
+                         wghtList=wghtList,
                          geoFile=geoFile,
                          method=method)
   outList
