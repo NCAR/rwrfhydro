@@ -4,8 +4,8 @@
 \alias{RegridMultiGRIBFile}
 \title{The RegridMultiGRIB for individual file groups.}
 \usage{
-RegridMultiGRIBFile(fileInd, fileList, varList, levTypeList, levList, geoFile,
-  method)
+RegridMultiGRIBFile(fileInd, fileList, varList, levTypeList, levList, wghtList,
+  geoFile, method)
 }
 \arguments{
 \item{fileInd}{The index of the file group.}
@@ -17,6 +17,8 @@ RegridMultiGRIBFile(fileInd, fileList, varList, levTypeList, levList, geoFile,
 \item{levTypeList}{The level type list.}
 
 \item{levList}{The vertical level list.}
+
+\item{wghtList}{The weight file list.}
 
 \item{geoFile}{The geofile needed for regridding.}
 

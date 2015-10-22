@@ -4,7 +4,7 @@
 \alias{RegridGRIB}
 \title{Extraction and regridding of GRIB data for multiple files for a given variable.}
 \usage{
-RegridGRIB(files, var, levType, lev, geoFile, method)
+RegridGRIB(files, var, levType, lev, wghtFile, geoFile, method)
 }
 \arguments{
 \item{files}{The files vector list}
@@ -15,6 +15,9 @@ RegridGRIB(files, var, levType, lev, geoFile, method)
 be "surface", "cloudTop", "heightAboveGround"}
 
 \item{lev}{The vertical level being regridded}
+
+\item{wghtFile}{The weight regridding file. If it does not exist, it will
+be created.}
 
 \item{geoFile}{The Geogrid LSM file needed for regridding.}
 

@@ -4,8 +4,8 @@
 \alias{RegridMultiGRIBVar}
 \title{The RegridMultiGRIB for getting variables out of individual files.}
 \usage{
-RegridMultiGRIBVar(varInd, varList, levTypeList, levList, files, geoFile,
-  method)
+RegridMultiGRIBVar(varInd, varList, levTypeList, levList, files, wghtFile,
+  geoFile, method)
 }
 \arguments{
 \item{varInd}{The variable index.}
@@ -17,6 +17,8 @@ RegridMultiGRIBVar(varInd, varList, levTypeList, levList, files, geoFile,
 \item{levList}{The vertical level list.}
 
 \item{files}{The files vector.}
+
+\item{wghtFile}{The weight file used for regridding.}
 
 \item{geoFile}{The Geogrid LSM file for regridding.}
 

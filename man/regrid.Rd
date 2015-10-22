@@ -4,7 +4,7 @@
 \alias{regrid}
 \title{High level call to regrid data to WRF-Hydro domain.}
 \usage{
-regrid(dataIn, latIn, lonIn, geoFile, method, ndvSrc)
+regrid(dataIn, latIn, lonIn, geoFile, method, wghtFile, ndvSrc)
 }
 \arguments{
 \item{dataIn}{the stack of matrices of data to be regridded.}
@@ -20,6 +20,9 @@ of each pixel cell of the data being regridded.}
 \item{method}{integer of regridding. Options are 2 - "conserve",
 1 - "bilinear", 3 - "nneighbor".}
 
+\item{wghtFile}{NetCDF weight file that contains regridding
+weight arrays to be passed to ESMF for sparse matrix multiplication.}
+
 \item{ndvSrc}{Missing value of source data being regridded.
 used as a mask value during regridding calls.}
 }
@@ -31,8 +34,12 @@ dataOut the stack of regridded matrices.
 }
 \examples{
 \dontrun{
-dataOut <- regrid(hrrrDSWRF,latIn,lonIn,'geo_em.d01.nc',1)
+dataOut <- regrid(hrrrDSWRF,latIn,lonIn,'geo_em.d01.nc',1,'./wghts_hrrr.nc',
+                  9999)
 }
+}
+\seealso{
+Other regrid: \code{\link{genWghtFile}}
 }
 \concept{
 regrid geospatial
