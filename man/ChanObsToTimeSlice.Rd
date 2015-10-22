@@ -2,9 +2,10 @@
 % Please edit documentation in R/model_to_timeslice.R
 \name{ChanObsToTimeSlice}
 \alias{ChanObsToTimeSlice}
-\title{Process model *CHANOBS* to observation timeSlice format for nudging DA.}
+\title{Process model CHANOBS to observation timeSlice format for nudging DA.}
 \usage{
-ChanObsToTimeSlice(files, sliceResolutionMin, outputDir)
+ChanObsToTimeSlice(files, sliceResolutionMin, outputDir, na.rm = FALSE,
+  parallel = FALSE)
 }
 \arguments{
 \item{files}{Character vector path/file to CHANOBS files.}
@@ -14,7 +15,7 @@ ChanObsToTimeSlice(files, sliceResolutionMin, outputDir)
 \item{outputDir}{Character the directory where the ouput files are to be written}
 }
 \description{
-Process model *CHANOBS* to observation timeSlice format for nudging DA.
+Process model CHANOBS to observation timeSlice format for nudging DA.
 }
 \examples{
 \dontrun{
