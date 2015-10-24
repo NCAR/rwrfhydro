@@ -261,6 +261,8 @@ RegridMultiGRIBFile <- function(fileInd, fileList, varList, levTypeList,
                          geoFile = geoFile,
                          method=method)
   
+  
+  names(outList) <- names(varList[[fileInd]])
   outList
 } 
 
@@ -356,5 +358,7 @@ RegridMultiGRIB <- function(fileList,varList,levTypeList,levList,
                          wghtList=wghtList,
                          geoFile=geoFile,
                          method=method)
+  
+  names(outList) <- names(fileList)
   outList
 }

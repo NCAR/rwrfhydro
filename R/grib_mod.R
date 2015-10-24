@@ -394,10 +394,16 @@ extractGRIBGrid <- function(fileIn,var,levType,level,nx,ny,numFTimes=1){
   eStep <- dataTemp[[20]]
   l4 <- dataTemp[[14]]
   l5 <- dataTemp[[15]]
+  gridOut <- dataTemp[[7]]
   if(error != 0){
     stop(paste0('ERROR: grib_grid_extract returned exist status of: ',error))
   }
   
+  #Check for valid values. If entire grid is ndv, then GRIB API failed
+  #to properly find variable
+  if(length(which(gridOut != ndv)) == 0){
+    stop(paste0('ERROR: Variable ',var,' Returned no data. Please check your GRIB parameters'))
+  }
   #Calculate date-time information based on cycle/steprange information.
   dateCycle <- as.POSIXct(array(NA,c(numFTimes)))
   dateVer <- as.POSIXct(array(NA,c(numFTimes)))
