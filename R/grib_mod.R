@@ -422,9 +422,9 @@ extractGRIBGrid <- function(fileIn,var,levType,level,nx,ny,numFTimes=1){
     dateBVer[fStep] <- dTempPOSIXct + bStep[fStep]*3600
   }
   #Create list to return to the user
-  strTemp <- stringr::str_split(dataTemp[11], "")
+  strTemp <- stringr::str_split(dataTemp[[11]], "")
   lNameStr <- stringr::str_c(strTemp[[1]][1:l4],sep=" ",collapse="")
-  strTemp <- stringr::str_split(dataTemp[12],"")
+  strTemp <- stringr::str_split(dataTemp[[12]],"")
   unitsStr <- stringr::str_c(strTemp[[1]][1:l5],sep=" ",collapse="")
   
   dataOut <- list(data=dataTemp[[7]],ndv=dataTemp[[13]],longName=lNameStr,
