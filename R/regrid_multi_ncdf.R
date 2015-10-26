@@ -156,7 +156,7 @@ regridNcdf <- function(var,files,latVar,lonVar,wghtFile,geoFile,method){
           dataGrid <- flipLR(dataGrid)
         }
         #Check to see if valid data was read in.
-        if(length(which(dataGrid != ndvSrc)) != 0){
+        if(length(which(dataGrid != ndvSrc)) == 0){
           stop(paste0('ERROR: NetCDF variable ',var,' returned no valid values.'))
         }
         dataIn[,,fTime,step] <- dataGrid
