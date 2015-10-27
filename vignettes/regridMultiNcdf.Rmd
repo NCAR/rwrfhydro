@@ -1,0 +1,101 @@
+---
+title: "Regrid multiple NetCDF files and variables"
+author: Logan Karsten
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Regrid multiple NetCDF files and variables}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+# Background
+rwrfhydro contains the ability to regrid NetCDF data to any WRF-Hydro
+modeling domain. In addition, multiple groups of files, and multiple
+variables can be regridded in one function call within R. This 
+streamlines the regridding process and passes the data directly back 
+to the user in R. This shows an example of regridding MRMS gauge-corrected
+precipitation data to a WRF-Hydro modeling domain.
+
+# Setup
+Load the rwrfhydro package.
+```{r, results='hide'}
+library("rwrfhydro")
+```
+
+# Weight Files
+
+Note that the user will need to provide a weight file path for each file group. In this
+example, a weight file path needs to be provided for MRMS data. rwrfhydro will check
+to see if the weight files exist. If they do not exist, they will be generated. So, provide
+a weight file path regardless of if it exists or not. It's recommended to name weight
+files that are unique to a particular product and WRF-Hydro modeling domain.
+
+```{r, eval=FALSE}
+wghtFilesMRMS <- list(wghtFile='./ioc_1km_mrms_wghts.nc')
+wghtList <- list(listMRMS=wghtFilesMRMS)
+```
+
+# Input Files, Variables, Latitude Variables, Longitude Variables
+
+This section outlines setting up lists of variables, Longitude/Latitude variables 
+for each file group. Note that Latitude/Longitude is needed to point rwrfhydro 
+to the proper variable names in the NetCDF file. 
+
+We will setup lists for the MRMS data.
+
+```{r, eval=FALSE}
+filesMRMS <- list.files(path='./MRMS',pattern='GaugeCorr_QPE',full.names=TRUE)
+varsMRMS <- list(var1='var209_6_9_0mabovesealevel')
+latVarsMRMS <- list(lat1='latitude')
+lonVarsMRMS <- list(lon1='longitude')
+```
+
+Establish a geogrid file for the WRF-Hydro modeling domain of interest.
+```{r, eval=FALSE}
+geoFile <- '../geo_conus_1km.d01.nc'
+```
+
+Combine lists. Note that collation of list names, this is important as functions
+will break if these rules aren't followed. 
+```{r, eval=FALSE}
+fList <- list(listMRMS=filesMRMS)
+vList <- list(listMRMS=varsMRMS
+latList <- list(listMRMS=latVar)
+lonList <- list(listMRMS=lonVar)
+```
+
+# Calling regridMultiNcdf
+
+Finally, call 'regridMultiNcdf', which will return a structured list containing
+the regridded data. Note we are specifying 'bilinear' for bilinear interpolation.
+Future iterations of rwrfhydro will contain additional regridding methods, such as
+nearest neighbor, patch, and conservative. As of now, only 'bilinear' is supported.
+```{r, eval=FALSE}
+dataOut <- regridMultiNcdf(fList,vList,latList,lonList,wghtList,geoFile,'bilinear')
+```
+
+# Output in R
+
+The first layer of the output list will specify the file groups (MRMS).
+
+```{r, eval=FALSE}
+names(dataOut$listMRMS)
+names(dataOut$listMRMS$var1)
+```
+
+Within each variable within the list, there will be the actual grids of regridded
+data, which will have a shape of [nCol,nRow,nTimesPerFile,nFiles]. In addition,
+meta data about the grids, such as units, long names, etc will be present. 
+
+```{r, eval=FALSE}
+print(dataOut$list1$var1$name)
+print(dataOut$list1$var1$missing)
+print(dataOut$list1$var1$longname)
+print(dataOut$list1$var1$dimensionList)
+print(dataOut$list1$var1$units)
+print(dataOut$list1$var1$precision)
+print(dataOut$list1$var1$nativeFiles)
+print(dataOut$list1$var1$data[20,20,1,1])
+```
+
