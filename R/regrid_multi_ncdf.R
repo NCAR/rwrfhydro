@@ -90,8 +90,8 @@ regridNcdf <- function(var,files,latVar,lonVar,wghtFile,geoFile,method){
   llDims <- length(dim(latVarTmp))
 
   if(llDims == 2){
-    latArray <- latVarTmp[1,]
-    lonArray <- lonVarTmp[,1]
+    latArray <- latVarTmp
+    lonArray <- lonVarTmp
     nRowIn <- length(latVarTmp[1,])
     nColIn <- length(lonVarTmp[,1])
   }
