@@ -5,7 +5,7 @@
 
 subroutine generate_weights(nxSrc,nySrc,nxDst,nyDst,fctLenTemp,srcDummy,latSrc,&
                             lonSrc,latDst,lonDst,method,ndvSrc,fctLen,&
-                            factorList,factorIndexList,ier)
+                            factorListOut,factorIndexListOut,ier)
 
   !DESCRIPTION:
   ! Subroutine to generate weights necessary for regridding from a native source
@@ -33,8 +33,8 @@ subroutine generate_weights(nxSrc,nySrc,nxDst,nyDst,fctLenTemp,srcDummy,latSrc,&
   ! ndvSrc - Real NDV value of source data used for masking.
   ! fctLen - Integer value specifying the length of the factorList and factorIndexList
   !          arrays.
-  ! factorList - Real weight array of length fctLen.
-  ! factorIndexList - Integer array for rows/columns used in regridding. 
+  ! factorListOut - Real weight array of length fctLen.
+  ! factorIndexListOut - Integer array for rows/columns used in regridding. 
   ! ier - Integer error value passed back to R for diagnostics.
 
   !AUTHOR:
@@ -60,8 +60,8 @@ subroutine generate_weights(nxSrc,nySrc,nxDst,nyDst,fctLenTemp,srcDummy,latSrc,&
   integer, intent(in)                  :: method
   real(ESMF_KIND_R8), intent(in)       :: ndvSrc
   integer*4, intent(inout)             :: fctLen
-  real*8, intent(inout)                :: factorList(fctLenTemp)
-  real*8, intent(inout)                :: factorIndexList(2,fctLenTemp)
+  real*8, intent(inout)                :: factorListOut(fctLenTemp)
+  real*8, intent(inout)                :: factorIndexListOut(2,fctLenTemp)
   integer, intent(inout)               :: ier
 
   !LOCAL VARIABLES:
@@ -214,9 +214,9 @@ subroutine generate_weights(nxSrc,nySrc,nxDst,nyDst,fctLenTemp,srcDummy,latSrc,&
   fctLen = SIZE(factorListTemp,1)
 
   do i=1,fctLen
-    factorList(i) = factorListTemp(i)
-    factorIndexList(1,i) = factorIndexListTemp(1,i)
-    factorIndexList(2,i) = factorIndexListTemp(2,i)
+    factorListOut(i) = factorListTemp(i)
+    factorIndexListOut(1,i) = factorIndexListTemp(1,i)
+    factorIndexListOut(2,i) = factorIndexListTemp(2,i)
   enddo
 
   !Destroy ESMF objects

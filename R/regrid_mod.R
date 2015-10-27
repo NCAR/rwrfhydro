@@ -186,8 +186,8 @@ genWghtFile <- function(geoFile,nxIn,nyIn,latSrc,lonSrc,method,srcDummy,
   method <- as.integer(method)
   ndv <- as.numeric(ndv)
   fctLen <- as.integer(0)
-  lTest1 <- nxIn*nyIn*4
-  lTest2 <- nxGeo*nyGeo*4
+  lTest1 <- nxIn*nyIn*5
+  lTest2 <- nxGeo*nyGeo*5
   if(lTest1 > lTest2){
     fctLenTemp <- as.integer(lTest1)
   } else {
@@ -219,79 +219,10 @@ genWghtFile <- function(geoFile,nxIn,nyIn,latSrc,lonSrc,method,srcDummy,
   factorList[1:fctLen] <- factTemp[1:fctLen]
   factorIndexList[1,] <- factIndTemp[1,1:fctLen]
   factorIndexList[2,] <- factIndTemp[2,1:fctLen]
-  
-  #Dimension definition
-  ncdim1 <- ncdf4::ncdim_def(name='src_west_east',units='',vals=1:nxIn,
-                   create_dimvar=FALSE)
-  ncdim2 <- ncdf4::ncdim_def(name='src_south_north',units='',vals=1:nyIn,
-                   create_dimvar=FALSE)
-  ncdim3 <- ncdf4::ncdim_def(name='dst_west_east',units='',vals=1:nxGeo,
-                   create_dimvar=FALSE)
-  ncdim4 <- ncdf4::ncdim_def(name='dst_south_north',units='',vals=1:nyGeo,
-                   create_dimvar=FALSE)
-  ncdim5 <- ncdf4::ncdim_def(name='factor_dim_1',units='',vals=1:fctLen,
-                   create_dimvar=FALSE)
-  ncdim6 <- ncdf4::ncdim_def(name='factor_dim_2',units='',vals=1:2,
-                   create_dimvar=FALSE)
-  
-  #Define NetCDF variables
-  varid1 <- ncdf4::ncvar_def('latSrc','Degrees',list(ncdim1,ncdim2),
-                   ndv,prec="float")
-  varid2 <- ncdf4::ncvar_def('lonSrc','Degrees',list(ncdim1,ncdim2),
-                   ndv,prec="float")
-  varid3 <- ncdf4::ncvar_def('latDst','Degrees',list(ncdim3,ncdim4),
-                   ndv,prec="float")
-  varid4 <- ncdf4::ncvar_def('lonDst','Degrees',list(ncdim3,ncdim4),
-                   ndv,prec="float")
-  varid5 <- ncdf4::ncvar_def('factorList','-',ncdim5,ndv,prec="float")
-  varid6 <- ncdf4::ncvar_def('factorIndexList','-',list(ncdim6,ncdim5),
-                   -9999,prec="float")
-  
-  defVarList <- list(varid1,varid2,varid3,varid4,varid5,varid6)
-  
-  #Open NetCDF file for writing
-  ncid <- ncdf4::nc_create(wghtFile, defVarList, force_v4=TRUE)
-  
-  #Global attributes
-  ncdf4::ncatt_put(ncid, 0, 'Title', 
-                 'Regrid Weights for ESMF Regridding in rwrfhydro',
-                 prec='text')
-  ncdf4::ncatt_put(ncid, 0, 'source_missing_value', ndv, prec='double')
-  
-  #Variable attributes
-  ncdf4::ncatt_put(ncid, varid1, 
-                 'description', 'Source Center-Stagger Latitude',
-                 prec='text')
-  ncdf4::ncatt_put(ncid, varid1, 'stagger','Center',prec='text')
-  ncdf4::ncatt_put(ncid, varid2, 
-                 'description', 'Source Center-Stagger Longitude',
-                 prec='text')
-  ncdf4::ncatt_put(ncid, varid2, 'stagger','Center',prec='text')
-  ncdf4::ncatt_put(ncid, varid3, 
-                 'description', 'Destination Center-Stagger Latitude',
-                 prec='text')
-  ncdf4::ncatt_put(ncid, varid3, 'stagger','Center',prec='text')
-  ncdf4::ncatt_put(ncid, varid4, 
-                 'description', 'Destination Center-Stagger Longitude',
-                 prec='text')
-  ncdf4::ncatt_put(ncid, varid4, 'stagger','Center',prec='text')
-  ncdf4::ncatt_put(ncid, varid5, 
-                 'description', 'FactorList weight array for ESMF',
-                 prec='text')
-  ncdf4::ncatt_put(ncid, varid6, 
-                 'description', 'FactorIndexList weight array for ESMF',
-                 prec='text')
-  
-  #Put data into variables
-  ncdf4::ncvar_put(ncid,varid1,latSrc)
-  ncdf4::ncvar_put(ncid,varid2,lonSrc)
-  ncdf4::ncvar_put(ncid,varid3,latGeo)
-  ncdf4::ncvar_put(ncid,varid4,lonGeo)
-  ncdf4::ncvar_put(ncid,varid5,factorList)
-  ncdf4::ncvar_put(ncid,varid6,factorIndexList)
-  
-  #Close NetCDF file
-  ncdf4::nc_close(ncid)
+
+  #Save weight arrays and lat/lon info as Rdata file. Originally was 
+  #NetCDF, but discovered a bug in the code writing large arrays.
+  save(latSrc,lonSrc,latGeo,lonGeo,factorList,factorIndexList,file=wghtFile)
   
 }
 
@@ -321,26 +252,17 @@ readWghtFile <- function(wghtFile,nxSrc,nySrc,nxDst,nyDst){
   }
   
   #Open weight file
-  ncId <- ncdf4::nc_open(wghtFile)
-  
-  #Read in lat data and double check dimensions make sense
-  latSrc <- ncdf4::ncvar_get(ncId,'latSrc')
-  latDst <- ncdf4::ncvar_get(ncId,'latDst')
+  load(wghtFile)
   
   if((dim(latSrc)[1] != nxSrc) | (dim(latSrc)[2] != nySrc)){
     stop('ERROR: Row/Column mistmatch between source data and weight file.')
   }
-  if((dim(latDst)[1] != nxDst) | (dim(latDst)[2] != nyDst)){
+  if((dim(latGeo)[1] != nxDst) | (dim(latGeo)[2] != nyDst)){
     stop('ERROR: Row/Column mismatch between destination data and weight file.')
   }
   
-  #Pull regrid weight arrays
-  factorList <- ncdf4::ncvar_get(ncId,'factorList')
-  factorIndexList <- ncdf4::ncvar_get(ncId,'factorIndexList')
+  #Determine length of weight arrays
   fctLen <- dim(factorList)[1]
-  
-  #Close weight file
-  ncdf4::nc_close(ncId)
   
   #Create output list to hold data
   outList <- list("factorList" = factorList, "factorIndexList" = factorIndexList,
