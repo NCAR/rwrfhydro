@@ -32,7 +32,7 @@ a weight file path regardless of if it exists or not. It's recommended to name w
 files that are unique to a particular product and WRF-Hydro modeling domain.
 
 ```{r, eval=FALSE}
-wghtFilesMRMS <- list(wghtFile='./ioc_1km_mrms_wghts.nc')
+wghtFilesMRMS <- list(wghtFile='./ioc_1km_mrms_wghts.Rdata')
 wghtList <- list(listMRMS=wghtFilesMRMS)
 ```
 

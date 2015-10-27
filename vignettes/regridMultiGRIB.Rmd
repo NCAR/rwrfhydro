@@ -32,7 +32,7 @@ provide a weight file path regardless of if it exists or not. It's recommended t
 files that are unique to a particular product and WRF-Hydro modeling domain.
 
 ```{r, eval=FALSE}
-wghtFilesHRRR <- list(wghtFile='./rio_hrrr_wghts.nc')
+wghtFilesHRRR <- list(wghtFile='./rio_hrrr_wghts.Rdata')
 wghtFilesGFS <- list(wghtFile='./rio_gfs_wghts.nc')
 wghtList <- list(listHRRR=wghtFilesHRRR,listGFS=wghtFilesGFS)
 ```
