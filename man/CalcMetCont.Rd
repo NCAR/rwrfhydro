@@ -4,16 +4,16 @@
 \alias{CalcMetCont}
 \title{Calculate MET verification measures for continuous variables.}
 \usage{
-CalcMetCont(obs, mod, conRange = NULL)
+CalcMetCont(obs, mod, conRange = Inf)
 }
 \arguments{
-\item{obs}{A numeric vector of observation time series.}
+\item{obs}{Numeric vector of observation time series.}
 
-\item{mod}{A numeric vector of model simulation or forecast time series.}
+\item{mod}{Numeric vector of model simulation or forecast time series.}
 
-\item{conRange}{A numeric vector containing two elements.
+\item{conRange}{Numeric vector containing two elements.
 Values are used as the lower and upper boundary for conditional statistics.
-If conditioning only at one tail, leave the second value as NA.}
+If conditioning only at one tail, leave the second value as Inf.}
 }
 \value{
 A matrix containing most of the MET verification measures
@@ -27,30 +27,30 @@ comparable one by one.
 }
 \details{
 The calculated statistics are the following: \itemize{
-\item NO: number of datapoint
+\item numPaired: number of paired datapoint
 \item minObs: min of observation time series
 \item minMod: min of model simulation/forecast time series
 \item maxObs: max of observation time series
-\item maxMod: Max of model simulation/forecast time series
-\item meanObs: Mean of observation time series
-\item meanMod: Mean of model simulation/forecast time series
-\item stdObs: Standard deviation of observation time series
-\item stdMod: Standard deviation of model simulation/forecast time series
-\item pearsonCor: Peason correlation coefficient
-\item SpearmanCor: Spearman correlation coefficient
-\item KendallCor: Kendall tau correlation coefficient (tau-b)
-\item ME:Mean Error
-\item MultiBias: Mutliplicative bias
-\item MSE: Mean Square Error
-\item RMSE: Root Mean Square Error
-\item MAE: Mean Absolute Error
-\item MAD: Median Absolute Deviation
-\item IQR: Inter Quantile Range of the Errors
-\item E10: 10 percent of Errors
-\item E25: 25 percent of Errors
-\item E50  50 percent of Errors
-\item E75: 75 percent of Errors
-\item E90: 90 percent of Errors
+\item maxMod: max of model simulation/forecast time series
+\item meanObs: mean of observation time series
+\item meanMod: mean of model simulation/forecast time series
+\item stdObs: standard deviation of observation time series
+\item stdMod: standard deviation of model simulation/forecast time series
+\item pearsonCor: Pearson correlation coefficient
+\item spearmanCor: spearman correlation coefficient
+\item kendallCor: kendall tau correlation coefficient (tau-b)
+\item ME:mean error
+\item multiBias: mutliplicative bias
+\item MSE: mean square error
+\item RMSE: root mean square error
+\item MAE: mean absolute error
+\item MAD: median absolute deviation
+\item IQR: inter quantile range of the errors
+\item E10: 10 percent of errors
+\item E25: 25 percent of errors
+\item E50:  50 percent of errors
+\item E75: 75 percent of errors
+\item E90: 90 percent of errors
 } For more information refer to Model Evaluation Tool (MET) documentation
 }
 \examples{
@@ -58,7 +58,8 @@ DF <- data.frame(obs=seq(1,5), mod=seq(6,10), stringsAsFactors=FALSE)
 stat<-CalcMetCont(DF$obs,DF$mod)
 }
 \seealso{
-Other modelEvaluation: \code{\link{CalcModPerfMulti}};
+Other modelEvaluation: \code{\link{CalcMetContGrid}};
+  \code{\link{CalcModPerfMulti}};
   \code{\link{CalcModPerf}};
   \code{\link{CalcNoahmpFluxes}};
   \code{\link{CalcNoahmpWatBudg}}

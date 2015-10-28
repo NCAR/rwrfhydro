@@ -11,26 +11,26 @@
 #' \item minObs: min of observation time series
 #' \item minMod: min of model simulation/forecast time series
 #' \item maxObs: max of observation time series
-#' \item maxMod: max of model simulation/forecast time series
-#' \item meanObs: mean of observation time series
-#' \item meanMod: mean of model simulation/forecast time series
-#' \item stdObs: standard deviation of observation time series
-#' \item stdMod: standard deviation of model simulation/forecast time series
-#' \item pearsonCor: Pearson correlation coefficient
+#' \item maxMod: Max of model simulation/forecast time series
+#' \item meanObs: Mean of observation time series
+#' \item meanMod: Mean of model simulation/forecast time series
+#' \item stdObs: Standard deviation of observation time series
+#' \item stdMod: Standard deviation of model simulation/forecast time series
+#' \item pearsonCor: Peason correlation coefficient
 #' \item spearmanCor: spearman correlation coefficient
 #' \item kendallCor: kendall tau correlation coefficient (tau-b)
-#' \item ME:mean error
+#' \item ME:Mean Error
 #' \item multiBias: mutliplicative bias
-#' \item MSE: mean square error
-#' \item RMSE: root mean square error
-#' \item MAE: mean absolute error
-#' \item MAD: median absolute deviation
-#' \item IQR: inter quantile range of the errors
-#' \item E10: 10 percent of errors 
-#' \item E25: 25 percent of errors 
-#' \item E50:  50 percent of errors 
-#' \item E75: 75 percent of errors 
-#' \item E90: 90 percent of errors
+#' \item MSE: Mean Square Error
+#' \item RMSE: Root Mean Square Error
+#' \item MAE: Mean Absolute Error
+#' \item MAD: Median Absolute Deviation
+#' \item IQR: Inter Quantile Range of the Errors
+#' \item E10: 10 percent of Errors 
+#' \item E25: 25 percent of Errors 
+#' \item E50  50 percent of Errors 
+#' \item E75: 75 percent of Errors 
+#' \item E90: 90 percent of Errors
 #' } For more information refer to Model Evaluation Tool (MET) documentation
 #'  
 #' 
@@ -138,22 +138,22 @@ CalcMetCont <- function(obs, mod, conRange=Inf){
 #' \item minObs: min of observation time series
 #' \item minMod: min of model simulation/forecast time series
 #' \item maxObs: max of observation time series
-#' \item maxMod: max of model simulation/forecast time series
-#' \item meanObs: mean of observation time series
-#' \item meanMod: mean of model simulation/forecast time series
-#' \item stdObs: standard deviation of observation time series
-#' \item stdMod: standard deviation of model simulation/forecast time series
-#' \item pearsonCor: Pearson correlation coefficient
-#' \item spearmanCor: spearman correlation coefficient
-#' \item kendallCor: kendall tau correlation coefficient (tau-b)
-#' \item ME:mean error
-#' \item multiBias: mutliplicative bias
-#' \item MSE: mean square error
-#' \item RMSE: root mean square error
-#' \item MAE: mean absolute error
-#' \item MAD: median absolute deviation
-#' \item IQR: inter quantile range of the errors
-#' \item quantiles: quantiles of error for given probabilities 
+#' \item maxMod: Max of model simulation/forecast time series
+#' \item meanObs: Mean of observation time series
+#' \item meanMod: Mean of model simulation/forecast time series
+#' \item stdObs: Standard deviation of observation time series
+#' \item stdMod: Standard deviation of model simulation/forecast time series
+#' \item pearsonCor: Peason correlation coefficient
+#' \item SpearmanCor: Spearman correlation coefficient
+#' \item KendallCor: Kendall tau correlation coefficient (tau-b)
+#' \item ME:Mean Error
+#' \item MultiBias: Mutliplicative bias
+#' \item MSE: Mean Square Error
+#' \item RMSE: Root Mean Square Error
+#' \item MAE: Mean Absolute Error
+#' \item MAD: Median Absolute Deviation
+#' \item IQR: Inter Quantile Range of the Errors
+#' \item quantiles: Quantiles of error for given probabilities 
 #' } For more information refer to Model Evaluation Tool (MET) documentation
 #'  
 #' 
@@ -236,10 +236,10 @@ CalcMetContGrid <- function(obs,mod,.funObs = NULL, .funMod = NULL,
     if ('meanObs' %in% statList) stat$meanObs <- apply(obs, c(rowDim,colDim), mean, na.rm = TRUE)
     if ('meanMod' %in% statList) stat$meanMod <- apply(mod, c(rowDim,colDim), mean, na.rm = TRUE)
     
-    if ('stdObs' %in% statList) stat$stdObs <- apply(obs, c(rowDim,colDim), sd, na.rm = TRUE)
-    if ('stdMod' %in% statList) stat$stdMod <- apply(mod, c(rowDim,colDim), sd, na.rm = TRUE)
+    if ('stdObs' %in% statList) stat$stdObs <- apply(obs, c(rowDim,colDim), std, na.rm = TRUE)
+    if ('stdMod' %in% statList) stat$stdMod <- apply(mod, c(rowDim,colDim), std, na.rm = TRUE)
     
-    if ('multiBias' %in% statList) {
+    if ('MultiBias' %in% statList) {
       if (exists('meanObs') & exists('meanMod')) {
         stat$multiBias <- stat$meanMod/stat$meanMod
       }else{
@@ -269,26 +269,28 @@ CalcMetContGrid <- function(obs,mod,.funObs = NULL, .funMod = NULL,
       stat$IQR <- quants[1,,] - quants[2,,]
     } 
     
-    if (c('pearsonCor') %in% statList) {
-      numPaired <- apply(obs, c(rowDim,colDim), function(x) sum(!is.na(x)))
+    if (c('pearsonCo') %in% statList) {
+      numPaired <- apply(obs, c(rowDim,colDim), function(x) length(!is.na(x)))
       sumObs <-  apply(obs, c(rowDim,colDim), sum, na.rm = TRUE)
-      sumMod <-  apply(mod, c(rowDim,colDim), sum, na.rm = TRUE)
+      sumMod <-  apply(Mod, c(rowDim,colDim), sum, na.rm = TRUE)
       sumObs2 <- apply(obs^2, c(rowDim,colDim), sum, na.rm = TRUE)
-      sumMod2 <- apply(mod^2, c(rowDim,colDim), sum, na.rm = TRUE)
+      sumMod2 <- apply(Mod^2, c(rowDim,colDim), sum, na.rm = TRUE)
       sumObsMod <- apply(obs*mod, c(rowDim,colDim), sum, na.rm = TRUE)
-      stat$pearsonCor <- (numPaired*sumObsMod - sumObs*sumMod)/
-        (sqrt(numPaired*sumObs2 - (sumObs)^2)*sqrt(numPaired*sumMod2 - (sumMod)^2))
+      stat$pearsonCorr <- (numPaired*sumObsMod - sumObs*sumMod)/
+        (sqrt(numPaired*sumObs - sumObs2)*sqrt(numPaired*sumMod - sumMod2))
     }
     
     if ('spearmanCor' %in% statList) {
-      stat$spearmanCor<- apply(expand.grid(1:dim(obs)[rowDim], 1:dim(obs)[colDim]), 1, function(x)
+      spearmanCor<- apply(expand.grid(1:dim(obs)[rowDim], 1:dim(obs)[colDim]), 1, function(x)
         cor(obs[,x[[1]], x[[2]]], mod[,x[[1]], x[[2]]], method = "spearman"))
-      stat$spearmanCor<-matrix(stat$spearmanCor,nrow = dim(obs)[rowDim])
+      spearmanCor[is.na(spearmanCor)]<--999
+      spearmanCor<-matrix(spearmanCor,nrow = dim(obs)[rowDim])
     }
     
-    if ('kendallCor' %in% statList) {
+    if ('KendallCor' %in% statList) {
       stat$kendallCor<- apply(expand.grid(1:dim(obs)[rowDim], 1:dim(obs)[colDim]), 1, function(x)
         cor(obs[,x[[1]], x[[2]]], mod[,x[[1]], x[[2]]], method = "kendall"))
+      stat$kendallCor[is.na(stat$kendallCor)]<--999
       stat$kendallCor<-matrix(stat$kendallCor,nrow = dim(obs)[rowDim])
     }
     
@@ -300,8 +302,8 @@ CalcMetContGrid <- function(obs,mod,.funObs = NULL, .funMod = NULL,
     # Files are read at chunks (ncors) and statistics are calculated after all
     # data are read and some metrics such as sum(obs) and sum(mod) are calculated
     
-    if (any(c('MAD','quantiles','IQR','spearmanCor','KendallCor') %in% statList)){
-      warning("c('MAD','quantiles','IQR','spearmanCor','KendallCor')
+    if (any(c('MAD','E10','E25','E50','E75','E90','IQR','spearmanCor','KendallCor') %in% statList)){
+      warning("c('MAD','E10','E25','E50','E75','E90','IQR','spearmanCor','KendallCor')
                These statistics are not included in when you are reading file by chunks, 
               you need to read the data first and run this function to be able to get these functions")
     }
@@ -315,7 +317,7 @@ CalcMetContGrid <- function(obs,mod,.funObs = NULL, .funMod = NULL,
     
     timeDim<-1; rowDim<-2 ; colDim<-3 ; 
     dimInit<-dim(.funObs(as.character(obs[1])))
-    NAMatrix <- matrix(NA, nrow = dimInit[1],  ncol = dimInit[2])
+    NAMatrix <- matrix(, nrow = dimInit[1],  ncol = dimInit[2])
     zeroMatrix <- matrix(0, nrow = dimInit[1],  ncol = dimInit[2])
     
     #initializing
@@ -324,14 +326,11 @@ CalcMetContGrid <- function(obs,mod,.funObs = NULL, .funMod = NULL,
     sumObs <- zeroMatrix; sumMod <-zeroMatrix; sumObs2 <- zeroMatrix; sumMod2 <- zeroMatrix; 
     sumObsMod <- zeroMatrix; sumError <- zeroMatrix; sumError2 <- zeroMatrix; sumAbsError <- zeroMatrix; 
     
-    obsFileList<-obs
-    modFileList<-mod
-
-    for (i in 1:ceiling(length(obsFileList)/ncors)){
+    for (i in 1:ceiling(length(obs)/ncors)){
       
-      if (i*ncors > length(obsFileList)) slice <- c((i-1)*ncors , length(obsFileList)) else slice <- c((i-1)*ncors , i*ncors-1)
-      obs <- plyr::laply(as.list(obsFileList[slice[1]:slice[2]]), .funObs, .parallel=parallel)
-      mod <- plyr::laply(as.list(modFileList[slice[1]:slice[2]]), .funMod, .parallel=parallel)
+      if (i*ncors > length(obs)) slice <- c((i-1)*ncors , length(obs)) else slice <- c((i-1)*ncors , i*ncors)
+      obs <- plyr::laply(as.list(obs), .funObs, .parallel=parallel)
+      mod <- plyr::laply(as.list(mod), .funMod, .parallel=parallel)
       
       # for conditional statistics
       # Set outside the condition range to NA, so it will be removed from calculation
@@ -353,25 +352,21 @@ CalcMetContGrid <- function(obs,mod,.funObs = NULL, .funMod = NULL,
       obs[which(is.na(mod))] <- NA
       mod[which(is.na(obs))] <- NA
       
-      numPaired <-numPaired + apply(obs, c(rowDim,colDim), function(x) sum(!is.na(x)))
+      numPaired <-numPaired + apply(obs, c(rowDim,colDim), function(x) length(!is.na(x)))
       
-      if ('minObs' %in% statList) minObs <- apply(plyr::laply(list(minObs,apply(obs, c(rowDim,colDim), min, na.rm = TRUE)),
-                                                              function(x) return(x)), c(rowDim,colDim), min, na.rm = TRUE)
-      if ('minMod' %in% statList) minMod <- apply(plyr::laply(list(minMod,apply(mod, c(rowDim,colDim), min, na.rm = TRUE)),
-                                                              function(x) return(x)), c(rowDim,colDim), min, na.rm = TRUE)
+      if ('minObs' %in% statList) minObs <- min(minObs, apply(obs, c(rowDim,colDim), min, na.rm = TRUE), na.rm = TRUE)
+      if ('minMod' %in% statList) minMod <- min(minMod, apply(mod, c(rowDim,colDim), min, na.rm = TRUE), na.rm = TRUE)
       
-      if ('maxObs' %in% statList) maxObs <- apply(plyr::laply(list(maxObs,apply(obs, c(rowDim,colDim), max, na.rm = TRUE)),
-                                                              function(x) return(x)), c(rowDim,colDim), max, na.rm = TRUE)
-      if ('maxMod' %in% statList) maxMod <- apply(plyr::laply(list(maxMod,apply(mod, c(rowDim,colDim), max, na.rm = TRUE)),
-                                                              function(x) return(x)), c(rowDim,colDim), max, na.rm = TRUE)
+      if ('maxObs' %in% statList) maxObs <- max(maxObs, apply(obs, c(rowDim,colDim), max, na.rm = TRUE), na.rm = TRUE)
+      if ('maxMod' %in% statList) maxMod <- max(maxMod, apply(mod, c(rowDim,colDim), max, na.rm = TRUE), na.rm = TRUE)
       
-      if (any(c('meanObs','stdObs','pearsonCor','multiBias') %in% statList)) sumObs <- sumObs + apply(obs, c(rowDim,colDim), sum, na.rm = TRUE)
-      if (any(c('meanMod','stdMod','pearsonCor','multiBias') %in% statList)) sumMod <- sumMod + apply(mod, c(rowDim,colDim), sum, na.rm = TRUE)
+      if (any(c('meanObs','stdObs','pearsonCo','multiBias') %in% statList)) sumObs <- sumObs + apply(obs, c(rowDim,colDim), sum, na.rm = TRUE)
+      if (any(c('meanMod','stdMod','pearsonCo','multiBias') %in% statList)) sumMod <- sumMod + apply(mod, c(rowDim,colDim), sum, na.rm = TRUE)
       
-      if (any(c('stdObs','pearsonCor') %in% statList)) sumObs2 <- sumObs2 + apply(obs^2, c(rowDim,colDim), sum, na.rm = TRUE)
-      if (any(c('stdMod','pearsonCor') %in% statList)) sumMod2 <- sumMod2 + apply(mod^2, c(rowDim,colDim), sum, na.rm = TRUE)
+      if (any(c('stdObs','pearsonCo') %in% statList)) sumObs2 <- sumObs2 + apply(obs^2, c(rowDim,colDim), sum, na.rm = TRUE)
+      if (any(c('stdMod','pearsonCo') %in% statList)) sumMod2 <- sumMod2 + apply(mod^2, c(rowDim,colDim), sum, na.rm = TRUE)
       
-      if (c('pearsonCor') %in% statList) sumObsMod <- sumObsMod + apply(obs*mod, c(rowDim,colDim), sum, na.rm = TRUE)
+      if (c('pearsonCo') %in% statList) sumObsMod <- sumObsMod + apply(obs*mod, c(rowDim,colDim), sum, na.rm = TRUE)
       
       if (c('ME') %in% statList)  sumError <- sumError + apply(mod - obs, c(rowDim,colDim), sum, na.rm = TRUE)
       if (any(c('MSE','RMSE') %in% statList))  sumError2 <- sumError2 + apply((mod - obs)^2, c(rowDim,colDim), sum, na.rm = TRUE)
@@ -393,7 +388,7 @@ CalcMetContGrid <- function(obs,mod,.funObs = NULL, .funMod = NULL,
     if ('stdObs' %in% statList) stat$stdObs <- sqrt(sumObs2/numPaired - (stat$meanObs)^2)
     if ('stdMod' %in% statList) stat$stdMod <- sqrt(sumMod2/numPaired - (stat$meanMod)^2)
     
-    if ('multiBias' %in% statList) {
+    if ('MultiBias' %in% statList) {
       stat$multiBias <- (sumMod/sumObs)
       stat$multiBias[which(is.infinite(stat$multiBias))] <- NA
     }
@@ -404,8 +399,8 @@ CalcMetContGrid <- function(obs,mod,.funObs = NULL, .funMod = NULL,
     
     if ('MAE' %in% statList) stat$MAE <- (sumAbsError/numPaired)
     
-    if('pearsonCor' %in% statList) stat$pearsonCor <- (numPaired*sumObsMod - sumObs*sumMod)/
-      (sqrt(numPaired*sumObs2 - (sumObs)^2)*sqrt(numPaired*sumMod2 - (sumMod)^2))
+    if('pearsonCor' %in% statList) stat$pearsonCorr <- (numPaired*sumObsMod - sumObs*sumMod)/
+      (sqrt(numPaired*sumObs - sumObs2)*sqrt(numPaired*sumMod - sumMod2))
   }
   return(stat)
 }
