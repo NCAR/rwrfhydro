@@ -1,3 +1,3 @@
-PKG_LIBS=-L/glade/u/home/karsten/lib/grib_api_1.14.2_intel/lib -lgrib_api_f90 -lgrib_api -L/glade/apps/opt/esmf/6.3.0-ncdfio/intel/12.1.5/lib/libO/Linux.intel.64.mpich2.default -lesmf
-PKG_FCFLAGS=-I/glade/u/home/karsten/lib/grib_api_1.14.2_intel/include -I/glade/apps/opt/esmf/6.3.0-ncdfio/intel/12.1.5/mod/modO/Linux.intel.64.mpich2.default
-PKG_FFLAGS=-I/glade/u/home/karsten/lib/grib_api_1.14.2_intel/include -I/glade/apps/opt/esmf/6.3.0-ncdfio/intel/12.1.5/mod/modO/Linux.intel.64.mpich2.default
+PKG_LIBS=-L/d4/karsten/lib/grib_api_1.13.1/lib -lgrib_api_f90 -lgrib_api -L/d4/karsten/lib/esmf_6.3.0rp1/lib/libO/Linux.gfortran.64.mpich2.default -lesmf
+PKG_FFLAGS=-I/d4/karsten/lib/grib_api_1.13.1/include -I/d4/karsten/lib/esmf_6.3.0rp1/mod/modO/Linux.gfortran.64.mpich2.default  
+PKG_FCFLAGS=-I/d4/karsten/lib/grib_api_1.13.1/include -I/d4/karsten/lib/esmf_6.3.0rp1/mod/modO/Linux.gfortran.64.mpich2.default
