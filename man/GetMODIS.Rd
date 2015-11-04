@@ -9,7 +9,8 @@ GetMODIS(geogrdPath, prodName, outDir, begin = NULL, end = NULL,
   resampList = NULL, quiet = FALSE, scriptPath = NULL)
 }
 \arguments{
-\item{geogrdPath}{The pathname to the geogrid file (i.e., geo_em.d01.nc).}
+\item{geogrdPath}{The pathname to the geogrid file (i.e., geo_em.d01.nc)
+OR the path to a georeferenced TIF file of the domain.}
 
 \item{prodName}{The MODIS product name to download/process. Run the
 \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package
@@ -95,13 +96,14 @@ structure (see \code{\link[MODIS]{MODISoptions}}). This tool requires a local
 packages.
 
 NOTE: This tool currently only works for geogrid files in Lambert Conformal
-Conic projection.
+Conic projection OR a GDAL-friendly georeferenced TIF file.
 }
 \examples{
 ## First, specify the target directories for the MODIS package.
 \dontrun{
 MODISoptions(localArcPath="/d1/WRF_Hydro/RS/MODIS_ARC",
-             outDirPath="/d1/WRF_Hydro/RS/MODIS_ARC/PROCESSED")
+             outDirPath="/d1/WRF_Hydro/RS/MODIS_ARC/PROCESSED",
+             stubbornness="low")
 
 ## Then, use GetMODIS to download the MODIS MOD15A2 (FPAR/LAI) product for
 ## all tiles that overlap our Fourmile Creek domain (as specified by the

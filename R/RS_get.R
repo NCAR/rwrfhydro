@@ -22,9 +22,10 @@
 #' packages.
 #' 
 #' NOTE: This tool currently only works for geogrid files in Lambert Conformal 
-#' Conic projection.
+#' Conic projection OR a GDAL-friendly georeferenced TIF file.
 #' 
-#' @param geogrdPath The pathname to the geogrid file (i.e., geo_em.d01.nc).
+#' @param geogrdPath The pathname to the geogrid file (i.e., geo_em.d01.nc)
+#'  OR the path to a georeferenced TIF file of the domain.
 #' @param prodName The MODIS product name to download/process. Run the 
 #'   \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package 
 #'   getProducts() for a complete list of supported products.
@@ -77,7 +78,8 @@
 #' ## First, specify the target directories for the MODIS package.
 #' \dontrun{
 #' MODISoptions(localArcPath="/d1/WRF_Hydro/RS/MODIS_ARC", 
-#'              outDirPath="/d1/WRF_Hydro/RS/MODIS_ARC/PROCESSED")
+#'              outDirPath="/d1/WRF_Hydro/RS/MODIS_ARC/PROCESSED",
+#'              stubbornness="low")
 #' 
 #' ## Then, use GetMODIS to download the MODIS MOD15A2 (FPAR/LAI) product for 
 #' ## all tiles that overlap our Fourmile Creek domain (as specified by the 
@@ -120,13 +122,18 @@ GetMODIS <- function(geogrdPath, prodName, outDir, begin=NULL, end=NULL,
       dir.create(locPath, showWarnings = FALSE)
     }
     # Get geogrid and projection info
-    geogrd.nc <- ncdf4::nc_open(geogrdPath)
-    map_proj <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="MAP_PROJ")$value
-    cen_lat <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="CEN_LAT")$value
-    cen_lon <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="STAND_LON")$value
-    truelat1 <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="TRUELAT1")$value
-    truelat2 <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="TRUELAT2")$value
-    if (map_proj==1) {
+    if (inherits(try(suppressWarnings(ncdf4::nc_open(geogrdPath))), "try-error")) {
+      message("Assuming file is a georeferenced TIF.")
+      hgt.r <- raster::raster(geogrdPath)
+    } else {
+      message("Assuming file is a geogrid in netcdf format.")
+      geogrd.nc <- ncdf4::nc_open(geogrdPath)
+      map_proj <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="MAP_PROJ")$value
+      cen_lat <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="CEN_LAT")$value
+      cen_lon <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="STAND_LON")$value
+      truelat1 <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="TRUELAT1")$value
+      truelat2 <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="TRUELAT2")$value
+      if (map_proj==1) {
          geogrd.crs <- paste0("+proj=lcc +lat_1=", truelat1, " +lat_2=", truelat2, 
                               " +lat_0=", cen_lat, " +lon_0=", cen_lon, 
                               " +x_0=0 +y_0=0 +a=6370000 +b=6370000 +units=m +no_defs")
@@ -142,6 +149,7 @@ GetMODIS <- function(geogrdPath, prodName, outDir, begin=NULL, end=NULL,
     ExportGeogrid(geogrdPath, "HGT_M", paste0(locPath, "/geogrid_tmp.tif"))
 	  hgt.r <- raster::raster(paste0(locPath, "/geogrid_tmp.tif"))
     system(paste0("rm ", paste0(locPath, "/geogrid_tmp.tif")))
+    }
     # Run the download & processing
     mod.list <- MODIS::runGdal(product=prodName, collection=collection, 
                                begin=begin, end=end,

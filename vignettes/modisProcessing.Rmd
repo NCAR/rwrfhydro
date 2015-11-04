@@ -39,7 +39,8 @@ library(ncdf4)
 # Sys.setenv(PATH=bashPath)
 gdalPath <- sub("gdalinfo", replacement="", system("which gdalinfo", intern=TRUE))
 MODISoptions(localArcPath="~/wrfHydroTestCases/MODIS_ARC", 
-             outDirPath="~/wrfHydroTestCases/MODIS_ARC/PROCESSED", gdalPath=gdalPath)
+             outDirPath="~/wrfHydroTestCases/MODIS_ARC/PROCESSED", gdalPath=gdalPath,
+             stubbornness="low")
 ```
 
 

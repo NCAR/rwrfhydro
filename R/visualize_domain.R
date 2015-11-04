@@ -47,7 +47,7 @@ VisualizeDomain <- function(file, variable=NULL, plot=TRUE) {
   
   # Determine if this is coarse or fine grid file.
   resolution <- 'fine'
-  if(any(tolower(names(nc$dim))=='ladn_cat')) resolution <- 'coarse'
+  if(any(tolower(names(nc$dim))=='land_cat')) resolution <- 'coarse'
   
   # A coarse file must have at least 3 dimensions, 
   # 2 in space and (time is the unlimited/last dimension)
