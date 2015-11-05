@@ -309,18 +309,31 @@ CalcCOM <- function (x) {
 #' Take the output dataframe from GetMultiNcdf and reshape the dataframe
 #' for ease of use in other functions.
 #' @param myDf The output dataframe from GetMultiNcdf.
-#' @return The reshaped output dataframe.
+#' @return The reshaped output dataframe(s) (a single dataframe if
+#' only one fileGroup, a list of multiple dataframes if multiple
+#' fileGroups.
 #' @keywords utilities internal
 #' @export
 ReshapeMultiNcdf <- function(myDf) {
-    newDF <- subset(myDf[,c("POSIXct","stat","statArg")], myDf$variableGroup==unique(myDf$variableGroup)[1])
-    for (i in unique(myDf$variableGroup)) {
-        newDF[,i] <- subset(myDf$value, myDf$variableGroup==i)
+  newDfList <- list()
+  for (j in unique(myDf$fileGroup)) {
+    mysubDf <- subset(myDf, myDf$fileGroup==j)
+    newDf <- subset(mysubDf[,c("POSIXct","stat","statArg")], 
+                    mysubDf$variableGroup==unique(mysubDf$variableGroup)[1])
+    for (i in unique(mysubDf$variableGroup)) {
+        newDf[,i] <- subset(mysubDf$value, mysubDf$variableGroup==i)
         }
-    newDF$wy <- ifelse(as.numeric(format(newDF$POSIXct,"%m"))>=10,
-                       as.numeric(format(newDF$POSIXct,"%Y"))+1,
-                       as.numeric(format(newDF$POSIXct,"%Y")))
-    newDF
+    newDf$wy <- ifelse(as.numeric(format(newDf$POSIXct,"%m"))>=10,
+                       as.numeric(format(newDf$POSIXct,"%Y"))+1,
+                       as.numeric(format(newDf$POSIXct,"%Y")))
+    if (length(unique(myDf$fileGroup))==1) {
+      return(newDf)
+    } else {
+      newDfList <- c(newDfList, list(newDf))
+    }
+  } # end for loop in fileGroup
+  names(newDfList) <- unique(myDf$fileGroup)
+  return(newDfList)    
 }
 
 #' Create and or name a list with its entries.
