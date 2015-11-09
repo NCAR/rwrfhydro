@@ -68,7 +68,7 @@ Here we verify the MRMS precipitation depth. Firs make a list of all files conta
 ```{r}
 dirPath<-"/glade/scratch/arezoo/QPF_verification_rwrfhydro/"
 pathMRMS <- paste0(dirPath,"mrms/")
-MRMS<-list.files(path=pathMRMS,full.names = TRUE, pattern = "PRECIP_FORCING")
+files<-list.files(path=pathMRMS,full.names = TRUE, pattern = "PRECIP_FORCING")
 ```
 
 Only lat/lon locations of rain gauges are available if you have retrieved your stations using SelectGhcnGauges function, it is required to find out the gauge location in the geogrid file (x,y) in order to pull the data from the netcdf files. Use GetGeogridIndex function in rwrfhydro and provide the address to the geogrid file.
