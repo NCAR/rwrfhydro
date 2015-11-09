@@ -259,7 +259,7 @@ CalcMetContGrid <- function(obs,mod,.funObs = NULL, .funMod = NULL,
     if ('stdMod' %in% statList) stat$stdMod <- apply(mod, c(rowDim,colDim), sd, na.rm = TRUE)
     
     if ('multiBias' %in% statList) {
-      if (exists('meanObs') & exists('meanMod')) {
+      if ('meanObs' %in% statList & 'meanMod' %in% statList) {
         stat$multiBias <- stat$meanMod/stat$meanMod
       }else{
         stat$multiBias <- apply(mod, c(rowDim,colDim), sum, na.rm = TRUE) / apply(obs, c(rowDim,colDim), sum, na.rm = TRUE)
@@ -289,7 +289,8 @@ CalcMetContGrid <- function(obs,mod,.funObs = NULL, .funMod = NULL,
     } 
     
     if (c('pearsonCor') %in% statList) {
-      numPaired <- apply(obs, c(rowDim,colDim), function(x) sum(!is.na(x)))
+
+    if ('numPaired' %in% statList) numPaired <- stat$numPaired else numPaired <- apply(obs, c(rowDim,colDim), function(x) sum(!is.na(x)))
       sumObs <-  apply(obs, c(rowDim,colDim), sum, na.rm = TRUE)
       sumMod <-  apply(mod, c(rowDim,colDim), sum, na.rm = TRUE)
       sumObs2 <- apply(obs^2, c(rowDim,colDim), sum, na.rm = TRUE)
@@ -298,6 +299,7 @@ CalcMetContGrid <- function(obs,mod,.funObs = NULL, .funMod = NULL,
       stat$pearsonCor <- (numPaired*sumObsMod - sumObs*sumMod)/
         (sqrt(numPaired*sumObs2 - (sumObs)^2)*sqrt(numPaired*sumMod2 - (sumMod)^2))
     }
+
     
     if ('spearmanCor' %in% statList) {
       stat$spearmanCor<- apply(expand.grid(1:dim(obs)[rowDim], 1:dim(obs)[colDim]), 1, function(x)
