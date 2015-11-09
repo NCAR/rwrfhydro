@@ -274,14 +274,15 @@ GetGhcn2 <- function(siteIDs, elements, startDate, endDate, parallel=FALSE,
     unlink(temp)
   
     # subset based on siteIds, element, date
-    dat$date<-as.Date(as.character(dat$date),"%Y%m%d")
-    dat<-subset(dat,dat$siteIds %in% siteIDs)
-    dat<-subset(dat,dat$element %in% elements)
-    dat<-subset(dat,dat$date >= as.Date(startDate) & dat$date <= as.Date(endDate))
+    dat$date <- as.Date(as.character(dat$date),"%Y%m%d")
+    dat <- subset(dat,dat$siteIds %in% siteIDs)
+    dat <- subset(dat,dat$element %in% elements)
+    dat <- subset(dat,dat$date >= as.Date(startDate) & dat$date <= as.Date(endDate))
     },.parallel=parallel)
 
- if (element=="PRCP") dat$value<-dat$value/10
-
+ if ("PRCP" %in% elements) {
+    dat$value <- ifelse(dat$element == "PRCP", dat$value/10, dat$value)
+ }
  return(dat)
 }
 
