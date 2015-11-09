@@ -260,7 +260,7 @@ GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
 #' @family GHCN
 #' @export
 
-GetGhcn2 <- function(siteIds, elements, startDate, endDate, parallel=FALSE,
+GetGhcn2 <- function(siteIDs, elements, startDate, endDate, parallel=FALSE,
                     fileAdd=NULL) {
  if (is.null(fileAdd)) fileAdd="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/by_year/"
  # get all the years in the time period
@@ -275,7 +275,7 @@ GetGhcn2 <- function(siteIds, elements, startDate, endDate, parallel=FALSE,
   
     # subset based on siteIds, element, date
     dat$date<-as.Date(as.character(dat$date),"%Y%m%d")
-    dat<-subset(dat,dat$siteIds %in% siteIds)
+    dat<-subset(dat,dat$siteIds %in% siteIDs)
     dat<-subset(dat,dat$element %in% elements)
     dat<-subset(dat,dat$date >= as.Date(startDate) & dat$date <= as.Date(endDate))
     },.parallel=parallel)
