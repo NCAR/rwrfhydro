@@ -233,11 +233,24 @@ CalcMetContGrid <- function(obs,mod,.funObs = NULL, .funMod = NULL,
     
     if ('numPaired' %in% statList) stat$numPaired <- apply(obs, c(rowDim,colDim), function(x) sum(!is.na(x)))
     
-    if ('minObs' %in% statList) stat$minObs <- apply(obs, c(rowDim,colDim), min, na.rm = TRUE)
-    if ('minMod' %in% statList) stat$minMod <- apply(mod, c(rowDim,colDim), min, na.rm = TRUE)
+    if ('minObs' %in% statList){
+         stat$minObs <- apply(obs, c(rowDim,colDim), min, na.rm = TRUE)
+         stat$minObs[which(is.infinite(stat$minObs))] <- NA
+     }
+    if ('minMod' %in% statList) {
+         stat$minMod <- apply(mod, c(rowDim,colDim), min, na.rm = TRUE)
+         stat$minMod[which(is.infinite(stat$minMod))] <- NA
+     }
     
-    if ('maxObs' %in% statList) stat$maxObs <- apply(obs, c(rowDim,colDim), max, na.rm = TRUE)
-    if ('maxMod' %in% statList) stat$maxMod <- apply(mod, c(rowDim,colDim), max, na.rm = TRUE)
+    if ('maxObs' %in% statList) {
+         stat$maxObs <- apply(obs, c(rowDim,colDim), max, na.rm = TRUE)
+         stat$maxObs[which(is.infinite(stat$maxObs))] <- NA
+    }
+
+    if ('maxMod' %in% statList) {
+         stat$maxMod <- apply(mod, c(rowDim,colDim), max, na.rm = TRUE)
+         stat$maxMod[which(is.infinite(stat$maxMod))] <- NA
+    }
     
     if ('meanObs' %in% statList) stat$meanObs <- apply(obs, c(rowDim,colDim), mean, na.rm = TRUE)
     if ('meanMod' %in% statList) stat$meanMod <- apply(mod, c(rowDim,colDim), mean, na.rm = TRUE)

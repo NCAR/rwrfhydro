@@ -107,7 +107,7 @@ SelectGhcnGauges <- function(countryCode=NULL,networkCode=NULL,states=NULL,
 #' \item{PRCP}{ = Precipitation (tenths of mm)}
 #' \item{SNOW}{ = Snowfall (mm)}
 #' \item{SNWD}{ = Snow depth (mm)}
-#' \item{MAX}{ = Maximum temperature (tenths of degrees C)}
+#' \item{TMAX}{ = Maximum temperature (tenths of degrees C)}
 #' \item{TMIN}{ = Minimum temperature (tenths of degrees C)}
 #' }
 #' For the full list of elemenst refer to 
@@ -195,7 +195,10 @@ GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
   if (nrow(data)== 0) {
     return("warning: there is no available observation for the specified period")
   }else{
-    if (element=="PRCP") data$value<-data$value/10
+
+  if ("PRCP" %in% elements) {
+    dat$value <- ifelse(dat$element == "PRCP", dat$value/10, dat$value)
+  }
     names(data)<-c("siteIds","Date","dailyGhcn","qFlag")
     return(data)
   }
@@ -220,7 +223,7 @@ GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
 #' \item{PRCP}{ = Precipitation (tenths of mm)}
 #' \item{SNOW}{ = Snowfall (mm)}
 #' \item{SNWD}{ = Snow depth (mm)}
-#' \item{MAX}{ = Maximum temperature (tenths of degrees C)}
+#' \item{TMAX}{ = Maximum temperature (tenths of degrees C)}
 #' \item{TMIN}{ = Minimum temperature (tenths of degrees C)}
 #' }
 #' For the full list of elemenst refer to 
