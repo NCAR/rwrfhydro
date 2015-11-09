@@ -102,7 +102,7 @@ GetMultiNcdf pulls the time information from the netcdf files, if the data is no
 
 ```{r}
     prcpData$POSIXct<-strptime(regmatches(basename(prcpData$POSIXct), regexpr("[0-9].*[0-9]", basename(prcpData$POSIXct))),format = "%Y%m%d%H%M", tz ="UTC")
-    #just keep teh value and time to make the size small
+    #just keep value and time to make the size small
     prcpData <- prcpData[,which(names(prcpData) %in% c('POSIXct','value','statArg'))]
     prcpData$value<-prcpData$value*3600
 ```
@@ -202,7 +202,7 @@ list all MRMS files:
 MRMS <- list.files(path = pathMRMS,full.names = TRUE, pattern = glob2rx("*PRECIP_FORCING.nc"))
 ```
 
-Take the time stamp from the file name:
+Extract time stamp from the file name:
 
 ```{r}
 run_dates <- as.POSIXct(substr(MRMS,nchar(MRMS)-29,nchar(MRMS)-20),format = "%Y%m%d%H",tz = "UTC")
@@ -228,7 +228,7 @@ stageIVdepth <- plyr::laply(as.list(stageIV),getPrcp,var="precip",.parallel=TRUE
 
 
 Finaly, you can call the CalcMetContGrid fuction to calculate most of the common statistics for continuous variables. You need to provide the obs and mod, and the rest of options are optional. If no more information will be provided, it will calculate only the default statistics which are the following:
-Number of paired data for each grid, mean of obs, mean of mod, multiplicative bias, RMSE, and pearson correlation'
+Number of paired data for each grid, mean of obs, mean of mod, multiplicative bias, RMSE, and pearson correlation.
 
 ```{r}
 stat <- CalcMetContGrid(obs = stageIVdepth, mod = MRMSdepth)

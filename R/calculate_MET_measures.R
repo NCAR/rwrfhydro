@@ -231,7 +231,7 @@ CalcMetContGrid <- function(obs,mod,.funObs = NULL, .funMod = NULL,
     obs[which(is.na(mod))] <- NA
     mod[which(is.na(obs))] <- NA
     
-    if ('numPaired' %in% statList) stat$numPaired <- apply(obs, c(rowDim,colDim), function(x) length(!is.na(x)))
+    if ('numPaired' %in% statList) stat$numPaired <- apply(obs, c(rowDim,colDim), function(x) sum(!is.na(x)))
     
     if ('minObs' %in% statList) stat$minObs <- apply(obs, c(rowDim,colDim), min, na.rm = TRUE)
     if ('minMod' %in% statList) stat$minMod <- apply(mod, c(rowDim,colDim), min, na.rm = TRUE)
