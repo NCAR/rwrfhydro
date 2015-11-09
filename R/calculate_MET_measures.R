@@ -91,10 +91,16 @@ CalcMetCont <- function(obs, mod, conRange=Inf){
   stdObs <- sd(obs, na.rm = TRUE)      # standard deviation of observation
   stdMod <- sd(mod, na.rm = TRUE)      # standard deviation of model simluation /forecast
   
-  pearsonCor  <- cor(obs, mod, method = "pearson")       #Pearson correlation coefficient
-  spearmanCor <- cor(obs, mod, method = "spearman")   #Spearman rank correlation coefficient
-  kendallCor  <- cor(obs, mod, method = "kendall")     # Kendall tau correlation coefficient (tau-b)
-  
+  if (stdObs>0 & stdMod>0) {  
+     pearsonCor  <- cor(obs, mod, method = "pearson")       #Pearson correlation coefficient
+     spearmanCor <- cor(obs, mod, method = "spearman")   #Spearman rank correlation coefficient
+     kendallCor  <- cor(obs, mod, method = "kendall")     # Kendall tau correlation coefficient (tau-b)
+  }else{
+     pearsonCor  <- NA
+     spearmanCor <- NA
+     kendallCor <-NA
+}
+
   ME   <- mean(error, na.rm = TRUE)              # Mean Error or Bias
   MSE  <- mean((error)^2, na.rm = TRUE)          # Mean Square Error
   RMSE <- sqrt(MSE)                # Root Mean Square Error
