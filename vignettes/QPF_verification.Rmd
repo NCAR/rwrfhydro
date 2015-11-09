@@ -75,8 +75,9 @@ Only lat/lon locations of rain gauges are available if you have retrieved your s
 
 ```{r}
 geoGridAdd<-"/glade/p/ral/RHAP/adugger/NFIE/DOMAIN/geo_em.d01.nc.conus_3km_nlcd11"
-sg$rainGgaugeInds <- GetGeogridIndex(data.frame(lon=sg$longitude, lat=sg$latitude),
+rainGgaugeInds <- GetGeogridIndex(data.frame(lon=sg$longitude, lat=sg$latitude),
                                     geoGridAdd)
+sg <- cbind(sg,rainGgaugeInds)
 ```
 
 # Pull the data from netcdf file. 
