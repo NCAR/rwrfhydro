@@ -275,7 +275,8 @@ GetGhcn2 <- function(siteIds, elements, startDate, endDate, parallel=FALSE,
   
     # subset based on siteIds, element, date
     dat$date<-as.Date(as.character(dat$date),"%Y%m%d")
-    dat<-subset(dat,dat$siteIds %in% siteIds & dat$element %in% elements)
+    dat<-subset(dat,dat$siteIds %in% siteIds)
+    dat<-subset(dat,dat$element %in% elements)
     dat<-subset(dat,dat$date >= as.Date(startDate) & dat$date <= as.Date(endDate))
     },.parallel=parallel)
 
