@@ -88,8 +88,9 @@ WriteNcTimeSlice <- function(dfByPosix, outPath, sliceResolution) {
       print("file exists: merging... ")
       ## one cant change random rows of a netcdf file, only slabs.
       ## seems more efficient to read in the old file and merge them old with the 
-      ## new and sort it out and then overwrite the file.       
-      dfByPosix <- rbind(dfByPosix, ReadNcTimeSlice(outFileName))
+      ## new and sort it out and then overwrite the file.
+      oldSlice <- ReadNcTimeSlice(outFileName)
+      dfByPosix <- rbind(dfByPosix[,names(oldSlice)], oldSlice)
     }
 
     ## could have multiple of the same station at a given time. 
@@ -174,7 +175,7 @@ WriteNcTimeSlice <- function(dfByPosix, outPath, sliceResolution) {
             multfactor='.01',
             #missing = ,
             dimensionList=dimensionList[c('stationIdInd')],
-            data = as.integer(dfByPosix$discharge.cms*0+100) )
+            data = dfByPosix$quality)
     
     varList[[5]] <- 
       list( name='queryTime',
@@ -238,12 +239,11 @@ ReadNcTimeSlice <- function(file) {
   
   sliceDf$queryTime <- as.POSIXct('1970-01-01 00:00:00',tz='UTC') + sliceDf$queryTime
   sliceDf$time <- as.POSIXct(sliceDf$time, 
-                                 format='%Y-%m-%d_%H:%M:%S', tz='UTC')
+                             format='%Y-%m-%d_%H:%M:%S', tz='UTC')
   sliceDf <- plyr::rename(sliceDf, c("discharge"="discharge.cms",
+                                     "discharge_quality"="quality",
                                      "time"="dateTime",
-                                     "discharge_quality"="code",
-                                     "stationId"="site_no"))
-  
+                                     "stationId"="site_no"))  
   sliceDf
 }
   

@@ -60,30 +60,44 @@
 #' ggplot(nStn, aes(x=time,y=nStn)) + geom_point(color='red')
 #' 
 #' 
-#' ###############################
-#' ## process on saudi
-#   realTimeFiles <- list.files(pattern='huc.*.RData', 
-#                               path='~/usgsStreamData/realTimeData', 
-#                               full.names=TRUE)
-#   realTimeFiles <- tail(realTimeFiles,21*7*24*4)
-#   outPath = '~/usgsStreamData/timeSliceData5min/'
-#   library(doMC)
-#   registerDoMC(8)
-#   
-#    #I'm worried about using too much memory, when I run this on all 
-#   #previously collected data, so break up the problem
-#    chunkSize <- 1000
-#    chunkDf <- data.frame( ind = 0:(length(realTimeFiles) %/% chunkSize) )
-#    chunkDf <- within(chunkDf, { start = (ind)*chunkSize+1
-#                                 end   = pmin( (ind+1)*chunkSize, length(realTimeFiles)) } )
-#    
-#  for (ii in 1:nrow(chunkDf) ) {
-#    ret1 <- MkUsgsTimeSlice( realTimeFiles[chunkDf$start[ii]:chunkDf$end[ii]], 
-#                             outPath=outPath, nearest=5,
-#                             oldest=as.POSIXct('2015-04-15 00:00:00', tz='UTC')
-#                           )
-#    }
-#   
+##' ###############################
+## reprocess on saudi
+
+if (FALSE) {
+/opt/R-3.2.0/bin/R
+options(warn=1)
+devtools::load_all('~/R/jlm_lib/rwrfhydro')
+options(warn=2)
+realTimeFiles <- list.files(pattern='huc.*.RData', 
+                               path='~/usgsStreamData/realTimeData', 
+                               full.names=TRUE)
+#realTimeFiles <- tail(realTimeFiles,21*7*24*4)
+#realTimeFiles <- tail(realTimeFiles,24*4)
+outPath = '~/usgsStreamData/timeSliceData15MinQC/'
+library(doMC)
+registerDoMC(6)  
+#I'm worried about using too much memory, when I run this on all 
+#previously collected data, so break up the problem
+    chunkSize <- 500
+    chunkDf <- data.frame( ind = 0:(length(realTimeFiles) %/% chunkSize) )
+    chunkDf <- within(chunkDf, { start = (ind)*chunkSize+1
+                                 end   = pmin( (ind+1)*chunkSize, length(realTimeFiles)) } )
+    
+hostname <- system("hostname", intern=TRUE)
+hostnum <- as.integer(substr(hostname, nchar(hostname), 99))
+hostnum
+##for (ii in 1:nrow(chunkDf) ) {
+##for (ii in 199:nrow(chunkDf) ) {
+for (ii in ((hostnum-1)*100+(1:100)) )  {
+  for (ii in ((hostnum-1)*100+(1:100)) )  {
+  print(chunkDf$start[ii])
+  ret1 <- MkUsgsTimeSlice( realTimeFiles[chunkDf$start[ii]:chunkDf$end[ii]], 
+                          outPath=outPath, nearest=15,
+                          oldest=as.POSIXct('2015-04-15 00:00:00', tz='UTC')
+                          )
+}
+
+}
 #' 
 #' 
 #' ## end dontrun }  
@@ -98,7 +112,11 @@ MkUsgsTimeSlice <- function( realTimeFiles, outPath,
 
   ## get all the active data from the specified files
   GetActiveData <- function(file) {
-    load(file)
+    theTry <- try(load(file))
+    if(class(theTry)=='try-error' | class(data)=='function') {
+      print(file)
+      return(NULL)
+    }
     data$queryTime <- attr(data,'queryTime')
     data <- if(is.null(oldestTime)) {
       subset(data, !is.na(X_00060_00011))  ## remove missing data.
@@ -140,8 +158,8 @@ MkUsgsTimeSlice <- function( realTimeFiles, outPath,
   ## filter by product codes
   ## filter duplicate observations per indiv time
   ## convert units. 
-#  allData <- qcFunction(allData)  
-  
+  allData$quality <- QcUsgsTimeSlice(allData)  
+
   ## apply the variance function, fudging for now.
 #  allData <- varainceFunction(allData)
 #  allData$variance <- allData$discharge.cms * .1 
@@ -149,7 +167,8 @@ MkUsgsTimeSlice <- function( realTimeFiles, outPath,
   ## "slice" the dataframe by time and pass for writing to ncdf. 
   ## this can be done in parallel.
   ## for testing outside of plyr:
-  ## WriteNcTimeSlice(subset(allData, dateTimeRound == allData$dateTimeRound[1]), outPath = outPath)
+  #WriteNcTimeSlice(subset(allData, dateTimeRound == allData$dateTimeRound[1]), outPath = outPath,
+  #                 sliceResolution = nearestMin)
   outList <- plyr::ddply(allData, plyr::.(dateTimeRound), 
                          WriteNcTimeSlice, 
                          outPath, 
@@ -191,67 +210,184 @@ RoundMinutes <- function(POSIXct, nearest=5) {
 }
 
 ##===================================================================
-QcUsgsTimeSlice <- function() {
+QcUsgsTimeSlice <- function(dataDf) {
+  ## comments base on current version of code from Zhengtao and Oubeid.
+  ##
+  ##%STATUS_CODES =
+  ##  (
+  ##   '--'  => 'Parameter not determined',
+  ##   '***' => 'Temporarily unavailable',
+  ##   'Bkw' => 'Flow affected by backwater',
+  ##   'Dis' => 'Data-collection discontinued',
+  ##   'Dry' => 'Dry',
+  ##   'Eqp' => 'Equipment malfunction',
+  ##   'Fld' => 'Flood damage',
+  ##   'Ice' => 'Ice affected',
+  ##   'Mnt' => 'Maintenance in progress',
+  ##   'Pr'  => 'Partial-record site',
+  ##   'Rat' => 'Rating being developed or revised',
+  ##   'Ssn' => 'Parameter monitored seasonally',
+  ##   'ZFl' => 'Zero flow',
+  ##  );
 
-  # CODES FROM 
-  # http://water.usgs.gov/GIS/metadata/usgswrd/XML/nwis_surface_water.xml
+  ##Also "approval" codes applicable to both UV and DV data:
+  ##%DATA_AGING_CODES =
+  ##  (
+  ##   'P' => ['0', 'P', 'Provisional data subject to revision.'],
+  ##   'A' => ['0', 'A', 'Approved for publication -- Processing and review
+  ##completed.'],
+  ##  );
+  
+  ##There are also unit value quality codes the vast majority of which you should never see.  The ones in red below "may" be the only one you can expect to see in the public view:
+  ##
+  ##%UV_REMARKS =
+  ##  (
+  ##   # -- Threshold flags
+  ##   'H' => ['1', 'H', 'Value exceeds "very high" threshold.'],
+  ##   'h' => ['1', 'h', 'Value exceeds "high" threshold.'],
+  ##   'l' => ['1', 'l', 'Value exceeds "low" threshold.'],
+  ##   'L' => ['1', 'L', 'Value exceeds "very low" threshold.'],
+  ##   'I' => ['1', 'I', 'Value exceeds "very rapid increase" threshold.'],
+  ##   'i' => ['1', 'i', 'Value exceeds "rapid increase" threshold.'],
+  ##   'd' => ['1', 'd', 'Value exceeds "rapid decrease" threshold.'],
+  ##   'D' => ['1', 'D', 'Value exceeds "very rapid decrease" threshold.'],
+  ##   'T' => ['1', 'T', 'Value exceeds "standard difference" threshold.'],
+  ##
+  ##   # -- Source Flags
+  ##   'o' => ['1', 'o', 'Value was observed in the field.'],
+  ##   'a' => ['1', 'a', 'Value is from paper tape.'],
+  ##   's' => ['1', 's', 'Value is from a DCP.'],
+  ##   '~' => ['1', '~', 'Value is a system interpolated value.'],
+  ##   'g' => ['1', 'g', 'Value recorded by data logger.'],
+  ##   'c' => ['1', 'c', 'Value recorded on strip chart.'],
+  ##   'p' => ['1', 'p', 'Value received by telephone transmission.'],
+  ##   'r' => ['1', 'r', 'Value received by radio transmission.'],
+  ##   'f' => ['1', 'f', 'Value received by machine readable file.'],
+  ##   'z' => ['1', 'z', 'Value received from backup recorder.'],
+  
+  ##   # -- Processing Status Flags
+  ##   '*' => ['1', '*', 'Value was edited by USGS personnel.'],
+  
+  ##   # -- Other Flags (historical UVs only)
+  ##   'S' => ['1', 'S', 'Value could be a result of a stuck recording instrument.'],
+  ##   'M' => ['1', 'M', 'Redundant satellite value doesnt match original value.'],
+  ##   'Q' => ['1', 'Q', 'Value was a satellite random transmission.'],
+  ##   'V' => ['1', 'V', 'Value was an alert value.'],
+  
+  ##   # -- UV remarks
+  ##   '&' => ['1', '&', 'Value was computed from affected unit values by unspecified reasons.'],
+  ##   '<' => ['0', '<', 'Actual value is known to be less than reported value.'],
+  ##   '>' => ['0', '>', 'Actual value is known to be greater than reported value.'],
+  ##   'C' => ['1', 'C', 'Value is affected by ice at the measurement site.'],
+  ##   'B' => ['1', 'B', 'Value is affected by backwater at the measurement site.'],
+  ##   'E' => ['0', 'e', 'Value was computed from estimated unit values.'],
+  ##   'e' => ['0', 'e', 'Value has been estimated.'],
+  ##   'F' => ['1', 'F', 'Value was modified due to automated filtering.'],
+  ##   'K' => ['1', 'K', 'Value is affected by instrument calibration drift.'],
+  ##   'R' => ['1', 'R', 'Rating is undefined for this value.'],
+  ##   'X' => ['1', 'X', 'Value is erroneous and will not be used.'],
+  ##  );
 
-  #Instantaneous Value Qualification Code (uv_rmk_cd) 
-  #  e     The value has been edited or estimated by USGS personnel
-  #  A     The value is affected by ice at the measurement site.
-  #  B     The value is affected by backwater at the measurement site.
-  #  R     The rating is undefined for this value
-  #  &     This value is affected by unspecified reasons.
-  #  K     The value is affected by  instrument calibration drift.
-  #  X     The value is erroneous. It will not be used.
-  #  <     The Value is known to be less than reported value
-  #  >     The value is known to be greater than reported value
-  #  E     The value was computed from an estimated value
-  #  F     The value was modified due to automated filtering.
+  ## Notes from Oubeid:: 
+  ## I think we should set the ?e? (estimated) to 50% since we don?t know how the estimation was done,
+  ## set the ?&? to 25%, and may be the ?*? to 5% since the data could be incomplete. The remainder
+  ## set to 0 for the time being. That should wrap up this QC at this stage. We can always revisit
+  ## them in the future as we progress.
+
+  ## I made contact today with the USGS staff on location here and inform them that I will visit them
+  ## next week for question about the rating curve gages. May be we can visit them together.
+
+  ## Let?s stick with a weight of ?0? then for ?***?. I don?t have a lot of confidence on the data
+  ## appended with that code.
+
+  ## Apparently the code can consist of 2 parts separated by whitespace
+print(table(dataDf$code))
+  dataDf$code <- dataDf$qualifier1 <- trimws(dataDf$code)
+  dataDf$qualifier2 <- ''
+  wh2Qual <- grep(' ',dataDf$code)
+  dataDf$qualifier1[wh2Qual] <- plyr::laply(strsplit(dataDf$code[wh2Qual],' '),'[[',1)
+  dataDf$qualifier2[wh2Qual] <- plyr::laply(strsplit(dataDf$code[wh2Qual],' '),'[[',2)
+
+  ## assume the worst and then recover what fits out mental model of this chaos.
+  ## JLM: a different assumption off the bat.
+  dataDf$quality <- dataDf$discharge.cms * 0
   
-  ## map the instanataneous qualifier to an action to be taken
-  ivQualifCdMap <- c(
-      'e' = 'ok',           # The value has been edited or estimated by USGS personnel
-      'A' = 'remove',       # The value is affected by ice at the measurement site.
-      'B' = 'remove',       # The value is affected by backwater at the measurement site.
-      'R' = 'xtra.uncert',  # The rating is undefined for this value
-      '&' = 'remove',       # This value is affected by unspecified reasons.
-      'K' = 'remove',       # The value is affected by  instrument calibration drift.
-      'X' = 'remove',       # The value is erroneous. It will not be used.
-      '<' = '',             # The Value is known to be less than reported value
-      '>' = '',             # The value is known to be greater than reported value
-      'E' = '',             # The value was computed from an estimated value
-      'F' = ''              # The value was modified due to automated filtering.
-  )
+  ## Recover quality for valid/sane flow range
+  ## JLM this deviates from their script
+  ## in their script they consider 0 a valid flow, but I'd argue otherwise...
+  ## why would any streams with no flow be gaged?? Then again, drought. IT's a really dicey value,
+  ## JLM also limit maximum flows to approx twice what I believe is the largest gaged flow
+  ## on MS river *2 
+  ## http://nwis.waterdata.usgs.gov/nwis/peak?site_no=07374000&agency_cd=USGS&format=html 
+  ## baton rouge 1945: 1,473,000cfs=41,711cms
+  ## multiply it roughly by 2
+  isValidFlow <- dataDf$discharge.cms > 0 & dataDf$discharge.cms < 90000
+
+  wh100 <- which(isValidFlow                       &
+                 dataDf$qualifier1 %in% c("A","P") &
+                 dataDf$qualifier2 == ''           )
+  if(length(wh100)) dataDf$quality[wh100] <- 100
+
+  wh50 <- which(isValidFlow                       &
+                dataDf$qualifier1 %in% c("A","P") &
+                dataDf$qualifier2 == 'e'          )
+  if(length(wh50)) dataDf$quality[wh50] <- 50
+
+  wh25 <- which(isValidFlow                       &
+                dataDf$qualifier1 %in% c("A","P") &
+                dataDf$qualifier2 == '&'          )
+  if(length(wh25)) dataDf$quality[wh25] <- 25
+
+  wh05 <- which(isValidFlow                       &
+                dataDf$qualifier1 %in% c("A","P") &
+                dataDf$qualifier2 == '*'          )
+  if(length(wh05)) dataDf$quality[wh05] <- 5
+
+  ## dont need isValidFlow in this since zero can be applied elsewhere
+  wh0  <- which(!(dataDf$qualifier1 %in% c("A","P"))        |
+                !(dataDf$qualifier2 %in% c('e','&','*','')) )
+  if(length(wh0)) dataDf$quality[wh0] <- 0
+
+  dataDf$quality
+}
+
+
+
+##===================================================================
+## collect / gather / cull the station ids from the timeslices
+## so that we have a comprehensive list of what is coming in.
+
+if(FALSE) {
+devtools::load_all('~/R/jlm_lib/rwrfhydro')
+files <- list.files(path="~/usgsStreamData/timeSliceData/", pattern='2015', full=TRUE)
+cullFile <- CullUsgsGageIds(files, cullFile='~/usgsStreamData/culledUsgsGageIdsNOTQC.rsav')
+
+devtools::load_all('~/R/jlm_lib/rwrfhydro')
+files <- list.files(path="~/usgsStreamData/timeSliceData15MinQC/", pattern='2015-04', full=TRUE)
+cullFile <- CullUsgsGageIds(files)
+}
+
+CullUsgsGageIds <- function(files,
+                            goBackNDays = 2,
+                            cullFile = '~/usgsStreamData/culledUsgsGageIds.rsav') {
+  if(file.exists(cullFile)) load(cullFile)
+
+  ## subset the files in time
+  if(exists('lastTimeSlice')) {    
+    lastTimeSliceDate <- as.POSIXct(plyr::laply(strsplit(basename(lastTimeSlice),'\\.'), '[[', 1),
+                                    format='%Y-%m-%d_%H:%M:%S', tz='UTC')
+    fileDates <- as.POSIXct(plyr::laply(strsplit(basename(files),'\\.'), '[[', 1),
+                            format='%Y-%m-%d_%H:%M:%S', tz='UTC')
+    whSinceLast <- which(fileDates >= (lastTimeSliceDate - goBackNDays * (24*60*60) ))
+    files <- files[whichSinceLast]
+  }
+  lastTimeSlice <- tail(files,1)
+                         
+  if(!exists('culledGageIds')) culledGageIds = c()
+
+  for(ff in files)
+    culledGageIds <- union(culledGageIds, ncdump(ff, 'stationId', quiet=TRUE) )
   
-  
-  #Instantaneous and Daily Value Status Codes
-  #  Ssn    Parameter monitored seasonally
-  #  Ice    Ice affected
-  #  Pr     Partial-record site
-  #  Rat    Rating being developed or revised
-  #  Eqp    Equipment malfunction
-  #  Fld    Flood damage
-  #  Dis    Data-collection discontinued
-  #  Dry    Dry
-  #  --     Parameter not determined
-  #  Mnt    Maintenance in progress
-  #  ZFl    Zero flow
-  #  ***    Temporarily unavailable
-   
-  ivStatusCdMap <- c(
-    'Ssn' = '',     #   Parameter monitored seasonally
-    'Ice' = '',     #   Ice affected
-    'Pr ' = '',     #   Partial-record site
-    'Rat' = '',     #   Rating being developed or revised
-    'Eqp' = '',     #   Equipment malfunction
-    'Fld' = '',     #   Flood damage
-    'Dis' = '',     #   Data-collection discontinued
-    'Dry' = '',     #   Dry
-    '-- ' = '',     #   Parameter not determined
-    'Mnt' = '',     #   Maintenance in progress
-    'ZFl' = '',     #   Zero flow
-    '***' = ''      #   Temporarily unavailable
-  )
-  
+  save(culledGageIds, lastTimeSlice, file=cullFile)
+  cullFile
 }
