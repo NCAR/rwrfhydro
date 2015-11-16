@@ -59,6 +59,8 @@ CalcDailyGhcn<-function(sg, prcp, reportTime=700, parallel=FALSE){
   
   # add a day index to each hour compatible with GHCN time stamp 
   if ("reportTime" %in% colnames(sg)){
+    sg$reportTime[which (sg$reportTime=="" | is.na(sg$reportTime))]<-700
+
     # Add the report time column to prcp data 
     TZ<-sg$reportTime
     names(TZ)<-(sg$siteIds)
