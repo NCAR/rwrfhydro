@@ -14,11 +14,11 @@ fields: "latitude" and "longitude".}
 
 \item{proj4}{Projection to be used for points's dataframe.}
 
+\item{polygonAddress}{Address to where polygonShapeFile is located.}
+
 \item{polygonShapeFile}{Name of a polygon shapefile.}
 
 \item{join}{Attribute from the polygon shapefile which will be added as a column to points dataframe}
-
-\item{address}{Address to where polygonShapeFile is located.}
 }
 \value{
 Point dataframe with an extra column containing the attribute for each point.
@@ -30,7 +30,7 @@ shapefile, and adds the attribute as a field to the input dataframe.
 }
 \examples{
 \dontrun{
-#ADD EXAMPLE HERE
+sg<-GetPoly(sg,  polygonAddress= "/glade/scratch/arezoo/QPF_verification_rwrfhydro/gis/", polygonShapeFile= "huc6", join="HUC6")
 }
 }
 \seealso{

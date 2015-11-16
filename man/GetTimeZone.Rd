@@ -4,7 +4,7 @@
 \alias{GetTimeZone}
 \title{Return the time zone for gauge locations.}
 \usage{
-GetTimeZone(points, address = NULL, polygonShapeFile = NULL)
+GetTimeZone(points)
 }
 \arguments{
 \item{points}{A dataframe of the gauges. The dataframe should contain at least two

@@ -14,7 +14,7 @@ vignette: >
 Forcing are stored in multiple files, either in input forcing files (such as LDASIN or PRECIP_FORCING files) or in output files (LDASOUT). LDASOUT files contains the variable ACCPRCP which stores the accumulated precipitation, and one can calculate the rainfall depth by subtracting two consecutive files. LDASIN and PRECIP_FORCING store rain rate in RAINRATE and precip_rate variables. MRMS is one of the precipitation product which can be used as supplementary forcing in WRF-Hydro and here we evaluate the MRMS at a few gauge locations and also in a grid format against stageIV data.
 
 Load the rwrfhydro package. 
-```{r}
+```{r, results='hide'}
 devtools::install_github('arezoorn/rwrfhydro', ref='devBranch')
 library(rwrfhydro)
 ```
@@ -35,7 +35,7 @@ sg <- SelectGhcnGauges(countryCode=countryCodeList,
 str(sg)
 ```
 
-The sg dataframe has all the information provided by NCDC about each gauge. We only subset some of the gauges here. 
+The sg dataframe has all the information provided by NCDC about each gauge. We only subset two gauges here. 
 
 ```{r}
 sg <- sg[seq(1,nrow(sg),100),]
@@ -45,7 +45,7 @@ sg <- sg[seq(1,nrow(sg),100),]
 GetGhcn
 GHCN-daily data are archived for each individual gauge in a text file in http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/all/. Precipitating can be downloaded for a single site or multiple ones by setting element to "PRCP" and specifying the desired start and end date. 
 
-```{r}
+```{r, eval = FALSE}
 startDate="2015/06/01"
 endDate="2015/09/01"
 element="PRCP"
@@ -55,11 +55,12 @@ obsPrcp<-GetGhcn(sg$siteIds, element, startDate, endDate, parallel=FALSE)
 ### GetGhcn2
 NCDC also provides GHCN-daily categorized by year under http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_year/. If the number of the gauges are high, GetGhcn2 is much faster in retrieving data. 
 
-```{r}
+```{r, results='hide'}
 startDate="2015/05/01"
 endDate="2015/10/01"
 element="PRCP"
 obsPrcp<-GetGhcn2(sg$siteIds, element, startDate, endDate, parallel=FALSE)
+head(obsPrcp)
 ```
 
 ### Import model datasets 
@@ -78,6 +79,7 @@ geoGridAdd<-"/glade/scratch/arezoo/QPF_verification_rwrfhydro/geo_em.d01.nc.conu
 rainGgaugeInds <- GetGeogridIndex(data.frame(lon=sg$longitude, lat=sg$latitude),
                                     geoGridAdd)
 sg <- cbind(sg,rainGgaugeInds)
+head(sg)
 ```
 
 ### Pull the data from netcdf file. 
@@ -96,6 +98,7 @@ for (i in 1:length(sg$siteIds)) {
 }
 indList<-list(lsm= list(PRCP = prcpIndex))
 prcpData <- GetMultiNcdf(file=flList,var=varList, ind=indList, parallel=FALSE)
+head(prcpData)
 ```
 
 GetMultiNcdf pulls the time information from the netcdf files, if the data is not prepared properly, and the time info is not available it will return the name of the file instead. In the case of sample MRMS placed on the example folder, the time is not in the netcdf files, and should be retrieved from the file name which is save as column POSIXct. Also the GHCN data are converted to mm, we convert the rainrate to rain depth in an hour.
@@ -121,6 +124,7 @@ Then you can call the CalcDailyGhcn function, you just need to change the names 
 ```{r}
 colnames(prcpData)[3]<- "DEL_ACCPRCP"
 dailyData<-CalcDailyGhcn(sg,prcpData,parallel=FALSE)
+head(dailyData)
 ```
 
 ### Comparing daily QPE/QPF versus GHCN-D
@@ -131,6 +135,7 @@ Final step if to find the common data between the two dataset (precipitation tim
 common<-merge(dailyData,obsPrcp,
               by.x=c("ghcnDay","statArg"),
               by.y=c("date","siteIds"))
+head(common)
 ```
 
 Call the CalcMetCont function for each gauge and it returns all the statistics available.  
@@ -141,6 +146,7 @@ for (siteIds in unique(common$statArg)){
     df<-subset(common,common$statArg==siteIds)
     stat<-rbind(stat,cbind(siteIds,CalcMetCont(df$value,df$dailyPrcp)))
 }
+print(stat)
 ```
 
 ### Calculate statistics over RFCs
@@ -213,14 +219,14 @@ dirPath<-"/glade/scratch/arezoo/QPF_verification_rwrfhydro/"
 ```
 
 Define the functions for reading the two data sets.
-The following is a simple function for reading StageIV data.
+The following is a simple function for reading StageIV data. We subset the stageIV and MRMS to take less memory.
 
 ```{r}
 getPrcp<-function(file,var="precip"){
   nc<-ncdf::open.ncdf(as.character(file))
   precip_rate<- ncdf::get.var.ncdf(nc,var)
   ncdf::close.ncdf(nc)
-  return(precip_rate)
+  return(precip_rate[800:1000,800:1000])
 }
 ```
 
@@ -232,7 +238,7 @@ mgetPrcp<-function(file,var="precip_rate"){
   precip_rate<- ncdf::get.var.ncdf(nc,var)
   ncdf::close.ncdf(nc)
   # we need to convert rain rate (mm/s) to rain depth (mm) to be comparable with stageIV data
-  return(precip_rate*3600)
+  return(precip_rate[800:1000,800:1000]*3600)
 }
 ```
 
