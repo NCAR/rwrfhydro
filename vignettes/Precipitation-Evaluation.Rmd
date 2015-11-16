@@ -14,7 +14,7 @@ vignette: >
 Forcing are stored in multiple files, either in input forcing files (such as LDASIN or PRECIP_FORCING files) or in output files (LDASOUT). LDASOUT files contains the variable ACCPRCP which stores the accumulated precipitation, and one can calculate the rainfall depth by subtracting two consecutive files. LDASIN and PRECIP_FORCING store rain rate in RAINRATE and precip_rate variables. MRMS is one of the precipitation product which can be used as supplementary forcing in WRF-Hydro and here we evaluate the MRMS at a few gauge locations and also in a grid format against stageIV data.
 
 Load the rwrfhydro package. 
-```{r, results='hide'}
+```{r  results='hide', message=FALSE, warning=FALSE}
 devtools::install_github('arezoorn/rwrfhydro', ref='devBranch')
 library(rwrfhydro)
 ```
@@ -55,7 +55,7 @@ obsPrcp<-GetGhcn(sg$siteIds, element, startDate, endDate, parallel=FALSE)
 ### GetGhcn2
 NCDC also provides GHCN-daily categorized by year under http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_year/. If the number of the gauges are high, GetGhcn2 is much faster in retrieving data. 
 
-```{r, results='hide'}
+```{r message=FALSE, warning=FALSE}
 startDate="2015/05/01"
 endDate="2015/10/01"
 element="PRCP"
@@ -74,7 +74,7 @@ files<-list.files(path=pathMRMS,full.names = TRUE, pattern = "PRECIP_FORCING")
 
 Only lat/lon locations of rain gauges are available if you have retrieved your stations using SelectGhcnGauges function, it is required to find out the gauge location in the geogrid file (x,y) in order to pull the data from the netcdf files. Use GetGeogridIndex function in rwrfhydro and provide the address to the geogrid file.
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 geoGridAdd<-"/glade/scratch/arezoo/QPF_verification_rwrfhydro/geo_em.d01.nc.conus_3km_nlcd11"
 rainGgaugeInds <- GetGeogridIndex(data.frame(lon=sg$longitude, lat=sg$latitude),
                                     geoGridAdd)
@@ -86,7 +86,7 @@ head(sg)
 
 One needs to prepare the file, var, and ind variables for GetMultiNcdf function as follows. You can leave the stat as mean; since you are pulling data for single pixels means return the value of the pixel.
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 flList <- list(lsm=files)
 varList <- list(lsm=list(PRCP='precip_rate'))
 prcpIndex <- list()
@@ -146,7 +146,7 @@ for (siteIds in unique(common$statArg)){
     df<-subset(common,common$statArg==siteIds)
     stat<-rbind(stat,cbind(siteIds,CalcMetCont(df$value,df$dailyPrcp)))
 }
-print(stat)
+str(stat)
 ```
 
 ### Calculate statistics over RFCs
@@ -163,7 +163,7 @@ head(sg)
 
 Now you can subset the common dataframe based on RFCs, HUC6 or HUC8 and calculate statistics.
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 stat<-data.frame()              
 for (rfcs in unique(sg$rfc)){
   if (!is.na(rfcs)) {
@@ -185,7 +185,7 @@ stat
 
 HUC6 and HUC8 data are bigger than 100 MB and cannot be placed on github, therefore another function (GetPoly) is been developed to find which polygon a point falls into. One need to provide the projection for the point, address to the polygon shapefile, name of the polygon shapefile as well as the column name you want to add as a new column to your point dataframe.
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 # add HUC6 and HUC8 ids
 sg<-GetPoly(sg,  polygonAddress= "/glade/scratch/arezoo/QPF_verification_rwrfhydro/gis/", polygonShapeFile= "huc6", join="HUC6")
 sg<-GetPoly(sg,  polygonAddress= "/glade/scratch/arezoo/QPF_verification_rwrfhydro/gis/", polygonShapeFile= "huc8", join="HUC8")
@@ -196,7 +196,7 @@ head(sg)
 
 Now you can subset the common dataframe based on HUC6 or HUC8 and calculate statistics.
 
-##Gridded precipitation verification
+## Gridded precipitation verification
 
 One can perform the verification of precipitation grid to gris. In order to compare the two product, they should be on the same geogrid, in other word pixels should match one by one. For example, if the QPE/QPF is going to be compared against StageIV data, then you need to use th regridding tool and regrid the StageIV into the geogrid used in your dataset. Here as an example, we use the CalcMetContGrid function to verify MRMS against StageIV. StageIV is been regridded, and regridding is not shown here.
 Sample data for MRMS and StageIV is placed under "/glade/scratch/arezoo/QPF_verification_rwrfhydro"
@@ -207,7 +207,8 @@ There are two options for statistic calculation. First to read the whole data in
 ### Reading the whole dataset into memory
 First install rwrfhydro and load the library
 
-```{r}
+```{r message=FALSE, warning=FALSE}
+rm(list=ls())
 devtools::install_github('arezoorn/rwrfhydro', ref='devBranch')
 library(rwrfhydro)
 ```
@@ -269,7 +270,7 @@ stageIV <- paste0(pathStageIV,format(run_dates,"%Y%m%d%H"),"00.PRECIP_FORCING.nc
 And finally read all the observation (here StageIV) and model data (here MRMS) into memory. You can parallalize the reading part if you like, just note that the statistic calculation is not yet parallalized.
 Also, remeber the CalcMetContGrid function only accepts an array of data which the first dimension is the time dimension, therefore, we recommend using plyr::laply for reading your data.
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 ncores <- 16
 library(doMC)
 registerDoMC(ncores)
@@ -284,11 +285,12 @@ Number of paired data for each grid, mean of obs, mean of mod, multiplicative bi
 
 ```{r}
 stat <- CalcMetContGrid(obs = stageIVdepth, mod = MRMSdepth)
+str(stat)
 ```
 
 You can be selective in statistics, just make a list of statistics. Below I have listed almost all the possible choices. If you choose quantiles, then you need to provide probs for the CalcMetContGrid function.
 
-```{r}
+```{r,eval=FALSE}
 stat <- CalcMetContGrid(stageIVdepth,MRMSdepth,
                       statList = list('numPaired','minObs','minMod','maxObs','maxMod','meanObs','meanMod','stdObs','stdMod',
                                       'multiBias','ME','MSE','RMSE','MAE','pearsonCor','MAD','spearmanCor','kendallCor'))
@@ -296,13 +298,13 @@ stat <- CalcMetContGrid(stageIVdepth,MRMSdepth,
 
 The examples above calculate the unconditional statistics, if interested in conditional statistics, you need to set the conRange when calling CalcMetContGrid. If conditioning is happening only on one tail, leave the second value as Inf. For example, if the statistics should be conditioned on obs > 3, then define conRange as c(3,Inf) since the upper limit is infinity.
 
-```{r}
+```{r,eval=FALSE}
 stat <- CalcMetContGrid(obs = stageIVdepth, mod = MRMSdepth, conRange = c(3,Inf))
 ```                        
                         
 The CalcMetContGrid return a list of 2D maps of statistics. See what you got.
 
-```{r}
+```{r,eval=FALSE}
 str(stat)
 ```
 
@@ -310,7 +312,7 @@ str(stat)
 
 Due to memory limitation, sometimes it is not possible to read the whole data into memory, in that case, it is better to read the data in chunks. Then provide the name of the functions for reading the obs (here StageIV) and mod (here MRMS). The only limitation using this option is not having Median absolute error, Quantiles and Inter quantilerange of the errors can be calculated this way. kendel and spearsman options of correlation function is not available.
 
-```{r}
+```{r,eval=FALSE}
 stat<-CalcMetContGrid(obs = stageIV, mod = MRMS, .funObs = getPrcp, .funMod = mgetPrcp,
                     statList =  list('numPaired','meanObs','meanMod','stdObs','stdMod',
                                     'multiBias','RMSE','MAE','pearsonCor'), ncors = 10)
