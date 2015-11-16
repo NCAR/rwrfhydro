@@ -20,7 +20,7 @@
 #' @family geospatial
 #' @export
 
-GetTimeZone<-function(points,address=NULL,polygonShapeFile=NULL){
+GetTimeZone<-function(points){
 # turn it dataframe into spatialPointsDataFrame
 
 sp::coordinates(points) <- c("longitude","latitude")
@@ -83,14 +83,14 @@ GetRfc<-function(points){
 #' @param points A dataframe of the points. The dataframe should contain at least two
 #' fields: "latitude" and "longitude".
 #' @param proj4 Projection to be used for points's dataframe.
-#' @param address Address to where polygonShapeFile is located.
+#' @param polygonAddress Address to where polygonShapeFile is located.
 #' @param polygonShapeFile Name of a polygon shapefile.
 #' @param join Attribute from the polygon shapefile which will be added as a column to points dataframe
 #' @return  Point dataframe with an extra column containing the attribute for each point.
 #'
 #' @examples
 #' \dontrun{
-#' #ADD EXAMPLE HERE
+#' sg<-GetPoly(sg,  polygonAddress= "/glade/scratch/arezoo/QPF_verification_rwrfhydro/gis/", polygonShapeFile= "huc6", join="HUC6")
 #' }
 #' @keywords IO
 #' @concept dataMgmt
@@ -113,8 +113,8 @@ GetPoly<-function(points, proj4="+init=epsg:4269 +proj=longlat +ellps=GRS80
     # read the polygon shape file
     polyg <- rgdal::readOGR(polygonAddress,polygonShapeFile)
     
-    # transform the shapefile to the point projections
-    polyg <- sp::spTransform(polyg, sp::CRS(proj4))
+    # transform the points to polygon shapefile projections
+    points<- sp::spTransform(points, sp::CRS(sp::proj4string(polyg)))
     
     # use 'over' this time with timeZone polygon as a SpatialPolygonsDataFrame
     # object, to determine which timeZone (if any) contains each point, and

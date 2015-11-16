@@ -9,7 +9,7 @@
 #'   %\VignetteEncoding{UTF-8}
 #' ---
 #' 
-#' # Background
+#' ## Background
 #' 
 #' Forcing are stored in multiple files, either in input forcing files (such as LDASIN or PRECIP_FORCING files) or in output files (LDASOUT). LDASOUT files contains the variable ACCPRCP which stores the accumulated precipitation, and one can calculate the rainfall depth by subtracting two consecutive files. LDASIN and PRECIP_FORCING store rain rate in RAINRATE and precip_rate variables. MRMS is one of the precipitation product which can be used as supplementary forcing in WRF-Hydro and here we evaluate the MRMS at a few gauge locations and also in a grid format against stageIV data.
 #' 
@@ -62,7 +62,7 @@ element="PRCP"
 obsPrcp<-GetGhcn2(sg$siteIds, element, startDate, endDate, parallel=FALSE)
 
 #' 
-#' ## Import model datasets 
+#' ### Import model datasets 
 #' Here we verify the MRMS precipitation depth. Firs make a list of all files containing MRMS values.Sample data for MRMS is placed under "/glade/scratch/arezoo/QPF_verification_rwrfhydro"
 #' 
 ## ------------------------------------------------------------------------
@@ -107,7 +107,7 @@ sg <- cbind(sg,rainGgaugeInds)
     prcpData$value<-prcpData$value*3600
 
 #' 
-#' ## aggregating hourly data into daily.
+#' ### aggregating hourly data into daily.
 #' 
 #'    Each GHCN gauge has a unique reporting time which the daily data is been calculated based on that. The reporting time is archived in the data and is retrieved when calling GetGhcn2 function. When there is not reporting time, "0700" is used instead. We need to add the reporting time for each point which would be the base for daily aggregation.
 #'    
@@ -123,7 +123,7 @@ sg$reportTime<-obsPrcp$reportTime[match(sg$siteIds,obsPrcp$siteIds)]
         dailyData<-CalcDailyGhcn(sg,prcpData,parallel=FALSE)
 
 #' 
-#' ## Comparing daily QPE/QPF versus GHCN-D
+#' ### Comparing daily QPE/QPF versus GHCN-D
 #' 
 #' Final step if to find the common data between the two dataset (precipitation time series (dailyData) and the observed GHCN-D (obsPrcp)).    
 #' 
@@ -143,7 +143,7 @@ sg$reportTime<-obsPrcp$reportTime[match(sg$siteIds,obsPrcp$siteIds)]
         }
 
 #' 
-#' ## Calculate statistics over RFCs
+#' ### Calculate statistics over RFCs
 #' 
 #' One can find out a gauge (point) falls in which RFC using GetRfc. You simply feed a dataframe at least having two columns of latitude and longitude and this functions adds a column to a dataframe with rfc name.
 #' 
@@ -165,19 +165,19 @@ for (rfcs in unique(sg$rfc)){
     df<-subset(common,common$statArg %in% sitesInRfc)
     stat<-rbind(stat,cbind(rfcs,CalcMetCont(df$value,df$dailyPrcp)))
   }
-}```
+}
 
-Check the results
-
-
+#' 
+#' Check the results
+#' 
 ## ------------------------------------------------------------------------
 stat
 
 #' 
 #' 
-#' ## Galculate statistics over HUCs
+#' ### Galculate statistics over HUCs
 #' 
-#' HUC6 and HUC8 data are bigger than 100 MB and cannot be placed on github, therefore another function (GetPoly) is been developed to find which polygon a point falls into. You need to provide the projection for the point, address to the polygon, name of the polygon as well as the column name you want to add as a new column to your point dataframe.
+#' HUC6 and HUC8 data are bigger than 100 MB and cannot be placed on github, therefore another function (GetPoly) is been developed to find which polygon a point falls into. One need to provide the projection for the point, address to the polygon shapefile, name of the polygon shapefile as well as the column name you want to add as a new column to your point dataframe.
 #' 
 ## ------------------------------------------------------------------------
 # add HUC6 and HUC8 ids
@@ -198,7 +198,7 @@ head(sg)
 #' There are two options for statistic calculation. First to read the whole data into memory and call the CalcMetContGrid to perform the analysis and return all the requested statistics in a list. However, this is not a prefered methos where dealing with big datastes or long term ones since you will face memory limitation when storing the data into memory. Therefore, there is a second option which you can provide the functions for reading of the two datasets so called obs and mod here, and define how many files to read at a time, and it will return a list of requested statistics at the end.Both options are explained below:
 #' 
 #' 
-#' ## Reading the whole dataset into memory
+#' ### Reading the whole dataset into memory
 #' First install rwrfhydro and load the library
 #' 
 ## ------------------------------------------------------------------------
@@ -300,7 +300,7 @@ stat <- CalcMetContGrid(obs = stageIVdepth, mod = MRMSdepth, conRange = c(3,Inf)
 str(stat)
 
 #' 
-#' ## Reading the data in pieces and calculating the statistics
+#' ### Reading the data in pieces and calculating the statistics
 #' 
 #' Due to memory limitation, sometimes it is not possible to read the whole data into memory, in that case, it is better to read the data in chunks. Then provide the name of the functions for reading the obs (here StageIV) and mod (here MRMS). The only limitation using this option is not having Median absolute error, Quantiles and Inter quantilerange of the errors can be calculated this way. kendel and spearsman options of correlation function is not available.
 #' 
