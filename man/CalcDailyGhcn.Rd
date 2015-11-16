@@ -8,8 +8,9 @@ comparable to GHCN daily data.}
 CalcDailyGhcn(sg, prcp, reportTime = 700, parallel = FALSE)
 }
 \arguments{
-\item{sg}{A dataframe of the selectedGauges, it should have at least one column
-with name of siteIds.
+\item{sg}{A dataframe of the selectedGauges, it should a column called siteIds.
+It also should have a timeZone column or if not available it should have latitude
+and longitude which will be used to find the timeZone.
 siteIds should match the the standardized GHCN IDs (for example : ACW00011604).
 See \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt}
 for a list of siteIds.}
@@ -18,7 +19,8 @@ for a list of siteIds.}
 POSIXct, statArg, and DEL_ACCPRCP. POSIXct has the time in UTC, statArg has the
 site ID, and DEL_ACCPRCP is the depth of rainfall for that hour. The DEL_ACCPRCP
 column will be with the same name if you use GetMultiNcdf, ReshapeMultiNcdf and
-CalcNoahmpFluxes to get the precipitation from WRF-Hydro output files.}
+CalcNoahmpFluxes to get the precipitation from WRF-Hydro output files.
+Otherwise, rename the your datafram accordingly to have POSIXct, DEL_ACCPRCP and statArg.}
 
 \item{reportTime}{A vector of reportTime matching with sg$siteIds.
 reportTime is a unique reporting time for each elelment of each gauge.

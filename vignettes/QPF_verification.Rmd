@@ -19,7 +19,7 @@ devtools::install_github('arezoorn/rwrfhydro', ref='devBranch')
 library(rwrfhydro)
 ```
 
-# Import observed datasets
+## Import observed datasets
 
 ## GHCN-daily
 Global Historical Climatology Network-Daily (GHCN-D) dataset contains daily data from around 80000 surface station in the world, which about two third of them are precipitation only (Menne et al. 2012). It is the most complete collection of U.S. daily data available (Menne et al. 2012). The dataset undergo an automated quality assurance which the details can be found in Durre et al. 2008; 2010. Data is available on http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/and is updated frequently. Data is available in two formats either categorized by gauge station or categorized by year. Accordingly, there are two function to pull GHCN-daily data from these two sources.
@@ -38,7 +38,7 @@ str(sg)
 The sg dataframe has all the information provided by NCDC about each gauge. We only subset two gauges here. 
 
 ```{r}
-sg <- subset(sg, sg$siteIds %in% c("US1TXHRR211","USC00344001"))
+sg <- sg[seq(1,nrow(sg),100),]
 ``` 
 
 ### GetGhcn
@@ -62,7 +62,7 @@ element="PRCP"
 obsPrcp<-GetGhcn2(sg$siteIds, element, startDate, endDate, parallel=FALSE)
 ```
 
-# Import model datasets 
+## Import model datasets 
 Here we verify the MRMS precipitation depth. Firs make a list of all files containing MRMS values.Sample data for MRMS is placed under "/glade/scratch/arezoo/QPF_verification_rwrfhydro"
 
 ```{r}
@@ -80,7 +80,7 @@ rainGgaugeInds <- GetGeogridIndex(data.frame(lon=sg$longitude, lat=sg$latitude),
 sg <- cbind(sg,rainGgaugeInds)
 ```
 
-# Pull the data from netcdf file. 
+### Pull the data from netcdf file. 
 
 One needs to prepare the file, var, and ind variables for GetMultiNcdf function as follows. You can leave the stat as mean; since you are pulling data for single pixels means return the value of the pixel.
 
@@ -107,7 +107,7 @@ GetMultiNcdf pulls the time information from the netcdf files, if the data is no
     prcpData$value<-prcpData$value*3600
 ```
 
-# aggregating hourly data into daily.
+## aggregating hourly data into daily.
 
    Each GHCN gauge has a unique reporting time which the daily data is been calculated based on that. The reporting time is archived in the data and is retrieved when calling GetGhcn2 function. When there is not reporting time, "0700" is used instead. We need to add the reporting time for each point which would be the base for daily aggregation.
    
@@ -123,7 +123,7 @@ Then you can call the CalcDailyGhcn function, you just need to change the names 
         dailyData<-CalcDailyGhcn(sg,prcpData,parallel=FALSE)
 ```
 
-# Comparing daily QPE/QPF versus GHCN-D
+## Comparing daily QPE/QPF versus GHCN-D
 
 Final step if to find the common data between the two dataset (precipitation time series (dailyData) and the observed GHCN-D (obsPrcp)).    
 
@@ -143,10 +143,55 @@ Call the CalcMetCont function for each gauge and it returns all the statistics a
         }
 ```
 
-## Gridded precipitation verification 
+## Calculate statistics over RFCs
+
+One can find out a gauge (point) falls in which RFC using GetRfc. You simply feed a dataframe at least having two columns of latitude and longitude and this functions adds a column to a dataframe with rfc name.
+
+```{r}
+# add rfc name
+sg <- GetRfc(sg)
+
+# check what is been added
+head(sg)
+```
+
+Now you can subset the common dataframe based on RFCs, HUC6 or HUC8 and calculate statistics.
+
+```{r}
+stat<-data.frame()              
+for (rfcs in unique(sg$rfc)){
+  if (!is.na(rfcs)) {
+    sitesInRfc <- subset(sg,sg$rfc == rfcs)$siteIds
+    df<-subset(common,common$statArg %in% sitesInRfc)
+    stat<-rbind(stat,cbind(rfcs,CalcMetCont(df$value,df$dailyPrcp)))
+  }
+}```
+
+Check the results
+
+```{r}
+stat
+```
+
+
+## Galculate statistics over HUCs
+
+HUC6 and HUC8 data are bigger than 100 MB and cannot be placed on github, therefore another function (GetPoly) is been developed to find which polygon a point falls into. You need to provide the projection for the point, address to the polygon, name of the polygon as well as the column name you want to add as a new column to your point dataframe.
+
+```{r}
+# add HUC6 and HUC8 ids
+sg<-GetPoly(sg,  polygonAddress= "/glade/scratch/arezoo/QPF_verification_rwrfhydro/gis/", polygonShapeFile= "huc6", join="HUC6")
+sg<-GetPoly(sg,  polygonAddress= "/glade/scratch/arezoo/QPF_verification_rwrfhydro/gis/", polygonShapeFile= "huc8", join="HUC8")
+
+# check what is been added
+head(sg)
+```
+
+Now you can subset the common dataframe based on HUC6 or HUC8 and calculate statistics.
+
+##Gridded precipitation verification
 
 One can perform the verification of precipitation grid to gris. In order to compare the two product, they should be on the same geogrid, in other word pixels should match one by one. For example, if the QPE/QPF is going to be compared against StageIV data, then you need to use th regridding tool and regrid the StageIV into the geogrid used in your dataset. Here as an example, we use the CalcMetContGrid function to verify MRMS against StageIV. StageIV is been regridded, and regridding is not shown here.
-
 Sample data for MRMS and StageIV is placed under "/glade/scratch/arezoo/QPF_verification_rwrfhydro"
 
 There are two options for statistic calculation. First to read the whole data into memory and call the CalcMetContGrid to perform the analysis and return all the requested statistics in a list. However, this is not a prefered methos where dealing with big datastes or long term ones since you will face memory limitation when storing the data into memory. Therefore, there is a second option which you can provide the functions for reading of the two datasets so called obs and mod here, and define how many files to read at a time, and it will return a list of requested statistics at the end.Both options are explained below:
@@ -170,7 +215,7 @@ Define the functions for reading the two data sets.
 The following is a simple function for reading StageIV data.
 
 ```{r}
-getPrcp<-function(file,var){
+getPrcp<-function(file,var="precip"){
   nc<-ncdf::open.ncdf(as.character(file))
   precip_rate<- ncdf::get.var.ncdf(nc,var)
   ncdf::close.ncdf(nc)
@@ -181,7 +226,7 @@ getPrcp<-function(file,var){
 This is a simple function for reading MRMS data used as input files in WRF-Hydro
 
 ```{r}
-mgetPrcp<-function(file,var){
+mgetPrcp<-function(file,var="precip_rate"){
   nc<-ncdf::open.ncdf(as.character(file))
   precip_rate<- ncdf::get.var.ncdf(nc,var)
   ncdf::close.ncdf(nc)
