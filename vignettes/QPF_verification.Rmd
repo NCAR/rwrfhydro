@@ -74,7 +74,7 @@ files<-list.files(path=pathMRMS,full.names = TRUE, pattern = "PRECIP_FORCING")
 Only lat/lon locations of rain gauges are available if you have retrieved your stations using SelectGhcnGauges function, it is required to find out the gauge location in the geogrid file (x,y) in order to pull the data from the netcdf files. Use GetGeogridIndex function in rwrfhydro and provide the address to the geogrid file.
 
 ```{r}
-geoGridAdd<-"/glade/p/ral/RHAP/adugger/NFIE/DOMAIN/geo_em.d01.nc.conus_3km_nlcd11"
+geoGridAdd<-"/glade/scratch/arezoo/QPF_verification_rwrfhydro/geo_em.d01.nc.conus_3km_nlcd11"
 rainGgaugeInds <- GetGeogridIndex(data.frame(lon=sg$longitude, lat=sg$latitude),
                                     geoGridAdd)
 sg <- cbind(sg,rainGgaugeInds)
@@ -85,26 +85,26 @@ sg <- cbind(sg,rainGgaugeInds)
 One needs to prepare the file, var, and ind variables for GetMultiNcdf function as follows. You can leave the stat as mean; since you are pulling data for single pixels means return the value of the pixel.
 
 ```{r}
-  flList <- list(lsm=files)
-    varList <- list(lsm=list(PRCP='precip_rate'))
-    prcpIndex <- list()
-    for (i in 1:length(sg$siteIds)) {
-      if (!is.na(sg$ew[i]) & !is.na(sg$sn[i])) {
-        prcpIndex[[as.character(sg$siteIds[i])]] <- list(start=c(sg$ew[i], sg$sn[i]),
-                                                         end=c(sg$ew[i], sg$sn[i]), stat="mean")
-      }
-    }
-    indList<-list(lsm= list(PRCP = prcpIndex))
-    prcpData <- GetMultiNcdf(file=flList,var=varList, ind=indList, parallel=FALSE)
+flList <- list(lsm=files)
+varList <- list(lsm=list(PRCP='precip_rate'))
+prcpIndex <- list()
+for (i in 1:length(sg$siteIds)) {
+    if (!is.na(sg$ew[i]) & !is.na(sg$sn[i])) {
+      prcpIndex[[as.character(sg$siteIds[i])]] <- list(start=c(sg$ew[i], sg$sn[i]),
+                                                       end=c(sg$ew[i], sg$sn[i]), stat="mean")
+   }
+}
+indList<-list(lsm= list(PRCP = prcpIndex))
+prcpData <- GetMultiNcdf(file=flList,var=varList, ind=indList, parallel=FALSE)
 ```
 
 GetMultiNcdf pulls the time information from the netcdf files, if the data is not prepared properly, and the time info is not available it will return the name of the file instead. In the case of sample MRMS placed on the example folder, the time is not in the netcdf files, and should be retrieved from the file name which is save as column POSIXct. Also the GHCN data are converted to mm, we convert the rainrate to rain depth in an hour.
 
 ```{r}
-    prcpData$POSIXct<-strptime(regmatches(basename(prcpData$POSIXct), regexpr("[0-9].*[0-9]", basename(prcpData$POSIXct))),format = "%Y%m%d%H%M", tz ="UTC")
-    #just keep value and time to make the size small
-    prcpData <- prcpData[,which(names(prcpData) %in% c('POSIXct','value','statArg'))]
-    prcpData$value<-prcpData$value*3600
+prcpData$POSIXct<-strptime(regmatches(basename(prcpData$POSIXct), regexpr("[0-9].*[0-9]", basename(prcpData$POSIXct))),format = "%Y%m%d%H%M", tz ="UTC")
+#just keep value and time to make the size small
+prcpData <- prcpData[,which(names(prcpData) %in% c('POSIXct','value','statArg'))]
+prcpData$value<-prcpData$value*3600
 ```
 
 ### aggregating hourly data into daily.
@@ -119,8 +119,8 @@ sg$reportTime<-obsPrcp$reportTime[match(sg$siteIds,obsPrcp$siteIds)]
 Then you can call the CalcDailyGhcn function, you just need to change the names of the column having precipitation data into "DEL_ACCPRCP".
         
 ```{r}
-        colnames(prcpData)[3]<- "DEL_ACCPRCP"
-        dailyData<-CalcDailyGhcn(sg,prcpData,parallel=FALSE)
+colnames(prcpData)[3]<- "DEL_ACCPRCP"
+dailyData<-CalcDailyGhcn(sg,prcpData,parallel=FALSE)
 ```
 
 ### Comparing daily QPE/QPF versus GHCN-D
@@ -128,19 +128,19 @@ Then you can call the CalcDailyGhcn function, you just need to change the names 
 Final step if to find the common data between the two dataset (precipitation time series (dailyData) and the observed GHCN-D (obsPrcp)).    
 
 ```{r}
-        common<-merge(dailyData,obsPrcp,
-                      by.x=c("ghcnDay","statArg"),
-                      by.y=c("date","siteIds"))
+common<-merge(dailyData,obsPrcp,
+              by.x=c("ghcnDay","statArg"),
+              by.y=c("date","siteIds"))
 ```
 
 Call the CalcMetCont function for each gauge and it returns all the statistics available.  
 
 ```{r}
-        stat<-data.frame()              
-        for (siteIds in unique(common$statArg)){
-          df<-subset(common,common$statArg==siteIds)
-          stat<-rbind(stat,cbind(siteIds,CalcMetCont(df$value,df$dailyPrcp)))
-        }
+stat<-data.frame()              
+for (siteIds in unique(common$statArg)){
+    df<-subset(common,common$statArg==siteIds)
+    stat<-rbind(stat,cbind(siteIds,CalcMetCont(df$value,df$dailyPrcp)))
+}
 ```
 
 ### Calculate statistics over RFCs
