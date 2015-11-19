@@ -656,3 +656,20 @@ FillOutliers <- function(x, thresh) {
     }
   return(x)
 }
+
+#' Convert long-ish integers to characters without mutilation
+#' 
+#' \code{AsCharLongInt} is simply a usage of format.
+#' @param x Vector of values
+#' @return Vector of characters.
+#' @keywords utilities internal
+#' @export
+AsCharLongInt <- function(vec) {
+  allIntegers <- all((vec %% 1) == 0)
+  if(!allIntegers)
+    warning("Non-integer values supplied to AsCharLongInt")
+  if(any(abs(vec) > 2^.Machine$double.digits))
+    warning("Values passed to AsCharLongInt exceed bounds of representable integers in R") 
+  format((vec), trim=TRUE, nsmall=0, scientific=0,digits=16)
+}
+

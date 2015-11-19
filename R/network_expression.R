@@ -62,19 +62,20 @@ ReIndexRouteLink <- function(routeLinkFile) {
 
   ## Zero stands for 1st order or pourpoint, but dosenot have a comm/link id!
   ReExp <- 0:length(link)
-  names(ReExp) <-  format(c(0,link), trim=TRUE, nsmall=0, scientific=0)
+  names(ReExp) <-  AsCharLongInt(c(0,link))
   ### bad: names(ReExp) <-  as.character(c(0,link))
 
   ##When there are NA's or issues with the following expressions,
   ## they take more than a few (ie 2) seconds
   ## it's a check that the inputs are all correct
-  reInd$from  <- ReExp[as.character(reInd$from)]
-  reInd$to    <- ReExp[as.character(reInd$to)]
+  reInd$from  <- ReExp[AsCharLongInt(reInd$from)]
+  reInd$to    <- ReExp[AsCharLongInt(reInd$to)]
   reInd$comId <- link
 
   #print(summary(reInd))
   
-  base <- strsplit(basename(routeLinkFile),'\\.')[[1]][1]
+  base <- strsplit(basename(routeLinkFile),'\\.')[[1]]
+  base <- paste(base[-length(base)+(-1:0)],collapse='.')
   dir  <- dirname(routeLinkFile)
   outFile <- paste0(dir,'/',base,'.reInd.Rdb')
   save(reInd, file = outFile)
@@ -122,16 +123,18 @@ ReExpNetwork <- function(routeLinkReInd, upstream=TRUE, parallel=FALSE) {
   #FindDownstream <- function(ind) union(reInd$comId[which(reInd$from == ind)], 
   #                                      reInd$to[which(reInd$comId   == ind)] )
   FindUpstream   <- function(ind) {
+    #theUnion <- union(which(reInd$to   == ind), reInd$from[ind])
     theUnion <- union(which(reInd$to   == ind), reInd$from[ind])
     if(length(theUnion)>1) theUnion <- setdiff(theUnion,0)
     theUnion
   }
-  FindDownstream <- function(ind) union(which(reInd$from == ind), reInd$to[ind]  )
+  #FindDownstream <- function(ind) union(which(reInd$from == ind), reInd$to[ind]  )
+  ## since the "from" field is defunct in Route_Link and b/c all spilts are removed.
+  FindDownstream <- function(ind) unique( reInd$to[ind]  )
 
   FindFunc <- if(upstream) { FindUpstream } else { FindDownstream }
 
-  theList <- plyr::llply( 1:length(reInd$to), FindFunc,
-                         .parallel=parallel)
+  theList <- plyr::llply( 1:length(reInd$to), FindFunc, .parallel=parallel)
   
   theLen <- plyr::laply( theList, function(ll) if(ll[1]==0) 0 else length(ll) )
   whLenPos <- which(theLen > 0)
@@ -146,7 +149,8 @@ ReExpNetwork <- function(routeLinkReInd, upstream=TRUE, parallel=FALSE) {
   theStart <- theStart + cumAdj
   theLen[which(theLen==0)] <- 1 ## adjust so end index can be calc by using start-len-1
   
-  base <- strsplit(basename(routeLinkReInd),'\\.')[[1]][1]
+  base <- strsplit(basename(routeLinkReInd),'\\.')[[1]]
+  base <- paste(base[-length(base)+(0:1)],collapse='.')
   dir  <- dirname(routeLinkReInd)
   if(upstream) {
     from = list( from  = as.integer(unlist(theList)),
@@ -394,7 +398,9 @@ NtwKReExToNcdf <- function(toFile, fromFile) {
   globalAttList[[2]] <- list(name='toFile',  value=toFile,   precision="text" )
   globalAttList[[3]] <- list(name='fromFile',value=fromFile, precision="text" )
 
-  base <- strsplit(basename(toFile),'\\.')[[1]][1]
+  base <- strsplit(basename(toFile),'\\.')[[1]]
+  base <- paste(base[-length(base)+(0:1)],collapse='.')
+
   dir  <- dirname(toFile)
   
   MkNcdf( varList, globalAttList=globalAttList,
@@ -538,3 +544,113 @@ checkReExpFirstOrd <- function(from, rl) {
 
 
 
+#' Reformat a CHANNEL_CONNECTIVITY.nc file as a Route_Link.nc file
+#' The idea here is to simply reexpress the CHANNEL_CONNECTIVITY.nc file as
+#' a pseudo - Route_Link.nc file with only the basic information, so that it can
+#' be passed to all the existing network processing routines as any Route_Link.nc
+ChanConnToRouteLink <- function(chanConnFile, fullDomFile, overwrite=TRUE) {
+
+  ncid <- ncdf4::nc_open(chanConnFile)
+  reInd <- data.frame(from   = ncdf4::ncvar_get(ncid,'FROM_NODE'),
+                      to     = ncdf4::ncvar_get(ncid,'TO_NODE'),
+                      Length = ncdf4::ncvar_get(ncid,'CHANLEN'),
+                      lon    = ncdf4::ncvar_get(ncid,'LONGITUDE'),
+                      lat    = ncdf4::ncvar_get(ncid,'LATITUDE')
+                      )
+  ccXi <- ncdf4::ncvar_get(ncid,'CHANXI')
+  ccYj <- ncdf4::ncvar_get(ncid,'CHANYJ')
+  ncdf4::nc_close(ncid)
+  
+  reInd <- reInd[sort(reInd$from, index.return=TRUE)$ix,]
+  reInd$link <- 1:nrow(reInd) 
+  reInd$from <- 0
+  reInd$to[which(is.na(reInd$to))] <- 0
+
+  ## Prep the above variables for ouput
+  dimList <- list(linkDim=list(name='linkDim',values=reInd$link,
+                  units='-', unlimited=FALSE,
+                  create_dimvar=FALSE))
+  varList <- list() 
+  for(ll in 1:length(names(reInd))) {
+    varList[[ll]] <- list(name=names(reInd)[ll],
+                          longname=paste0(names(reInd)[ll],' from CHANNEL_CONNECTIVITY.nc'),
+                          units='-',
+                          precision = typeof(reInd[,ll]),
+                          missing = -9999,
+                          dimensionList = dimList,
+                          data = reInd[,ll] )
+  }
+  
+  ## bring in frxst_pts and make them "gages"
+  ncid <- ncdf4::nc_open(fullDomFile)
+  ## holy moley. see how I figured this out below
+  frxst <- FlipUD(ncdf4::ncvar_get(ncid,'frxst_pts'))
+  fLat <- FlipUD(ncdf4::ncvar_get(ncid,'LATITUDE'))
+  fLon <- FlipUD(ncdf4::ncvar_get(ncid,'LONGITUDE'))
+#  frxst <- FlipUD(RotateCw(RotateCw(ncdf4::ncvar_get(ncid,'frxst_pts'))))
+#  fLat <- FlipUD(RotateCw(RotateCw(ncdf4::ncvar_get(ncid,'LATITUDE'))))
+#  fLon <- FlipUD(RotateCw(RotateCw(ncdf4::ncvar_get(ncid,'LONGITUDE'))))
+  ## Changrid useful to help eliminate head scratching
+#  chanGrid <- FlipUD(RotateCw(RotateCw(ncdf4::ncvar_get(ncid,'CHANNELGRID'))))
+   chanGrid <- FlipUD(ncdf4::ncvar_get(ncid,'CHANNELGRID'))
+  ncdf4::nc_close(ncid)
+
+  frxstValues <- frxst[frxst >= 0]
+  for(ff in frxstValues) {#
+    cat('fval:',ff,'\n')
+    whF <- which(frxst==ff)
+    whReInd <- which(reInd$lon == fLon[whF] & reInd$lat == fLat[whF])
+#    if(length(whReInd)>1) next
+    cat('whreind:',whReInd,'\n')
+    cat('xi,yj:',ccXi[whReInd], ccYj[whReInd],'\n')
+  }
+
+stop()
+  
+  ## Have a known N-S flip, but also a double rotation... !
+  ## There are assumptions from ARC, FORTRAN, and R all combining for these gymnastics
+  whCC <- cbind(ccXi, ccYj)
+  ## In this line keep flipping/rotating untill the following give TRUE
+  whCg0 <- which(chanGrid == 0 , arr.ind=TRUE)
+  for(i in 1:100) print(all(whCg0[which(whCg0[,2]==i)] %in% whCC[which(whCC[,2]==i)]))
+  ## ultimately, you want this setdiff to be the empty set
+  notOnChgrid <- setdiff(unique(as.vector(frxst)), unique(frxst[cbind(ccXi, ccYj)]))
+  if(length(notOnChgrid)){
+    warning(paste0('Apparently the following points are not on the CHANGRID in fulldom:',
+                   paste(notOnChgrid, collapse=', ')))
+  }
+
+  length(which(chanGrid > -1 & frxst >= 0))  # make sure these are still lined up... 
+  whFrxstValuesXy <- which(frxst >= 0, arr.ind=TRUE) 
+  for(xy in 1:nrow(whFrxstValuesXy)) print(which(ccXi==whFrxstValuesXy[xy,1] & ccYj==whFrxstValuesXy[xy,2]))
+  head(whFrxstValuesXy)
+  head(whCC)
+  
+  frxst2 <- frxst[cbind(ccXi,ccYj)]
+  reInd$gages <- formatC('',width=15)
+  reInd$gages[which(frxst2 >= 0)] <- formatC(frxst2[which(frxst2 >= 0)],width=15)
+
+#  hri <- head(reInd[which(frxst2 >= 0),])
+#  whG <- which(frxst %in% as.numeric(hri$gages))
+#  fLat[whG]
+#  fLon[whG]
+  
+  dimList[['charDim']] <- list(name='IDLength', values=1:15,
+                               units='', unlimited=FALSE, create_dimvar=FALSE)
+
+  varList[[ll+1]] <- list(name='gages',
+                          longname='gages from CHANNEL_CONNECTIVITY.nc',
+                          units='',
+                          precision = 'char',
+                          #missing = formatC('',width=15),
+                          dimensionList = list(dimList$charDim, dimList$linkDim),
+                          data = reInd$gages )
+  
+  outPath <- dirname(chanConnFile)
+  outBase <- paste0('Route_Link.',basename(chanConnFile))
+  outFull <- paste0(outPath,'/',outBase)
+  dum <- MkNcdf(varList, filename=outFull, overwrite=overwrite)
+  ncdump(outFull)
+  invisible(outFull)
+
+}
