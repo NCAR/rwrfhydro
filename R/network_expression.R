@@ -413,7 +413,10 @@ NtwKReExToNcdf <- function(toFile, fromFile) {
 
 #============================================
 #'  Gather upstream or downstream distance from a given starting location
-#'  
+#'
+#'  A non-recursive function (recusive version runs in to stack overflow problems for large
+#'  domains. Both are available internally).
+#'
 #'  @param stream List of stream information containing either from/to and start and end positions, returned from ReExpNetwork.
 #'  @param start Indexed location (NOT comID) of where stream starts
 #'  @param length Vector of link lengths for each re-indexed reach, contained in reExp.nc.
@@ -437,54 +440,25 @@ NtwKReExToNcdf <- function(toFile, fromFile) {
 #' @concept nudging dataMgmt
 #' @family networkExpression nudging
 #'  @export
-GatherStreamInds <- function(stream, start, linkLengths=0,
-                             indDist = list(ind = c(), dist = c())) {
-  anyStream <- stream$start[start] > 0
-  if (!anyStream) return(indDist)
-  
-  whGo <- which(!(names(stream) %in% c('start','end')))
-  if(!(names(stream)[whGo] %in% c('to','from','go'))) 
-    warning('Something wrong with stream variable.', immediate.=TRUE)
-  names(stream)[whGo] <- 'go'
-  streamInds <- stream$go[stream$start[start]:stream$end[start]]
-  
-  for (ss in streamInds) {
-    if (length(indDist$dist) == 0) {
-      indDist$ind  <- ss
-      startDist = 0
-      indDist$dist <- startDist + linkLengths[ss]/2 + linkLengths[start]/2
-    } else {
-      indDist$ind  <- append(indDist$ind,  ss)
-      startDist <- indDist$dist[which(indDist$ind == start)]
-      if(!length(startDist)) startDist=0
-      if (length(startDist) > 1)
-        warning('Problem with input topology', immediate. = TRUE)
-      indDist$dist <- append(indDist$dist, startDist + linkLengths[ss]/2 + linkLengths[start]/2)
-    }
-#    coll <<- c(coll,tail(indDist$ind,1))
-    indDist <- GatherStreamInds(stream, start=ss, linkLengths=linkLengths, indDist=indDist)
-  }
-  indDist$startInd <- start
-  indDist
-}
-
-
-GatherStreamIndsNR <- function(stream, start, linkLengths) {
-
+GatherStreamInds <- function(stream, start, linkLengths) {
+  ## use the plural here: indDists
   indDists <- GatherStreamIndsNRInner(stream, start, linkLengths) 
-  while(any(indDists$tip)){
-    indDists <- GatherStreamIndsNRInner(stream, start, linkLengths, indDist=indDists) 
+  while(any(indDists$tip>1)){
+    for(ss in indDists$ind[which(indDists$tip>1)])
+      indDists <- GatherStreamIndsNRInner(stream, ss, linkLengths, indDist=indDists) 
   }
-
+  indDists
 }
  
   
 GatherStreamIndsNRInner <- function(stream, start, linkLengths=0,
                                indDist = list(ind = c(), dist = c(),
                                               tip=c(), startInd=NA)) {
-  indDist$tip <- FALSE
+  indDist$tip[which(indDist$ind==start)] <- 1
   anyStream <- stream$start[start] > 0
   if (!anyStream) return(indDist)
+
+  indDist$tip[which(indDist$ind==start)] <- 0
   
   whGo <- which(!(names(stream) %in% c('start','end')))
   if(!(names(stream)[whGo] %in% c('to','from','go'))) 
@@ -509,8 +483,51 @@ GatherStreamIndsNRInner <- function(stream, start, linkLengths=0,
 #    coll <<- c(coll,tail(indDist$ind,1))
 #    indDist <- GatherStreamInds(stream, start=ss, length=length, indDist=indDist)
   }
-  indDist$tip <- append(indDist$tip, rep(TRUE, length(streamInds)))
+  indDist$tip <- append(indDist$tip, rep(2, length(streamInds)))
  
+  indDist
+}
+
+
+##
+##
+## testing non-recursive collection
+## options(expressions=10000)
+## for(theInd in 4:12) {
+##   nr <- GatherStreamInds(to, gageInds[theInd], linkLengths=reInd$length)
+##   r <- GatherStreamIndsRecursive(to, gageInds[theInd], linkLengths=reInd$length)
+##   for (nn in names(r)) { print(all(r[[nn]]==nr[[nn]])) }
+## }
+##
+GatherStreamIndsRecursive <- function(stream, start, linkLengths=0,
+                             indDist = list(ind = c(), dist = c())) {
+  anyStream <- stream$start[start] > 0
+  if (!anyStream) return(indDist)
+  
+  whGo <- which(!(names(stream) %in% c('start','end')))
+  if(!(names(stream)[whGo] %in% c('to','from','go'))) 
+    warning('Something wrong with stream variable.', immediate.=TRUE)
+  names(stream)[whGo] <- 'go'
+  streamInds <- stream$go[stream$start[start]:stream$end[start]]
+  
+  for (ss in streamInds) {
+    if (length(indDist$dist) == 0) {
+      indDist$ind  <- ss
+      startDist = 0
+      indDist$dist <- startDist + linkLengths[ss]/2 + linkLengths[start]/2
+    } else {
+      indDist$ind  <- append(indDist$ind,  ss)
+      startDist <- indDist$dist[which(indDist$ind == start)]
+      if(!length(startDist)) startDist=0
+      if (length(startDist) > 1)
+        warning('Problem with input topology', immediate. = TRUE)
+      indDist$dist <- append(indDist$dist, startDist + linkLengths[ss]/2 + linkLengths[start]/2)
+    }
+#    coll <<- c(coll,tail(indDist$ind,1))
+    indDist <- GatherStreamIndsRecursive(stream, start=ss, linkLengths=linkLengths,
+                                         indDist=indDist)
+  }
+  indDist$startInd <- start
   indDist
 }
 
