@@ -437,7 +437,7 @@ NtwKReExToNcdf <- function(toFile, fromFile) {
 #' @concept nudging dataMgmt
 #' @family networkExpression nudging
 #'  @export
-GatherStreamInds <- function(stream, start, length=0,
+GatherStreamInds <- function(stream, start, linkLengths=0,
                              indDist = list(ind = c(), dist = c())) {
   anyStream <- stream$start[start] > 0
   if (!anyStream) return(indDist)
@@ -452,18 +452,65 @@ GatherStreamInds <- function(stream, start, length=0,
     if (length(indDist$dist) == 0) {
       indDist$ind  <- ss
       startDist = 0
-      indDist$dist <- startDist + length[ss]/2 + length[start]/2
+      indDist$dist <- startDist + linkLengths[ss]/2 + linkLengths[start]/2
     } else {
       indDist$ind  <- append(indDist$ind,  ss)
       startDist <- indDist$dist[which(indDist$ind == start)]
       if(!length(startDist)) startDist=0
       if (length(startDist) > 1)
         warning('Problem with input topology', immediate. = TRUE)
-      indDist$dist <- append(indDist$dist, startDist + length[ss]/2 + length[start]/2)
+      indDist$dist <- append(indDist$dist, startDist + linkLengths[ss]/2 + linkLengths[start]/2)
     }
-    indDist <- GatherStreamInds(stream, start=ss, length=length, indDist=indDist)
+#    coll <<- c(coll,tail(indDist$ind,1))
+    indDist <- GatherStreamInds(stream, start=ss, linkLengths=linkLengths, indDist=indDist)
   }
   indDist$startInd <- start
+  indDist
+}
+
+
+GatherStreamIndsNR <- function(stream, start, linkLengths) {
+
+  indDists <- GatherStreamIndsNRInner(stream, start, linkLengths) 
+  while(any(indDists$tip)){
+    indDists <- GatherStreamIndsNRInner(stream, start, linkLengths, indDist=indDists) 
+  }
+
+}
+ 
+  
+GatherStreamIndsNRInner <- function(stream, start, linkLengths=0,
+                               indDist = list(ind = c(), dist = c(),
+                                              tip=c(), startInd=NA)) {
+  indDist$tip <- FALSE
+  anyStream <- stream$start[start] > 0
+  if (!anyStream) return(indDist)
+  
+  whGo <- which(!(names(stream) %in% c('start','end')))
+  if(!(names(stream)[whGo] %in% c('to','from','go'))) 
+    warning('Something wrong with stream variable.', immediate.=TRUE)
+  names(stream)[whGo] <- 'go'
+  streamInds <- stream$go[stream$start[start]:stream$end[start]]
+  
+  for (ss in streamInds) {
+    if (length(indDist$dist) == 0) {
+      indDist$startInd=start
+      indDist$ind  <- ss
+      startDist = 0
+      indDist$dist <- startDist + linkLengths[ss]/2 + linkLengths[start]/2
+    } else {
+      indDist$ind  <- append(indDist$ind,  ss)
+      startDist <- indDist$dist[which(indDist$ind == start)]
+      if(!length(startDist)) startDist=0
+      if (length(startDist) > 1)
+        warning('Problem with input topology', immediate. = TRUE)
+      indDist$dist <- append(indDist$dist, startDist + linkLengths[ss]/2 + linkLengths[start]/2)
+    }
+#    coll <<- c(coll,tail(indDist$ind,1))
+#    indDist <- GatherStreamInds(stream, start=ss, length=length, indDist=indDist)
+  }
+  indDist$tip <- append(indDist$tip, rep(TRUE, length(streamInds)))
+ 
   indDist
 }
 
@@ -489,8 +536,8 @@ GatherStreamInds <- function(stream, start, length=0,
 #' @concept nudging plot
 #' @family networkExpression nudging
 #' @export
-VisualizeSubsetStream <- function(indDist,ncFile, comIds=TRUE, ...){
-  plotData <- VisualizeRouteLink(ncFile)(doPlot=FALSE, ...)
+VisualizeSubsetStream <- function(indDist,ncFile, comIds=TRUE, downstreamReExp='', ...){
+  plotData <- VisualizeRouteLink(ncFile, downstreamReExp=downstreamReExp)(doPlot=FALSE, ...)
   plotData$rl$ind <- 1:nrow(plotData$rl)
   selectLinks <- plotData$rl[(plotData$rl$ind %in% indDist$ind),]
   startLink <- plotData$rl[(plotData$rl$ind %in% indDist$startInd),]
@@ -498,18 +545,20 @@ VisualizeSubsetStream <- function(indDist,ncFile, comIds=TRUE, ...){
   ggObj <-
     plotData$ggObj + 
     ggplot2::geom_segment(data=selectLinks,ggplot2::aes(x=lon,y=lat,xend=to_lon,yend=to_lat),color="red1")
-    
+
+  if(!is.na(comIds)) {
     if(comIds) { # convert to comId by default
       ggObj <- ggObj + 
         ggplot2::geom_text(data=selectLinks,ggplot2::aes(x=lon/2+to_lon/2,y=lat/2+to_lat/2,label=as.character(link)),color="darkred") +
-        ggplot2::geom_text(data=startLink,ggplot2::aes(x=lon/2+to_lon/2,y=lat/2+to_lat/2,label=as.character(link))) + 
-        ggplot2::ggtitle("Link comIds")
+          ggplot2::geom_text(data=startLink,ggplot2::aes(x=lon/2+to_lon/2,y=lat/2+to_lat/2,label=as.character(link))) + 
+            ggplot2::ggtitle("Link comIds")
     } else {
       ggObj <- ggObj + 
         ggplot2::geom_text(data=selectLinks,ggplot2::aes(x=lon/2+to_lon/2,y=lat/2+to_lat/2,label=as.character(ind)),color="darkred") +
-        ggplot2::geom_text(data=startLink,ggplot2::aes(x=lon/2+to_lon/2,y=lat/2+to_lat/2,label=as.character(ind))) + 
-        ggplot2::ggtitle("Link indices")
+          ggplot2::geom_text(data=startLink,ggplot2::aes(x=lon/2+to_lon/2,y=lat/2+to_lat/2,label=as.character(ind))) + 
+            ggplot2::ggtitle("Link indices")
     }
+  }
   
   print(ggObj)
   invisible(ggObj)
