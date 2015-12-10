@@ -742,6 +742,10 @@ CalcModPerfMulti <- function (flxDf.mod, flxDf.obs,
   flxDf.mod <- merge(flxDf.mod[c("POSIXct","qcomp")], flxDf.obs[c("POSIXct","qcomp")], 
                      by<-c("POSIXct"), suffixes=c(".mod",".obs"))
   flxDf.mod <- subset(flxDf.mod, !is.na(flxDf.mod$qcomp.mod) & !is.na(flxDf.mod$qcomp.obs))
+  if (nrow(flxDf.mod) == 0) {
+    warning("No data matches.")
+    return(NA)
+  }
   flxDf.mod <- CalcDates(flxDf.mod)
   flxDf.mod$date <- as.POSIXct(trunc(flxDf.mod$POSIXct, "days"))
   results <- as.data.frame(matrix(nrow = 1, ncol = 57))

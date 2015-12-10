@@ -220,6 +220,10 @@ GetMODIS <- function(geogrdPath, prodName, outDir, begin=NULL, end=NULL,
 #'   outFile is provided.
 #' @param varNA Value to set for "NA" or "no data". Default is -1.e+36. Only
 #'   required if outFile is provided.
+#' @param pos1 From MODIS orgTime: Start position of date in the filename (DEFAULT=10).
+#' @param pos2 From MODIS orgTime: End position of date in the filename (DEFAULT=16).
+#' @param format From MODIS orgTime: How is the date formatted in the file, default 
+#'   expects: 'YYYYDDD' ("%Y%j"). Read ?as.Date for for more information.
 #' @return A raster stack.
 #'   
 #' @examples
@@ -234,7 +238,7 @@ GetMODIS <- function(geogrdPath, prodName, outDir, begin=NULL, end=NULL,
 #' ## Export a subset of the already processed LAI TIF images into an output netcdf file
 #' 
 #' lai.b <- ConvertRS2Stack("/d6/adugger/WRF_Hydro/RS/MODIS_ARC/PROCESSED/BCNED_LAI", 
-#'                          "*Lai_1km.tif", begin=c("2011.06.01", end="2011.06.30", 
+#'                          "*Lai_1km.tif", begin="2011.06.01", end="2011.06.30", 
 #'                          noData=100, noDataQual="max", valScale=0.1, valAdd=0, 
 #'                          outFile="BCNED_LAI.nc", varName="LAI",
 #'                          varUnit="(m^2)/(m^2)", varLong="Leaf area index")
@@ -246,7 +250,8 @@ GetMODIS <- function(geogrdPath, prodName, outDir, begin=NULL, end=NULL,
 ConvertRS2Stack <- function(inPath, matchStr, begin=NULL, end=NULL,
                             noData=NULL, noDataQual="exact", valScale=1, valAdd=0,
                             outFile=NULL, varName=NULL, varUnit=NULL, varLong=NULL, 
-                            varNA=-1.e+36) {
+                            varNA=-1.e+36,
+                            pos1=10, pos2=16, format="%Y%j") {
     # Get file list
     if (!is.null(begin) & !is.null(end)) {
         beginDt <- format(as.POSIXct(begin, format="%Y.%m.%d", tz="UTC"), 
@@ -254,10 +259,11 @@ ConvertRS2Stack <- function(inPath, matchStr, begin=NULL, end=NULL,
         endDt <- format(as.POSIXct(end, format="%Y.%m.%d", tz="UTC"), 
                         "%Y%j", tz="UTC")
         timeInfo <- MODIS::orgTime(MODIS::preStack(path=inPath, pattern=matchStr), 
-                                   begin=beginDt, end=endDt, pillow=0)
+                                   begin=beginDt, end=endDt, pillow=0,
+                                   pos1=pos1, pos2=pos2, format=format)
     } else {
         timeInfo <- MODIS::orgTime(MODIS::preStack(path=inPath, pattern=matchStr), 
-                                   pillow=0)
+                                   pillow=0, pos1=pos1, pos2=pos2, format=format)
         }
     rsFilelist <- MODIS::preStack(path=inPath, pattern=matchStr, timeInfo=timeInfo)
     #rsFilelist <- list.files(path=inPath, pattern=glob2rx(matchStr), full.names=TRUE)
@@ -329,6 +335,8 @@ ConvertRS2Stack <- function(inPath, matchStr, begin=NULL, end=NULL,
 #' @param varUnit Units for the NetCDF export variable.
 #' @param varLong Long name for the NetCDF export variable.
 #' @param varNA Value to set for "NA" or "no data". Default is -1.e+36.
+#' @param flipY Reverse y indices, e.g., to match geogrid S->N 
+#' orientation (DEFAULT=TRUE).
 #' @return NULL
 #'   
 #' @examples
@@ -344,7 +352,7 @@ ConvertRS2Stack <- function(inPath, matchStr, begin=NULL, end=NULL,
 #' @family MODIS
 #' @export
 ConvertStack2NC <- function(inStack, outFile=NULL, varName=NULL, varUnit=NULL, 
-                            varLong=NULL, varNA=-1.e+36) {
+                            varLong=NULL, varNA=-1.e+36, flipY=TRUE) {
     # Get dates
     dtInts <- c()
     dtNames <- names(inStack)
@@ -364,7 +372,10 @@ ConvertStack2NC <- function(inStack, outFile=NULL, varName=NULL, varUnit=NULL,
     ncFile <- ncdf4::nc_open(outFile, write=TRUE)
     ncdf4::ncvar_put(ncFile, "Time", dtInts)
     ncdf4::nc_close(ncFile)
+    if (flipY) {
+      system(paste0('ncpdq -O -a -south_north ', outfile, ' ', outfile))
     }
+}
 
 
 #' Run MODIS-R Whittaker smoothing over pre-processed raster stack.
@@ -553,7 +564,7 @@ InsertRS <- function(inFile, forcPath, forcName="LDASIN_DOMAIN1",
         nTime <- inNC$var[[varName]]$dim[[3]]$len
         for (i in 1:(nTime)) {
             dtNum <- inNC$var[[varName]]$dim[[3]]$val[[i]]
-            dtStr <- as.POSIXct("198001", format = "%Y%j", tz = "UTC")
+            dtStr <- as.POSIXlt("198001", format = "%Y%j", tz = "UTC")
             dtStr$mday <- dtStr$mday + dtNum
             dtStrForc <- paste0(format(dtStr, "%Y%m%d"), "00")
             if (overwrite) {
@@ -644,6 +655,10 @@ CalcStatsRS <- function(inStack) {
 #'   is NOT in your mask raster. (DEFAULT=-9999) 
 #' @param scriptPath OPTIONAL path to where gdal_calc.py script lives in case
 #'   it is not in the same default path as gdal executables
+#' @param pos1 From MODIS orgTime: Start position of date in the filename (DEFAULT=10).
+#' @param pos2 From MODIS orgTime: End position of date in the filename (DEFAULT=16).
+#' @param format From MODIS orgTime: How is the date formatted in the file, default 
+#' expects: YYYYDDD (\%Y\%j). Read ?as.Date for for more information.
 #' @return null
 #'   
 #' @examples
@@ -667,7 +682,8 @@ CalcStatsRS <- function(inStack) {
 GapFillRS <- function(inPath, matchStr, outDir, 
                             begin=NULL, end=NULL,
                             maskFile=NULL, maskVals=NULL, 
-                            nodataVal=-9999, scriptPath=NULL) {
+                            nodataVal=-9999, scriptPath=NULL,
+                            pos1=10, pos2=16, format="%Y%j") {
   # Setup
   if (!is.null(scriptPath)) scriptPath <- paste0(scriptPath, "/")
   inPath <- path.expand(inPath)
@@ -682,9 +698,11 @@ GapFillRS <- function(inPath, matchStr, outDir,
     beginDt <- format(as.POSIXct(begin, format="%Y.%m.%d", tz="UTC"), "%Y%j", tz="UTC")
     endDt <- format(as.POSIXct(end, format="%Y.%m.%d", tz="UTC"), "%Y%j", tz="UTC")
     timeInfo <- MODIS::orgTime(MODIS::preStack(path=inPath, pattern=matchStr), 
-                               begin=beginDt, end=endDt, pillow=0)
+                               begin=beginDt, end=endDt, pillow=0,
+                               pos1=pos1, pos2=pos2, format=format)
   } else {
-    timeInfo <- MODIS::orgTime(MODIS::preStack(path=inPath, pattern=matchStr), pillow=0)
+    timeInfo <- MODIS::orgTime(MODIS::preStack(path=inPath, pattern=matchStr), pillow=0,
+                               pos1=pos1, pos2=pos2, format=format)
   }
   rsFilelist <- MODIS::preStack(path=inPath, pattern=matchStr, timeInfo=timeInfo)
   #rsFilelist <- list.files(path=inPath, pattern=glob2rx(matchStr), full.names=TRUE)
