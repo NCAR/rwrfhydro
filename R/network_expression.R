@@ -444,16 +444,23 @@ GatherStreamInds <- function(stream, start, linkLengths) {
   ## use the plural here: indDists
   indDists <- GatherStreamIndsNRInner(stream, start, linkLengths) 
   while(any(indDists$tip>1)){
-    for(ss in indDists$ind[which(indDists$tip>1)])
-      indDists <- GatherStreamIndsNRInner(stream, ss, linkLengths, indDist=indDists) 
+    tipInds <- indDists$ind[which(indDists$tip>1)]
+      for(ss in tipInds)
+        indDists <- GatherStreamIndsNRInner(stream, ss, linkLengths, indDist=indDists) 
   }
   indDists
 }
  
   
 GatherStreamIndsNRInner <- function(stream, start, linkLengths=0,
-                               indDist = list(ind = c(), dist = c(),
-                                              tip=c(), startInd=NA)) {
+                                    indDist = list(ind = c(), dist = c(),
+                                                   tip=c(), startInd=NA)) {
+  ## downstream only has one tip
+  ## upstream can have multiple tips
+  ## the "tip" has three states
+  ## 0: not at tip
+  ## 1: an end tip
+  ## 2: a temporary tip (still solving)
   indDist$tip[which(indDist$ind==start)] <- 1
   anyStream <- stream$start[start] > 0
   if (!anyStream) return(indDist)
@@ -467,13 +474,16 @@ GatherStreamIndsNRInner <- function(stream, start, linkLengths=0,
   streamInds <- stream$go[stream$start[start]:stream$end[start]]
   
   for (ss in streamInds) {
+    if(ss==0) next
     if (length(indDist$dist) == 0) {
       indDist$startInd=start
       indDist$ind  <- ss
+      indDist$tip  <- 2
       startDist = 0
       indDist$dist <- startDist + linkLengths[ss]/2 + linkLengths[start]/2
     } else {
-      indDist$ind  <- append(indDist$ind,  ss)
+      indDist$ind <- append(indDist$ind, ss)
+      indDist$tip <- append(indDist$tip, 2 )
       startDist <- indDist$dist[which(indDist$ind == start)]
       if(!length(startDist)) startDist=0
       if (length(startDist) > 1)
@@ -483,22 +493,16 @@ GatherStreamIndsNRInner <- function(stream, start, linkLengths=0,
 #    coll <<- c(coll,tail(indDist$ind,1))
 #    indDist <- GatherStreamInds(stream, start=ss, length=length, indDist=indDist)
   }
-  indDist$tip <- append(indDist$tip, rep(2, length(streamInds)))
+
  
   indDist
 }
 
 
 ##
-##
-## testing non-recursive collection
-## options(expressions=10000)
-## for(theInd in 4:12) {
-##   nr <- GatherStreamInds(to, gageInds[theInd], linkLengths=reInd$length)
-##   r <- GatherStreamIndsRecursive(to, gageInds[theInd], linkLengths=reInd$length)
-##   for (nn in names(r)) { print(all(r[[nn]]==nr[[nn]])) }
-## }
-##
+## Deprecated.
+## testing non-recursive collection,
+## see hydro:/home/jamesmcc/WRF_Hydro/CONUS/gageRelationship.R  
 GatherStreamIndsRecursive <- function(stream, start, linkLengths=0,
                              indDist = list(ind = c(), dist = c())) {
   anyStream <- stream$start[start] > 0
@@ -511,6 +515,7 @@ GatherStreamIndsRecursive <- function(stream, start, linkLengths=0,
   streamInds <- stream$go[stream$start[start]:stream$end[start]]
   
   for (ss in streamInds) {
+    if(ss==0) next
     if (length(indDist$dist) == 0) {
       indDist$ind  <- ss
       startDist = 0
