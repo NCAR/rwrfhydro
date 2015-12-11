@@ -5,14 +5,23 @@
 \title{Flip a matrix from left to right.}
 \usage{
 flipLR(matrix)
+
+flipLR(matrix)
 }
 \arguments{
+\item{matrix}{A matrix.}
+
 \item{matrix}{A matrix.}
 }
 \description{
 \code{flipLR} Flips a matrix from left to to right.
+
+\code{flipLR} Flips a matrix from left to to right.
 }
 \examples{
+x <- matrix[1:9,3]
+x
+flipLR(x)
 x <- matrix[1:9,3]
 x
 flipLR(x)
