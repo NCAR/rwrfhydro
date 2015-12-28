@@ -41,7 +41,8 @@ obsStr5min.fc <- ReadUsgsGage("../OBS/STRFLOW/5min_str_06727500_110401_140810.tx
 \seealso{
 Other obsDataReads: \code{\link{ReadAmerifluxCSV}};
   \code{\link{ReadAmerifluxNC}};
-  \code{\link{ReadCoDwrGage}}
+  \code{\link{ReadCoDwrGage}};
+  \code{\link{ReadNearStationData}}
 }
 \concept{
 dataGet

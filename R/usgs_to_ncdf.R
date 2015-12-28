@@ -69,9 +69,10 @@ WriteNcPrettyUsgs <- function(prettyDf, outPath='.') {
 #' Write a USGS discharge timeslice to a netcdf file. 
 #' 
 #' @param dfByPosix   Dataframe, a data frame with the following columns: 
-#' \code{site_no}, \code{dateTime}, \code{code}, \code{queryTime}, \code{discharge.cms}, 
+#' \code{site_no}, \code{dateTime}, \code{dateTimeRound}, \code{code}, \code{queryTime}, \code{discharge.cms}, 
 #' and \code{variance} where dateTime is the same for the entire dataframe. 
-#' @param outPath     Character, the file name with path for the output netcdf file. 
+#' @param outPath     Character, the path for the output netcdf file. 
+#' @param sliceResolution 
 #' @examples
 #' ## See \link{MkUsgsTimeSlice}.
 #' @keywords internal

@@ -59,7 +59,8 @@
 #' library(ggplot2)
 #' ggplot(nStn, aes(x=time,y=nStn)) + geom_point(color='red')
 #' 
-#' 
+#'
+
 ##' ###############################
 ## reprocess on saudi
 
@@ -89,7 +90,6 @@ hostnum
 ##for (ii in 1:nrow(chunkDf) ) {
 ##for (ii in 199:nrow(chunkDf) ) {
 for (ii in ((hostnum-1)*100+(1:100)) )  {
-  for (ii in ((hostnum-1)*100+(1:100)) )  {
   print(chunkDf$start[ii])
   ret1 <- MkUsgsTimeSlice( realTimeFiles[chunkDf$start[ii]:chunkDf$end[ii]], 
                           outPath=outPath, nearest=15,
