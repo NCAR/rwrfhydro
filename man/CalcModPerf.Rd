@@ -9,29 +9,36 @@ CalcModPerf(flxDf.mod, flxDf.obs, flxCol.mod = "q_cms",
   subdivisions = 1000)
 }
 \arguments{
-\item{flxDf.mod}{The flux output dataframe (required). Assumes only one forecast
-point per file, so if you have multiple forecast points in your output dataframe, use
-subset to isolate a single forecast point's data. Also assumes model output and observation
-both contain POSIXct fields (called "POSIXct").}
+\item{flxDf.mod}{The flux output dataframe (required). Assumes only one
+forecast point per file, so if you have multiple forecast points in your
+output dataframe, use subset to isolate a single forecast point's data.
+Also assumes model output and observation both contain POSIXct fields
+(called "POSIXct").}
 
-\item{flxDf.obs}{The observed flux dataframe. Assumes only one observation point per file, so if
-you have multiple observation points in your dataframe, use subset to isolate a single point's data.
-Also assumes model output and observation both contain POSIXct fields (called "POSIXct").}
+\item{flxDf.obs}{The observed flux dataframe. Assumes only one observation
+point per file, so if you have multiple observation points in your
+dataframe, use subset to isolate a single point's data. Also assumes model
+output and observation both contain POSIXct fields (called "POSIXct").}
 
-\item{flxCol.mod}{The column name for the flux time series for the MODEL data (default="q_cms")}
+\item{flxCol.mod}{The column name for the flux time series for the MODEL data
+(default="q_cms")}
 
-\item{flxCol.obs}{The column name for the flux time series for the OBSERVED data (default="q_cms")}
+\item{flxCol.obs}{The column name for the flux time series for the OBSERVED
+data (default="q_cms")}
 
-\item{stdate}{Start date for statistics (DEFAULT=NULL, all records will be used).
-Date MUST be specified in POSIXct format with appropriate timezone
-(e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))}
+\item{stdate}{Start date for statistics (DEFAULT=NULL, all records will be
+used). Date MUST be specified in POSIXct format with appropriate timezone
+(e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S",
+tz="UTC"))}
 
-\item{enddate}{End date for statistics (DEFAULT=NULL, all records will be used).
-Date MUST be specified in POSIXct format with appropriate timezone
-(e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))}
+\item{enddate}{End date for statistics (DEFAULT=NULL, all records will be
+used). Date MUST be specified in POSIXct format with appropriate timezone
+(e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S",
+tz="UTC"))}
 
-\item{subdivisions}{Number of subdivisions used in flow duration curve integration
-(DEFAULT=1000); increase value if integrate function throws an error.}
+\item{subdivisions}{Number of subdivisions used in flow duration curve
+integration (DEFAULT=1000); increase value if integrate function throws an
+error.}
 }
 \value{
 A new dataframe containing the model performance statistics.
@@ -40,12 +47,14 @@ A new dataframe containing the model performance statistics.
 \code{CalcModPerf} calculates model performance statistics for flux output.
 }
 \details{
-\code{CalcModPerf} reads a model flux time series (i.e., created using \code{\link{ReadFrxstPts}}) and
-an observation time series (i.e., created using \code{\link{ReadUsgsGage}}) and calculates model performance
-statistics (Nash-Sutcliffe Efficiency, Rmse, etc.) at various time scales and for low
-and high fluxes. The tool will subset data to matching time periods (e.g., if the
-observed data is at 5-min increments and modelled data is at 1-hr increments, the tool
-will subset the observed data to select only observations on the matching hour break).
+\code{CalcModPerf} reads a model flux time series (i.e., created using
+\code{\link{ReadFrxstPts}}) and an observation time series (i.e., created
+using \code{\link{ReadUsgsGage}}) and calculates model performance statistics
+(Nash-Sutcliffe Efficiency, Rmse, etc.) at various time scales and for low
+and high fluxes. The tool will subset data to matching time periods (e.g., if
+the observed data is at 5-min increments and modelled data is at 1-hr
+increments, the tool will subset the observed data to select only
+observations on the matching hour break).
 
 Performance Statistics: \cr (mod = model output, obs = observations, n =
 sample size) \itemize{ \item n: sample size \item nse: Nash-Sutcliffe
@@ -67,17 +76,13 @@ days for monthly and yearly time scales). \item errfdc: Error in the
 integrated flow duration curve between 0.05 and 0.95 exceedance thresholds
 (in native flow units). }
 
-Time scales/Flux types:
-\itemize{
-\item ts = native model/observation time step (e.g., hourly)
-\item daily = daily time step
-\item monthly = monthly time step
-\item yearly = water-year time step
-\item max10 = high flows; restricted to the portion of the time series where the observed flux
-is in the highest 10\% (native time step)
-\item min10 = low flows; restricted to the portion of the time series where the observed flux
-is in the lowest 10\% (native time step)
-}
+Time scales/Flux types: \itemize{ \item ts = native model/observation time
+step (e.g., hourly) \item daily = daily time step \item monthly = monthly
+time step \item yearly = water-year time step \item max10 = high flows;
+restricted to the portion of the time series where the observed flux is in
+the highest 10\% (native time step) \item min10 = low flows; restricted to
+the portion of the time series where the observed flux is in the lowest 10\%
+(native time step) }
 }
 \examples{
 ## Take forecast point model output for Fourmile Creek (modStrh.mod1.fc) and a corresponding
@@ -98,6 +103,7 @@ monthly     5     0.92     0.82     0.96     0.1073    10.35     9.1     0.0324 
 yearly      1     <NA>     <NA>     <NA>       <NA>     <NA>     7.1     0.0313     0.0313          0          4       <NA>
 max10      12     0.46     0.58     0.71      0.348    23.63    -2.8     -0.044      0.248       <NA>       <NA>       <NA>
 min10      12  -385.99   -14.59     0.35     0.1678   538.78   112.4      0.056     0.0592       <NA>       <NA>       <NA>
+}
 }
 \seealso{
 Other modelEvaluation: \code{\link{CalcMetContGrid}};

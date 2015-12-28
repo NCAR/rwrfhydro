@@ -96,9 +96,6 @@ WriteNcTimeSlice <- function(dfByPosix, outPath, sliceResolution) {
 
     ## could have multiple of the same station at a given time. 
     ## simly take the most recent. if it got this far it has had some qc
-dfByPosix0 <- dfByPosix
-    dfByPosix$dateTime <- as.numeric(dfByPosix$dateTime)
-    dfByPosix$queryTime <- as.numeric(dfByPosix$queryTime)
     dfByPosix <- plyr::ddply(dfByPosix, plyr::.(site_no),
                              function(df) df[which.max(df$queryTime)[1],])
 #     dfByPosix$dateTime <- as.POSIXct(dfByPosix$dateTime, tz='UTC', origin='1970-01-01 00:00.00 UTC')

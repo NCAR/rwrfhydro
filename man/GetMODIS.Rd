@@ -11,18 +11,27 @@ GetMODIS(geogrdPath, prodName, outDir, begin = NULL, end = NULL,
 \arguments{
 \item{geogrdPath}{The pathname to the geogrid file (i.e., geo_em.d01.nc).}
 
-\item{prodName}{The MODIS product name to download/process. Run the \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package
+\item{prodName}{The MODIS product name to download/process. Run the
+\href{http://r-forge.r-project.org/projects/modis/}{MODIS} package
 getProducts() for a complete list of supported products.}
 
-\item{outDir}{Directory name to store processed TIF files. This is the equivalent
-to the \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package's "job" name. This is a directory name only and NOT a full
-path. The directory will be created in the preset \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package outDirPath.}
+\item{outDir}{Directory name to store processed TIF files. This is the
+equivalent to the
+\href{http://r-forge.r-project.org/projects/modis/}{MODIS} package's "job"
+name. This is a directory name only and NOT a full path. The directory will
+be created in the preset
+\href{http://r-forge.r-project.org/projects/modis/}{MODIS} package
+outDirPath.}
 
-\item{begin}{Date string for the start date to download/process MODIS tiles. The
-date string should follow \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package convention (e.g., "2011.06.01").}
+\item{begin}{Date string for the start date to download/process MODIS tiles.
+The date string should follow
+\href{http://r-forge.r-project.org/projects/modis/}{MODIS} package
+convention (e.g., "2011.06.01").}
 
 \item{end}{Date string for the end date to download/process MODIS tiles. The
-date string should follow \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package convention (e.g., "2011.06.01").}
+date string should follow
+\href{http://r-forge.r-project.org/projects/modis/}{MODIS} package
+convention (e.g., "2011.06.01").}
 
 \item{collection}{From MODIS::runGdal help: "Default is to download most
 recent collection version. See: ?getCollection"}

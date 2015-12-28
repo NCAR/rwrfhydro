@@ -7,8 +7,8 @@
 ReadAmerifluxNC(pathFluxData, timeZone = NULL, utcOffset = NULL)
 }
 \arguments{
-\item{pathFluxData}{The full pathname to the flux time series NetCDF file as downloaded from an
-Ameriflux data server.}
+\item{pathFluxData}{The full pathname to the flux time series NetCDF file as
+downloaded from an Ameriflux data server.}
 
 \item{timeZone}{The time zone for the flux site. Time zone name must be
 R-friendly for your current OS. See:
@@ -31,10 +31,17 @@ a dataframe.
 \details{
 \code{ReadAmerifluxNC} reads an Ameriflux Level 2 standardized NetCDF file and outputs a dataframe
 with consistent date and data columns for use with other rwrfhydro tools.
+
+\code{ReadAmerifluxNC} reads Ameriflux data table (Level 2 standardized
+NetCDF file) and creates a dataframe.
+
+\code{ReadAmerifluxNC} reads an Ameriflux Level 2 standardized NetCDF file
+and outputs a dataframe with consistent date and data columns for use with
+other rwrfhydro tools.
 }
 \examples{
-## Takes a NetCDF file downloaded from the ORNL Amerifux website for US-NC2 (North Carolina Loblolly Pine)
-## and returns a dataframe.
+## Takes a NetCDF file downloaded from the ORNL Amerifux website for US-NC2
+## (North Carolina Loblolly Pine) and returns a dataframe.
 
 \dontrun{
 obsFlux30min.usnc2 <-

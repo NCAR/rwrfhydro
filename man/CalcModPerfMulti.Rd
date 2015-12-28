@@ -33,19 +33,23 @@ Date MUST be specified in POSIXct format with appropriate timezone
 A new dataframe containing the model performance statistics.
 }
 \description{
-\code{CalcModPerfMulti} calculates model performance statistics for flux output.
+\code{CalcModPerfMulti} calculates model performance statistics for flux
+output.
 }
 \details{
-\code{CalcModPerfMulti} reads a model flux time series (i.e., created using \code{\link{ReadFrxstPts}}) and
-an observation time series (i.e., created using \code{\link{ReadUsgsGage}}) and calculates model performance
-statistics (Nash-Sutcliffe Efficiency, Rmse, etc.) at various time scales and for low
-and high fluxes. The tool will subset data to matching time periods (e.g., if the
-observed data is at 5-min increments and modelled data is at 1-hr increments, the tool
-will subset the observed data to select only observations on the matching hour break).
+\code{CalcModPerfMulti} reads a model flux time series (i.e., created using
+\code{\link{ReadFrxstPts}}) and an observation time series (i.e., created
+using \code{\link{ReadUsgsGage}}) and calculates model performance statistics
+(Nash-Sutcliffe Efficiency, Rmse, etc.) at various time scales and for low
+and high fluxes. The tool will subset data to matching time periods (e.g., if
+the observed data is at 5-min increments and modelled data is at 1-hr
+increments, the tool will subset the observed data to select only
+observations on the matching hour break).
 
-\code{CalcModPerfMulti} calculates the same statistics as \code{\link{CalcModPerf}}) but returns
-results as a single-row vs. multi-row dataframe. This is intended to streamline compiling statistics
-for multiple data runs or multiple sites.
+\code{CalcModPerfMulti} calculates the same statistics as
+\code{\link{CalcModPerf}}) but returns results as a single-row vs. multi-row
+dataframe. This is intended to streamline compiling statistics for multiple
+data runs or multiple sites.
 
 Performance Statistics: \cr (mod = model output, obs = observations, n =
 sample size) \itemize{ \item n: sample size \item nse: Nash-Sutcliffe
@@ -66,6 +70,14 @@ maximum flux. Reported as number of hours for daily time scale and number of
 days for monthly and yearly time scales). \item errfdc: Error in the
 integrated flow duration curve between 0.05 and 0.95 exceedance thresholds
 (in native flow units). }
+
+Time scales/Flux types: \itemize{ \item t = native model/observation time
+step (e.g., hourly) \item dy = daily time step \item mo = monthly time step
+\item yr = water-year time step \item max10 = high flows; restricted to the
+portion of the time series where the observed flux is in the highest 10\%
+(native time step) \item min10 = low flows; restricted to the portion of the
+time series where the observed flux is in the lowest 10\% (native time step)
+}
 
 Time scales/Flux types:
 \itemize{
@@ -98,6 +110,7 @@ yr_bias yr_msd yr_mae yr_errcom yr_errmaxt max10_n max10_nse max10_nselog max10_
     7.1 0.0313 0.0313         0          4      12      0.46         0.58      0.71      0.348          23.63       -2.8    -0.044     0.248
 min10_n min10_nse min10_nselog min10_cor min10_rmse min10_rmsenorm min10_bias min10_msd min10_mae
      12   -385.99       -14.59      0.35     0.1678         538.78      112.4     0.056    0.0592
+}
 }
 \seealso{
 Other modelEvaluation: \code{\link{CalcMetContGrid}};

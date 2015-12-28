@@ -2,7 +2,7 @@
 % Please edit documentation in R/utilities.R
 \name{FlipUD}
 \alias{FlipUD}
-\title{Flip a matrix upside down.}
+\title{Flip a matrix vertically, that is over it's horizontal axis (y1 <-> yn).}
 \usage{
 FlipUD(matrix)
 }
@@ -10,7 +10,8 @@ FlipUD(matrix)
 \item{matrix}{A matrix.}
 }
 \description{
-\code{FlipUD} Flips a matrix upside down.
+This is the transformation which 2D WRF Hydro fields need upon import.
+\code{FlipVert} Flips a matrix vertically (over it's horizontal axis).
 }
 \examples{
 x <- matrix(1:9, 3)

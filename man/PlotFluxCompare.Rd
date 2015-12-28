@@ -16,22 +16,22 @@ PlotFluxCompare(strDf.obs, strCol.obs = "q_cms", strDf.mod1,
 \code{\link{ReadUsgsGage}}). The dataframe must contain a column of flux
 values and a POSIXct or Date column.}
 
-\item{strCol.obs}{The name of the column containing the flux values for the OBSERVED
-dataframe (DEFAULT="q_cms").}
+\item{strCol.obs}{The name of the column containing the flux values for the
+OBSERVED dataframe (DEFAULT="q_cms").}
 
 \item{strDf.mod1}{The FIRST MODEL flux time series dataframe (e.g., output
 from \code{\link{ReadFrxstPts}}). The dataframe must contain a column of
 flux values and a POSIXct or Date column.}
 
-\item{strCol.mod1}{The name of the column containing the FIRST MODEL flux values
-(DEFAULT="q_cms").}
+\item{strCol.mod1}{The name of the column containing the FIRST MODEL flux
+values (DEFAULT="q_cms").}
 
 \item{strDf.mod2}{The SECOND MODEL flux time series dataframe (e.g., output
 from \code{\link{ReadFrxstPts}}). The dataframe must contain a column of
 flux values and a POSIXct or Date column.}
 
-\item{strCol.mod2}{The name of the column containing the SECOND MODEL flux values
-(DEFAULT="q_cms").}
+\item{strCol.mod2}{The name of the column containing the SECOND MODEL flux
+values (DEFAULT="q_cms").}
 
 \item{stdate}{Start date for plot/statistics (DEFAULT=NULL, all records will
 be used). Date MUST be specified in POSIXct format with appropriate
@@ -45,9 +45,11 @@ timezone (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d
 \%H:\%M:\%S", tz="UTC")) or Date (e.g., as.Date("2013-05-01",
 format="\%Y-\%m-\%d")) where Date is assumed to match a UTC date.}
 
-\item{logy}{(TRUE or FALSE) Optional flag to set the y-axis to log-scale (DEFAULT=FALSE).}
+\item{logy}{(TRUE or FALSE) Optional flag to set the y-axis to log-scale
+(DEFAULT=FALSE).}
 
-\item{labelObs}{Optional label for the observed streamflow (DEFAULT="Observed")}
+\item{labelObs}{Optional label for the observed streamflow
+(DEFAULT="Observed")}
 
 \item{labelMod1}{Optional label for the FIRST MODEL (DEFAULT="Model 1")}
 
@@ -65,15 +67,16 @@ format="\%Y-\%m-\%d")) where Date is assumed to match a UTC date.}
 A plot of the hydrographs.
 }
 \description{
-\code{PlotFluxCompare} plots a time series of an observed flux (e.g., streamflow, ET)
-and up to 2 modelled fluxes.
+\code{PlotFluxCompare} plots a time series of an observed flux (e.g.,
+streamflow, ET) and up to 2 modelled fluxes.
 }
 \details{
-\code{PlotFluxCompare} reads modelled and observed dataframes (e.g., as generated
-from \code{\link{ReadFrxstPts}} and \code{\link{ReadUsgsGage}}) and plot the time series
-and summary statistics. The tool will subset data to matching time periods (e.g., if the
-observed data is at 5-min increments and modelled data is at 1-hr increments, the tool
-will subset the observed data to select only observations on the matching hour break).
+\code{PlotFluxCompare} reads modelled and observed dataframes (e.g., as
+generated from \code{\link{ReadFrxstPts}} and \code{\link{ReadUsgsGage}}) and
+plot the time series and summary statistics. The tool will subset data to
+matching time periods (e.g., if the observed data is at 5-min increments and
+modelled data is at 1-hr increments, the tool will subset the observed data
+to select only observations on the matching hour break).
 }
 \examples{
 ## Take a time series of observed 5-minute streamflow values for Fourmile Creek (obsStr5min.fc) and two model

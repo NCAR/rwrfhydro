@@ -18,7 +18,6 @@ If variable is not set, the meta object \code{ncdf4::nc_open(file)} is returned.
 is set, its values are returned.
 }
 \description{
-Emulate ncdump -h.
 I just hacked print.ncdf4 just to make it look more like unix output.
 }
 \seealso{
