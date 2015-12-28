@@ -1,3 +1,39 @@
+## reprocess on saudi
+
+if (FALSE) {
+#/opt/R-3.2.0/bin/R
+options(warn=1)
+devtools::load_all('~/R/jlm_lib/rwrfhydro')
+options(warn=2)
+realTimeFiles <- list.files(pattern='huc.*.RData', 
+                               path='~/usgsStreamData/realTimeData', 
+                               full.names=TRUE)
+#realTimeFiles <- tail(realTimeFiles,21*7*24*4)
+#realTimeFiles <- tail(realTimeFiles,24*4)
+outPath = '~/usgsStreamData/timeSliceData15MinQC/'
+library(doMC)
+registerDoMC(6)  
+#I'm worried about using too much memory, when I run this on all 
+#previously collected data, so break up the problem
+    chunkSize <- 500
+    chunkDf <- data.frame( ind = 0:(length(realTimeFiles) %/% chunkSize) )
+    chunkDf <- within(chunkDf, { start = (ind)*chunkSize+1
+                                 end   = pmin( (ind+1)*chunkSize, length(realTimeFiles)) } )
+    
+hostname <- system("hostname", intern=TRUE)
+hostnum <- as.integer(substr(hostname, nchar(hostname), 99))
+hostnum
+##for (ii in 1:nrow(chunkDf) ) {
+##for (ii in 199:nrow(chunkDf) ) {
+for (ii in ((hostnum-1)*100+(1:100)) )  {
+  print(chunkDf$start[ii])
+  ret1 <- MkUsgsTimeSlice( realTimeFiles[chunkDf$start[ii]:chunkDf$end[ii]], 
+                          outPath=outPath, nearest=15,
+                          oldest=as.POSIXct('2015-04-15 00:00:00', tz='UTC')
+                          )
+}
+
+}
 ##===================================================================
 
 #' Make timeslices from active USGS discharge data files.
@@ -60,44 +96,6 @@
 #' ggplot(nStn, aes(x=time,y=nStn)) + geom_point(color='red')
 #' 
 #'
-
-##' ###############################
-## reprocess on saudi
-
-if (FALSE) {
-/opt/R-3.2.0/bin/R
-options(warn=1)
-devtools::load_all('~/R/jlm_lib/rwrfhydro')
-options(warn=2)
-realTimeFiles <- list.files(pattern='huc.*.RData', 
-                               path='~/usgsStreamData/realTimeData', 
-                               full.names=TRUE)
-#realTimeFiles <- tail(realTimeFiles,21*7*24*4)
-#realTimeFiles <- tail(realTimeFiles,24*4)
-outPath = '~/usgsStreamData/timeSliceData15MinQC/'
-library(doMC)
-registerDoMC(6)  
-#I'm worried about using too much memory, when I run this on all 
-#previously collected data, so break up the problem
-    chunkSize <- 500
-    chunkDf <- data.frame( ind = 0:(length(realTimeFiles) %/% chunkSize) )
-    chunkDf <- within(chunkDf, { start = (ind)*chunkSize+1
-                                 end   = pmin( (ind+1)*chunkSize, length(realTimeFiles)) } )
-    
-hostname <- system("hostname", intern=TRUE)
-hostnum <- as.integer(substr(hostname, nchar(hostname), 99))
-hostnum
-##for (ii in 1:nrow(chunkDf) ) {
-##for (ii in 199:nrow(chunkDf) ) {
-for (ii in ((hostnum-1)*100+(1:100)) )  {
-  print(chunkDf$start[ii])
-  ret1 <- MkUsgsTimeSlice( realTimeFiles[chunkDf$start[ii]:chunkDf$end[ii]], 
-                          outPath=outPath, nearest=15,
-                          oldest=as.POSIXct('2015-04-15 00:00:00', tz='UTC')
-                          )
-}
-
-}
 #' 
 #' 
 #' ## end dontrun }  

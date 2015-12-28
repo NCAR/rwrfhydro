@@ -77,8 +77,6 @@ library(ggplot2)
 ggplot(nStn, aes(x=time,y=nStn)) + geom_point(color='red')
 
 
-###############################
-## "re-"process on saudi
 
 
 ## end dontrun }
