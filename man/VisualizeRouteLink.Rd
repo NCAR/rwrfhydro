@@ -72,14 +72,15 @@ foo$ggObj + ggplot2::geom_text(data=foo$rl,
 }
 }
 \seealso{
-Other networkExpression nudging: \code{\link{NtwKReExToNcdf}};
-  \code{\link{ReExpNetwork}};
+Other networkExpression nudging: \code{\link{GatherStreamInds}};
+  \code{\link{NtwKReExToNcdf}}; \code{\link{ReExpNetwork}};
   \code{\link{ReExpressRouteLink}};
-  \code{\link{ReIndexRouteLink}}
+  \code{\link{ReIndexRouteLink}};
+  \code{\link{VisualizeSubsetStream}}
 }
 \concept{
-dataMgmt dataVis
+dataMgmt plot
 }
+\keyword{hplot}
 \keyword{manip}
-\keyword{vis}
 

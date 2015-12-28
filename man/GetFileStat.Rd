@@ -4,7 +4,8 @@
 \alias{GetFileStat}
 \title{Open a netcdf file, extract specified indices for a variable, optionally apply a specified statistic.}
 \usage{
-GetFileStat(theFile, variable, index, env = parent.frame(), ...)
+GetFileStat(theFile, variable, index, env = parent.frame(),
+  parallel = FALSE, ...)
 }
 \arguments{
 \item{theFile}{The file to open.}

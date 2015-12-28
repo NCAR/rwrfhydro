@@ -40,4 +40,13 @@ newCopyId <- 'threeRealGagesTEST'
 AddRouteLinkGage(rlFile, gageIds, comIds, new=identifier)
 }
 }
+\seealso{
+Other nudging: \code{\link{ChanObsToTimeSlice}};
+  \code{\link{EditFrxstPts}}; \code{\link{MkNudgingParams}}
+}
+\concept{
+nudging dataMgmt
+}
+\keyword{IO}
+\keyword{manip}
 

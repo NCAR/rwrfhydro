@@ -7,9 +7,11 @@
 CheckConn(ind, upstream = TRUE, printInds = FALSE)
 }
 \arguments{
+\item{ind}{The indices to check.}
+
 \item{upstream}{Logical, check connectivity upstream (TRUE) or downstream (FALSE).}
 
-\item{index}{}
+\item{printInds}{Logical, print the indices checked.}
 }
 \value{
 Logical, code halts at first FALSE.
@@ -26,7 +28,7 @@ Logical, code halts at first FALSE.
   }
 }
 \concept{
-dataMgmt
+dataMgmt nudging
 }
 \keyword{manip}
 

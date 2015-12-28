@@ -10,7 +10,7 @@
 #' ReExpressRouteLink() # if there is a Route_Link.nc file in getwd() (the current directory).
 #' }
 #' @keywords manip
-#' @concept dataMgmt
+#' @concept dataMgmt nudging
 #' @family networkExpression nudging
 #' @export
 ReExpressRouteLink <- function(routeLink.nc='Route_Link.nc', parallel=FALSE) {
@@ -101,7 +101,7 @@ ReIndexRouteLink <- function(routeLinkFile) {
 #'   ReExpNetwork(reIndFile, up=FALSE)
 #' }
 #' @keywords manip
-#' @concept dataMgmt
+#' @concept dataMgmt nudging
 #' @family networkExpression nudging
 #' @export
 ReExpNetwork <- function(routeLinkReInd, upstream=TRUE, parallel=FALSE) {
@@ -121,7 +121,11 @@ ReExpNetwork <- function(routeLinkReInd, upstream=TRUE, parallel=FALSE) {
   #                                      reInd$from[which(reInd$comId == ind)] )
   #FindDownstream <- function(ind) union(reInd$comId[which(reInd$from == ind)], 
   #                                      reInd$to[which(reInd$comId   == ind)] )
-  FindUpstream   <- function(ind) union(which(reInd$to   == ind), reInd$from[ind])
+  FindUpstream   <- function(ind) {
+    theUnion <- union(which(reInd$to   == ind), reInd$from[ind])
+    if(length(theUnion)>1) theUnion <- setdiff(theUnion,0)
+    theUnion
+  }
   FindDownstream <- function(ind) union(which(reInd$from == ind), reInd$to[ind]  )
 
   FindFunc <- if(upstream) { FindUpstream } else { FindDownstream }
@@ -165,8 +169,9 @@ ReExpNetwork <- function(routeLinkReInd, upstream=TRUE, parallel=FALSE) {
 #' 
 #' \code{CheckConn} checks that a re-expressed network matches it's original expression.
 #' 
-#' @param index
+#' @param ind The indices to check. 
 #' @param upstream Logical, check connectivity upstream (TRUE) or downstream (FALSE).
+#' @param printInds Logical, print the indices checked.
 #' @return Logical, code halts at first FALSE.
 #' @examples
 #' \dontrun{
@@ -210,7 +215,7 @@ ReExpNetwork <- function(routeLinkReInd, upstream=TRUE, parallel=FALSE) {
 # load("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reInd.Rdb")
 # }
 #' @keywords manip
-#' @concept dataMgmt
+#' @concept dataMgmt nudging
 #' @family networkExpression nudging
 #' # @export
 CheckConn <- function(ind, upstream=TRUE, printInds=FALSE) {
@@ -267,7 +272,7 @@ if(FALSE) {
 
 ## totally incomplete... 
 ## a few checks on RouteLink
-routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink3.nc'
+#routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink3.nc'
 CheckRouteLink <- function(routeLinkFile) {
   ncid <- ncdf4::nc_open(routeLinkFile)
   link  <- ncdf4::ncvar_get(ncid,'link')
@@ -303,7 +308,7 @@ CheckRouteLink <- function(routeLinkFile) {
 #' reExp.nc    <- NtwKReExToNcdf(downstream.Rdb, upstream.Rdb)
 #' }
 #' @keywords manip
-#' @concept dataMgmt
+#' @concept dataMgmt nudging
 #' @family networkExpression nudging
 #' @export
 NtwKReExToNcdf <- function(toFile, fromFile) {
@@ -422,6 +427,9 @@ NtwKReExToNcdf <- function(toFile, fromFile) {
 #'      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reExpTo.Rdb')
 #'      downstreamInds <- GatherStreamInds(to, 91, length=reInd$length)
 #'  }
+#' @keywords manip
+#' @concept nudging dataMgmt
+#' @family networkExpression nudging
 #'  @export
 GatherStreamInds <- function(stream, start, length=0,
                              indDist = list(ind = c(), dist = c())) {
@@ -459,7 +467,7 @@ GatherStreamInds <- function(stream, start, length=0,
 #'
 #' @param indDist List containing indies and accumulated distance from start, obtained from GatherStreamInds
 #' @param ncFile Route Link file read in/initially processed with VisualizeRouteLink()
-#' @param comIds Logical, show the comIds or the link indices in the Route_Link.nc file?
+#' @param comIds Logical, show the comIds or the link indices in the Route_Link.nc file.
 #' @param ... arguments to the function returned by VisualizeRouteLink.
 #' @return Map of Route Links with selected upstream/downstream links highlighted in red, starting location in black
 #' @examples
@@ -471,6 +479,9 @@ GatherStreamInds <- function(stream, start, length=0,
 #'  VisualizeSubsetStream(downstreamInds, file, com=TRUE, zoom=10)
 #'  VisualizeSubsetStream(downstreamInds, file, com=FALSE, zoom=10, linkColor='lightblue', maptype='satellite')
 #' }
+#' @keywords hplot
+#' @concept nudging plot
+#' @family networkExpression nudging
 #' @export
 VisualizeSubsetStream <- function(indDist,ncFile, comIds=TRUE, ...){
   plotData <- VisualizeRouteLink(ncFile)(doPlot=FALSE, ...)
@@ -497,6 +508,34 @@ VisualizeSubsetStream <- function(indDist,ncFile, comIds=TRUE, ...){
   print(ggObj)
   invisible(ggObj)
 } 
+
+
+
+## dummy check
+## FRNG
+#load("/d6/jamesmcc/WRF_Hydro/FRNG_NHD/4DAY/NHDPLUS/DOMAIN/Route_Link_2.reExpFrom.Rdb")
+#rl <- as.data.frame(GetNcdfFile("/d6/jamesmcc/WRF_Hydro/FRNG_NHD/4DAY/NHDPLUS/DOMAIN/Route_Link_2.nc", quiet=TRUE))
+#checkReExpFirstOrd(from, rl)
+
+## Boulder_Creek
+#load("/d6/jamesmcc/WRF_Hydro/Boulder_Creek_NHD/DOMAIN/Route_Link_NHD_2015_09_29.reExpFrom.Rdb")
+#rl <- as.data.frame(GetNcdfFile("/d6/jamesmcc/WRF_Hydro/Boulder_Creek_NHD/DOMAIN/Route_Link_NHD_2015_09_29.nc", quiet=TRUE))
+#checkReExpFirstOrd(from, rl)
+
+checkReExpFirstOrd <- function(from, rl) {
+  cat("Orders of links with no upstream links\n")
+  whFrom1 <- which(from$start==0)
+  print(table(rl$order[whFrom1]))
+  
+  cat("O2+ links with no upstream links\n")
+  whGtO1 <- which(rl$order[whFrom1] > 1)
+  print(rl[whFrom1[whGtO1],c('link','order','to')])
+
+  cat('any of these links in "to"?\n')
+  print(any(rl[whFrom1[whGtO1],c('link')] %in% rl$to))
+  invisible(TRUE)
+}
+
 
 
 

@@ -2,8 +2,7 @@
 % Please edit documentation in R/ncdf_get.R
 \name{ncdump}
 \alias{ncdump}
-\title{Emulate ncdump -h.
-I just hacked print.ncdf4 just to make it look more like unix output.}
+\title{Emulate ncdump -h and -v.}
 \usage{
 ncdump(file, variable, quiet = FALSE)
 }

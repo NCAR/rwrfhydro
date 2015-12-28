@@ -21,14 +21,17 @@ Imports:
     RColorBrewer (>= 1.1-2), 
     reshape2 (>= 1.4.1), 
     scales (>= 0.2.4), 
+    foreach (>= 1.4.2),
     curl (>= 0.5),
     dataRetrieval (>= 2.1.2),
     raster (>= 2.3)
 LazyData: true
-Suggests: 
-    doMC,
+Suggests:
     testthat,
-    knitr,
-    printr
+    knitr, 
+    rgdal, 
+    pander,
+    doMC,
+    ptw
 BuildVignettes: false
 VignetteBuilder: knitr

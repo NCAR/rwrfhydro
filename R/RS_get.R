@@ -18,18 +18,52 @@
 #' NOTE: This tool currently only works for geogrid files in Lambert Conformal Conic projection.
 #' 
 #' @param geogrdPath The pathname to the geogrid file (i.e., geo_em.d01.nc).
-#' @param prodName The MODIS product name to download/process. Run the \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package
-#' getProducts() for a complete list of supported products.
-#' @param outDir Directory name to store processed TIF files. This is the equivalent
-#' to the \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package's "job" name. This is a directory name only and NOT a full
-#' path. The directory will be created in the preset \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package outDirPath.
-#' @param begin Date string for the start date to download/process MODIS tiles. The
-#' date string should follow \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package convention (e.g., "2011.06.01").
-#' @param end Date string for the end date to download/process MODIS tiles. The
-#' date string should follow \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package convention (e.g., "2011.06.01").
-#' @param resampTyp Resampling type. GDAL possible options (depends on version): 'near', 'bilinear', 'cubic', 'cubicspline', 
-#' 'lanczos', 'mode', 'average' (DEFAULT='near'). Note that MODIS nodata values MAY look like real values to GDAL, so use  
-#' caution with any methods other than 'near' and 'mode'. Fix in future version.
+#' @param prodName The MODIS product name to download/process. Run the 
+#'   \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package 
+#'   getProducts() for a complete list of supported products.
+#' @param outDir Directory name to store processed TIF files. This is the 
+#'   equivalent to the 
+#'   \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package's "job" 
+#'   name. This is a directory name only and NOT a full path. The directory will
+#'   be created in the preset 
+#'   \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package 
+#'   outDirPath.
+#' @param begin Date string for the start date to download/process MODIS tiles. 
+#'   The date string should follow 
+#'   \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package 
+#'   convention (e.g., "2011.06.01").
+#' @param end Date string for the end date to download/process MODIS tiles. The 
+#'   date string should follow 
+#'   \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package 
+#'   convention (e.g., "2011.06.01").
+#' @param collection From MODIS::runGdal help: "Default is to download most
+#'   recent collection version. See: ?getCollection"
+#' @param buffer From MODIS::runGdal help: "Numeric. Buffer [in units of the
+#'   'outProj'] around the specified extent. See: ?getTile" (DEFAULT=0.04, which
+#'   seems to cover MODIS tile corners sufficiently)
+#' @param SDSstring From MODIS::runGdal help: "Default is extract all SDS
+#'   (layers). See: ?getSds."
+#' @param exclList List pairing SDS name (e.g., "Lai_1km", "FparLai_QC") with 
+#'   values to exclude from interpolation (i.e., convert to "nodata"). For 
+#'   example, for the Lai_1km product, valid range is 0-100, values 249-255 are 
+#'   fill values, but only one value (255) is reported as _FillValue in the HDF 
+#'   metadata. The exclude list should specify value ranges to exclude, and 
+#'   should be in the form: \deqn{list("SDS name"="exclude range", ...)} where 
+#'   "exclude range" can be a single number (e.g., 254), "gt <somenumber>" to 
+#'   exclude all values over some threshold (e.g., "gt 100"), or "lt 
+#'   <somenumber>" to exclude all values less than some threshold (e.g., "lt 
+#'   0").
+#' @param resampList List pairing SDS name (e.g., "Lai_1km", "FparLai_QC") with 
+#'   reasmpling method to use. GDAL possible options (depends on version): 
+#'   'near', 'bilinear', 'cubic', 'cubicspline', 'lanczos', 'mode', 'average' 
+#'   (DEFAULT='near', unless otherwise specified in 
+#'   \code{MODISoptions(resamplingType="<somemethod>")}). The resampling list 
+#'   should be in the form: \deqn{list("SDS name"="method", ...)} where "method"
+#'   is one of the GDAL methods listed above.
+#' @param quiet From MODIS::runGdal help: Logical, Default FALSE. Some progress 
+#'   informations.
+#' @param scriptPath OPTIONAL path to where gdal_calc.py script lives in case
+#'   it is not in the same default path as gdal executables
 #' @return Empty
 #'
 #' @examples
@@ -48,7 +82,10 @@
 #' @concept MODIS dataGet
 #' @family MODIS
 #' @export
-GetMODIS <- function(geogrdPath, prodName, outDir, begin, end, resampTyp='near') {
+GetMODIS <- function(geogrdPath, prodName, outDir, begin=NULL, end=NULL, 
+                     collection=NULL, buffer=0.04,
+                     SDSstring=NULL, 
+                     exclList=NULL, resampList=NULL, quiet=FALSE, scriptPath=NULL) {
     # Check packages
     if (!(require("rgdal") & require("raster") & require("ncdf4") & require("MODIS"))) {
         stop("Required packages not found. Must have R packages: rgdal (requires GDAL system install), raster, ncdf4, and MODIS")
@@ -80,7 +117,12 @@ GetMODIS <- function(geogrdPath, prodName, outDir, begin, end, resampTyp='near')
 	  hgt.r <- raster::raster(paste0(locPath, "/geogrid_tmp.tif"))
     system(paste0("rm ", paste0(locPath, "/geogrid_tmp.tif")))
     # Run the download & processing
-    mod.list <- MODIS::runGdal(product=prodName, extent=hgt.r, begin=begin, end=end, collection="005", resamplingType=resampTyp, buffer=0.04, job=outDir)
+    mod.list <- MODIS::runGdal(product=prodName, collection=collection, 
+                               begin=begin, end=end,
+                               extent=hgt.r, buffer=buffer, 
+                               SDSstring=SDSstring, job=outDir, 
+                               exclList=exclList, resampList=resampList,
+                               quiet=quiet, scriptPath=scriptPath)
 }
 
 
@@ -424,116 +466,3 @@ CalcStatsRS <- function(inStack) {
     statDf
     }
 
-
-#' Creates a georeferenced TIF from a geogrid variable
-#'
-#' \code{ExportGeogrid} takes a NetCDF geogrid and converts the specified
-#' variable into a georeferenced TIF file.
-#'
-#' \code{ExportGeogrid} takes a standard geogrid in NetCDF format and 
-#' converts the specified variable to a georeferenced geoTiff for use 
-#' in standard GIS tools.
-#'
-#' @param inFile The geogrid NetCDF file.
-#' @param inVar The name of the variable to be converted.
-#' @param outFile The geoTiff filename to create.
-#' @return NULL
-#'
-#' @examples
-#' ## Export the HGT_M field from the geogrid file geo_em.d01_1km.nc
-#' ## to a geoTiff called geogrid_hgt.tif.
-#'
-#' ExportGeogrid("geo_em.d01_1km.nc", "HGT_M", "geogrid_hgt.tif")
-#' @keywords IO
-#' @concept dataMgmt
-#' @export
-ExportGeogrid <- function(inFile, inVar, outFile) {
-	# Check packages
-    if (!(require("rgdal") & require("raster") & require("ncdf4") )) {
-        stop("Required packages not found. Must have R packages: rgdal (requires GDAL system install), raster, ncdf4")
-	}
-	inNC <- ncdf4::nc_open(inFile)
-	inNCVar <- ncdf4::ncvar_get(inNC, inVar)
-	varList <- names(inNC$var)
-	# Data types
-	typlist <- list("byte"="Byte",
-					"short"="Int16",
-					"int"="Int32",
-					"long"="Int32",
-					"float"="Float32",
-					"real"="Float32",
-					"double"="Float64",
-					"ubyte"="qmin_cfs",
-					"ushort"="UInt16",
-					"uint"="UInt32",
-					"int64"="Int64",
-					"uint64"="UInt64")
-	# Get coords
-	if ("XLONG_M" %in% varList & "XLAT_M" %in% varList) {
-		inNCLon <- ncdf4::ncvar_get(inNC, "XLONG_M")
-		inNCLat <- ncdf4::ncvar_get(inNC, "XLAT_M")
-	} else if ("XLONG" %in% varList & "XLAT" %in% varList) {
-		inNCLon <- ncdf4::ncvar_get(inNC, "XLONG")
-		inNCLat <- ncdf4::ncvar_get(inNC, "XLAT")
-	} else if ("lon" %in% varList & "lat" %in% varList) {
-		inNCLon <- ncdf4::ncvar_get(inNC, "lon")
-		inNCLat <- ncdf4::ncvar_get(inNC, "lat")
-	} else {
-		stop('Error: Latitude and longitude fields not found (tried: XLAT_M/XLONG_M, XLAT/XLONG, lat/lon')
-	}
-	# Reverse column order to get UL in UL
-	x <- as.vector(inNCLon[,ncol(inNCLon):1])
-	y <- as.vector(inNCLat[,ncol(inNCLat):1])
-	#coords <- data.frame(lon=x, lat=y)
-	#coordinates(coords) <- c("lon", "lat")
-	#proj4string(coords) <- CRS("+proj=longlat +a=6370000 +b=6370000 +no_defs")
-	coords <- as.matrix(cbind(x, y))
-	# Get geogrid and projection info
-	map_proj <- ncdf4::ncatt_get(inNC, varid=0, attname="MAP_PROJ")$value
-	cen_lat <- ncdf4::ncatt_get(inNC, varid=0, attname="CEN_LAT")$value
-	cen_lon <- ncdf4::ncatt_get(inNC, varid=0, attname="STAND_LON")$value
-	truelat1 <- ncdf4::ncatt_get(inNC, varid=0, attname="TRUELAT1")$value
-	truelat2 <- ncdf4::ncatt_get(inNC, varid=0, attname="TRUELAT2")$value
-	if (map_proj==1) {
-		geogrd.proj <- paste0("+proj=lcc +lat_1=", truelat1, " +lat_2=", truelat2, " +lat_0=", cen_lat, " +lon_0=", cen_lon, " +x_0=0 +y_0=0 +a=6370000 +b=6370000 +units=m +no_defs")
-	#geogrd.crs <- CRS(geogrd.proj)
-    } else {
-		stop('Error: Projection type not supported (currently this tool only works for Lambert Conformal Conic projections).')
-	}
-	dx <- ncdf4::ncatt_get(inNC, varid=0, attname="DX")$value
-	dy <- ncdf4::ncatt_get(inNC, varid=0, attname="DY")$value
-	if ( dx != dy ) {
-		stop(paste0('Error: Asymmetric grid cells not supported. DX=', dx, ', DY=', dy))
-	}
-	#coords.proj <- spTransform(coords, geogrd.crs)
-	projcoords <- rgdal::project(coords, geogrd.proj)
-	ul <- projcoords[1,]
-	# Define geo transform:
-	# x coord of UL corner of UL cell
-	gt0 = ul[1] - dx/2.0
-	# x pixel resolution
-	gt1 = dx
-	# x rotation
-	gt2 = 0.0
-	# y coord of UL corner of UL cell
-	gt3 = ul[2] + dy/2.0
-	# y rotation
-	gt4 = 0.0
-	# y pixel resolution, should be negative
-	gt5 = -dy
-	gt = c(gt0,gt1,gt2,gt3,gt4,gt5)
-	# Setup temp geotif
-	d.drv <- new("GDALDriver", "GTiff")
-	tds.out <- new("GDALTransientDataset", driver = d.drv, 
-				   rows = dim(inNCVar)[2], cols = dim(inNCVar)[1], 
-				   bands = 1, type = typlist[[inNC$var[[inVar]]$prec]])
-	.Call("RGDAL_SetGeoTransform", tds.out, gt, PACKAGE = "rgdal")
-	.Call("RGDAL_SetProject", tds.out, geogrd.proj, PACKAGE = "rgdal")
-	# Prep NC variable
-	inNCVarRast <- raster::as.matrix(raster::raster(inNCVar))
-	inNCVarRast <- inNCVarRast[,ncol(inNCVarRast):1]
-	# Insert data and export geotiff
-	rgdal::putRasterData(tds.out, as.matrix(inNCVarRast))
-	rgdal::saveDataset(tds.out, outFile)
-	rgdal::GDAL.close(tds.out)
-}

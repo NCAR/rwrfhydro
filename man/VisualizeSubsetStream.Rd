@@ -11,7 +11,7 @@ VisualizeSubsetStream(indDist, ncFile, comIds = TRUE, ...)
 
 \item{ncFile}{Route Link file read in/initially processed with VisualizeRouteLink()}
 
-\item{comIds}{Logical, show the comIds or the link indices in the Route_Link.nc file?}
+\item{comIds}{Logical, show the comIds or the link indices in the Route_Link.nc file.}
 
 \item{...}{arguments to the function returned by VisualizeRouteLink.}
 }
@@ -31,4 +31,15 @@ Visualize upstream or downstream links determined from GatherStreamInds
  VisualizeSubsetStream(downstreamInds, file, com=FALSE, zoom=10, linkColor='lightblue', maptype='satellite')
 }
 }
+\seealso{
+Other networkExpression nudging: \code{\link{GatherStreamInds}};
+  \code{\link{NtwKReExToNcdf}}; \code{\link{ReExpNetwork}};
+  \code{\link{ReExpressRouteLink}};
+  \code{\link{ReIndexRouteLink}};
+  \code{\link{VisualizeRouteLink}}
+}
+\concept{
+nudging plot
+}
+\keyword{hplot}
 

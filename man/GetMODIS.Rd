@@ -4,7 +4,9 @@
 \alias{GetMODIS}
 \title{Get MODIS data and process to match geogrid}
 \usage{
-GetMODIS(geogrdPath, prodName, outDir, begin, end, resampTyp = "near")
+GetMODIS(geogrdPath, prodName, outDir, begin = NULL, end = NULL,
+  collection = NULL, buffer = 0.04, SDSstring = NULL, exclList = NULL,
+  resampList = NULL, quiet = FALSE, scriptPath = NULL)
 }
 \arguments{
 \item{geogrdPath}{The pathname to the geogrid file (i.e., geo_em.d01.nc).}
@@ -22,9 +24,40 @@ date string should follow \href{http://r-forge.r-project.org/projects/modis/}{MO
 \item{end}{Date string for the end date to download/process MODIS tiles. The
 date string should follow \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package convention (e.g., "2011.06.01").}
 
-\item{resampTyp}{Resampling type. GDAL possible options (depends on version): 'near', 'bilinear', 'cubic', 'cubicspline',
-'lanczos', 'mode', 'average' (DEFAULT='near'). Note that MODIS nodata values MAY look like real values to GDAL, so use
-caution with any methods other than 'near' and 'mode'. Fix in future version.}
+\item{collection}{From MODIS::runGdal help: "Default is to download most
+recent collection version. See: ?getCollection"}
+
+\item{buffer}{From MODIS::runGdal help: "Numeric. Buffer [in units of the
+'outProj'] around the specified extent. See: ?getTile" (DEFAULT=0.04, which
+seems to cover MODIS tile corners sufficiently)}
+
+\item{SDSstring}{From MODIS::runGdal help: "Default is extract all SDS
+(layers). See: ?getSds."}
+
+\item{exclList}{List pairing SDS name (e.g., "Lai_1km", "FparLai_QC") with
+values to exclude from interpolation (i.e., convert to "nodata"). For
+example, for the Lai_1km product, valid range is 0-100, values 249-255 are
+fill values, but only one value (255) is reported as _FillValue in the HDF
+metadata. The exclude list should specify value ranges to exclude, and
+should be in the form: \deqn{list("SDS name"="exclude range", ...)} where
+"exclude range" can be a single number (e.g., 254), "gt <somenumber>" to
+exclude all values over some threshold (e.g., "gt 100"), or "lt
+<somenumber>" to exclude all values less than some threshold (e.g., "lt
+0").}
+
+\item{resampList}{List pairing SDS name (e.g., "Lai_1km", "FparLai_QC") with
+reasmpling method to use. GDAL possible options (depends on version):
+'near', 'bilinear', 'cubic', 'cubicspline', 'lanczos', 'mode', 'average'
+(DEFAULT='near', unless otherwise specified in
+\code{MODISoptions(resamplingType="<somemethod>")}). The resampling list
+should be in the form: \deqn{list("SDS name"="method", ...)} where "method"
+is one of the GDAL methods listed above.}
+
+\item{quiet}{From MODIS::runGdal help: Logical, Default FALSE. Some progress
+informations.}
+
+\item{scriptPath}{OPTIONAL path to where gdal_calc.py script lives in case
+it is not in the same default path as gdal executables}
 }
 \value{
 Empty

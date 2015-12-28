@@ -96,8 +96,18 @@ WriteNcTimeSlice <- function(dfByPosix, outPath, sliceResolution) {
 
     ## could have multiple of the same station at a given time. 
     ## simly take the most recent. if it got this far it has had some qc
+dfByPosix0 <- dfByPosix
+    dfByPosix$dateTime <- as.numeric(dfByPosix$dateTime)
+    dfByPosix$queryTime <- as.numeric(dfByPosix$queryTime)
     dfByPosix <- plyr::ddply(dfByPosix, plyr::.(site_no),
                              function(df) df[which.max(df$queryTime)[1],])
+#     dfByPosix$dateTime <- as.POSIXct(dfByPosix$dateTime, tz='UTC', origin='1970-01-01 00:00.00 UTC')
+#     dfByPosix$queryTime <- as.POSIXct(dfByPosix$queryTime, tz='UTC', origin='1970-01-01 00:00.00 UTC')
+
+#     dfByPosix$siteLev <- round(as.integer(as.factor(dfByPosix$site_no))/10)
+#     dfByPosix2 <- plyr::dlply(dfByPosix, plyr::.(siteLev), function(df) {print(str(df)); 1})
+#     dfByPosix2 <- plyr::ddply(dfByPosix, plyr::.(siteLev), function(df) 1)
+#     
     
 # you'd have to know the rounding time to get this right... checking 
 # for times outside the window of this file.
@@ -245,6 +255,7 @@ ReadNcTimeSlice <- function(file) {
                                      "discharge_quality"="quality",
                                      "time"="dateTime",
                                      "stationId"="site_no"))  
+  
   sliceDf
 }
   

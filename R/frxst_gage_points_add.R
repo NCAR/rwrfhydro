@@ -23,6 +23,9 @@
 #' newCopyId <- 'threeRealGagesTEST'
 #' AddRouteLinkGage(rlFile, gageIds, comIds, new=identifier)
 #' }
+#' @keywords manip IO
+#' @concept nudging dataMgmt
+#' @family nudging
 #' @export
 AddRouteLinkGage <- function(rlFile, gageIds, comIds, newCopyId, gageMiss='', overwrite=FALSE) {
 
@@ -32,6 +35,7 @@ AddRouteLinkGage <- function(rlFile, gageIds, comIds, newCopyId, gageMiss='', ov
   if(missing(newCopyId)) warning('A newCopyId required to distinguish the output file with gages.')
   
   rl <- as.data.frame(GetNcdfFile(rlFile, quiet=TRUE))
+  gagesInOrig <- any(names(rl)=='gages')
   rl$gages <- formatC(gageMiss, width=15) ## populate with missing
   
   for(ii in 1:length(gageIds)) {
@@ -52,7 +56,7 @@ AddRouteLinkGage <- function(rlFile, gageIds, comIds, newCopyId, gageMiss='', ov
   link <- ncid$dim[['linkDim']]
   idDim <- ncdf4::ncdim_def( 'IDLength', '', 1:15)
   gages <- ncdf4::ncvar_def('gages', 'usgsId', list(idDim,link), formatC(gageMiss, width=15))
-  ncid <- ncdf4::ncvar_add(ncid, gages)
+  if(!gagesInOrig) ncid <- ncdf4::ncvar_add(ncid, gages)
   ret <- ncdf4::ncvar_put( ncid, 'gages', rl$gages)
   ncdf4::nc_close(ncid)
   newFile
@@ -92,6 +96,9 @@ AddRouteLinkGage <- function(rlFile, gageIds, comIds, newCopyId, gageMiss='', ov
 #'              frxstInds=as.integer(c(500,160,200)), 
 #'              overwrite=TRUE)
 #' }
+#' @keywords manip IO
+#' @concept nudging dataMgmt
+#' @family nudging
 #' @export
 EditFrxstPts <- function(fullDomFile, newCopyId, gridInds, frxstInds, keep=FALSE, overwrite=FALSE) {
 
@@ -113,7 +120,7 @@ EditFrxstPts <- function(fullDomFile, newCopyId, gridInds, frxstInds, keep=FALSE
     frxstPts[] <-  as.integer(-9999)
   } 
   frxstPts[gridInds] = as.integer(frxstInds)
-  gages <- ncdf4::ncvar_def('gages', 'usgsId', list(idDim,link), formatC(gageMiss, width=15))
+  #gages <- ncdf4::ncvar_def('gages', 'usgsId', list(idDim,link), formatC(gageMiss, width=15))
   ret <- ncdf4::ncvar_put( ncid, 'frxst_pts', frxstPts)
   ncdf4::nc_close(ncid)
 

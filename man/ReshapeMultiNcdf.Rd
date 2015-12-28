@@ -18,4 +18,5 @@ Take the output dataframe from GetMultiNcdf and reshape the dataframe
 for ease of use in other functions.
 }
 \keyword{internal}
+\keyword{utilities}
 

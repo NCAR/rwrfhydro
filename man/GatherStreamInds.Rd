@@ -36,4 +36,16 @@ Gather upstream or downstream distance from a given starting location
      downstreamInds <- GatherStreamInds(to, 91, length=reInd$length)
  }
 }
+\seealso{
+Other networkExpression nudging: \code{\link{NtwKReExToNcdf}};
+  \code{\link{ReExpNetwork}};
+  \code{\link{ReExpressRouteLink}};
+  \code{\link{ReIndexRouteLink}};
+  \code{\link{VisualizeRouteLink}};
+  \code{\link{VisualizeSubsetStream}}
+}
+\concept{
+nudging dataMgmt
+}
+\keyword{manip}
 

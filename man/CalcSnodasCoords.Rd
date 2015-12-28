@@ -17,6 +17,7 @@ snodasCoords <- CalcSnodasCoords()
 }
 \seealso{
 Other SNODAS: \code{\link{GetSnodasDepthSweDate}};
+  \code{\link{GetSnodasPointTs}};
   \code{\link{PutSnodasCoordsNcdf}};
   \code{\link{PutSnodasNcdf}};
   \code{\link{ReadSnodasDepthSweDate}}

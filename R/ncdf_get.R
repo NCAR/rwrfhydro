@@ -10,8 +10,10 @@
 #' @param flip2D Logical, apply a vertical flip to 2D variables? (E.g. WRF Hydro geo grids)
 #' @return A list or a dataframe (if all variables are 1D of the same length.)
 #' @examples
+#' \dontrun{
 #' conn <- GetNcdfFile('~/wrfHydroTestCases/Fourmile_Creek/CHANNEL_CONNECTIVITY.nc')
-#  conn <- GetNcdfFile('~/wrfHydroTestCases/Fourmile_Creek/CHANNEL_CONNECTIVITY.nc', var='lambert_conformal_conic', exc=TRUE)
+#'  conn <- GetNcdfFile('~/wrfHydroTestCases/Fourmile_Creek/CHANNEL_CONNECTIVITY.nc', var='lambert_conformal_conic', exc=TRUE)
+#' }
 #' @concept ncdf 
 #' @family ncdf 
 #' @export
@@ -38,8 +40,7 @@ GetNcdfFile <- function(file, variables, exclude=FALSE, quiet=FALSE, flip2D=TRUE
   } else varsInFile
   
   doGetVar <- function(theVar) ncdf4::ncvar_get(nc, varid=theVar)
-  NamedRetVars <- NamedList(returnVars)
-  outList <- plyr::llply(NamedRetVars, doGetVar)
+  outList <- plyr::llply(NamedList(returnVars), doGetVar)
   ncdf4::nc_close(nc)
   
   nDims <- plyr::laply(outList, function(ll) length(dim(ll)))
@@ -57,7 +58,8 @@ GetNcdfFile <- function(file, variables, exclude=FALSE, quiet=FALSE, flip2D=TRUE
 }
 
 ##=========================================================================================================
-#' Emulate ncdump -h.
+#' Emulate ncdump -h and -v.
+#' 
 #' I just hacked print.ncdf4 just to make it look more like unix output. 
 #'
 #' @param file Character, the file to inspect. 

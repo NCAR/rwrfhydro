@@ -83,7 +83,9 @@ wb.allrt.fc <- CalcNoahmpWatBudg(modLDASOUT1d.allrt.fc, modRTOUT1h.allrt.fc, mod
 wb.allrt.fc
 }
 \seealso{
-Other modelEvaluation: \code{\link{CalcModPerfMulti}};
+Other modelEvaluation: \code{\link{CalcMetContGrid}};
+  \code{\link{CalcMetCont}};
+  \code{\link{CalcModPerfMulti}};
   \code{\link{CalcModPerf}}; \code{\link{CalcNoahmpFluxes}}
 }
 \concept{

@@ -7,6 +7,8 @@
 #' NOTE: Currently only works for runs using NoahMP as the LSM.
 #' 
 #' @param ldasoutDf The LDASOUT dataframe
+#' @param idCol The optional ID column to use to parse the output;
+#' for example, a basin ID column or other index ID. (DEFAULT=NULL)
 #' @return The input dataframe with new water flux columns added.
 #'
 #' @examples
@@ -18,14 +20,56 @@
 #' @concept dataMgmt
 #' @family modelEvaluation
 #' @export
-CalcNoahmpFluxes <- function(ldasoutDf) {
+CalcNoahmpFluxes <- function(ldasoutDf, idCol=NULL) {
+  ldasoutDf <- ldasoutDf[order(ldasoutDf[,"POSIXct"]),]
+  if (is.null(idCol)) {
     if ("ACCPRCP" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_ACCPRCP[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACCPRCP) }
     if ("ACCECAN" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_ACCECAN[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACCECAN) }
     if ("ACCETRAN" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_ACCETRAN[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACCETRAN) }
     if ("ACCEDIR" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_ACCEDIR[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACCEDIR) }
     if ("UGDRNOFF" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_UGDRNOFF[2:nrow(ldasoutDf)] <- diff(ldasoutDf$UGDRNOFF) }
     if ("SFCRNOFF" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_SFCRNOFF[2:nrow(ldasoutDf)] <- diff(ldasoutDf$SFCRNOFF) }
-    ldasoutDf
+    if ("ACSNOM" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_ACSNOM[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACSNOM) }
+    if ("ACSNOW" %in% colnames(ldasoutDf)) { ldasoutDf$DEL_ACSNOW[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACSNOW) }
+  } else {
+    idList <- unique(ldasoutDf[,idCol])
+    for (i in 1:length(idList)) {
+      if ("ACCPRCP" %in% colnames(ldasoutDf)) {
+        tmp <- subset(ldasoutDf$ACCPRCP, ldasoutDf[,idCol]==idList[i])
+        tmp <- c(NA, diff(tmp))
+        ldasoutDf$DEL_ACCPRCP[ldasoutDf[,idCol]==idList[i]] <- tmp }
+      if ("ACCECAN" %in% colnames(ldasoutDf)) {
+        tmp <- subset(ldasoutDf$ACCECAN, ldasoutDf[,idCol]==idList[i])
+        tmp <- c(NA, diff(tmp))
+        ldasoutDf$DEL_ACCECAN[ldasoutDf[,idCol]==idList[i]] <- tmp }
+      if ("ACCEDIR" %in% colnames(ldasoutDf)) {
+        tmp <- subset(ldasoutDf$ACCEDIR, ldasoutDf[,idCol]==idList[i])
+        tmp <- c(NA, diff(tmp))
+        ldasoutDf$DEL_ACCEDIR[ldasoutDf[,idCol]==idList[i]] <- tmp }
+      if ("ACCETRAN" %in% colnames(ldasoutDf)) {
+        tmp <- subset(ldasoutDf$ACCETRAN, ldasoutDf[,idCol]==idList[i])
+        tmp <- c(NA, diff(tmp))
+        ldasoutDf$DEL_ACCETRAN[ldasoutDf[,idCol]==idList[i]] <- tmp }
+      if ("SFCRNOFF" %in% colnames(ldasoutDf)) {
+        tmp <- subset(ldasoutDf$SFCRNOFF, ldasoutDf[,idCol]==idList[i])
+        tmp <- c(NA, diff(tmp))
+        ldasoutDf$DEL_SFCRNOFF[ldasoutDf[,idCol]==idList[i]] <- tmp }
+      if ("UGDRNOFF" %in% colnames(ldasoutDf)) {
+        tmp <- subset(ldasoutDf$UGDRNOFF, ldasoutDf[,idCol]==idList[i])
+        tmp <- c(NA, diff(tmp))
+        ldasoutDf$DEL_UGDRNOFF[ldasoutDf[,idCol]==idList[i]] <- tmp }
+      if ("ACSNOM" %in% colnames(ldasoutDf)) {
+        tmp <- subset(ldasoutDf$ACSNOM, ldasoutDf[,idCol]==idList[i])
+        tmp <- c(NA, diff(tmp))
+        ldasoutDf$DEL_ACSNOM[ldasoutDf[,idCol]==idList[i]] <- tmp }
+      if ("ACSNOW" %in% colnames(ldasoutDf)) {
+        tmp <- subset(ldasoutDf$ACSNOW, ldasoutDf[,idCol]==idList[i])
+        tmp <- c(NA, diff(tmp))
+        ldasoutDf$DEL_ACSNOW[ldasoutDf[,idCol]==idList[i]] <- tmp }
+    }
+    ldasoutDf <- ldasoutDf[order(ldasoutDf[,idCol], ldasoutDf[,"POSIXct"]),]
+  }
+  ldasoutDf
 }
 
 
@@ -180,70 +224,69 @@ CalcNoahmpWatBudg <- function(ldasoutDf, rtoutDf=NULL, gwoutDf=NULL, sfcrt=FALSE
 #' Computes model performance statistics for WRF-Hydro flux output
 #'
 #' \code{CalcModPerf} calculates model performance statistics for flux output.
-#'
-#' \code{CalcModPerf} reads a model flux time series (i.e., created using \code{\link{ReadFrxstPts}}) and
-#' an observation time series (i.e., created using \code{\link{ReadUsgsGage}}) and calculates model performance
-#' statistics (Nash-Sutcliffe Efficiency, Rmse, etc.) at various time scales and for low
-#' and high fluxes. The tool will subset data to matching time periods (e.g., if the
-#' observed data is at 5-min increments and modelled data is at 1-hr increments, the tool
-#' will subset the observed data to select only observations on the matching hour break).
-#'
-#' Performance Statistics:
-#' \cr (mod = model output, obs = observations, n = sample size)
-#' \itemize{
-#' \item n: sample size
-#' \item nse: Nash-Sutcliffe Efficiency
-#' \deqn{nse = 1 - ( sum((obs - mod)^2) / sum((obs - mean(obs))^2) ) }
-#' \item nselog: log-transformed Nash-Sutcliffe Efficiency
-#' \deqn{nselog = 1 - ( sum((log(obs) - log(mod))^2) / sum((log(obs) - mean(log(obs)))^2) ) }
-#' \item cor: correlation coefficient
-#' \deqn{cor = cor(mod, obs) }
-#' \item rmse: root mean squared error
-#' \deqn{rmse = sqrt( sum((mod - obs)^2) / n ) }
-#' \item rmsenorm: normalized root mean squared error
-#' \deqn{rmsenorm = rmse / (max(obs) - min(obs)) }
-#' \item bias: percent bias
-#' \deqn{bias = sum(mod - obs) / sum(obs) * 100 }
-#' \item mae: mean absolute error
-#' \deqn{mae = mean(abs(mod - obs)) }
-#' \item errcom: error in the center-of-mass of the flux, where center-of-mass is the
-#' hour/day when 50\% of daily/monthly/water-year flux has occurred. Reported as number of hours for
-#' daily time scale and number of days for monthly and yearly time scales.
-#' \item errmaxt: Error in the time of maximum flux. Reported as number of hours for daily time scale
-#' and number of days for monthly and yearly time scales).
-#' \item errfdc: Error in the integrated flow duration curve between 0.05 and 0.95 exceedance thresholds
-#' (in native flow units).
-#' }
-#'
-#' Time scales/Flux types:
-#' \itemize{
-#' \item ts = native model/observation time step (e.g., hourly)
-#' \item daily = daily time step
-#' \item monthly = monthly time step
-#' \item yearly = water-year time step
-#' \item max10 = high flows; restricted to the portion of the time series where the observed flux 
-#' is in the highest 10\% (native time step)
-#' \item min10 = low flows; restricted to the portion of the time series where the observed flux 
-#' is in the lowest 10\% (native time step)
-#' }
-#'
-#' @param flxDf.mod The flux output dataframe (required). Assumes only one forecast
-#' point per file, so if you have multiple forecast points in your output dataframe, use
-#' subset to isolate a single forecast point's data. Also assumes model output and observation
-#' both contain POSIXct fields (called "POSIXct").
-#' @param flxDf.obs The observed flux dataframe. Assumes only one observation point per file, so if
-#' you have multiple observation points in your dataframe, use subset to isolate a single point's data.
-#' Also assumes model output and observation both contain POSIXct fields (called "POSIXct").
-#' @param flxCol.mod The column name for the flux time series for the MODEL data (default="q_cms")
-#' @param flxCol.obs The column name for the flux time series for the OBSERVED data (default="q_cms")
-#' @param stdate Start date for statistics (DEFAULT=NULL, all records will be used).
-#' Date MUST be specified in POSIXct format with appropriate timezone
-#' (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))
-#' @param enddate End date for statistics (DEFAULT=NULL, all records will be used).
-#' Date MUST be specified in POSIXct format with appropriate timezone
-#' (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))
-#' @param subdivisions Number of subdivisions used in flow duration curve integration
-#' (DEFAULT=1000); increase value if integrate function throws an error.
+
+#' 
+#' \code{CalcModPerf} reads a model flux time series (i.e., created using
+#' \code{\link{ReadFrxstPts}}) and an observation time series (i.e., created
+#' using \code{\link{ReadUsgsGage}}) and calculates model performance statistics
+#' (Nash-Sutcliffe Efficiency, Rmse, etc.) at various time scales and for low 
+#' and high fluxes. The tool will subset data to matching time periods (e.g., if
+#' the observed data is at 5-min increments and modelled data is at 1-hr
+#' increments, the tool will subset the observed data to select only
+#' observations on the matching hour break).
+#' 
+#' Performance Statistics: \cr (mod = model output, obs = observations, n =
+#' sample size) \itemize{ \item n: sample size \item nse: Nash-Sutcliffe
+#' Efficiency \deqn{nse = 1 - ( sum((obs - mod)^2) / sum((obs - mean(obs))^2) )
+#' } \item nselog: log-transformed Nash-Sutcliffe Efficiency \deqn{nselog = 1 -
+#' ( sum((log(obs) - log(mod))^2) / sum((log(obs) - mean(log(obs)))^2) ) } \item
+#' cor: correlation coefficient \deqn{cor = cor(mod, obs) } \item rmse: root
+#' mean squared error \deqn{rmse = sqrt( sum((mod - obs)^2) / n ) } \item
+#' rmsenorm: normalized root mean squared error \deqn{rmsenorm = rmse /
+#' (max(obs) - min(obs)) } \item bias: percent bias \deqn{bias = sum(mod - obs)
+#' / sum(obs) * 100 } \item msd: mean signed deviation \deqn{msd = mean(mod -
+#' obs) } \item mae: mean absolute error \deqn{mae = mean(abs(mod -
+#' obs)) } \item errcom: error in the center-of-mass of the flux, where
+#' center-of-mass is the hour/day when 50\% of daily/monthly/water-year flux has
+#' occurred. Reported as number of hours for daily time scale and number of days
+#' for monthly and yearly time scales. \item errmaxt: Error in the time of
+#' maximum flux. Reported as number of hours for daily time scale and number of
+#' days for monthly and yearly time scales). \item errfdc: Error in the
+#' integrated flow duration curve between 0.05 and 0.95 exceedance thresholds 
+#' (in native flow units). }
+#' 
+#' Time scales/Flux types: \itemize{ \item ts = native model/observation time
+#' step (e.g., hourly) \item daily = daily time step \item monthly = monthly
+#' time step \item yearly = water-year time step \item max10 = high flows;
+#' restricted to the portion of the time series where the observed flux is in
+#' the highest 10\% (native time step) \item min10 = low flows; restricted to
+#' the portion of the time series where the observed flux is in the lowest 10\%
+#' (native time step) }
+#' 
+#' @param flxDf.mod The flux output dataframe (required). Assumes only one
+#'   forecast point per file, so if you have multiple forecast points in your
+#'   output dataframe, use subset to isolate a single forecast point's data.
+#'   Also assumes model output and observation both contain POSIXct fields
+#'   (called "POSIXct").
+#' @param flxDf.obs The observed flux dataframe. Assumes only one observation
+#'   point per file, so if you have multiple observation points in your
+#'   dataframe, use subset to isolate a single point's data. Also assumes model
+#'   output and observation both contain POSIXct fields (called "POSIXct").
+#' @param flxCol.mod The column name for the flux time series for the MODEL data
+#'   (default="q_cms")
+#' @param flxCol.obs The column name for the flux time series for the OBSERVED
+#'   data (default="q_cms")
+#' @param stdate Start date for statistics (DEFAULT=NULL, all records will be
+#'   used). Date MUST be specified in POSIXct format with appropriate timezone 
+#'   (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S",
+#'   tz="UTC"))
+#' @param enddate End date for statistics (DEFAULT=NULL, all records will be
+#'   used). Date MUST be specified in POSIXct format with appropriate timezone 
+#'   (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S",
+#'   tz="UTC"))
+#' @param subdivisions Number of subdivisions used in flow duration curve
+#'   integration (DEFAULT=1000); increase value if integrate function throws an
+#'   error.
 #' @return A new dataframe containing the model performance statistics.
 #'
 #' @examples
@@ -251,17 +294,21 @@ CalcNoahmpWatBudg <- function(ldasoutDf, rtoutDf=NULL, gwoutDf=NULL, sfcrt=FALSE
 #' ## USGS gage observation file (obsStrh.fc), both at an hourly time step, and calculate
 #' ## model performance statistics. The model forecast point data was imported using ReadFrxstPts
 #' ## and the gage observation data was imported using ReadUsgsGage.
-#'
-#' CalcModPerf(modStr1h.allrt.fc, obsStr5min.fc)
-#'
+#' 
+#' 
+#' \dontrun{
+#' CalcModPerf(modStrd.chrt.fc, obsStr5min.fc)
+#' 
 #' > Output:
-#'           nse nselog  cor rmse rmsenorm  bias  mae errcom errmaxt errfdc
-#' ts       0.57   0.61 0.79 1.43     9.48 -28.0 0.70     NA      NA  -0.42
-#' daily    0.71   0.64 0.87 1.17     9.86 -28.1 0.61   0.19   -2.25  -0.37
-#' monthly  0.80   0.70 0.93 0.89    12.73 -26.6 0.53  -0.18   -0.96     NA
-#' yearly   0.05   0.37 0.36 0.55    41.50  -6.5 0.45  -1.50   -3.38     NA
-#' max10   -7.50 -15.94 0.19 3.82    38.89 -24.5 0.04     NA      NA     NA
-#' min10   -2.84  -1.83 0.10 0.05    33.36 -23.7   NA     NA      NA     NA
+#'             n      nse   nselog      cor       rmse rmsenorm    bias        msd        mae     errcom    errmaxt     errfdc
+#' units   count unitless unitless unitless flux units unitless percent flux units flux units hours|days hours|days flux units
+#' t         116     0.81     0.67     0.91      0.211     8.48     7.1     0.0313     0.1385       <NA>       <NA>       0.04
+#' daily     116     0.81     0.67     0.91      0.211     8.48     7.1     0.0313     0.1385          0          0       0.04
+#' monthly     5     0.92     0.82     0.96     0.1073    10.35     9.1     0.0324     0.0833       -1.2        0.2       <NA>
+#' yearly      1     <NA>     <NA>     <NA>       <NA>     <NA>     7.1     0.0313     0.0313          0          4       <NA>
+#' max10      12     0.46     0.58     0.71      0.348    23.63    -2.8     -0.044      0.248       <NA>       <NA>       <NA>
+#' min10      12  -385.99   -14.59     0.35     0.1678   538.78   112.4      0.056     0.0592       <NA>       <NA>       <NA>
+#' }
 #' @keywords univar ts
 #' @concept modelEval
 #' @family modelEvaluation
@@ -271,7 +318,15 @@ CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q
     which.max.dt <- function(dd, qcol, dtcol) { dd[which.max(dd[,qcol]), dtcol] }
     CalcCOM.dt <- function(dd, qcol, dtcol) { dd[CalcCOM(dd[,qcol]), dtcol] }
     # Prepare data
-    if (!is.null(stdate) && !is.null(enddate)) {
+    if (!is.null(stdate) & is.null(enddate)) {
+      flxDf.obs <- subset(flxDf.obs, POSIXct>=stdate)
+      flxDf.mod <- subset(flxDf.mod, POSIXct>=stdate)
+    }
+    if (is.null(stdate) & !is.null(enddate)) {
+      flxDf.obs <- subset(flxDf.obs, POSIXct<=enddate)
+      flxDf.mod <- subset(flxDf.mod, POSIXct<=enddate)
+    }
+    if (!is.null(stdate) & !is.null(enddate)) {
       flxDf.obs <- subset(flxDf.obs, POSIXct>=stdate & POSIXct<=enddate)
       flxDf.mod <- subset(flxDf.mod, POSIXct>=stdate & POSIXct<=enddate)
     }
@@ -283,8 +338,9 @@ CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q
     flxDf.mod <- subset(flxDf.mod, !is.na(flxDf.mod$qcomp.mod) & !is.na(flxDf.mod$qcomp.obs))
     flxDf.mod <- CalcDates(flxDf.mod)
     flxDf.mod$date <- as.POSIXct(trunc(flxDf.mod$POSIXct, "days"))
-    results <- as.data.frame(matrix(nrow = 7, ncol = 11))
-    colnames(results) = c("n", "nse", "nselog", "cor", "rmse", "rmsenorm", "bias", "mae", "errcom", "errmaxt", "errfdc")
+    results <- as.data.frame(matrix(nrow = 7, ncol = 12))
+    colnames(results) = c("n", "nse", "nselog", "cor", "rmse", "rmsenorm", "bias", "msd", "mae", 
+                          "errcom", "errmaxt", "errfdc")
     rownames(results) = c("units", "t", "daily", "monthly", "yearly", "max10", "min10")
     exclvars <- names(flxDf.mod) %in% c("POSIXct", "secs", "timest", "date", "stat")
     
@@ -347,11 +403,14 @@ CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q
     results["t", "n"] <- length(flxDf.mod$qcomp.mod)
     results["t", "nse"] <- round(Nse(flxDf.mod$qcomp.mod, flxDf.mod$qcomp.obs), 2)
     results["t", "nselog"] <- round(NseLog(flxDf.mod$qcomp.mod, flxDf.mod$qcomp.obs), 2)
-    results["t", "cor"] <- round(cor(flxDf.mod$qcomp.mod, flxDf.mod$qcomp.obs, use="na.or.complete"), 2)
-    results["t", "rmse"] <- round(Rmse(flxDf.mod$qcomp.mod, flxDf.mod$qcomp.obs), 2)
+    results["t", "cor"] <- round(cor(flxDf.mod$qcomp.mod, flxDf.mod$qcomp.obs, 
+                                     use="na.or.complete"), 2)
+    results["t", "rmse"] <- round(Rmse(flxDf.mod$qcomp.mod, flxDf.mod$qcomp.obs), 4)
     results["t", "rmsenorm"] <- round(RmseNorm(flxDf.mod$qcomp.mod, flxDf.mod$qcomp.obs), 2)
-    results["t", "bias"] <- round(sum(flxDf.mod$qcomp.mod-flxDf.mod$qcomp.obs, na.rm=T)/sum(flxDf.mod$qcomp.obs, na.rm=TRUE) * 100, 1)
-    results["t", "mae"] <- round(mean(abs(flxDf.mod$qcomp.mod-flxDf.mod$qcomp.obs), na.rm=T), 2)
+    results["t", "bias"] <- round(sum(flxDf.mod$qcomp.mod-flxDf.mod$qcomp.obs, na.rm=T)/
+                                    sum(flxDf.mod$qcomp.obs, na.rm=TRUE) * 100, 1)
+    results["t", "msd"] <- round(mean(flxDf.mod$qcomp.mod-flxDf.mod$qcomp.obs, na.rm=T), 4)
+    results["t", "mae"] <- round(mean(abs(flxDf.mod$qcomp.mod-flxDf.mod$qcomp.obs), na.rm=T), 4)
     results["t", "errcom"] <- NA
     results["t", "errmaxt"] <- NA
     results["t", "errfdc"] <- round(integrate(splinefun(flxDf.mod[,"qcomp.mod.fdc"], flxDf.mod[,"qcomp.mod"], method='natural'), 0.05, 0.95, subdivisions=subdivisions)$value -
@@ -360,26 +419,52 @@ CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q
     results["daily", "n"] <- length(flxDf.mod.d$qcomp.mod)
     results["daily", "nse"] <- round(Nse(flxDf.mod.d$qcomp.mod, flxDf.mod.d$qcomp.obs), 2)
     results["daily", "nselog"] <- round(NseLog(flxDf.mod.d$qcomp.mod, flxDf.mod.d$qcomp.obs), 2)
-    results["daily", "cor"] <- round(cor(flxDf.mod.d$qcomp.mod, flxDf.mod.d$qcomp.obs, use="na.or.complete"), 2)
-    results["daily", "rmse"] <- round(Rmse(flxDf.mod.d$qcomp.mod, flxDf.mod.d$qcomp.obs), 2)
+    results["daily", "cor"] <- round(cor(flxDf.mod.d$qcomp.mod, flxDf.mod.d$qcomp.obs, 
+                                         use="na.or.complete"), 2)
+    results["daily", "rmse"] <- round(Rmse(flxDf.mod.d$qcomp.mod, flxDf.mod.d$qcomp.obs), 4)
     results["daily", "rmsenorm"] <- round(RmseNorm(flxDf.mod.d$qcomp.mod, flxDf.mod.d$qcomp.obs), 2)
-    results["daily", "bias"] <- round(sum(flxDf.mod.d$qcomp.mod-flxDf.mod.d$qcomp.obs, na.rm=T)/sum(flxDf.mod.d$qcomp.obs, na.rm=TRUE) * 100, 1)
-    results["daily", "mae"] <- round(mean(abs(flxDf.mod.d$qcomp.mod-flxDf.mod.d$qcomp.obs), na.rm=T), 2)
-    results["daily", "errcom"] <- round(mean(as.numeric(difftime(flxDf.mod.dcom$qcomp.mod,flxDf.mod.dcom$qcomp.obs, units="hours")), na.rm=T), 2)
-    results["daily", "errmaxt"] <- round(mean(as.numeric(difftime(flxDf.mod.dmax$qcomp.mod,flxDf.mod.dmax$qcomp.obs, units="hours")), na.rm=T), 2)
-    results["daily", "errfdc"] <- round(integrate(splinefun(flxDf.mod.d[,"qcomp.mod.fdc"], flxDf.mod.d[,"qcomp.mod"], method='natural'), 0.05, 0.95, subdivisions=subdivisions)$value -
-                                    integrate(splinefun(flxDf.mod.d[,"qcomp.obs.fdc"], flxDf.mod.d[,"qcomp.obs"], method='natural'), 0.05, 0.95, subdivisions=subdivisions)$value, 2 )
+    results["daily", "bias"] <- round(sum(flxDf.mod.d$qcomp.mod-flxDf.mod.d$qcomp.obs, na.rm=T)/
+                                        sum(flxDf.mod.d$qcomp.obs, na.rm=TRUE) * 100, 1)
+    results["daily", "msd"] <- round(mean(flxDf.mod.d$qcomp.mod-flxDf.mod.d$qcomp.obs, na.rm=T), 4)
+    results["daily", "mae"] <- round(mean(abs(flxDf.mod.d$qcomp.mod-flxDf.mod.d$qcomp.obs), 
+                                          na.rm=T), 4)
+    results["daily", "errcom"] <- round(mean(as.numeric(difftime(flxDf.mod.dcom$qcomp.mod,
+                                                                 flxDf.mod.dcom$qcomp.obs, 
+                                                                 units="hours")), na.rm=T), 2)
+    results["daily", "errmaxt"] <- round(mean(as.numeric(difftime(flxDf.mod.dmax$qcomp.mod,
+                                                                  flxDf.mod.dmax$qcomp.obs, 
+                                                                  units="hours")), na.rm=T), 2)
+    results["daily", "errfdc"] <- round(integrate(splinefun(flxDf.mod.d[,"qcomp.mod.fdc"], 
+                                                            flxDf.mod.d[,"qcomp.mod"], 
+                                                            method='natural'), 0.05, 0.95, 
+                                                  subdivisions=subdivisions)$value -
+                                    integrate(splinefun(flxDf.mod.d[,"qcomp.obs.fdc"], 
+                                                        flxDf.mod.d[,"qcomp.obs"], 
+                                                        method='natural'), 0.05, 0.95, 
+                                              subdivisions=subdivisions)$value, 2 )
 
     results["monthly", "n"] <- length(flxDf.mod.mwy$qcomp.mod)
     results["monthly", "nse"] <- round(Nse(flxDf.mod.mwy$qcomp.mod, flxDf.mod.mwy$qcomp.obs), 2)
-    results["monthly", "nselog"] <- round(NseLog(flxDf.mod.mwy$qcomp.mod, flxDf.mod.mwy$qcomp.obs), 2)
-    results["monthly", "cor"] <- round(cor(flxDf.mod.mwy$qcomp.mod, flxDf.mod.mwy$qcomp.obs, use="na.or.complete"), 2)
-    results["monthly", "rmse"] <- round(Rmse(flxDf.mod.mwy$qcomp.mod, flxDf.mod.mwy$qcomp.obs), 2)
-    results["monthly", "rmsenorm"] <- round(RmseNorm(flxDf.mod.mwy$qcomp.mod, flxDf.mod.mwy$qcomp.obs), 2)
-    results["monthly", "bias"] <- round(sum(flxDf.mod.mwy$qcomp.mod-flxDf.mod.mwy$qcomp.obs, na.rm=T)/sum(flxDf.mod.mwy$qcomp.obs, na.rm=TRUE) * 100, 1)
-    results["monthly", "mae"] <- round(mean(abs(flxDf.mod.mwy$qcomp.mod-flxDf.mod.mwy$qcomp.obs), na.rm=T), 2)
-    results["monthly", "errcom"] <- round(mean(as.numeric(difftime(flxDf.mod.mwycom$qcomp.mod,flxDf.mod.mwycom$qcomp.obs, units="days")), na.rm=T), 2)
-    results["monthly", "errmaxt"] <- round(mean(as.numeric(difftime(flxDf.mod.mwymax$qcomp.mod,flxDf.mod.mwymax$qcomp.obs, units="days")), na.rm=T), 2)
+    results["monthly", "nselog"] <- round(NseLog(flxDf.mod.mwy$qcomp.mod, 
+                                                 flxDf.mod.mwy$qcomp.obs), 2)
+    results["monthly", "cor"] <- round(cor(flxDf.mod.mwy$qcomp.mod, flxDf.mod.mwy$qcomp.obs, 
+                                           use="na.or.complete"), 2)
+    results["monthly", "rmse"] <- round(Rmse(flxDf.mod.mwy$qcomp.mod, flxDf.mod.mwy$qcomp.obs), 4)
+    results["monthly", "rmsenorm"] <- round(RmseNorm(flxDf.mod.mwy$qcomp.mod, 
+                                                     flxDf.mod.mwy$qcomp.obs), 2)
+    results["monthly", "bias"] <- round(sum(flxDf.mod.mwy$qcomp.mod-flxDf.mod.mwy$qcomp.obs, 
+                                            na.rm=T)/
+                                          sum(flxDf.mod.mwy$qcomp.obs, na.rm=TRUE) * 100, 1)
+    results["monthly", "msd"] <- round(mean(flxDf.mod.mwy$qcomp.mod-flxDf.mod.mwy$qcomp.obs, 
+                                            na.rm=T), 4)
+    results["monthly", "mae"] <- round(mean(abs(flxDf.mod.mwy$qcomp.mod-flxDf.mod.mwy$qcomp.obs), 
+                                            na.rm=T), 4)
+    results["monthly", "errcom"] <- round(mean(as.numeric(difftime(flxDf.mod.mwycom$qcomp.mod,
+                                                                   flxDf.mod.mwycom$qcomp.obs, 
+                                                                   units="days")), na.rm=T), 2)
+    results["monthly", "errmaxt"] <- round(mean(as.numeric(difftime(flxDf.mod.mwymax$qcomp.mod,
+                                                                    flxDf.mod.mwymax$qcomp.obs, 
+                                                                    units="days")), na.rm=T), 2)
     results["monthly", "errfdc"] <- NA
 
     results["yearly", "n"] <- length(flxDf.mod.wy$qcomp.mod)
@@ -388,32 +473,54 @@ CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q
     results["yearly", "cor"] <- NA  #round(cor(flxDf.mod.wy$qcomp.mod, flxDf.mod.wy$qcomp.obs, use="na.or.complete"), 2)
     results["yearly", "rmse"] <- NA  #round(Rmse(flxDf.mod.wy$qcomp.mod, flxDf.mod.wy$qcomp.obs), 2)
     results["yearly", "rmsenorm"] <- NA  #round(RmseNorm(flxDf.mod.wy$qcomp.mod, flxDf.mod.wy$qcomp.obs), 2)
-    results["yearly", "bias"] <- round(sum(flxDf.mod.wy$qcomp.mod-flxDf.mod.wy$qcomp.obs, na.rm=T)/sum(flxDf.mod.wy$qcomp.obs, na.rm=TRUE) * 100, 1)
-    results["yearly", "mae"] <- round(mean(abs(flxDf.mod.wy$qcomp.mod-flxDf.mod.wy$qcomp.obs), na.rm=T), 2)
-    results["yearly", "errcom"] <- round(mean(as.numeric(difftime(flxDf.mod.wycom$qcomp.mod,flxDf.mod.wycom$qcomp.obs, units="days")), na.rm=T), 2)
-    results["yearly", "errmaxt"] <- round(mean(as.numeric(difftime(flxDf.mod.wymax$qcomp.mod,flxDf.mod.wymax$qcomp.obs, units="days")), na.rm=T), 2)
+    results["yearly", "bias"] <- round(sum(flxDf.mod.wy$qcomp.mod-flxDf.mod.wy$qcomp.obs, na.rm=T)/
+                                         sum(flxDf.mod.wy$qcomp.obs, na.rm=TRUE) * 100, 1)
+    results["yearly", "msd"] <- round(mean(flxDf.mod.wy$qcomp.mod-flxDf.mod.wy$qcomp.obs, 
+                                           na.rm=T), 4)
+    results["yearly", "mae"] <- round(mean(abs(flxDf.mod.wy$qcomp.mod-flxDf.mod.wy$qcomp.obs), 
+                                           na.rm=T), 4)
+    results["yearly", "errcom"] <- round(mean(as.numeric(difftime(flxDf.mod.wycom$qcomp.mod,
+                                                                  flxDf.mod.wycom$qcomp.obs, 
+                                                                  units="days")), na.rm=T), 2)
+    results["yearly", "errmaxt"] <- round(mean(as.numeric(difftime(flxDf.mod.wymax$qcomp.mod,
+                                                                   flxDf.mod.wymax$qcomp.obs, 
+                                                                   units="days")), na.rm=T), 2)
     results["yearly", "errfdc"] <- NA
     
     results["max10", "n"] <- length(flxDf.mod.max10$qcomp.mod)
     results["max10", "nse"] <- round(Nse(flxDf.mod.max10$qcomp.mod, flxDf.mod.max10$qcomp.obs), 2)
-    results["max10", "nselog"] <- round(NseLog(flxDf.mod.max10$qcomp.mod, flxDf.mod.max10$qcomp.obs), 2)
-    results["max10", "cor"] <- round(cor(flxDf.mod.max10$qcomp.mod, flxDf.mod.max10$qcomp.obs, use="na.or.complete"), 2)
-    results["max10", "rmse"] <- round(Rmse(flxDf.mod.max10$qcomp.mod, flxDf.mod.max10$qcomp.obs), 2)
-    results["max10", "rmsenorm"] <- round(RmseNorm(flxDf.mod.max10$qcomp.mod, flxDf.mod.max10$qcomp.obs), 2)
-    results["max10", "bias"] <- round(sum(flxDf.mod.max10$qcomp.mod-flxDf.mod.max10$qcomp.obs, na.rm=T)/sum(flxDf.mod.max10$qcomp.obs, na.rm=TRUE) * 100, 1)
-    results["max10", "mae"] <- round(mean(abs(flxDf.mod.max10$qcomp.mod-flxDf.mod.max10$qcomp.obs), na.rm=T), 2)
+    results["max10", "nselog"] <- round(NseLog(flxDf.mod.max10$qcomp.mod, 
+                                               flxDf.mod.max10$qcomp.obs), 2)
+    results["max10", "cor"] <- round(cor(flxDf.mod.max10$qcomp.mod, flxDf.mod.max10$qcomp.obs, 
+                                         use="na.or.complete"), 2)
+    results["max10", "rmse"] <- round(Rmse(flxDf.mod.max10$qcomp.mod, flxDf.mod.max10$qcomp.obs), 4)
+    results["max10", "rmsenorm"] <- round(RmseNorm(flxDf.mod.max10$qcomp.mod, 
+                                                   flxDf.mod.max10$qcomp.obs), 2)
+    results["max10", "bias"] <- round(sum(flxDf.mod.max10$qcomp.mod-flxDf.mod.max10$qcomp.obs, na.rm=T)/
+                                        sum(flxDf.mod.max10$qcomp.obs, na.rm=TRUE) * 100, 1)
+    results["max10", "msd"] <- round(mean(flxDf.mod.max10$qcomp.mod-flxDf.mod.max10$qcomp.obs, 
+                                          na.rm=T), 4)
+    results["max10", "mae"] <- round(mean(abs(flxDf.mod.max10$qcomp.mod-flxDf.mod.max10$qcomp.obs), 
+                                          na.rm=T), 4)
     results["max10", "errcom"] <- NA
     results["max10", "errmaxt"] <- NA
     results["max10", "errfdc"] <- NA
     
     results["min10", "n"] <- length(flxDf.mod.min10$qcomp.mod)
     results["min10", "nse"] <- round(Nse(flxDf.mod.min10$qcomp.mod, flxDf.mod.min10$qcomp.obs), 2)
-    results["min10", "nselog"] <- round(NseLog(flxDf.mod.min10$qcomp.mod, flxDf.mod.min10$qcomp.obs), 2)
-    results["min10", "cor"] <- round(cor(flxDf.mod.min10$qcomp.mod, flxDf.mod.min10$qcomp.obs, use="na.or.complete"), 2)
-    results["min10", "rmse"] <- round(Rmse(flxDf.mod.min10$qcomp.mod, flxDf.mod.min10$qcomp.obs), 2)
-    results["min10", "rmsenorm"] <- round(RmseNorm(flxDf.mod.min10$qcomp.mod, flxDf.mod.min10$qcomp.obs), 2)
-    results["min10", "bias"] <- round(sum(flxDf.mod.min10$qcomp.mod-flxDf.mod.min10$qcomp.obs, na.rm=T)/sum(flxDf.mod.min10$qcomp.obs, na.rm=TRUE) * 100, 1)
-    results["min10", "mae"] <- round(mean(abs(flxDf.mod.min10$qcomp.mod-flxDf.mod.min10$qcomp.obs), na.rm=T), 2)
+    results["min10", "nselog"] <- round(NseLog(flxDf.mod.min10$qcomp.mod, 
+                                               flxDf.mod.min10$qcomp.obs), 2)
+    results["min10", "cor"] <- round(cor(flxDf.mod.min10$qcomp.mod, flxDf.mod.min10$qcomp.obs, 
+                                         use="na.or.complete"), 2)
+    results["min10", "rmse"] <- round(Rmse(flxDf.mod.min10$qcomp.mod, flxDf.mod.min10$qcomp.obs), 4)
+    results["min10", "rmsenorm"] <- round(RmseNorm(flxDf.mod.min10$qcomp.mod, 
+                                                   flxDf.mod.min10$qcomp.obs), 2)
+    results["min10", "bias"] <- round(sum(flxDf.mod.min10$qcomp.mod-flxDf.mod.min10$qcomp.obs, na.rm=T)/
+                                        sum(flxDf.mod.min10$qcomp.obs, na.rm=TRUE) * 100, 1)
+    results["min10", "msd"] <- round(mean(flxDf.mod.min10$qcomp.mod-flxDf.mod.min10$qcomp.obs, 
+                                          na.rm=T), 4)
+    results["min10", "mae"] <- round(mean(abs(flxDf.mod.min10$qcomp.mod-flxDf.mod.min10$qcomp.obs), 
+                                          na.rm=T), 4)
     results["min10", "errcom"] <- NA
     results["min10", "errmaxt"] <- NA
     results["min10", "errfdc"] <- NA
@@ -421,7 +528,7 @@ CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q
     # Units
     results["units",] <- c("count", "unitless", "unitless", "unitless", 
                            "flux units", "unitless", "percent", "flux units", 
-                           "hours|days", "hours|days",
+                           "flux units", "hours|days", "hours|days",
                            "flux units")
     
     results
@@ -429,45 +536,50 @@ CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q
 
 
 #' Computes model performance statistics for WRF-Hydro flux output
-#'
-#' \code{CalcModPerfMulti} calculates model performance statistics for flux output.
-#'
-#' \code{CalcModPerfMulti} reads a model flux time series (i.e., created using \code{\link{ReadFrxstPts}}) and
-#' an observation time series (i.e., created using \code{\link{ReadUsgsGage}}) and calculates model performance
-#' statistics (Nash-Sutcliffe Efficiency, Rmse, etc.) at various time scales and for low
-#' and high fluxes. The tool will subset data to matching time periods (e.g., if the
-#' observed data is at 5-min increments and modelled data is at 1-hr increments, the tool
-#' will subset the observed data to select only observations on the matching hour break).
-#'
-#' \code{CalcModPerfMulti} calculates the same statistics as \code{\link{CalcModPerf}}) but returns
-#' results as a single-row vs. multi-row dataframe. This is intended to streamline compiling statistics
-#' for multiple data runs or multiple sites.
-#'
-#' Performance Statistics:
-#' \cr (mod = model output, obs = observations, n = sample size)
-#' \itemize{
-#' \item n: sample size
-#' \item nse: Nash-Sutcliffe Efficiency
-#' \deqn{nse = 1 - ( sum((obs - mod)^2) / sum((obs - mean(obs))^2) ) }
-#' \item nselog: log-transformed Nash-Sutcliffe Efficiency
-#' \deqn{nselog = 1 - ( sum((log(obs) - log(mod))^2) / sum((log(obs) - mean(log(obs)))^2) ) }
-#' \item cor: correlation coefficient
-#' \deqn{cor = cor(mod, obs) }
-#' \item rmse: root mean squared error
-#' \deqn{rmse = sqrt( sum((mod - obs)^2) / n ) }
-#' \item rmsenorm: normalized root mean squared error
-#' \deqn{rmsenorm = rmse / (max(obs) - min(obs)) }
-#' \item bias: percent bias
-#' \deqn{bias = sum(mod - obs) / sum(obs) * 100 }
-#' \item mae: mean absolute error
-#' \deqn{mae = mean(abs(mod - obs)) }
-#' \item errcom: error in the center-of-mass of the flux, where center-of-mass is the
-#' hour/day when 50\% of daily/monthly/water-year flux has occurred. Reported as number of hours for
-#' daily time scale and number of days for monthly and yearly time scales.
-#' \item errmaxt: Error in the time of maximum flux. Reported as number of hours for daily time scale
-#' and number of days for monthly and yearly time scales).
-#' \item errfdc: Error in the integrated flow duration curve between 0.05 and 0.95 exceedance thresholds
-#' (in native flow units).
+#' 
+#' \code{CalcModPerfMulti} calculates model performance statistics for flux
+#' output.
+#' 
+#' \code{CalcModPerfMulti} reads a model flux time series (i.e., created using
+#' \code{\link{ReadFrxstPts}}) and an observation time series (i.e., created
+#' using \code{\link{ReadUsgsGage}}) and calculates model performance statistics
+#' (Nash-Sutcliffe Efficiency, Rmse, etc.) at various time scales and for low 
+#' and high fluxes. The tool will subset data to matching time periods (e.g., if
+#' the observed data is at 5-min increments and modelled data is at 1-hr
+#' increments, the tool will subset the observed data to select only
+#' observations on the matching hour break).
+#' 
+#' \code{CalcModPerfMulti} calculates the same statistics as
+#' \code{\link{CalcModPerf}}) but returns results as a single-row vs. multi-row
+#' dataframe. This is intended to streamline compiling statistics for multiple
+#' data runs or multiple sites.
+#' 
+#' Performance Statistics: \cr (mod = model output, obs = observations, n =
+#' sample size) \itemize{ \item n: sample size \item nse: Nash-Sutcliffe
+#' Efficiency \deqn{nse = 1 - ( sum((obs - mod)^2) / sum((obs - mean(obs))^2) )
+#' } \item nselog: log-transformed Nash-Sutcliffe Efficiency \deqn{nselog = 1 -
+#' ( sum((log(obs) - log(mod))^2) / sum((log(obs) - mean(log(obs)))^2) ) } \item
+#' cor: correlation coefficient \deqn{cor = cor(mod, obs) } \item rmse: root
+#' mean squared error \deqn{rmse = sqrt( sum((mod - obs)^2) / n ) } \item
+#' rmsenorm: normalized root mean squared error \deqn{rmsenorm = rmse /
+#' (max(obs) - min(obs)) } \item bias: percent bias \deqn{bias = sum(mod - obs)
+#' / sum(obs) * 100 } \item msd: mean signed deviation \deqn{msd = mean(mod -
+#' obs) } \item mae: mean absolute error \deqn{mae = mean(abs(mod -
+#' obs)) } \item errcom: error in the center-of-mass of the flux, where
+#' center-of-mass is the hour/day when 50\% of daily/monthly/water-year flux has
+#' occurred. Reported as number of hours for daily time scale and number of days
+#' for monthly and yearly time scales. \item errmaxt: Error in the time of
+#' maximum flux. Reported as number of hours for daily time scale and number of
+#' days for monthly and yearly time scales). \item errfdc: Error in the
+#' integrated flow duration curve between 0.05 and 0.95 exceedance thresholds 
+#' (in native flow units). }
+#' 
+#' Time scales/Flux types: \itemize{ \item t = native model/observation time
+#' step (e.g., hourly) \item dy = daily time step \item mo = monthly time step 
+#' \item yr = water-year time step \item max10 = high flows; restricted to the
+#' portion of the time series where the observed flux is in the highest 10\%
+#' (native time step) \item min10 = low flows; restricted to the portion of the
+#' time series where the observed flux is in the lowest 10\% (native time step) 
 #' }
 #'
 #' Time scales/Flux types:
@@ -504,22 +616,21 @@ CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q
 #' ## USGS gage observation file (obsStrh.fc), both at an hourly time step, and calculate
 #' ## model performance statistics. The model forecast point data was imported using ReadFrxstPts
 #' ## and the gage observation data was imported using ReadUsgsGage.
-#'
-#' CalcModPerfMulti(modStr1h.allrt.fc, obsStr5min.fc)
-#'
+#' 
+#' 
+#' \dontrun{
+#' CalcModPerfMulti(modStrd.chrt.fc, obsStr5min.fc)
+#' 
 #' > Output:
-#' t_n t_nse t_nselog t_cor t_rmse t_rmsenorm t_bias t_mae t_errfdc dy_n dy_nse dy_nselog  
-#' 744  0.63     0.66   0.8   0.29      13.29    0.7  0.19     0.04   32   0.69      0.74   
-#' dy_cor dy_rmse dy_rmsenorm dy_bias dy_mae dy_errcom dy_errmaxt dy_errfdc mo_n
-#'   0.83    0.26       13.23     0.6   0.18      0.03      -0.56      0.03    2
-#' mo_nse mo_nselog mo_cor mo_rmse mo_rmsenorm mo_bias mo_mae mo_errcom mo_errmaxt 
-#'      1      0.99      1    0.01        2.46    -0.8   0.01       0.5        1.5
-#' yr_n yr_bias yr_mae yr_errcom yr_errmaxt max10_n max10_nse max10_nselog max10_cor
-#'    1     0.7   0.01         0          3      75     -5.05         -6.9     -0.84
-#' max10_rmse max10_rmsenorm max10_bias max10_mae min10_n min10_nse min10_nselog 
-#'       0.72          80.01      -27.9       0.6     138     -2.64        -2.43
-#' min10_cor min10_rmse min10_rmsenorm min10_bias min10_mae
-#'      0.59       0.11          53.89       -7.3      0.09
+#' t_n t_nse t_nselog t_cor t_rmse t_rmsenorm t_bias  t_msd  t_mae t_errfdc dy_n dy_nse dy_nselog dy_cor dy_rmse dy_rmsenorm dy_bias dy_msd
+#' 116  0.81     0.67  0.91  0.211       8.48    7.1 0.0313 0.1385     0.04  116   0.81      0.67   0.91   0.211        8.48     7.1 0.0313
+#' dy_mae dy_errcom dy_errmaxt dy_errfdc mo_n mo_nse mo_nselog mo_cor mo_rmse mo_rmsenorm mo_bias mo_msd mo_mae mo_errcom mo_errmaxt yr_n
+#' 0.1385         0          0      0.04    5   0.92      0.82   0.96  0.1073       10.35     9.1 0.0324 0.0833      -1.2        0.2    1
+#' yr_bias yr_msd yr_mae yr_errcom yr_errmaxt max10_n max10_nse max10_nselog max10_cor max10_rmse max10_rmsenorm max10_bias max10_msd max10_mae
+#'     7.1 0.0313 0.0313         0          4      12      0.46         0.58      0.71      0.348          23.63       -2.8    -0.044     0.248
+#' min10_n min10_nse min10_nselog min10_cor min10_rmse min10_rmsenorm min10_bias min10_msd min10_mae
+#'      12   -385.99       -14.59      0.35     0.1678         538.78      112.4     0.056    0.0592
+#' }
 #' @keywords univar ts
 #' @concept modelEval
 #' @family modelEvaluation
@@ -529,7 +640,15 @@ CalcModPerfMulti <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.o
   which.max.dt <- function(dd, qcol, dtcol) { dd[which.max(dd[,qcol]), dtcol] }
   CalcCOM.dt <- function(dd, qcol, dtcol) { dd[CalcCOM(dd[,qcol]), dtcol] }
   # Prepare data
-  if (!is.null(stdate) && !is.null(enddate)) {
+  if (!is.null(stdate) & is.null(enddate)) {
+    flxDf.obs <- subset(flxDf.obs, POSIXct>=stdate)
+    flxDf.mod <- subset(flxDf.mod, POSIXct>=stdate)
+  }
+  if (is.null(stdate) & !is.null(enddate)) {
+    flxDf.obs <- subset(flxDf.obs, POSIXct<=enddate)
+    flxDf.mod <- subset(flxDf.mod, POSIXct<=enddate)
+  }
+  if (!is.null(stdate) & !is.null(enddate)) {
     flxDf.obs <- subset(flxDf.obs, POSIXct>=stdate & POSIXct<=enddate)
     flxDf.mod <- subset(flxDf.mod, POSIXct>=stdate & POSIXct<=enddate)
   }
@@ -541,13 +660,13 @@ CalcModPerfMulti <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.o
   flxDf.mod <- subset(flxDf.mod, !is.na(flxDf.mod$qcomp.mod) & !is.na(flxDf.mod$qcomp.obs))
   flxDf.mod <- CalcDates(flxDf.mod)
   flxDf.mod$date <- as.POSIXct(trunc(flxDf.mod$POSIXct, "days"))
-  results <- as.data.frame(matrix(nrow = 1, ncol = 51))
-  colnames(results) = c("t_n", "t_nse", "t_nselog", "t_cor", "t_rmse", "t_rmsenorm", "t_bias", "t_mae", "t_errfdc",
-                        "dy_n", "dy_nse", "dy_nselog", "dy_cor", "dy_rmse", "dy_rmsenorm", "dy_bias", "dy_mae", "dy_errcom", "dy_errmaxt", "dy_errfdc",
-                        "mo_n", "mo_nse", "mo_nselog", "mo_cor", "mo_rmse", "mo_rmsenorm", "mo_bias", "mo_mae", "mo_errcom", "mo_errmaxt",
-                        "yr_n", "yr_bias", "yr_mae", "yr_errcom", "yr_errmaxt",
-                        "max10_n", "max10_nse", "max10_nselog", "max10_cor", "max10_rmse", "max10_rmsenorm", "max10_bias", "max10_mae",
-                        "min10_n", "min10_nse", "min10_nselog", "min10_cor", "min10_rmse", "min10_rmsenorm", "min10_bias", "min10_mae")
+  results <- as.data.frame(matrix(nrow = 1, ncol = 57))
+  colnames(results) = c("t_n", "t_nse", "t_nselog", "t_cor", "t_rmse", "t_rmsenorm", "t_bias", "t_msd", "t_mae", "t_errfdc",
+                        "dy_n", "dy_nse", "dy_nselog", "dy_cor", "dy_rmse", "dy_rmsenorm", "dy_bias", "dy_msd", "dy_mae", "dy_errcom", "dy_errmaxt", "dy_errfdc",
+                        "mo_n", "mo_nse", "mo_nselog", "mo_cor", "mo_rmse", "mo_rmsenorm", "mo_bias", "mo_msd", "mo_mae", "mo_errcom", "mo_errmaxt",
+                        "yr_n", "yr_bias", "yr_msd", "yr_mae", "yr_errcom", "yr_errmaxt",
+                        "max10_n", "max10_nse", "max10_nselog", "max10_cor", "max10_rmse", "max10_rmsenorm", "max10_bias", "max10_msd", "max10_mae",
+                        "min10_n", "min10_nse", "min10_nselog", "min10_cor", "min10_rmse", "min10_rmsenorm", "min10_bias", "min10_msd", "min10_mae")
   exclvars <- names(flxDf.mod) %in% c("POSIXct", "secs", "timest", "date", "stat")
   
   # Base aggregations
@@ -610,10 +729,11 @@ CalcModPerfMulti <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.o
   results["t_nse"] <- round(Nse(flxDf.mod$qcomp.mod, flxDf.mod$qcomp.obs), 2)
   results["t_nselog"] <- round(NseLog(flxDf.mod$qcomp.mod, flxDf.mod$qcomp.obs), 2)
   results["t_cor"] <- round(cor(flxDf.mod$qcomp.mod, flxDf.mod$qcomp.obs, use="na.or.complete"), 2)
-  results["t_rmse"] <- round(Rmse(flxDf.mod$qcomp.mod, flxDf.mod$qcomp.obs), 2)
+  results["t_rmse"] <- round(Rmse(flxDf.mod$qcomp.mod, flxDf.mod$qcomp.obs), 4)
   results["t_rmsenorm"] <- round(RmseNorm(flxDf.mod$qcomp.mod, flxDf.mod$qcomp.obs), 2)
   results["t_bias"] <- round(sum(flxDf.mod$qcomp.mod-flxDf.mod$qcomp.obs, na.rm=T)/sum(flxDf.mod$qcomp.obs, na.rm=TRUE) * 100, 1)
-  results["t_mae"] <- round(mean(abs(flxDf.mod$qcomp.mod-flxDf.mod$qcomp.obs), na.rm=T), 2)
+  results["t_msd"] <- round(mean(flxDf.mod$qcomp.mod-flxDf.mod$qcomp.obs, na.rm=T), 4)
+  results["t_mae"] <- round(mean(abs(flxDf.mod$qcomp.mod-flxDf.mod$qcomp.obs), na.rm=T), 4)
   results["t_errfdc"] <- round(integrate(splinefun(flxDf.mod[,"qcomp.mod.fdc"], flxDf.mod[,"qcomp.mod"], method='natural'), 0.05, 0.95, subdivisions=2000)$value -
                                  integrate(splinefun(flxDf.mod[,"qcomp.obs.fdc"], flxDf.mod[,"qcomp.obs"], method='natural'), 0.05, 0.95, subdivisions=2000)$value, 2 )
   
@@ -621,10 +741,11 @@ CalcModPerfMulti <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.o
   results["dy_nse"] <- round(Nse(flxDf.mod.d$qcomp.mod, flxDf.mod.d$qcomp.obs), 2)
   results["dy_nselog"] <- round(NseLog(flxDf.mod.d$qcomp.mod, flxDf.mod.d$qcomp.obs), 2)
   results["dy_cor"] <- round(cor(flxDf.mod.d$qcomp.mod, flxDf.mod.d$qcomp.obs, use="na.or.complete"), 2)
-  results["dy_rmse"] <- round(Rmse(flxDf.mod.d$qcomp.mod, flxDf.mod.d$qcomp.obs), 2)
+  results["dy_rmse"] <- round(Rmse(flxDf.mod.d$qcomp.mod, flxDf.mod.d$qcomp.obs), 4)
   results["dy_rmsenorm"] <- round(RmseNorm(flxDf.mod.d$qcomp.mod, flxDf.mod.d$qcomp.obs), 2)
   results["dy_bias"] <- round(sum(flxDf.mod.d$qcomp.mod-flxDf.mod.d$qcomp.obs, na.rm=T)/sum(flxDf.mod.d$qcomp.obs, na.rm=TRUE) * 100, 1)
-  results["dy_mae"] <- round(mean(abs(flxDf.mod.d$qcomp.mod-flxDf.mod.d$qcomp.obs), na.rm=T), 2)
+  results["dy_msd"] <- round(mean(flxDf.mod.d$qcomp.mod-flxDf.mod.d$qcomp.obs, na.rm=T), 4)
+  results["dy_mae"] <- round(mean(abs(flxDf.mod.d$qcomp.mod-flxDf.mod.d$qcomp.obs), na.rm=T), 4)
   results["dy_errcom"] <- round(mean(as.numeric(difftime(flxDf.mod.dcom$qcomp.mod,flxDf.mod.dcom$qcomp.obs, units="hours")), na.rm=T), 2)
   results["dy_errmaxt"] <- round(mean(as.numeric(difftime(flxDf.mod.dmax$qcomp.mod,flxDf.mod.dmax$qcomp.obs, units="hours")), na.rm=T), 2)
   results["dy_errfdc"] <- round(integrate(splinefun(flxDf.mod.d[,"qcomp.mod.fdc"], flxDf.mod.d[,"qcomp.mod"], method='natural'), 0.05, 0.95, subdivisions=2000)$value -
@@ -634,16 +755,18 @@ CalcModPerfMulti <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.o
   results["mo_nse"] <- round(Nse(flxDf.mod.mwy$qcomp.mod, flxDf.mod.mwy$qcomp.obs), 2)
   results["mo_nselog"] <- round(NseLog(flxDf.mod.mwy$qcomp.mod, flxDf.mod.mwy$qcomp.obs), 2)
   results["mo_cor"] <- round(cor(flxDf.mod.mwy$qcomp.mod, flxDf.mod.mwy$qcomp.obs, use="na.or.complete"), 2)
-  results["mo_rmse"] <- round(Rmse(flxDf.mod.mwy$qcomp.mod, flxDf.mod.mwy$qcomp.obs), 2)
+  results["mo_rmse"] <- round(Rmse(flxDf.mod.mwy$qcomp.mod, flxDf.mod.mwy$qcomp.obs), 4)
   results["mo_rmsenorm"] <- round(RmseNorm(flxDf.mod.mwy$qcomp.mod, flxDf.mod.mwy$qcomp.obs), 2)
   results["mo_bias"] <- round(sum(flxDf.mod.mwy$qcomp.mod-flxDf.mod.mwy$qcomp.obs, na.rm=T)/sum(flxDf.mod.mwy$qcomp.obs, na.rm=TRUE) * 100, 1)
-  results["mo_mae"] <- round(mean(abs(flxDf.mod.mwy$qcomp.mod-flxDf.mod.mwy$qcomp.obs), na.rm=T), 2)
+  results["mo_msd"] <- round(mean(flxDf.mod.mwy$qcomp.mod-flxDf.mod.mwy$qcomp.obs, na.rm=T), 4)
+  results["mo_mae"] <- round(mean(abs(flxDf.mod.mwy$qcomp.mod-flxDf.mod.mwy$qcomp.obs), na.rm=T), 4)
   results["mo_errcom"] <- round(mean(as.numeric(difftime(flxDf.mod.mwycom$qcomp.mod,flxDf.mod.mwycom$qcomp.obs, units="days")), na.rm=T), 2)
   results["mo_errmaxt"] <- round(mean(as.numeric(difftime(flxDf.mod.mwymax$qcomp.mod,flxDf.mod.mwymax$qcomp.obs, units="days")), na.rm=T), 2)
   
   results["yr_n"] <- length(flxDf.mod.wy$qcomp.mod)
   results["yr_bias"] <- round(sum(flxDf.mod.wy$qcomp.mod-flxDf.mod.wy$qcomp.obs, na.rm=T)/sum(flxDf.mod.wy$qcomp.obs, na.rm=TRUE) * 100, 1)
-  results["yr_mae"] <- round(mean(abs(flxDf.mod.wy$qcomp.mod-flxDf.mod.wy$qcomp.obs), na.rm=T), 2)
+  results["yr_msd"] <- round(mean(flxDf.mod.wy$qcomp.mod-flxDf.mod.wy$qcomp.obs, na.rm=T), 4)
+  results["yr_mae"] <- round(mean(abs(flxDf.mod.wy$qcomp.mod-flxDf.mod.wy$qcomp.obs), na.rm=T), 4)
   results["yr_errcom"] <- round(mean(as.numeric(difftime(flxDf.mod.wycom$qcomp.mod,flxDf.mod.wycom$qcomp.obs, units="days")), na.rm=T), 2)
   results["yr_errmaxt"] <- round(mean(as.numeric(difftime(flxDf.mod.wymax$qcomp.mod,flxDf.mod.wymax$qcomp.obs, units="days")), na.rm=T), 2)
   
@@ -651,55 +774,57 @@ CalcModPerfMulti <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.o
   results["max10_nse"] <- round(Nse(flxDf.mod.max10$qcomp.mod, flxDf.mod.max10$qcomp.obs), 2)
   results["max10_nselog"] <- round(NseLog(flxDf.mod.max10$qcomp.mod, flxDf.mod.max10$qcomp.obs), 2)
   results["max10_cor"] <- round(cor(flxDf.mod.max10$qcomp.mod, flxDf.mod.max10$qcomp.obs, use="na.or.complete"), 2)
-  results["max10_rmse"] <- round(Rmse(flxDf.mod.max10$qcomp.mod, flxDf.mod.max10$qcomp.obs), 2)
+  results["max10_rmse"] <- round(Rmse(flxDf.mod.max10$qcomp.mod, flxDf.mod.max10$qcomp.obs), 4)
   results["max10_rmsenorm"] <- round(RmseNorm(flxDf.mod.max10$qcomp.mod, flxDf.mod.max10$qcomp.obs), 2)
   results["max10_bias"] <- round(sum(flxDf.mod.max10$qcomp.mod-flxDf.mod.max10$qcomp.obs, na.rm=T)/sum(flxDf.mod.max10$qcomp.obs, na.rm=TRUE) * 100, 1)
-  results["max10_mae"] <- round(mean(abs(flxDf.mod.max10$qcomp.mod-flxDf.mod.max10$qcomp.obs), na.rm=T), 2)
+  results["max10_msd"] <- round(mean(flxDf.mod.max10$qcomp.mod-flxDf.mod.max10$qcomp.obs, na.rm=T), 4)
+  results["max10_mae"] <- round(mean(abs(flxDf.mod.max10$qcomp.mod-flxDf.mod.max10$qcomp.obs), na.rm=T), 4)
   
   results["min10_n"] <- length(flxDf.mod.min10$qcomp.mod)
   results["min10_nse"] <- round(Nse(flxDf.mod.min10$qcomp.mod, flxDf.mod.min10$qcomp.obs), 2)
   results["min10_nselog"] <- round(NseLog(flxDf.mod.min10$qcomp.mod, flxDf.mod.min10$qcomp.obs), 2)
   results["min10_cor"] <- round(cor(flxDf.mod.min10$qcomp.mod, flxDf.mod.min10$qcomp.obs, use="na.or.complete"), 2)
-  results["min10_rmse"] <- round(Rmse(flxDf.mod.min10$qcomp.mod, flxDf.mod.min10$qcomp.obs), 2)
+  results["min10_rmse"] <- round(Rmse(flxDf.mod.min10$qcomp.mod, flxDf.mod.min10$qcomp.obs), 4)
   results["min10_rmsenorm"] <- round(RmseNorm(flxDf.mod.min10$qcomp.mod, flxDf.mod.min10$qcomp.obs), 2)
   results["min10_bias"] <- round(sum(flxDf.mod.min10$qcomp.mod-flxDf.mod.min10$qcomp.obs, na.rm=T)/sum(flxDf.mod.min10$qcomp.obs, na.rm=TRUE) * 100, 1)
-  results["min10_mae"] <- round(mean(abs(flxDf.mod.min10$qcomp.mod-flxDf.mod.min10$qcomp.obs), na.rm=T), 2)
+  results["min10_msd"] <- round(mean(flxDf.mod.min10$qcomp.mod-flxDf.mod.min10$qcomp.obs, na.rm=T), 4)
+  results["min10_mae"] <- round(mean(abs(flxDf.mod.min10$qcomp.mod-flxDf.mod.min10$qcomp.obs), na.rm=T), 4)
   
   # Attributes
   attr(results, "descrip") <- c(t_n="sample size", t_nse="nash-sutcliffe efficiency", t_nselog="log nash-sutcliffe efficiency",
                                 t_cor="correlation", t_rmse="root mean squared error", t_rmsenorm="normalized root mean squared error",
-                                t_bias="bias", t_mae="mean absolute error", t_errfdc="integrated flow duration curve error",
+                                t_bias="bias", t_msd="mean signed deviation", t_mae="mean absolute error", t_errfdc="integrated flow duration curve error",
                                 dy_n="sample size", dy_nse="nash-sutcliffe efficiency", dy_nselog="log nash-sutcliffe efficiency",
                                 dy_cor="correlation", dy_rmse="root mean squared error", dy_rmsenorm="normalized root mean squared error",
-                                dy_bias="bias", dy_mae="mean absolute error", dy_errcom="error in center-of-mass timing", dy_errmaxt="error in max timing",
+                                dy_bias="bias", dy_msd="mean signed deviation", dy_mae="mean absolute error", dy_errcom="error in center-of-mass timing", dy_errmaxt="error in max timing",
                                 dy_errfdc="integrated flow duration curve error",
                                 mo_n="sample size", mo_nse="nash-sutcliffe efficiency", mo_nselog="log nash-sutcliffe efficiency",
                                 mo_cor="correlation", mo_rmse="root mean squared error", mo_rmsenorm="normalized root mean squared error",
-                                mo_bias="bias", mo_mae="mean absolute error", mo_errcom="error in center-of-mass timing", mo_errmaxt="error in max timing",
-                                yr_n="sample size", yr_bias="bias", yr_mae="mean absolute error", yr_errcom="error in center-of-mass timing", yr_errmaxt="error in max timing",
+                                mo_bias="bias", mo_msd="mean signed deviation", mo_mae="mean absolute error", mo_errcom="error in center-of-mass timing", mo_errmaxt="error in max timing",
+                                yr_n="sample size", yr_bias="bias", yr_msd="mean signed deviation", yr_mae="mean absolute error", yr_errcom="error in center-of-mass timing", yr_errmaxt="error in max timing",
                                 max10_n="sample size", max10_nse="nash-sutcliffe efficiency", max10_nselog="log nash-sutcliffe efficiency",
                                 max10_cor="correlation", max10_rmse="root mean squared error", max10_rmsenorm="normalized root mean squared error",
-                                max10_bias="bias", max10_mae="mean absolute error",
+                                max10_bias="bias", max10_msd="mean signed deviation", max10_mae="mean absolute error",
                                 min10_n="sample size", min10_nse="nash-sutcliffe efficiency", min10_nselog="log nash-sutcliffe efficiency",
                                 min10_cor="correlation", min10_rmse="root mean squared error", min10_rmsenorm="normalized root mean squared error",
-                                min10_bias="bias", min10_mae="mean absolute error")
+                                min10_bias="bias", min10_msd="mean signed deviation", min10_mae="mean absolute error")
   attr(results, "units") <- c(t_n="count", t_nse="unitless (-Inf->1)", t_nselog="unitless (-Inf->1)",
                               t_cor="unitless (-1->1)", t_rmse="native flux units", t_rmsenorm="unitless (0->Inf)",
-                              t_bias="percent (%)", t_mae="native flux units", t_errfdc="native flux units",
+                              t_bias="percent (%)", t_msd="native flux units", t_mae="native flux units", t_errfdc="native flux units",
                               dy_n="count", dy_nse="unitless (-Inf->1)", dy_nselog="unitless (-Inf->1)",
                               dy_cor="unitless (-1->1)", dy_rmse="native flux units", dy_rmsenorm="native flux units",
-                              dy_bias="percent (%)", dy_mae="native flux units", dy_errcom="hours", dy_errmaxt="hours",
+                              dy_bias="percent (%)", dy_msd="native flux units", dy_mae="native flux units", dy_errcom="hours", dy_errmaxt="hours",
                               dy_errfdc="native flux units",
                               mo_n="count", mo_nse="unitless (-Inf->1)", mo_nselog="unitless (-Inf->1)",
                               mo_cor="unitless (-1->1)", mo_rmse="native flux units", mo_rmsenorm="native flux units",
-                              mo_bias="percent (%)", mo_mae="native flux units", mo_errcom="days", mo_errmaxt="days",
-                              yr_n="count", yr_bias="percent (%)", yr_mae="native flux units", yr_errcom="days", yr_errmaxt="days",
+                              mo_bias="percent (%)", mo_msd="native flux units", mo_mae="native flux units", mo_errcom="days", mo_errmaxt="days",
+                              yr_n="count", yr_bias="percent (%)", yr_msd="native flux units", yr_mae="native flux units", yr_errcom="days", yr_errmaxt="days",
                               max10_n="sample size", max10_nse="unitless (-Inf->1)", max10_nselog="unitless (-Inf->1)",
                               max10_cor="unitless (-1->1)", max10_rmse="native flux units", max10_rmsenorm="native flux units",
-                              max10_bias="percent (%)", max10_mae="native flux units",
+                              max10_bias="percent (%)", max10_msd="native flux units", max10_mae="native flux units",
                               min10_n="sample size", min10_nse="unitless (-Inf->1)", min10_nselog="unitless (-Inf->1)",
                               min10_cor="unitless (-1->1)", min10_rmse="native flux units", min10_rmsenorm="native flux units",
-                              min10_bias="percent (%)", min10_mae="native flux units")
+                              min10_bias="percent (%)", min10_msd="native flux units", min10_mae="native flux units")
   
   results
 }
