@@ -5,6 +5,7 @@
 
 subroutine grib_get_lat_lon(len1,fileIn,nx,ny,lat,lon,iret)
 
+  #include "regrid_header.h"
   !DESCRIPTION:
   ! Subroutine to extract lat/lon coordinates from the first GRIB message.
   ! Arguments are as follows:
@@ -26,7 +27,9 @@ subroutine grib_get_lat_lon(len1,fileIn,nx,ny,lat,lon,iret)
   ! karsten@ucar.edu
 
   !USES:
-  use grib_api
+  #if REGRID_FLAG != 0 
+    use grib_api
+  #endif
 
   implicit none
 
@@ -51,53 +54,58 @@ subroutine grib_get_lat_lon(len1,fileIn,nx,ny,lat,lon,iret)
   inquire(file=trim(fileIn),exist=file_exists)
   if(iret .ne. 0) return
 
-  if(file_exists) then
-    !Open GRIB file
-    call grib_open_file(ftn,trim(fileIn),'r',iret)
-    if(iret .ne. 0) return
-    
-    !Pull first GRIB message (variable)
-    call grib_new_from_file(ftn,igrib,iret)
-    if(iret .ne. 0) return
-
-    !NOTE THIS ASSUMES ALL VARIABLES IN GRIB
-    !ARE OF SAME DIMENSION.
-  
-    !Pull total number of points
-    call grib_get(igrib,'numberOfPoints',nPoints,iret)
-    if(iret .ne. 0) return
-    
-    !Double check to make sure things match
-    if((nx*ny) .eq. nPoints) then
-      !Allocate memory
-      allocate(latTemp(nPoints))
-      allocate(lonTemp(nPoints))
-      allocate(valTemp(nPoints))
-
-      !Pull lat/lon data as 1D arrays, then loop 
-      !through grid and place them into output grid
-      call grib_get_data(igrib,latTemp,lonTemp,valTemp,iret)
+  #if REGRID_FLAG != 0
+    if(file_exists) then
+      !Open GRIB file
+      call grib_open_file(ftn,trim(fileIn),'r',iret)
       if(iret .ne. 0) return
     
-      i = 1
-      do r=1,ny
-        do c=1,nx
-          lat(c,r) = latTemp(i)
-          lon(c,r) = lonTemp(i)
-          i = i + 1
-        enddo
-      enddo
-      
-      !Deallocated arrays
-      deallocate(latTemp)
-      deallocate(lonTemp)
-      
-    endif
+      !Pull first GRIB message (variable)
+      call grib_new_from_file(ftn,igrib,iret)
+      if(iret .ne. 0) return
+
+      !NOTE THIS ASSUMES ALL VARIABLES IN GRIB
+      !ARE OF SAME DIMENSION.
   
-    !Close GRIB file
-    call grib_close_file(ftn,iret)
-    if(iret .ne. 0) return
+      !Pull total number of points
+      call grib_get(igrib,'numberOfPoints',nPoints,iret)
+      if(iret .ne. 0) return
+    
+      !Double check to make sure things match
+      if((nx*ny) .eq. nPoints) then
+        !Allocate memory
+        allocate(latTemp(nPoints))
+        allocate(lonTemp(nPoints))
+        allocate(valTemp(nPoints))
+
+        !Pull lat/lon data as 1D arrays, then loop 
+        !through grid and place them into output grid
+        call grib_get_data(igrib,latTemp,lonTemp,valTemp,iret)
+        if(iret .ne. 0) return
+    
+        i = 1
+        do r=1,ny
+          do c=1,nx
+            lat(c,r) = latTemp(i)
+            lon(c,r) = lonTemp(i)
+            i = i + 1
+          enddo
+        enddo
+      
+        !Deallocated arrays
+        deallocate(latTemp)
+        deallocate(lonTemp)
+      
+      endif
+  
+      !Close GRIB file
+      call grib_close_file(ftn,iret)
+      if(iret .ne. 0) return
  
-  endif
+    endif
+  #else
+    iret = -99
+    return
+  #endif
            
 end subroutine grib_get_lat_lon

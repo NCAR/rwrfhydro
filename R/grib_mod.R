@@ -30,7 +30,10 @@ GRIBgridType <- function(fileIn){
                    projection,error)
   
   error <- data[[4]]
-  if(error != 0){
+  if(error == -99){
+    print('ERROR: Rwrfhydro built without regridding support.')
+    stop('ERROR: Please rebuild Rwrfhydro ESMF and GRIB API libraries.')
+  } else if(error != 0){
     stop(paste0('ERROR: grib_grid_type returned exist status of: ',error))
   }
   
@@ -128,7 +131,10 @@ GRIBgeospatialLambert <- function(fileIn){
                        snTemp,errorTemp)
   
   error <- dataTemp[[14]]
-  if(error != 0){
+  if(error == -99){
+    print('ERROR: Rwrfhydro built without regridding support.')
+    stop('ERROR: Please rebuilt package with ESMF and GRIB API libraries.')
+  } else if(error != 0){
     stop(paste0('ERROR: get_lambert_grid_meta returned an exit
                  status of: ',error))
   }
@@ -190,7 +196,10 @@ GRIBgeospatialGauss <- function(fileIn){
                        lat2Temp,lon2Temp,snTemp,errorTemp)
   
   error <- dataTemp[[11]]
-  if(error != 0){
+  if(error == -99){
+    print('ERROR: Rwrfhydro built without regridding support.')
+    stop('ERROR: Please rebuild package with ESMF and GRIB API libraries.')
+  } else if(error != 0){
     stop(paste0('ERROR: get_gauss_meta returned an exit status
                  of: ',error))
   }
@@ -250,7 +259,10 @@ GRIBgeospatialLL <- function(fileIn){
                        lat2Temp,lon2Temp,snTemp,errorTemp)
   
   error <- dataTemp[[12]]
-  if(error != 0){
+  if(error == -99){
+    print('ERROR: Rwrfhydro built without regridding support.')
+    stop('ERROR: Please rebuild package with ESMF and GRIB API libraries.')
+  } else if(error != 0){
     stop(paste0('ERROR: get_ll_meta returned an exit status
                  of: ',error))
   }
@@ -310,7 +322,10 @@ GRIBgeospatialPolar <- function(fileIn){
                        lonVTemp,snTemp,errorTemp)
   
   error <- dataTemp[[11]]
-  if(error != 0){
+  if(error == -99){
+    print('ERROR: Rwrfhydro built without regridding support.')
+    stop('ERROR: Please rebuild package with ESMF and GRIB API libraries.')
+  } else if(error != 0){
     stop(paste0('ERROR: get_polar_meta returned an exit status
                 of: ',error))
   }
@@ -388,6 +403,12 @@ extractGRIBGrid <- function(fileIn,var,levType,level,nx,ny,numFTimes=1){
                        dateHHMM,bStep,eStep,error)
   
   error <- dataTemp[[21]]
+  if(error == -99){
+    print('ERROR: Rwrfhydro built without regridding support.')
+    stop('ERROR: Please rebuild package with ESMF and GRIB API libraries.')
+  } else if(error != 0){
+    stop(paste0('ERROR: grib_grid_extract returned exit status of: ',error))
+  }
   dateCycleYYYYMMDD <- dataTemp[[17]]
   dateHHMM <- dataTemp[[18]]
   bStep <- dataTemp[[19]]
@@ -395,9 +416,6 @@ extractGRIBGrid <- function(fileIn,var,levType,level,nx,ny,numFTimes=1){
   l4 <- dataTemp[[14]]
   l5 <- dataTemp[[15]]
   gridOut <- dataTemp[[7]]
-  if(error != 0){
-    stop(paste0('ERROR: grib_grid_extract returned exist status of: ',error))
-  }
   
   #Check for valid values. If entire grid is ndv, then GRIB API failed
   #to properly find variable
@@ -474,7 +492,10 @@ GRIBLatLon <- function(fileIn,nx,ny){
                        latTemp,lonTemp,error)
   
   error <- dataTemp[[7]]
-  if(error != 0){
+  if(error == -99){
+    print('ERROR: Rwrfhydro built without regridding support.')
+    stop('ERROR: Please rebuild package with ESMF and GRIB API libraries')
+  } else if(error != 0){
     stop(paste0('ERROR: grib_get_lat_lon returned exit status of: ',error))
   }
 
@@ -519,7 +540,10 @@ GRIBNumForecastTimes <- function(fileIn,var,levType,lev){
                        len3,levType,lev,numTimes,error)
   
   error <- dataTemp[9]
-  if(error != 0){
+  if(error == -99){
+    print('ERROR: Rwrfhydro built without regridding support.')
+    stop('ERROR: Pleae rebuild package with ESMF and GRIB API libraries.')
+  } else if(error != 0){
     stop(paste0('ERROR: grib_get_steps returned exit status of: ',error))
   } 
   

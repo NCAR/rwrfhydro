@@ -6,6 +6,7 @@
 subroutine get_gauss_grid_meta(len1,fileIn,nx,ny,dx,lat1,lon1,lat2,&
                                lon2,snFlag,iret)
 
+  #include "regrid_header.h"
   !DESCRIPTION:
   ! Subroutine that opens a GRIB file and extracts meta data about 
   ! the regular gaussian grid contained. Meta data is pulled based 
@@ -35,8 +36,10 @@ subroutine get_gauss_grid_meta(len1,fileIn,nx,ny,dx,lat1,lon1,lat2,&
   ! 303-497-2693 
   ! karsten@ucar.edu
 
-  !USES: 
-  use grib_api
+  !USES:
+  #if REGRID_FLAG != 0 
+    use grib_api
+  #endif
   
   implicit none
   
@@ -58,81 +61,86 @@ subroutine get_gauss_grid_meta(len1,fileIn,nx,ny,dx,lat1,lon1,lat2,&
   !Inquire for file existence
   inquire(file=trim(fileIn),exist=file_exists)
  
-  if(file_exists) then
-    !Open GRIB file
-    call grib_open_file(ftn,trim(fileIn),'r',iret)
-    if(iret .ne. 0) return
-  else
-    iret = 1
-    return
-  endif
-
-  !Pull the first message (variable) as we are only interested in grid metadata.
-  call grib_count_in_file(ftn,nvars,iret)
-  if(nvars .le. 0) then
-    iret = 2
-    return
-  else
-    !Pull grid metadata from first message
-    call grib_new_from_file(ftn,igrib,iret)
-    if(iret .ne. 0) return
-
-    !Get GRIB edition number 
-    call grib_get(igrib,'editionNumber',edition,iret)
-    if(iret .ne. 0) return
-
-    !Unfortunately, GRIB 1 files do not contain grid definition information for checking. 
-    !Proceed with caution....
-
-    !Sanity check to double check grid is regular gaussian and has an assumed
-    !spherical Earth radius. If not, throw a error back to R for
-    !diagnostics.
-    if(edition .eq. 2) then
-      call grib_get(igrib,'gridDefinitionTemplateNumber',gdef,iret)
+  #if REGRID_FLAG != 0
+    if(file_exists) then
+      !Open GRIB file
+      call grib_open_file(ftn,trim(fileIn),'r',iret)
       if(iret .ne. 0) return
-    else 
-      gdef = 40
-      iret = 0 !GRIB1 no check
-    endif
-    if (gdef .ne. 40) then
-      iret = 40
-      return 
     else
+      iret = 1
+      return
+    endif
+
+    !Pull the first message (variable) as we are only interested in grid metadata.
+    call grib_count_in_file(ftn,nvars,iret)
+    if(nvars .le. 0) then
+      iret = 2
+      return
+    else
+      !Pull grid metadata from first message
+      call grib_new_from_file(ftn,igrib,iret)
+      if(iret .ne. 0) return
+
+      !Get GRIB edition number 
+      call grib_get(igrib,'editionNumber',edition,iret)
+      if(iret .ne. 0) return
+
+      !Unfortunately, GRIB 1 files do not contain grid definition information for checking. 
+      !Proceed with caution....
+
+      !Sanity check to double check grid is regular gaussian and has an assumed
+      !spherical Earth radius. If not, throw a error back to R for
+      !diagnostics.
       if(edition .eq. 2) then
-        call grib_get(igrib,'shapeOfTheEarth',radius,iret)
+        call grib_get(igrib,'gridDefinitionTemplateNumber',gdef,iret)
         if(iret .ne. 0) return
+      else 
+        gdef = 40
+        iret = 0 !GRIB1 no check
+      endif
+      if (gdef .ne. 40) then
+        iret = 40
+        return 
       else
-        radius = 6
-        iret = 0
+        if(edition .eq. 2) then
+          call grib_get(igrib,'shapeOfTheEarth',radius,iret)
+          if(iret .ne. 0) return
+        else
+          radius = 6
+          iret = 0
+        endif
+        if (radius .ne. 6) then
+          iret = 6
+          return
+        endif
       endif
-      if (radius .ne. 6) then
-        iret = 6
-        return
+
+      if (iret .eq. 0) then !Extract meta data
+        call grib_get(igrib,'latitudeOfFirstGridPointInDegrees',lat1,iret)
+        if(iret .ne. 0) return
+        call grib_get(igrib,'longitudeOfFirstGridPointInDegrees',lon1,iret)
+        if(iret .ne. 0) return
+        call grib_get(igrib,'latitudeOfLastGridPointInDegrees',lat2,iret)
+        if(iret .ne. 0) return
+        call grib_get(igrib,'longitudeOfLastGridPointInDegrees',lon2,iret)
+        if(iret .ne. 0) return
+        call grib_get(igrib,'iDirectionIncrementInDegrees',dx,iret)
+        if(iret .ne. 0) return
+        call grib_get(igrib,'Ni',nx,iret)
+        if(iret .ne. 0) return
+        call grib_get(igrib,'Nj',ny,iret)
+        if(iret .ne. 0) return 
+        call grib_get(igrib,'jScansPositively',snFlag,iret)
+        if(iret .ne. 0) return
       endif
     endif
 
-    if (iret .eq. 0) then !Extract meta data
-      call grib_get(igrib,'latitudeOfFirstGridPointInDegrees',lat1,iret)
-      if(iret .ne. 0) return
-      call grib_get(igrib,'longitudeOfFirstGridPointInDegrees',lon1,iret)
-      if(iret .ne. 0) return
-      call grib_get(igrib,'latitudeOfLastGridPointInDegrees',lat2,iret)
-      if(iret .ne. 0) return
-      call grib_get(igrib,'longitudeOfLastGridPointInDegrees',lon2,iret)
-      if(iret .ne. 0) return
-      call grib_get(igrib,'iDirectionIncrementInDegrees',dx,iret)
-      if(iret .ne. 0) return
-      call grib_get(igrib,'Ni',nx,iret)
-      if(iret .ne. 0) return
-      call grib_get(igrib,'Nj',ny,iret)
-      if(iret .ne. 0) return 
-      call grib_get(igrib,'jScansPositively',snFlag,iret)
-      if(iret .ne. 0) return
-    endif
-  endif
-
-  !Close GRIB file
-  call grib_close_file(ftn,iret)
-  if(iret .ne. 0) return
+    !Close GRIB file
+    call grib_close_file(ftn,iret)
+    if(iret .ne. 0) return
+  #else
+    iret = -99
+    return
+  #endif
  
 end subroutine get_gauss_grid_meta
