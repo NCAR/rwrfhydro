@@ -3,11 +3,12 @@
 ! Research Applications Laboratory
 !-------------------------------------------------------------------------
 
+#include "regrid_header.h"
+
 subroutine generate_weights(nxSrc,nySrc,nxDst,nyDst,fctLenTemp,srcDummy,latSrc,&
                             lonSrc,latDst,lonDst,method,ndvSrc,fctLen,&
                             factorListOut,factorIndexListOut,ier)
 
-  #include <regrid_header.h>
   !DESCRIPTION:
   ! Subroutine to generate weights necessary for regridding from a native source
   ! grid to a WRF-Hydro destination grid. ESMF library calls are made to
