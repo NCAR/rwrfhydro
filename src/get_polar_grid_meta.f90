@@ -6,6 +6,7 @@
 subroutine get_polar_grid_meta(len1,fileIn,nx,ny,dx,dy,lat1,lon1,lonv, &
                                snFlag,iret)
 
+  #include "regrid_header.h"
   !DESCRIPTION:
   ! Subroutine that opens a GRIB file and extracts meta data about
   ! the polar stereographic grid contained. Meta data is pulled
@@ -36,7 +37,9 @@ subroutine get_polar_grid_meta(len1,fileIn,nx,ny,dx,dy,lat1,lon1,lonv, &
   ! karsten@ucar.edu
 
   !USES:
-  use grib_api
+  #if REGRID_FLAG != 0
+    use grib_api
+  #endif
 
   implicit none
   
@@ -56,82 +59,87 @@ subroutine get_polar_grid_meta(len1,fileIn,nx,ny,dx,dy,lat1,lon1,lonv, &
 
   !Inquire for file existence
   inquire(file=trim(fileIn),exist=file_exists)
-  
-  if(file_exists) then
-    !Open GRIB file
-    call grib_open_file(ftn,trim(fileIn),'r',iret)
-    if(iret .ne. 0) return
-  else
-    iret = 1
-    return
-  endif
-
-  !Pull the first message (variable) as we are only interested in grid metadata.
-  call grib_count_in_file(ftn,nvars,iret)
-  if(nvars .le. 0) then
-    iret = 2
-    return
-  else
-    !Pull grid metadata from first message
-    call grib_new_from_file(ftn,igrib,iret)
-    if(iret .ne. 0) return
  
-    !Get GRIB edition number 
-    call grib_get(igrib,'editionNumber',edition,iret)
-    if(iret .ne. 0) return
-
-    !Unfortunately, GRIB 1 files do not contain grid definition information for checking. 
-    !Proceed with caution....
-   
-    !Sanity check to double check grid is polar stereographic and has an assumed
-    !spherical Earth radius. If not, throw a error back to R for 
-    !diagnostics.
-    if(edition .eq. 2) then
-      call grib_get(igrib,'gridDefinitionTemplateNumber',gdef,iret)
+  #if REGRID_FLAG != 0 
+    if(file_exists) then
+      !Open GRIB file
+      call grib_open_file(ftn,trim(fileIn),'r',iret)
       if(iret .ne. 0) return
     else
-      gdef = 20
-      iret = 0 !GRIB1 no check
+      iret = 1
+      return
     endif
-    if (gdef .ne. 20) then
-      iret = 20
+
+    !Pull the first message (variable) as we are only interested in grid metadata.
+    call grib_count_in_file(ftn,nvars,iret)
+    if(nvars .le. 0) then
+      iret = 2
       return
     else
+      !Pull grid metadata from first message
+      call grib_new_from_file(ftn,igrib,iret)
+      if(iret .ne. 0) return
+ 
+      !Get GRIB edition number 
+      call grib_get(igrib,'editionNumber',edition,iret)
+      if(iret .ne. 0) return
+
+      !Unfortunately, GRIB 1 files do not contain grid definition information for checking. 
+      !Proceed with caution....
+   
+      !Sanity check to double check grid is polar stereographic and has an assumed
+      !spherical Earth radius. If not, throw a error back to R for 
+      !diagnostics.
       if(edition .eq. 2) then
-        call grib_get(igrib,'shapeOfTheEarth',radius,iret)
+        call grib_get(igrib,'gridDefinitionTemplateNumber',gdef,iret)
         if(iret .ne. 0) return
       else
-        radius = 6
-        iret = 0
+        gdef = 20
+        iret = 0 !GRIB1 no check
       endif
-      if (radius .ne. 6) then
-        iret = 6
+      if (gdef .ne. 20) then
+        iret = 20
         return
+      else
+        if(edition .eq. 2) then
+          call grib_get(igrib,'shapeOfTheEarth',radius,iret)
+          if(iret .ne. 0) return
+        else
+          radius = 6
+          iret = 0
+        endif
+        if (radius .ne. 6) then
+          iret = 6
+          return
+        endif
+      endif
+
+      if (iret .eq. 0) then !Extract meta data
+        call grib_get(igrib,'latitudeOfFirstGridPointInDegrees',lat1,iret)
+        if(iret .ne. 0) return 
+        call grib_get(igrib,'longitudeOfFirstGridPointInDegrees',lon1,iret)
+        if(iret .ne. 0) return
+        call grib_get(igrib,'orientationOfTheGridInDegrees',lonv,iret)
+        if(iret .ne. 0) return
+        call grib_get(igrib,'DxInMetres',dx,iret)
+        if(iret .ne. 0) return
+        call grib_get(igrib,'DyInMetres',dy,iret)
+        if(iret .ne. 0) return
+        call grib_get(igrib,'Nx',nx,iret)
+        if(iret .ne. 0) return
+        call grib_get(igrib,'Ny',ny,iret)
+        if(iret .ne. 0) return
+        call grib_get(igrib,'jScansPositively',snFlag,iret)
+        if(iret .ne. 0) return
       endif
     endif
 
-    if (iret .eq. 0) then !Extract meta data
-      call grib_get(igrib,'latitudeOfFirstGridPointInDegrees',lat1,iret)
-      if(iret .ne. 0) return 
-      call grib_get(igrib,'longitudeOfFirstGridPointInDegrees',lon1,iret)
-      if(iret .ne. 0) return
-      call grib_get(igrib,'orientationOfTheGridInDegrees',lonv,iret)
-      if(iret .ne. 0) return
-      call grib_get(igrib,'DxInMetres',dx,iret)
-      if(iret .ne. 0) return
-      call grib_get(igrib,'DyInMetres',dy,iret)
-      if(iret .ne. 0) return
-      call grib_get(igrib,'Nx',nx,iret)
-      if(iret .ne. 0) return
-      call grib_get(igrib,'Ny',ny,iret)
-      if(iret .ne. 0) return
-      call grib_get(igrib,'jScansPositively',snFlag,iret)
-      if(iret .ne. 0) return
-    endif
-  endif
-
-  !Close GRIB file
-  call grib_close_file(ftn,iret)
-  if(iret .ne. 0) return
+    !Close GRIB file
+    call grib_close_file(ftn,iret)
+    if(iret .ne. 0) return
+  #else
+    iret = -99
+    return
+  #endif
 
 end subroutine get_polar_grid_meta

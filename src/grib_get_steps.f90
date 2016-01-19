@@ -6,6 +6,7 @@
 subroutine grib_get_steps(len1,fileIn,len2,var,len3,levType,lev,numSteps,&
                           iret)
 
+  #include "regrid_header.h"
   !DESCRIPTION:
   ! Subroutine that extracts the number of forecast times or 'steps' in 
   ! the GRIB file. Most of the time, the number of steps will be one,
@@ -34,7 +35,9 @@ subroutine grib_get_steps(len1,fileIn,len2,var,len3,levType,lev,numSteps,&
   ! karsten@ucar.edu
 
   !USES:
-  use grib_api
+  #if REGRID_FLAG != 0
+    use grib_api
+  #endif
 
   implicit none
 
@@ -60,56 +63,61 @@ subroutine grib_get_steps(len1,fileIn,len2,var,len3,levType,lev,numSteps,&
   !Inquire for file existence
   inquire(file=trim(fileIn),exist=file_exists)
 
-  if(file_exists) then
-    !Open GRIB file
-    count = 0
-    call grib_open_file(ftn,trim(fileIn),'r',iret)
+  #if REGRID_FLAG != 0
+    if(file_exists) then
+      !Open GRIB file
+      count = 0
+      call grib_open_file(ftn,trim(fileIn),'r',iret)
+      if(iret .ne. 0) return
+    else
+      numSteps = 0
+      iret = 1
+      return
+    endif
+
+    !Pull total number of messages (variables)
+    call grib_count_in_file(ftn,nvars,iret)
+    if(nvars .le. 0) then
+      iret = 2
+      return
+    else
+      !Loop through variables until variable of interest is found.
+      do v=1,nvars
+        !Read GRIB message (variable)
+        call grib_new_from_file(ftn,igrib,iret)
+        if(iret .ne. 0) return
+
+        !Pull variable name
+        call grib_get(igrib,'shortName',varnametemp,iret)
+        if(iret .ne. 0) return
+
+        !Pull level type
+        call grib_get(igrib,'typeOfLevel',levTypeTemp,iret)
+        if(iret .ne. 0) return
+
+        !Pull variable level
+        call grib_get(igrib,'level',varleveltemp,iret)
+        if(iret .ne. 0) return
+
+        if(trim(varnametemp) .eq. trim(var) .and. &
+           lev .eq. varleveltemp .and. &
+           trim(levTypeTemp) .eq. trim(levType)) then
+           !Variable found. Add to count.
+
+           count = count + 1
+
+        endif
+      enddo
+    endif
+
+    numSteps = count
+
+    !Close GRIB file
+    call grib_close_file(ftn,iret)
     if(iret .ne. 0) return
-  else
-    numSteps = 0
-    iret = 1
+  #else
+    iret = -99
     return
-  endif
-
-  !Pull total number of messages (variables)
-  call grib_count_in_file(ftn,nvars,iret)
-  if(nvars .le. 0) then
-    iret = 2
-    return
-  else
-    !Loop through variables until variable of interest is found.
-    do v=1,nvars
-      !Read GRIB message (variable)
-      call grib_new_from_file(ftn,igrib,iret)
-      if(iret .ne. 0) return
-
-      !Pull variable name
-      call grib_get(igrib,'shortName',varnametemp,iret)
-      if(iret .ne. 0) return
-
-      !Pull level type
-      call grib_get(igrib,'typeOfLevel',levTypeTemp,iret)
-      if(iret .ne. 0) return
-
-      !Pull variable level
-      call grib_get(igrib,'level',varleveltemp,iret)
-      if(iret .ne. 0) return
-
-      if(trim(varnametemp) .eq. trim(var) .and. &
-         lev .eq. varleveltemp .and. &
-         trim(levTypeTemp) .eq. trim(levType)) then
-         !Variable found. Add to count.
-
-         count = count + 1
-
-      endif
-    enddo
-  endif
-
-  numSteps = count
-
-  !Close GRIB file
-  call grib_close_file(ftn,iret)
-  if(iret .ne. 0) return
+  #endif
 
 end subroutine grib_get_steps 
