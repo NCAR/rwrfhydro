@@ -28,7 +28,7 @@ FFLAGS=`${R_HOME}/bin/R CMD config FCFLAGS`
 
 # Initialize regridding flag to 1. If libraries not found,
 # flag is set to 0. This will be used in as definitive
-# in Fortran code.
+# in Fortran code to parse.
 
 REGRID_FLAG_CONFIG=0
 
