@@ -6,7 +6,7 @@
 subroutine get_gauss_grid_meta(len1,fileIn,nx,ny,dx,lat1,lon1,lat2,&
                                lon2,snFlag,iret)
 
-  include "regrid_header.h"
+  #include "regrid_header.h"
   !DESCRIPTION:
   ! Subroutine that opens a GRIB file and extracts meta data about 
   ! the regular gaussian grid contained. Meta data is pulled based 

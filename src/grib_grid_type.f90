@@ -5,7 +5,7 @@
 
 subroutine grib_grid_type(len1,fileIn,gridType,iret)
 
-  include "regrid_header.h"
+  #include "regrid_header.h"
   !DESCRIPTION:
   !  Subroutine that opens GRIB file and determines grid type based
   !  on first message (variable). Arguments are as follows:
