@@ -1707,10 +1707,6 @@ fi
 FC=`${R_HOME}/bin/R CMD config FC`
 FFLAGS=`${R_HOME}/bin/R CMD config FCFLAGS`
 
-# Initialize regridding flag to 1. If libraries not found,
-# flag is set to 0. This will be used in as definitive
-# in Fortran code.
-
 REGRID_FLAG_CONFIG=0
 
 # rwrfhydro regridding requires the ECMWF GRIB API.
@@ -1924,8 +1920,8 @@ if test $HAS_GRIB_API = "yes"; then
 fi
 
 REGRID_PKG_LIBS="${GRIB_API_LDFLAGS} ${ESMF_LDFLAGS}"
-REGRID_PKG_FCFLAGS="${GRIB_API_FCFLAGS} ${ESMF_FCFLAGS} -cpp"
-REGRID_PKG_FFLAGS="${GRIB_API_FFLAGS} ${ESMF_FFLAGS} -cpp"
+REGRID_PKG_FCFLAGS="${GRIB_API_FCFLAGS} ${ESMF_FCFLAGS}"
+REGRID_PKG_FFLAGS="${GRIB_API_FFLAGS} ${ESMF_FFLAGS}"
 
 
 
