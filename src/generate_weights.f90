@@ -47,10 +47,10 @@ subroutine generate_weights(nxSrc,nySrc,nxDst,nyDst,fctLenTemp,srcDummy,latSrc,&
   ! karsten@ucar.edu
 
   !USES:
-  if (REGRID_FLAG .ne. 0) then
+  if (REGRID_FLAG == 1) then
   !if REGRID_FLAG = 1
     use ESMF
-  #endif
+  endif
 
   implicit none
   
