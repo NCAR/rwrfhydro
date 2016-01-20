@@ -49,7 +49,7 @@ subroutine generate_weights(nxSrc,nySrc,nxDst,nyDst,fctLenTemp,srcDummy,latSrc,&
   !USES:
   if (REGRID_FLAG .eq. 1) then
     print*,'laksdjf'
-    use ESMF
+    !use ESMF
   end if
 
   implicit none
