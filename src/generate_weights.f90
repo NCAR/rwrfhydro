@@ -106,7 +106,6 @@ subroutine generate_weights(nxSrc,nySrc,nxDst,nyDst,fctLenTemp,srcDummy,latSrc,&
     integer, intent(inout)               :: ier
 #endif
 
-  print*, REGRID_FLAG
 #if ( defined REGRID_FLAG )
     !Set dummy destination grid to a default value of 0.0
     dstTemp = 0.0
