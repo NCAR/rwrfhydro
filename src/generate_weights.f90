@@ -47,14 +47,14 @@ subroutine generate_weights(nxSrc,nySrc,nxDst,nyDst,fctLenTemp,srcDummy,latSrc,&
   ! karsten@ucar.edu
 
   !USES:
-  #if REGRID_FLAG != 0
+  if (REGRID_FLAG .ne. 0) then
     use ESMF
-  #endif
+  endif
 
   implicit none
   
   !ARGUMENTS:
-  #if REGRID_FLAG != 0
+  if (REGRID_FLAG .ne. 0) then
     integer, intent(in)                  :: nxSrc, nySrc, nxDst, nyDst
     integer*4, intent(in)                :: fctLenTemp
     real(ESMF_KIND_R8), intent(in)       :: srcDummy(nxSrc,nySrc)
@@ -90,7 +90,7 @@ subroutine generate_weights(nxSrc,nySrc,nxDst,nyDst,fctLenTemp,srcDummy,latSrc,&
     real(ESMF_KIND_R8), pointer    :: factorListTemp(:)
     integer(ESMF_KIND_I4), pointer :: factorIndexListTemp(:,:)
     integer                        :: r, c, i
-  #else
+  else
     integer, intent(in)                  :: nxSrc, nySrc, nxDst, nyDst
     integer*4, intent(in)                :: fctLenTemp
     real intent(in)       :: srcDummy(nxSrc,nySrc)
@@ -104,9 +104,9 @@ subroutine generate_weights(nxSrc,nySrc,nxDst,nyDst,fctLenTemp,srcDummy,latSrc,&
     real*8, intent(inout)                :: factorListOut(fctLenTemp)
     real*8, intent(inout)                :: factorIndexListOut(2,fctLenTemp)
     integer, intent(inout)               :: ier
-  #endif
+  endif
 
-  #if REGRID_FLAG != 0
+  if (REGRID_FLAG .ne. 0) then
     !Set dummy destination grid to a default value of 0.0
     dstTemp = 0.0
 
@@ -267,9 +267,9 @@ subroutine generate_weights(nxSrc,nySrc,nxDst,nyDst,fctLenTemp,srcDummy,latSrc,&
     if(ier .ne. 0) return
     call ESMF_ArrayDestroy(dstArrayESMF,rc=ier)
     if(ier .ne. 0) return
-  #else
+  else
     ier = -99
     return
-  #endif 
+  endif 
 
 end subroutine generate_weights  
