@@ -42,7 +42,6 @@ if test $HAS_GRIB_API = "no"; then
 	echo "to install. rwrfhydro will install without"
 	echo "regridding support."
 	echo "---------------------------------------------------"
-	AC_DEFINE([NO_REGRID_FLAG],1)
 fi
 
 # rwrfhydro regridding requires the ESMF library.
@@ -55,7 +54,6 @@ if test $HAS_ESMF = "no"; then
 	echo "to install. rwrfhydro will install without"
 	echo "regridding support."
 	echo "---------------------------------------------------"
-	AC_DEFINE([NO_REGRID_FLAG],1)
 fi
 
 if test $HAS_GRIB_API = "yes"; then
