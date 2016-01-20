@@ -48,13 +48,14 @@ subroutine generate_weights(nxSrc,nySrc,nxDst,nyDst,fctLenTemp,srcDummy,latSrc,&
 
   !USES:
   if (REGRID_FLAG .eq. 1) then
+    print*,'laksdjf'
     use ESMF
   end if
 
   implicit none
   
   !ARGUMENTS:
-  if (REGRID_FLAG .ne. 0) then
+  if (REGRID_FLAG .eq. 0) then
     integer, intent(in)                  :: nxSrc, nySrc, nxDst, nyDst
     integer*4, intent(in)                :: fctLenTemp
     real(ESMF_KIND_R8), intent(in)       :: srcDummy(nxSrc,nySrc)
@@ -106,7 +107,7 @@ subroutine generate_weights(nxSrc,nySrc,nxDst,nyDst,fctLenTemp,srcDummy,latSrc,&
     integer, intent(inout)               :: ier
   endif
 
-  if (REGRID_FLAG .ne. 0) then
+  if (REGRID_FLAG .eq. 0) then
     !Set dummy destination grid to a default value of 0.0
     dstTemp = 0.0
 
