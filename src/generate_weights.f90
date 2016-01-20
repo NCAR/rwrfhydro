@@ -48,7 +48,7 @@ subroutine generate_weights(nxSrc,nySrc,nxDst,nyDst,fctLenTemp,srcDummy,latSrc,&
 
   !USES:
   #if ( defined REGRID_FLAG ) 
-    !use ESMF
+    use ESMF
   #endif
 
   implicit none
