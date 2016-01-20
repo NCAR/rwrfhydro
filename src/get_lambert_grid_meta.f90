@@ -42,9 +42,9 @@ subroutine get_lambert_grid_meta(len1,fileIn,nx,ny,dx,dy,lat1,lon1,lonv, &
   ! karsten@ucar.edu
 
   !USES:
-  #if REGRID_FLAG != 0
+#if ( defined REGRID_FLAG )
     use grib_api
-  #endif
+#endif
 
   implicit none
   
@@ -65,8 +65,8 @@ subroutine get_lambert_grid_meta(len1,fileIn,nx,ny,dx,dy,lat1,lon1,lonv, &
 
   !Inquire for file existence
   inquire(file=trim(fileIn),exist=file_exists)
- 
-  #if REGRID_FLAG != 0 
+
+#if ( defined REGRID_FLAG ) 
     if(file_exists) then
       !Open GRIB file
       call grib_open_file(ftn,trim(fileIn),'r',iret)
@@ -149,9 +149,9 @@ subroutine get_lambert_grid_meta(len1,fileIn,nx,ny,dx,dy,lat1,lon1,lonv, &
     !Close GRIB file
     call grib_close_file(ftn,iret)
     if(iret .ne. 0) return
-  #else
+#else
     iret = -99
     return
-  #endif
+#endif
 
 end subroutine get_lambert_grid_meta

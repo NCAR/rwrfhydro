@@ -28,9 +28,9 @@ subroutine grib_get_lat_lon(len1,fileIn,nx,ny,lat,lon,iret)
   ! karsten@ucar.edu
 
   !USES:
-  #if REGRID_FLAG != 0 
+#if ( defined REGRID_FLAG )
     use grib_api
-  #endif
+#endif
 
   implicit none
 
@@ -55,7 +55,7 @@ subroutine grib_get_lat_lon(len1,fileIn,nx,ny,lat,lon,iret)
   inquire(file=trim(fileIn),exist=file_exists)
   if(iret .ne. 0) return
 
-  #if REGRID_FLAG != 0
+#if ( defined REGRID_FLAG )
     if(file_exists) then
       !Open GRIB file
       call grib_open_file(ftn,trim(fileIn),'r',iret)
@@ -104,9 +104,9 @@ subroutine grib_get_lat_lon(len1,fileIn,nx,ny,lat,lon,iret)
       if(iret .ne. 0) return
  
     endif
-  #else
+#else
     iret = -99
     return
-  #endif
+#endif
            
 end subroutine grib_get_lat_lon

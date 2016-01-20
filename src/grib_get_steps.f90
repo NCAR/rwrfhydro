@@ -36,9 +36,9 @@ subroutine grib_get_steps(len1,fileIn,len2,var,len3,levType,lev,numSteps,&
   ! karsten@ucar.edu
 
   !USES:
-  #if REGRID_FLAG != 0
+#if (defined REGRID_FLAG )
     use grib_api
-  #endif
+#endif
 
   implicit none
 
@@ -64,7 +64,7 @@ subroutine grib_get_steps(len1,fileIn,len2,var,len3,levType,lev,numSteps,&
   !Inquire for file existence
   inquire(file=trim(fileIn),exist=file_exists)
 
-  #if REGRID_FLAG != 0
+#if ( defined REGRID_FLAG )
     if(file_exists) then
       !Open GRIB file
       count = 0
@@ -116,9 +116,9 @@ subroutine grib_get_steps(len1,fileIn,len2,var,len3,levType,lev,numSteps,&
     !Close GRIB file
     call grib_close_file(ftn,iret)
     if(iret .ne. 0) return
-  #else
+#else
     iret = -99
     return
-  #endif
+#endif
 
 end subroutine grib_get_steps 
