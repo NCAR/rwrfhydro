@@ -93,13 +93,13 @@ subroutine generate_weights(nxSrc,nySrc,nxDst,nyDst,fctLenTemp,srcDummy,latSrc,&
 #else
     integer, intent(in)                  :: nxSrc, nySrc, nxDst, nyDst
     integer*4, intent(in)                :: fctLenTemp
-    real intent(in)       :: srcDummy(nxSrc,nySrc)
-    real intent(in)       :: latSrc(nxSrc,nySrc)
-    real intent(in)       :: lonSrc(nxSrc,nySrc)
-    real intent(in)       :: latDst(nxDst,nyDst)
-    real intent(in)       :: lonDst(nxDst,nyDst)
+    real, intent(in)       :: srcDummy(nxSrc,nySrc)
+    real, intent(in)       :: latSrc(nxSrc,nySrc)
+    real, intent(in)       :: lonSrc(nxSrc,nySrc)
+    real, intent(in)       :: latDst(nxDst,nyDst)
+    real, intent(in)       :: lonDst(nxDst,nyDst)
     integer, intent(in)                  :: method
-    real intent(in)       :: ndvSrc
+    real, intent(in)       :: ndvSrc
     integer*4, intent(inout)             :: fctLen
     real*8, intent(inout)                :: factorListOut(fctLenTemp)
     real*8, intent(inout)                :: factorIndexListOut(2,fctLenTemp)
