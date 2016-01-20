@@ -47,10 +47,9 @@ subroutine generate_weights(nxSrc,nySrc,nxDst,nyDst,fctLenTemp,srcDummy,latSrc,&
   ! karsten@ucar.edu
 
   !USES:
-  if (REGRID_FLAG .eq. 1) then
-    print*,'laksdjf'
+  #if ( defined REGRID_FLAG ) 
     !use ESMF
-  end if
+  #endif
 
   implicit none
   

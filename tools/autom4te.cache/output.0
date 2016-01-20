@@ -1811,7 +1811,7 @@ if test $HAS_GRIB_API = "no"; then
 	echo "to install. rwrfhydro will install without"
 	echo "regridding support."
 	echo "---------------------------------------------------"
-	$as_echo "@%:@define REGRID_FLAG 0" >>confdefs.h
+	$as_echo "@%:@define NO_REGRID_FLAG 1" >>confdefs.h
 
 fi
 
@@ -1916,7 +1916,7 @@ if test $HAS_ESMF = "no"; then
 	echo "to install. rwrfhydro will install without"
 	echo "regridding support."
 	echo "---------------------------------------------------"
-	$as_echo "@%:@define REGRID_FLAG 0" >>confdefs.h
+	$as_echo "@%:@define NO_REGRID_FLAG 1" >>confdefs.h
 
 fi
 
