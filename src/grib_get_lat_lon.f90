@@ -3,9 +3,10 @@
 ! Research Applications Laboratory
 !-------------------------------------------------------------------------
 
+#include "regrid_header.h"
+
 subroutine grib_get_lat_lon(len1,fileIn,nx,ny,lat,lon,iret)
 
-  #include "regrid_header.h"
   !DESCRIPTION:
   ! Subroutine to extract lat/lon coordinates from the first GRIB message.
   ! Arguments are as follows:

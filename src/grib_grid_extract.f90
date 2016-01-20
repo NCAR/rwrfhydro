@@ -3,12 +3,13 @@
 ! Research Applications Laboratory
 !-------------------------------------------------------------------------
 
+#include "regrid_header.h"
+
 subroutine grib_grid_extract(len1,fileIn,len2,var,nx,ny,&
                              gridOut,len3,levType,level,lname,&
                              units,ndv,len4,len5,nt,&
                              dYYYYMMDD,dHHMM,bStep,eStep,iret)
 
-  #include "regrid_header.h"
   !DESCRIPTION:
   ! Subroutine that extracts a grid of GRIB data based on
   ! prescribed grid dimensions calculated from earlier 

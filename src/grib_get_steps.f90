@@ -3,10 +3,11 @@
 ! Research Applications Laboratory
 !-------------------------------------------------------------------------
 
+#include "regrid_header.h"
+
 subroutine grib_get_steps(len1,fileIn,len2,var,len3,levType,lev,numSteps,&
                           iret)
 
-  #include "regrid_header.h"
   !DESCRIPTION:
   ! Subroutine that extracts the number of forecast times or 'steps' in 
   ! the GRIB file. Most of the time, the number of steps will be one,

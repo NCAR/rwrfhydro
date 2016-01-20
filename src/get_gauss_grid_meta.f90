@@ -3,6 +3,8 @@
 ! Research Applications Laboratory
 !-------------------------------------------------------------------------
 
+#include "regrid_header.h"
+
 subroutine get_gauss_grid_meta(len1,fileIn,nx,ny,dx,lat1,lon1,lat2,&
                                lon2,snFlag,iret)
 

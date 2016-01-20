@@ -3,10 +3,10 @@
 ! Research Applications Laboratory
 !-------------------------------------------------------------------------
 
+#include "regrid_header.h"
 subroutine get_ll_grid_meta(len1,fileIn,nx,ny,dx,dy,lat1,lon1,lat2, &
                             lon2,snFlag,iret)
 
-  #include "regrid_header.h"
   !DESCRIPTION:
   ! Subroutine that opens a GRIB file and extracts meta data about
   ! the lat/lon projection grid contained. Meta data is pulled
