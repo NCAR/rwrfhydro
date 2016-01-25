@@ -432,7 +432,7 @@ NtwKReExToNcdf <- function(toFile, fromFile) {
 #'      PlotRouteLink(indices=TRUE)
 #'      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reInd.Rdb')
 #'      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reExpFrom.Rdb')
-#'      upstreamInds <- GatherStreamInds(from, 379, length=reInd$length)
+#'      upstreamInds <- GatherStreamInds(from, 379, linkLengths=reInd$length)
 #'      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reExpTo.Rdb')
 #'      downstreamInds <- GatherStreamInds(to, 91, length=reInd$length)
 #'  }
@@ -450,7 +450,30 @@ GatherStreamInds <- function(stream, start, linkLengths) {
   }
   indDists
 }
- 
+
+
+## Get the neighboring (next up or down) stream gages
+GatherNeighborStreamGages <- function(stream, start, linkLengths, gageIndices) {
+  ## use the plural here: indDists
+  indDists <- GatherStreamIndsNRInner(stream, start, linkLengths) 
+  while(any(indDists$tip>1)){
+    ## once you arrive at at tip which is a gage, stop there.
+    tipInds <- indDists$ind[which(indDists$tip>1)]
+    whGages <- which(indDists$ind %in% gageIndices)
+    if(length(whGages)) {
+      indDists$tip[whGages] <- 0
+      tipInds <- indDists$ind[which(indDists$tip>1)]
+      if(!length(tipInds)) break
+    }
+    for(ss in tipInds)
+      indDists <- GatherStreamIndsNRInner(stream, ss, linkLengths, indDist=indDists) 
+  }
+  whGages <- which(indDists$ind %in% gageIndices)
+  if(!length(whGages)) return(NULL)
+  c(plyr::llply(indDists[c('ind','dist','tip')], '[', whGages) ,
+    indDists['startInd'] )
+}
+
   
 GatherStreamIndsNRInner <- function(stream, start, linkLengths=0,
                                     indDist = list(ind = c(), dist = c(),
@@ -498,7 +521,6 @@ GatherStreamIndsNRInner <- function(stream, start, linkLengths=0,
   indDist
 }
 
-
 ##
 ## Deprecated.
 ## testing non-recursive collection,
@@ -535,6 +557,7 @@ GatherStreamIndsRecursive <- function(stream, start, linkLengths=0,
   indDist$startInd <- start
   indDist
 }
+
 
 
 #========================================================
