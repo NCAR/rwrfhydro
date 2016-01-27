@@ -10,11 +10,44 @@
 #' ## See the vignette "WRF Hydro Domain and Channel Visualization", for details. 
 #' ## set your test case path
 #' \dontrun{
-#' tcPath <- '~/wrfHydroTestCases/'
-#' fcPath <- paste0(tcPath,'Fourmile_Creek/')
-#' hydroFile<-paste0(fcPath,'/DOMAIN/hydro_OrodellBasin_100m.nc')
-#' hydroCoords <- GetDomainCoordsProj(hydroFile)
-#' str(hydroCoords)
+if(FALSE) {
+hydroFile<- '~/WRF_Hydro/TESTING/TEST_FILES/FRNG/2015-12-04_20:08:06.b8e1e01c4cc2/STD/DOMAIN/Fulldom_hires_netcdf_file_2015_11_20.nc'
+hydroCoords <- GetDomainCoordsProj(hydroFile)
+str(hydroCoords)
+hydroCoords <- as.data.frame(hydroCoords)
+
+#' Calculate/Plot the error of the longitude and latitidue coords in the Fulldom file
+hydroCoords$latFile <- as.vector(ncdump(hydroFile,'LATITUDE', q=TRUE))
+hydroCoords$lonFile <- as.vector(ncdump(hydroFile,'LONGITUDE', q=TRUE))
+hydroCoords$latErr <- lat-hydroCoords$lat
+hydroCoords$lonErr <- lon-hydroCoords$long
+
+summary(hydroCoords$latErr)
+summary(hydroCoords$lonErr)
+
+theMap <- ggmap::get_map(location=c(lon=mean(hydroCoords$long)-.5,
+                                    lat=mean(hydroCoords$lat))+.2, zoom = 13)
+
+ggmap::ggmap(theMap) + geom_point(data=hydroCoords, aes(x=lonFile, y=latFile),size=1)
+ggmap::ggmap(theMap) + geom_point(data=hydroCoords, aes(x=long, y=lat),size=.5)
+
+## test for unique pairs in lat/long
+testLon <- hydroCoords$long
+testLat <- hydroCoords$lat
+tally=list()
+for(i in 1:300) {
+#  for(i in 1:(length(testLon)-1)) {
+  matches <- (testLon[(i+1):length(testLat)] == testLon[i] &
+              testLat[(i+1):length(testLat)] == testLat[i]   )
+  whMatch <- which(matches)+i  
+  if(length(whMatch)) {
+    for(j in 1:length(whMatch)) tally[[length(tally)+1]] <- c(i,whMatch)
+    print(i)
+    print(length(tally))
+  }
+}
+
+}
 #' }
 #' @concept plot
 #' @keywords hplot
@@ -22,9 +55,8 @@
 #' @export
 GetDomainCoordsProj <- function(file, proj4Str="+proj=longlat +datum=WGS84") {
 
-  if(!('rgdal' %in% installed.packages()[,"Package"]))  {
-    warning('GetDomainCoordsProj requires rgdal to be installed')
-    return(NULL)
+  if(!all(c('rgdal','sp') %in% installed.packages()[,"Package"]))  {
+    warning('Using GetDomainCoordsProj correctly requires rgdal & sp packages for now.')
   }
 
   IsGeoFile <- function(file, globalAttToTest='CEN_LAT') {
@@ -34,6 +66,8 @@ GetDomainCoordsProj <- function(file, proj4Str="+proj=longlat +datum=WGS84") {
     retVal
   }
 
+
+  
   if(IsGeoFile(file)) {
 
     ## geo grid files: use the coordinates which are in wrf sphereoid
@@ -125,47 +159,62 @@ GetDomainCoordsProj <- function(file, proj4Str="+proj=longlat +datum=WGS84") {
 #' @examples
 #' ## See the vignette "WRF Hydro Domain and Channel Visualization", for details. 
 #' ## set your test case path
-#' \dontrun{
-#' tcPath <- '~/wrfHydroTestCases/'
-#' fcPath <- paste0(tcPath,'Fourmile_Creek/')
-#' hydroFile<-paste0(fcPath,'/DOMAIN/hydro_OrodellBasin_100m.nc')
-#' GgMapFunction <- VisualizeDomain(hydroFile, "CHANNELGRID")
-#' ggMap1 <- GgMapFunction(zoom=11, pointshape=15, pointsize=7, 
-#'                         source="google", maptype="terrain")
-#' # Add a streamflow gauge point; compare reality and the model.
-#' orodellLonLat <- data.frame(lon=c(254.6722259521484375, 254.67374999999998408)-360, 
-#'                            lat=c(40.019321441650390625, 40.018666670000001773),
-#'                            gauge=c('model','USGS'))
-#' ggMap2 <- GgMapFunction(location=c(lon=orodellLonLat$lon[1], lat=orodellLonLat$lat[1]),
-#'                         zoom=14, pointshape=15, pointsize=7, 
-#'                         source="google", maptype="terrain", plot=FALSE) 
-#' ggMap2 + geom_point(data=orodellLonLat, aes(x=lon,y=lat, shape=gauge)) +
-#'          scale_x_continuous(limits=rev(orodellLonLat$lon+c( .01 ,-.01 ))) +
-#'          scale_y_continuous(limits=rev(orodellLonLat$lat+c( .005,-.005)))
-#' ### --- FRNG example ----
-#' file <- "~/WRF_Hydro/FRNG/Fulldom_hires_netcdf_file_2015_11_20.nc"
-#' zz <- z(zoom=13,pointsize=1, subsetRange=c(0),
-#'         location=c(lon=mean(plotDf$long)-.5, lat=mean(plotDf$lat))+.2,
-#'         grad='blue', maptype='terrain') ##gross reservoir
+                                        #' \dontrun{
+if(FALSE) {
+hydroFile <- '/home/adugger/WRF_Hydro/Fourmile_fire/DOMAIN/hydro_OrodellBasin_100m_8msk.nc'
+ GgMapFunction <- VisualizeDomain(hydroFile, "CHANNELGRID")
+ ggMap1 <- GgMapFunction(zoom=11, pointshape=15, pointsize=7, 
+                         source="google", maptype="terrain")
+ # Add a streamflow gauge point; compare reality and the model.
+ orodellLonLat <- data.frame(lon=c(254.6722259521484375, 254.67374999999998408)-360, 
+                            lat=c(40.019321441650390625, 40.018666670000001773),
+                            gauge=c('model','USGS'))
+ ggMap2 <- GgMapFunction(location=c(lon=orodellLonLat$lon[1], lat=orodellLonLat$lat[1]),
+                         zoom=14, pointshape=15, pointsize=7, 
+                         source="google", maptype="terrain", plot=FALSE) 
+ggMap2$ggMapObj +
+  geom_point(data=orodellLonLat, aes(x=lon,y=lat, shape=gauge)) +
+  scale_x_continuous(limits=rev(orodellLonLat$lon+c( .01 ,-.01 ))) +
+  scale_y_continuous(limits=rev(orodellLonLat$lat+c( .005,-.005)))
+
+## fourmile redux
+ClosureHydro <- VisualizeDomain(hydroFile, plotVar='CHANNELGRID', plot=FALSE)
+closureRtnHydro <-
+  ClosureHydro(zoom=11, pointsize=2,
+               ## can reference the internal plotDf (or other variables internal to the closure)
+               location=c(lon=mean(plotDf$long), lat=mean(plotDf$lat)),
+               subsetRange=c(0),
+               grad='blue', maptype='terrain') ##gross reservoir
+
+## geogrid
+geoFile <- '/home/adugger/WRF_Hydro/Fourmile_fire/DOMAIN/geo_OrodellBasin_1km_6.nc'
+ClosureGeo <- VisualizeDomain(geoFile, plotVar='HGT_M', plot=FALSE)
+mapMargin <- .01*c(-1,1)
+closureRtnGeo <-
+  ClosureGeo(zoom=11, pointsize=35,
+             grad=topo.colors(15), alpha=.4, maptype='terrain',
+             subsetRange=range(plotDf$value),
+             xlim=range(plotDf$long)+mapMargin,
+             ylim = range(plotDf$lat)+mapMargin) ##gross reservoir
+
+## put them together
+closureRtnGeo$ggObj +
+  geom_point(data=closureRtnHydro$plotDf,
+             aes(x=long, y=lat), color='darkblue') +
+               ggtitle('Fourmile Creek, CO - Elevation and Stream Channel')
+
+}
 #' }
 #' @concept plot
 #' @keywords hplot
 #' @family domain
 #' @export
-VisualizeDomain <- function(file, plotVar=NULL, plot=TRUE, drawPolygons=FALSE) {
+VisualizeDomain <- function(file, plotVar=NULL, plot=TRUE, plotDf=NULL) {
   
   ## get the file coordinates
-  plotDf <- GetDomainCoordsProj(file)
+  if(is.null(plotDf)) plotDf <- GetDomainCoordsProj(file)
   bbox <- plotDf@bbox
-
-  ## polygons?
-  if(drawPolygons) {
-    sp::gridded(plotDf) = TRUE # promote to SpatialGridDataFrame
-    plotDf <- sp::as(plotDf,"SpatialPolygonsDataFrame")
-    plotDf <- ggplot2::fortify(plotDf)
-  } else {
-    plotDf <- as.data.frame(plotDf)
-  }
+  plotDf <- as.data.frame(plotDf)
 
   # if no variable specified, ask to user to choose
   if(!length(plotVar)) {
@@ -200,30 +249,53 @@ VisualizeDomain <- function(file, plotVar=NULL, plot=TRUE, drawPolygons=FALSE) {
              maptype='hybrid', 
              pointsize=3,
              pointshape=15,
+             alpha=1,
              gradNColors=c('red','green','blue'),
              subsetRange=NULL,
-             plot=TRUE ) {
+             xlim=NULL,
+             ylim=NULL,
+             plot=TRUE,
+             returnComponents=FALSE) {
       ## Calling library may be forbidden in the package, but this dosent actually get executed in 
       ## the package. It seems that ggmap:: should take care of this, but it dosent.
       library(ggplot2) ## called in the closure.
-      theMap <- ggmap::get_map(location, zoom = zoom, source = source, maptype=maptype)
 
-      if(!is.null(subsetRange))
-        plotDf <- subset(plotDf, value<=max(subsetRange) & value>=min(subsetRange)) 
+      ## handle nonstandard evals for location, xlim, ylim here
+
+      ## try to evaluate the promise normally, then try locally if that fails
+      ## (cant quite get this to work as a separate function...)
+      outFuncEnv <- environment()
+      if(class(locationEval <- try(location, silent=TRUE))=='try-error')
+        locationEval <- eval(substitute(location), outFuncEnv)
+      if(class(xlimEval <- try(eval(xlim), silent=TRUE))=='try-error')
+        xlimEval <- eval(substitute(xlim), outFuncEnv)
+      if(class(ylimEval <- try(eval(ylim), silent=TRUE))=='try-error')
+        ylimEval <- eval(substitute(ylim), outFuncEnv)   
+      if(class(subRngEval <- try(eval(subsetRange), silent=TRUE))=='try-error')
+        subRngEval <- eval(substitute(subsetRange), outFuncEnv)   
       
-      ggMapObj <- 
-        ggmap::ggmap(theMap, extent=extent) +
-        ggplot2::geom_point(data=plotDf,
-                            aes(x=long, y=lat, color=value),
-                            size=pointsize, shape=pointshape) +
-        ggplot2::scale_color_gradientn(name=plotVar, colours=gradNColors) +
-        theme_bw(base_size=20)
-#        ggplot2::scale_x_continuous() + 
-#        ggplot2::scale_y_continuous()
+      ggMapObj <- ggmap::get_map(locationEval, zoom = zoom, source = source, maptype=maptype)
 
-      if(plot) print(ggMapObj)
-    
-      invisible(list(plotDf=plotDf, ggMapObj=ggMapObj))
+      ## actually reduces the size of the returned data frame
+      if(!is.null(subRngEval))
+        plotDf <- subset(plotDf, value<=max(subRngEval) & value>=min(subRngEval)) 
+      
+      ggPlotObj <- ggplot2::geom_point(data=plotDf,
+                                       aes(x=long, y=lat, color=value),
+                                       size=pointsize, shape=pointshape, alpha=alpha)
+      ggColorScaleObj <- ggplot2::scale_color_gradientn(name=plotVar, colours=gradNColors)
+      ggCoordObj <- ggplot2::coord_map(xlim=xlimEval, ylim=ylimEval) 
+
+      if(plot)
+        print(ggObj <- ggmap::ggmap(ggMapObj) + ggPlotObj +
+                      ggColorScaleObj + ggCoordObj + theme_bw(base_size=20))
+
+      outList <- list(plotDf=plotDf, ggObj=ggObj)
+      if(returnComponents)
+        outList <- c(outList,
+                     list(plotDf=plotDf, ggMapObj=ggMapObj, ggPlotObj=ggPlotObj,
+                          ggColorScaleObj=ggColorScaleObj, ggCoordObj=ggCoordObj))
+      invisible(outList)
     }
   
   if(plot) outFunc()

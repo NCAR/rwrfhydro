@@ -29,7 +29,8 @@ Imports:
 LazyData: true
 Suggests: testthat,
     knitr, 
-    rgdal, 
+    rgdal,
+    sp,
     pander,
     doMC,
     ptw
