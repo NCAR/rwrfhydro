@@ -357,7 +357,6 @@ AllSame <- function(x, na.rm=FALSE) all(x==x[which(!is.na(x))[1]], na.rm=na.rm)
 cfs2cms <- 0.0283168466  
 feet2meters <- 0.30480
 
-
 #' Get a package's metadata fields and associated entries.
 #' 
 #' \code{GetPkgMeta} Get metadata fields and associated entries from a package's
