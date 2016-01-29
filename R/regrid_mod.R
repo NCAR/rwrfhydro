@@ -122,7 +122,7 @@ regrid <- function(dataIn,latIn,lonIn,geoFile,method,wghtFile,ndvSrc){
     error <- dataTemp[[13]]
     if(error == -99){
       print('ERROR: Rwrfhydro built without regridding support.')
-      stop('ERROR: Please rebuild package with ESMF and GRIB API libraries.')
+      warning('ERROR: Please rebuild package with ESMF and GRIB API libraries.')
     } else if(error != 0){
       stop(paste0('ERROR: regrid returned exist status of: ',error))
     }
@@ -211,7 +211,7 @@ genWghtFile <- function(geoFile,nxIn,nyIn,latSrc,lonSrc,method,srcDummy,
   error <- dataTemp[[16]]
   if(error == -99){
     print('ERROR: Rwrfhydro built without regridding support.')
-    stop('ERROR: Please rebuild package with ESMF and GRIB API libraries.')
+    warning('ERROR: Please rebuild package with ESMF and GRIB API libraries.')
   } else if(error != 0){
     stop(paste0('ERROR: generate_weights returned an exit status of: ',error))
   }
