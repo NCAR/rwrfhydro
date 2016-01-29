@@ -1,0 +1,1 @@
+echo "#undef REGRID_FLAG" >> src/regrid_header.h
