@@ -89,7 +89,6 @@ ParseIndexArg <- function( index, dimSize, ncid ) {
 #' @export
 GetFileStat <- function(theFile, variable, index, env=parent.frame(), parallel=FALSE, ...) {
 
-  print('laskjdflkasjflk;asdjf;')
   if(!file.exists(theFile)) {
     warning('No such file: ',theFile)
     return(NULL)
@@ -152,18 +151,14 @@ GetFileStat <- function(theFile, variable, index, env=parent.frame(), parallel=F
               data.frame( do.call(statFunc, append(list(data), statArg), envir=env) ) else data.frame(data)
   
     names(outDf) <- c(variable)
-    print('YOUR MOM')
     if (!is.function(time)) {
-      print(time)
       outDf$POSIXct <- time
     } else {
       strTmp1 <- strsplit(theFile,"/")[[1]]
       strsplit(y[length(y)],"[.]")[[1]][1]
       strYYYYMMDDHH <- substr(strsplit(strTmp1[length(strTmp1)],"[.]")[[1]][1],1,10)
       outDf$POSIXct <- as.POSIXct(strYYYYMMDDHH,format="%Y%m%d%H",tz="UTC")
-      print(outDf$POSIXct)
     }  
-    print('YOUR DAD')
     outDf$inds <-paste( paste(dataStart,dataEnd,sep=':'), collapse=',' )
     if(is.null(statChar)) statChar <- '-'
     outDf$stat <- statChar
@@ -347,7 +342,7 @@ GetMultiNcdf <- function(filesList, variableList, indexList, env=parent.frame(),
     stop("The input lists must be collated: their names do not match.")
   ## Due to some internal "deficiencies" of plyr, I find it's better to loop
   ## on index. This results in more coherent output.
-  print("Starting")
+  #print("Starting")
   fileInd <- 1:length(filesList)
   outDf <- plyr::ldply(fileInd, GetMultiNcdfFile,
                        variableList=variableList,
