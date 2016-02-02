@@ -89,6 +89,7 @@ ParseIndexArg <- function( index, dimSize, ncid ) {
 #' @export
 GetFileStat <- function(theFile, variable, index, env=parent.frame(), parallel=FALSE, ...) {
 
+  print('laskjdflkasjflk;asdjf;')
   if(!file.exists(theFile)) {
     warning('No such file: ',theFile)
     return(NULL)
