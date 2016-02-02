@@ -151,6 +151,7 @@ GetFileStat <- function(theFile, variable, index, env=parent.frame(), parallel=F
               data.frame( do.call(statFunc, append(list(data), statArg), envir=env) ) else data.frame(data)
   
     names(outDf) <- c(variable)
+    print('YOUR MOM')
     if (!is.function(time)) {
       print(time)
       outDf$POSIXct <- time
@@ -161,6 +162,7 @@ GetFileStat <- function(theFile, variable, index, env=parent.frame(), parallel=F
       outDf$POSIXct <- as.POSIXct(strYYYYMMDDHH,format="%Y%m%d%H",tz="UTC")
       print(outDf$POSIXct)
     }  
+    print('YOUR DAD')
     outDf$inds <-paste( paste(dataStart,dataEnd,sep=':'), collapse=',' )
     if(is.null(statChar)) statChar <- '-'
     outDf$stat <- statChar
