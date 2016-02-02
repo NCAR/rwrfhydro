@@ -347,7 +347,7 @@ GetMultiNcdf <- function(filesList, variableList, indexList, env=parent.frame(),
     stop("The input lists must be collated: their names do not match.")
   ## Due to some internal "deficiencies" of plyr, I find it's better to loop
   ## on index. This results in more coherent output.
-  #print("Starting")
+  print("Starting")
   fileInd <- 1:length(filesList)
   outDf <- plyr::ldply(fileInd, GetMultiNcdfFile,
                        variableList=variableList,
