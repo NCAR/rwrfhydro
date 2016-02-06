@@ -32,8 +32,10 @@ sp::proj4string(points) <- sp::proj4string(timeZone)
 # use 'over' with timeZone polygon as a SpatialPolygonsDataFrame
 # object, to determine which timeZone (if any) contains each point, and
 # store the timeZone name as an attribute of the point data
-points$timeZone <- sp::over(points, timeZone)$TZID
-return(as.data.frame(points))
+
+points$timeZone <-as.character(sp::over(points, timeZone)$TZID)
+points <- as.data.frame(points, stringsAsFactors = FALSE)
+return(points)
 }
 
 #' Return the RFC name for gauge locations.
