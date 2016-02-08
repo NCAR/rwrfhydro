@@ -102,9 +102,9 @@ SelectGhcnGauges <- function(countryCode = NULL,networkCode = NULL,
   
   if (isTRUE(domain)) {
     selectedGauges <- subset(selectedGauges,latitude > minLat &
-                                            latitude < maxLat &
-                                            longitude > minLon &
-                                            longitude < maxLon)
+                               latitude < maxLat &
+                               longitude > minLon &
+                               longitude < maxLon)
   } 
   
   selectedGauges$siteIds <- paste0(selectedGauges$country,
@@ -176,11 +176,21 @@ GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
   getSite <- function(siteId) {
     urlAdd=paste0(fileAdd,siteId,'.dly') 
     
-    # We are using readr::read_fwf which is quite faster than base read.fwf
-    tmp <- tryCatch(readr::read_fwf(urlAdd, 
-                                    col_positions = readr::fwf_widths(c(11,4,2,4,rep(c(5,1,1,1),31))),
-                                    col_types = paste0("ciic",paste(rep("iccc",31), collapse = ""))), 
-                    error=function(cond) {message(cond); return(NA)})
+    if (is.element('readr', installed.packages()[,1])){
+      
+      # We are using readr::read_fwf which is quite faster than base read.fwf if readr is available
+      tmp <- tryCatch(readr::read_fwf(urlAdd, 
+                                      col_positions = readr::fwf_widths(c(11,4,2,4,rep(c(5,1,1,1),31))),
+                                      col_types = paste0("ciic",paste(rep("iccc",31), collapse = ""))), 
+                      error=function(cond) {message(cond); return(NA)})
+      
+    }else{
+      warning("This function would be faster if package \"readr\" is installed")
+      tmp <- tryCatch(suppressWarnings(read.fwf(urlAdd,widths=c(11,4,2,4,rep(c(5,1,1,1),31)),
+                                                colClass=c("character","integer","integer","factor",
+                                                           rep(c("integer","factor","factor","factor"),31)))),
+                      error=function(cond) {message(cond); return(NA)})
+    }
     
     tmp <- as.data.frame(tmp)
     
@@ -298,13 +308,25 @@ GetGhcn2 <- function(siteIDs, elements, startDate, endDate, parallel = FALSE,
                      lubridate::year(as.Date(endDate))))
   
   dataOut <- plyr::ldply(years, function(year) {
-
+    
+    if (is.element('readr', installed.packages()[,1])){
     # we are using readr::read_csv which is quite faster of read.csv
     dat <- tryCatch(readr::read_csv(paste0(fileAdd,year,".csv.gz"),
                                     col_types = "cccdcccc",
                                     col_names = c("siteIds","date","element","value","mFlag",
                                                   "qFlag","sFlag","reportTime")),
                     error=function(cond) {message(cond); return(NA)})
+    }else{
+      warning("This function would be faster if package \"readr\" is installed")
+      temp <- tempfile()
+      download.file(paste0(fileAdd,year,".csv.gz"),temp, mode="wb")
+      dat <- tryCatch(read.csv(gzfile(temp), header = FALSE,
+                      col.names = c("siteIds","date","element","value","mFlag","qFlag","sFlag","reportTime"),
+                      colClasses = c(rep("character",3),"numeric",rep("character",4))),
+                      error=function(cond) {message(cond); return(NA)})
+      unlink(temp)
+    }
+    
     
     # subset based on siteIds, element, date
     dat <- as.data.frame(dat)
