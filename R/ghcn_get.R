@@ -248,20 +248,21 @@ GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
 #' reportTime. This is a faster function compared to \code{\link{GetGhcn}} if
 #' you have many sites.
 #' 
-#' @param siteIds A single site ID or vector of site IDs to download and
-#'   process. SiteIds should match the standardized GHCN IDs (for example :
-#'   ACW00011604). See
+#' 
+#' @param siteIds A single siteId or vector of siteIds. SiteIds should match the
+#'   standardized GHCN-D IDs (for example : ACW00011604). See
 #'   \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt} for
 #'   a list of siteIds.
 #' @param elements A character vector defining what type of observation you are
 #'   interested in. There are five core elements as well as a number of 
 #'   additional elements. The five core elements are: \describe{ \item{PRCP}{ =
-#'   Precipitation (tenths of mm)} the precipitation will be converted to mm
+#'   Precipitation (tenths of mm), the precipitation will be converted to mm
 #'   when calling \code{\link{GetGhcn}} or \code{\link{GetGhcn2}} } \item{SNOW}{
 #'   = Snowfall (mm)} \item{SNWD}{ = Snow depth (mm)} \item{TMAX}{ = Maximum
 #'   temperature (tenths of degrees C)} \item{TMIN}{ = Minimum temperature
 #'   (tenths of degrees C)} } For the full list of elemenst refer to 
-#'   \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_year/readme.txt}
+#'   \url{ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt}
+#'   
 #' @param startDate,endDate Date.
 #' @param parallel Logical (DEFAULT=FALSE)
 #' @param fileAdd Address to the url containg the csv files of daily GHCN by
