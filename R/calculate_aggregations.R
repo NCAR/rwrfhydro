@@ -40,6 +40,7 @@
 #' @keywords manip
 #' @concept GHCN
 #' @family GHCN
+#' @import data.table
 #' @export
 
 # To substitude the subroutine in rwrfhydro
@@ -115,25 +116,21 @@ CalcDailyGhcn <- function(sg, prcp, reportTime = 700, parallel = FALSE){
         23 - as.numeric(as.character(reportTime)) / 100
       ), units = "hours"),"days"))
   }
-  str(prcp)
   prcp <- prcp[,which(names(prcp) %in% c("ghcnDay","statArg","DEL_ACCPRCP"))]
   
   # Convert the dataframe to data.table to do the daily aggregation faster
   # We keep the number of hours used to calculate the daily data (summation)
   
-  str(prcp)
-#  if (require('data.table')) {
+  if (is.element('data.table', installed.packages()[,1])){
     prcp <- data.table::as.data.table(prcp)
- #   dailyData <- prcp[,.(dailyPrcp = sum(DEL_ACCPRCP),numberOfDataPoints = sum(!is.na(DEL_ACCPRCP))), by = .(ghcnDay,statArg)]
-    print(class(prcp))
-    dailyData <-data.table:::`[.data.table`(prcp, ,.(dailyPrcp = sum(DEL_ACCPRCP),numberOfDataPoints = sum(!is.na(DEL_ACCPRCP))), by = .(ghcnDay,statArg))
+   dailyData <-data.table:::`[.data.table`(prcp, ,.(dailyPrcp = sum(DEL_ACCPRCP),numberOfDataPoints = .N), by = .(ghcnDay,statArg))
     return(as.data.frame(dailyData))
- # }else{
+  }else{
     warning('If install package data.table, it would be super fast to aggregate')
     dailyData<-plyr::ddply(prcp, c("ghcnDay","statArg"), 
                            plyr::summarise, 
-                           dailyPrcp=sum(DEL_ACCPRCP[DEL_ACCPRCP>=0], na.rm=TRUE),
+                           dailyPrcp=sum(DEL_ACCPRCP[DEL_ACCPRCP], na.rm=TRUE),
                            .parallel=parallel)
     return(dailyData)
-#  }
+  }
 }
