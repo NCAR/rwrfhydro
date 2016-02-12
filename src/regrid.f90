@@ -63,6 +63,7 @@ do i=1,fctLen
          if(dataOut(cDst,rDst,j,k) .eq. ndvSrc) then
             if(dataIn(cSrc,rSrc,j,k) .ne. ndvSrc) then
                dataOut(cDst,rDst,j,k) = dataIn(cSrc,rSrc,j,k)*wghtTmp
+	       print*, dataIn(cSrc,rSrc,j,k)
             endif
          else
             if(dataIn(cSrc,rSrc,j,k) .ne. ndvSrc) then
