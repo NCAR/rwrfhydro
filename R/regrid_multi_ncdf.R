@@ -81,8 +81,6 @@ regridNcdf <- function(var,files,latVar,lonVar,wghtFile,geoFile,method){
     } else {
       stop('ERROR: _FillValue not found.')
     }
-    print(varTemp)
-    print(longName)
   } else {
     stop('ERROR: ',var,' not found in NetCDF file.')
   }   
@@ -152,6 +150,7 @@ regridNcdf <- function(var,files,latVar,lonVar,wghtFile,geoFile,method){
     
     if(var %in% varListTemp){ 
       dataTemp <- ncdf4::ncvar_get(ncId,var)
+      print(dataTemp)
       #Flip if read in north-south
       for(fTime in 1:numFTimes){
         if(numFTimes == 1){
