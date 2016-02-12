@@ -194,9 +194,11 @@ regridNcdf <- function(var,files,latVar,lonVar,wghtFile,geoFile,method){
   }
 
   #Regrid data stack
-  print(longName)
   dataOut <- regrid(dataIn,latArray,lonArray,geoFile,methodInt,wghtFile,ndvSrc)
 
+  if (longName == "Snow Albedo){
+    print(dataIn)
+  }
   nxOut <- dim(dataOut)[1]
   nyOut <- dim(dataOut)[2]
   outList <- list(name=var,
