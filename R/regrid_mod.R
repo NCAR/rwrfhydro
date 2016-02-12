@@ -114,7 +114,14 @@ regrid <- function(dataIn,latIn,lonIn,geoFile,method,wghtFile,ndvSrc){
     }
     dataOut <- dataTemp[[8]]
   } else {
-    print(dataIn)
+    print(nxIn)
+    print(nyIn)
+    print(nFTimes)
+    print(nSteps)
+    print(nxGeo)
+    print(nyGeo)
+    print(fctLen)
+    print(ndvSrc)
     dataTemp <- .Fortran('regrid',nxIn,nyIn,nFTimes,nSteps,
                          dataIn,nxGeo,nyGeo,dataOut,
                          fctLen,factorList,factorIndexList,
