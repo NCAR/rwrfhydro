@@ -70,6 +70,11 @@ regridNcdf <- function(var,files,latVar,lonVar,wghtFile,geoFile,method){
     }
     if("long_name" %in% names(attDf)){
       longName <- attDf$long_name
+    } else {
+      longName <- ""
+    }
+    if("longName" %in% names(attDf)){
+      longName <- attDf$longName
     }
     if("_FillValue" %in% names(attDf)){
       ndvSrc <- ncdf4::ncatt_get(ncIdLL,var,'_FillValue')$value
