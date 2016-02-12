@@ -150,7 +150,6 @@ regridNcdf <- function(var,files,latVar,lonVar,wghtFile,geoFile,method){
     
     if(var %in% varListTemp){ 
       dataTemp <- ncdf4::ncvar_get(ncId,var)
-      print(dataTemp)
       #Flip if read in north-south
       for(fTime in 1:numFTimes){
         if(numFTimes == 1){
@@ -195,6 +194,7 @@ regridNcdf <- function(var,files,latVar,lonVar,wghtFile,geoFile,method){
   }
 
   #Regrid data stack
+  print(dataIn)
   dataOut <- regrid(dataIn,latArray,lonArray,geoFile,methodInt,wghtFile,ndvSrc)
 
   nxOut <- dim(dataOut)[1]
