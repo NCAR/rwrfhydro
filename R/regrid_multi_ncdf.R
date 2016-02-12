@@ -194,7 +194,6 @@ regridNcdf <- function(var,files,latVar,lonVar,wghtFile,geoFile,method){
   }
 
   #Regrid data stack
-  print(dataIn)
   dataOut <- regrid(dataIn,latArray,lonArray,geoFile,methodInt,wghtFile,ndvSrc)
 
   nxOut <- dim(dataOut)[1]
@@ -213,6 +212,7 @@ regridNcdf <- function(var,files,latVar,lonVar,wghtFile,geoFile,method){
                   data=dataOut,
                   nativeFiles=files)
 
+  print(dataOut)
   outList
 
 }
