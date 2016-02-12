@@ -243,7 +243,8 @@ regridMultiNcdfVar <- function(varInd, varList, files, latVar, lonVar,
   if(!file.exists(geoFile)){
     stop(paste0('ERROR: ',geoFile,' not found.'))
   }
- 
+
+  print(varList[[varInd]] 
   outList <- regridNcdf(var = varList[[varInd]],
                         files = files,
                         latVar = latVar,
