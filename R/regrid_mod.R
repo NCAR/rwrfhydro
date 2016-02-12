@@ -126,6 +126,7 @@ regrid <- function(dataIn,latIn,lonIn,geoFile,method,wghtFile,ndvSrc){
     } else if(error != 0){
       stop(paste0('ERROR: regrid returned exist status of: ',error))
     }
+    print(dataIn)
     dataOut <- dataTemp[[8]]
   }
   
