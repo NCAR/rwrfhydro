@@ -81,6 +81,8 @@ regridNcdf <- function(var,files,latVar,lonVar,wghtFile,geoFile,method){
     } else {
       stop('ERROR: _FillValue not found.')
     }
+    print(varTemp)
+    print(longName)
   } else {
     stop('ERROR: ',var,' not found in NetCDF file.')
   }   
@@ -244,7 +246,6 @@ regridMultiNcdfVar <- function(varInd, varList, files, latVar, lonVar,
     stop(paste0('ERROR: ',geoFile,' not found.'))
   }
 
-  print(varList[[varInd]]) 
   outList <- regridNcdf(var = varList[[varInd]],
                         files = files,
                         latVar = latVar,
