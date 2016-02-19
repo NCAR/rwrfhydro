@@ -1,6 +1,6 @@
 ---
 title: "Precipitation Evaluation"
-author: "Arezoo rafieei Nasab"
+author: "Arezoo Rafieei Nasab"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
@@ -11,7 +11,7 @@ vignette: >
 
 ## Background
 
-Forcing are stored in multiple files, either in input forcing files (such as LDASIN or PRECIP_FORCING files) or in output files (LDASOUT). LDASOUT files contains the variable ACCPRCP which stores the accumulated precipitation, and one can calculate the rainfall depth by subtracting two consecutive files. LDASIN and PRECIP_FORCING store rain rate in RAINRATE and precip_rate variables. MRMS is one of the precipitation product which can be used as supplementary forcing in WRF-Hydro and here we evaluate the MRMS at a few gauge locations and also in a grid format against stageIV data.
+Forcing are stored in multiple files, either in input forcing files (such as LDASIN or PRECIP_FORCING files) or in the output files (LDASOUT). LDASOUT files contains the variable ACCPRCP which stores the accumulated precipitation, and one can calculate the rainfall depth by subtracting two consecutive time steps. LDASIN and PRECIP_FORCING store rain rate in RAINRATE and precip_rate variables. MRMS is one of the precipitation product which can be used as supplementary forcing in WRF-Hydro and here we evaluate the MRMS at a few gauge locations and also in a grid format against stageIV data.
 
 Load the rwrfhydro package. 
 ```{r  results='hide', message=FALSE, warning=FALSE}
@@ -22,12 +22,13 @@ library(rwrfhydro)
 ## Import observed datasets
 
 ## GHCN-daily
-Global Historical Climatology Network-Daily (GHCN-D) dataset contains daily data from around 80000 surface station in the world, which about two third of them are precipitation only (Menne et al. 2012). It is the most complete collection of U.S. daily data available (Menne et al. 2012). The dataset undergo an automated quality assurance which the details can be found in Durre et al. 2008; 2010. Data is available on http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/and is updated frequently. Data is available in two formats either categorized by gauge station or categorized by year. Accordingly, there are two function to pull GHCN-daily data from these two sources.
+Global Historical Climatology Network-Daily (GHCN-D) dataset contains daily data from around 80000 surface station in the world, which about two third of them are precipitation only (Menne et al. 2012). It is the most complete collection of U.S. daily data available (Menne et al. 2012). The dataset undergo an automated quality assurance which the details can be found in Durre et al. 2008; 2010. Data is available on http://www1.ncdc.noaa.gov/pub/data/ghcn/daily and is updated frequently. Data is available in two formats either categorized by gauge station or categorized by year. Accordingly, there are two function to pull GHCN-daily data from these two sources.
 
 ### Gauge selection
 First step is to select the gauges you want to use for verification based on some criteria. GHCN-daily contains the precipitation data from different sources such as COOP or CoCoRaHS. The selection criteria can be country code, states if country is US, type of rain gauge network (for example CoCoRaHS), or a rectangle domain. 
 
 ```{r}
+setInternet2(use=FALSE) # If using windows, you may need this.
 countryCodeList=c("US")
 networkCodeList=c("1","C")
 sg <- SelectGhcnGauges(countryCode=countryCodeList,
@@ -46,20 +47,20 @@ GetGhcn
 GHCN-daily data are archived for each individual gauge in a text file in http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/all/. Precipitating can be downloaded for a single site or multiple ones by setting element to "PRCP" and specifying the desired start and end date. 
 
 ```{r, eval = FALSE}
-startDate="2015/06/01"
-endDate="2015/09/01"
-element="PRCP"
-obsPrcp<-GetGhcn(sg$siteIds, element, startDate, endDate, parallel=FALSE)
+startDate <- "2013/08/01"
+endDate <- "2013/11/01"
+element <- "PRCP"
+obsPrcp <- GetGhcn(sg$siteIds, element, startDate, endDate, parallel=FALSE)
 ```
  
 ### GetGhcn2
 NCDC also provides GHCN-daily categorized by year under http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_year/. If the number of the gauges are high, GetGhcn2 is much faster in retrieving data. 
 
 ```{r message=FALSE, warning=FALSE}
-startDate="2015/05/01"
-endDate="2015/10/01"
-element="PRCP"
-obsPrcp<-GetGhcn2(sg$siteIds, element, startDate, endDate, parallel=FALSE)
+startDate <- "2015/05/01"
+endDate <- "2015/10/01"
+element <- "PRCP"
+obsPrcp <- GetGhcn2(sg$siteIds, element, startDate, endDate, parallel=FALSE)
 head(obsPrcp)
 ```
 
