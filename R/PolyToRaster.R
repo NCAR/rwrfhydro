@@ -299,8 +299,10 @@ PolyToRaster <- function(geoFile = NULL,
     }
     
     if (plot.it){
-      raster::plot(rnew)
-      raster::plot(polyg, add =TRUE)
+    #  raster::plot(rnew)
+    #  raster::plot(polyg, add =TRUE)
+      plot(rnew)
+      plot(polyg, add =TRUE)
     }
     return(rnew)
   }
