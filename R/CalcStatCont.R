@@ -101,8 +101,11 @@ multiplot <- function(..., plotlist=NULL, cols=1, layout=NULL) {
 #'
 #'
 #' @param DT A data.table or dataframe: containing two columns of observation (truth) and the model
-#' @param obs Character: name of the observation column. 
-#' @param mod Character: name of the model/forecast column.
+#' @param obsCol Character: name of the observation column. 
+#' @param modCol Character: name of the model/forecast column.
+#' @param groupBy Character vector: Name of all the columns in \code{DT} which the statistics should be classified based on.
+#' @param obsMissing Numeric/Character vector: defining all the missing values in the observation
+#' @param modMissing Numeric/Character vector: defining all the missing values in the model/forecats 
 #' 
 #' @param obsCondRange Numeric vector: containing two elements (DEFAULT = c(-Inf,Inf)).
 #' Values are used as the lower and upper boundary for observation in calculating conditional statistics.
@@ -132,19 +135,15 @@ multiplot <- function(..., plotlist=NULL, cols=1, layout=NULL) {
 #' ExampleDF <- data.frame(obs=rnorm(1000), mod=rnorm(1000), stringsAsFactors=FALSE)
 #' stat <- CalcStatCont(DT = ExampleDF, obsCol = "obs", modCol = "mod")
 #' 
-#' ExampleDF <- data.frame(obs=rnorm(100000), mod=rnorm(100000), stringsAsFactors=FALSE)
-#' stat <- CalcStatCont(DT = ExampleDF, obsCol = "obs", modCol = "mod")
-#' 
-#' 
 #' ExampleDF <- data.frame(obs=rnorm(10000000), mod=rnorm(10000000), stringsAsFactors=FALSE)
 #' stat <- CalcStatCont(DT = ExampleDF, obsCol = "obs", modCol = "mod", plot.it = FALSE)
 #' 
 #' ExampleDF <- data.frame(siteId = rep(1:100, 10), obs=seq(1,1000), mod=seq(1000,1), stringsAsFactors=FALSE)
 #' stat <- CalcStatCont(DT = ExampleDF, obsCol = "obs", modCol = "mod", groupBy = "siteId")
 #' 
-#'  ExampleDF <- data.frame(siteId = rep(1:10, 6), RFC = rep(c("ABRFC", "WGRFC", "MARFC"),each = 20), obs=seq(1,60), mod=seq(60,1))
-#' stat <- CalcStatCont(DT = ExampleDF, obsCol = "obs", modCol = "mod", groupBy = c("siteId", "RFC"))
-#' 
+  #'  ExampleDF <- data.frame(siteId = rep(1:10, 6), RFC = rep(c("ABRFC", "WGRFC", "MARFC"),each = 20), obs=seq(1,60), mod=seq(60,1))
+  #' stat <- CalcStatCont(DT = ExampleDF, obsCol = "obs", modCol = "mod", groupBy = c("siteId", "RFC"))
+  #' 
 #' 
 #' @keywords univar ts
 #' @concept modelEval
@@ -152,6 +151,7 @@ multiplot <- function(..., plotlist=NULL, cols=1, layout=NULL) {
 #' @export
 #' 
 CalcStatCont <- function(DT, obsCol, modCol, groupBy = NULL,
+                         obsMissing = NULL, modMissing = NULL,
                          obsCondRange = c(-Inf,Inf), modCondRange = c(-Inf,Inf),
                          statList= c("numPaired", "meanObs", "meanMod", 
                                      "pearsonCor", "RMSE", "multiBias"),
@@ -170,6 +170,12 @@ CalcStatCont <- function(DT, obsCol, modCol, groupBy = NULL,
   
   # convert the names of the obsCol and modCol in Data.table to avoid using get(colName) over and over
   data.table::setnames(DT, c(obsCol,modCol), c("obs","mod"))
+  
+  # remove all the pairs with observation or model being missing is obsMissing or mod Missing is defined
+  '%nin%' <- Negate('%in%')
+  
+  if (!is.null(obsMissing)) DT <- DT[obs %nin% obsMissing]
+  if (!is.null(modMissing)) DT <- DT[mod %nin% modMissing]
   
   # remove all the pairs outside the domain defined by obsCondRange and modConRange
   # This process removes all the NA's also
@@ -196,16 +202,16 @@ CalcStatCont <- function(DT, obsCol, modCol, groupBy = NULL,
     meanMod      =  mean(mod),
     stdObs       =  sd(obs),
     stdMod       =  sd(mod),
-    pearsonCor   =  if (sd(obs) > 0 & sd(mod) > 0 ) cor(obs, mod, method = "pearson") else NA_real_,
-    spearmanCor  =  if (sd(obs) > 0 & sd(mod) > 0 ) cor(obs, mod, method = "spearman") else NA_real_,
-    kendallCor   =  if (sd(obs) > 0 & sd(mod) > 0 ) cor(obs, mod, method = "kendall") else NA_real_,
+    pearsonCor   =  if (!is.na(sd(obs)) & !is.na(sd(mod)) & sd(obs) > 0 & sd(mod) > 0 ) cor(obs, mod, method = "pearson") else NA_real_,
+    spearmanCor  =  if (!is.na(sd(obs)) & !is.na(sd(mod)) & sd(obs) > 0 & sd(mod) > 0 ) cor(obs, mod, method = "spearman") else NA_real_,
+    kendallCor   =  if (!is.na(sd(obs)) & !is.na(sd(mod)) & sd(obs) > 0 & sd(mod) > 0 ) cor(obs, mod, method = "kendall") else NA_real_,
     ME           =  mean(error),              
     MSE          =  mean((error)^2),         
     RMSE         =  sqrt(mean((error)^2)),           
     MAE          =  mean(abs(error)),
     MAD          =  median(abs(error)),     
     multiBias    =  mean(mod)/mean(obs),
-    quantiles    =  list(quantile(error, c(0.1,0.25,0.5,0.75,0.9))),
+    quantiles    =  list(quantile(error, probs)),
     E10          =  quantile(error, 0.1),
     E25          =  quantile(error, 0.25),
     E50          =  quantile(error, 0.5),
@@ -289,18 +295,18 @@ CalcStatCont <- function(DT, obsCol, modCol, groupBy = NULL,
       }
       
       # plot on screen
-      rwrfhydro::multiplot(plotlist = plotList, cols =2)
+      multiplot(plotlist = plotList, cols =2)
     }else{
       
       # If there are a lot of groups (more than 1)
       for (i in statList){
         plotList[[i]] <- ggplot2::ggplot(stat, ggplot2::aes_string(i)) + ggplot2::geom_histogram(colour = "blue", fill = "gray95", bins =  bins_histogram) + ggplot2::theme_bw()
       } 
-      p <- rwrfhydro::multiplot(plotlist = plotList, cols = ceiling(sqrt(length(statList))))
+      p <- multiplot(plotlist = plotList, cols = ceiling(sqrt(length(statList))))
       
     }
   }
   
-  output <- list(stat, plotList)
-  return(as.data.frame(stat))
+  output <- list(stat = as.data.frame(stat), plotList = plotList)
+  return(output)
 }
