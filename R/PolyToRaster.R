@@ -5,12 +5,11 @@
 #'
 #' @param geoFile The geogrid NetCDF file.
 #' @param useRfc Logical: if \code{TRUE} will use the loaded rfc polygon in rwrfhydro. 
-#' Default is \code{FALSE}}
+#' Default is \code{FALSE}
 #' @param polygon SpatialPolygon* This is used if you want to use a 
 #' polygon already loaded in memory.
 #' @param polygonAddress Character: Address to where polygonShapeFile is located.
 #' @param polygonShapeFile Character: Name of a polygon shapefile.
-#' @param
 #' @param field Numeric or character: The value(s) to be transferred. This can be
 #'  a single number, or a vector of numbers that has the same length as the 
 #'  number of spatial features (polygons).
@@ -34,9 +33,8 @@
 #'   The fraction covered is estimated by
 #'   dividing each cell into 100 subcells and determining presence/absence of
 #'   the polygon in the center of each subcell
-#' @plot.it Logical: If \code{TRUE} will plot both the raster and the polygon on the same plot
+#' @param plot.it Logical: If \code{TRUE} will plot both the raster and the polygon on the same plot
 #' @param parallel Logical: will be used only if \code{GetCover} is \code{TRUE} 
-#'   
 #' @return  return a RasterLayer or a RasterStack.
 #'   
 #' @examples
