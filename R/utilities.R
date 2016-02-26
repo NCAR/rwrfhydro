@@ -570,12 +570,12 @@ CalcDateTrunc <- function(timePOSIXct, timeZone="UTC") {
 #' \code{LsObjects} lists objects with more detailed info on type, size,
 #' etc. Blatantly plagiarized from the following sources:
 #' Petr Pikal, David Hinds, Dirk Eddelbuettel, Tony Breyal.
-#' @param pos
-#' @param pattern
-#' @param order.by
-#' @param decreasing
-#' @param head
-#' @param n
+#' @param pos pos
+#' @param pattern pattern
+#' @param order.by order.by
+#' @param decreasing decreasing
+#' @param head head
+#' @param n n
 #' @return dataframe
 #' @keywords utilities internal
 #' @export
@@ -607,7 +607,7 @@ LsObjects <- function (pos = 1, pattern, order.by,
 #' \code{lsOS} Shorthand call for LsObjects
 #' Blatantly plagiarized from the following sources:
 #' Petr Pikal, David Hinds, Dirk Eddelbuettel, Tony Breyal.
-#' @param n
+#' @param n n
 #' @return dataframe
 #' @keywords utilities internal
 #' @export
