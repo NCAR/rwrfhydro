@@ -24,8 +24,10 @@
 #' NOTE: This tool currently only works for geogrid files in Lambert Conformal 
 #' Conic projection OR a GDAL-friendly georeferenced TIF file.
 #' 
-#' @param geogrdPath The pathname to the geogrid file (i.e., geo_em.d01.nc)
-#'  OR the path to a georeferenced TIF file of the domain.
+#' @param extent The pathname to the geogrid file (i.e., geo_em.d01.nc)
+#'  OR the path to a georeferenced TIF file of the domain OR the path to 
+#'  a shapefile of the desired extent OR a standard country name that can
+#'  be identified in the mapdata package.
 #' @param prodName The MODIS product name to download/process. Run the 
 #'   \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package 
 #'   getProducts() for a complete list of supported products.
@@ -88,7 +90,7 @@
 #' ## /d1/WRF_Hydro/RS/MODIS_ARC/ and the final processed TIF files will be 
 #' ## stored in /d1/WRF_Hydro/RS/MODIS_ARC/PROCESSED/Fourmile_LAI/.
 #' 
-#' GetMODIS(geogrdPath="/d1/WRF_Hydro/Fourmile_fire/DOMAIN/geo_em.d01.nc", 
+#' GetMODIS(extent="/d1/WRF_Hydro/Fourmile_fire/DOMAIN/geo_em.d01.nc", 
 #'          prodName="MOD15A2", outDir="Fourmile_LAI", 
 #'          begin="2011.01.01", end="2011.01.31",
 #'          exclList=list("Fpar_1km"="gt 100", 
@@ -108,7 +110,7 @@
 #' @concept MODIS dataGet
 #' @family MODIS
 #' @export
-GetMODIS <- function(geogrdPath, prodName, outDir, begin=NULL, end=NULL, 
+GetMODIS <- function(extent, prodName, outDir, begin=NULL, end=NULL, 
                      collection=NULL, buffer=0.04,
                      SDSstring=NULL, 
                      exclList=NULL, resampList=NULL, quiet=FALSE, scriptPath=NULL) {
@@ -122,12 +124,24 @@ GetMODIS <- function(geogrdPath, prodName, outDir, begin=NULL, end=NULL,
       dir.create(locPath, showWarnings = FALSE)
     }
     # Get geogrid and projection info
-    if (inherits(try(suppressWarnings(ncdf4::nc_open(geogrdPath))), "try-error")) {
-      message("Assuming file is a georeferenced TIF.")
-      hgt.r <- raster::raster(geogrdPath)
+    if (inherits(try(suppressWarnings(ncdf4::nc_open(extent))), "try-error")) {
+        if (file.exists(extent)) {
+            if ( grepl(".shp", extent, ignore.case = TRUE) ) {
+                message("Assuming file is a shapefile.")
+                hgt.r <- extent
+            } else if ( grepl(".tif", extent, ignore.case = TRUE) ) {
+                message("Assuming file is a georeferenced TIF.")
+                hgt.r <- raster::raster(extent)
+            } else {
+                stop("Must provide a .shp or .tif file.")
+            }
+        } else {
+            message("Assuming file is a country name. Requires 'mapdata' package.")
+            hgt.r <- extent
+        }
     } else {
       message("Assuming file is a geogrid in netcdf format.")
-      geogrd.nc <- ncdf4::nc_open(geogrdPath)
+      geogrd.nc <- ncdf4::nc_open(extent)
       map_proj <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="MAP_PROJ")$value
       cen_lat <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="CEN_LAT")$value
       cen_lon <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="STAND_LON")$value
@@ -146,7 +160,7 @@ GetMODIS <- function(geogrdPath, prodName, outDir, begin=NULL, end=NULL,
         stop(paste0('Error: Asymmetric grid cells not supported. DX=', dx, ', DY=', dy))
         }
     # Create a readable TIF from geogrid
-    ExportGeogrid(geogrdPath, "HGT_M", paste0(locPath, "/geogrid_tmp.tif"))
+    ExportGeogrid(extent, "HGT_M", paste0(locPath, "/geogrid_tmp.tif"))
 	  hgt.r <- raster::raster(paste0(locPath, "/geogrid_tmp.tif"))
     system(paste0("rm ", paste0(locPath, "/geogrid_tmp.tif")))
     }

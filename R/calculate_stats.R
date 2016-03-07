@@ -207,7 +207,7 @@ CalcNoahmpWatBudg <- function(ldasoutDf, rtoutDf=NULL, gwoutDf=NULL, sfcrt=FALSE
                                       rtoutDf$QSTRMVOLRT[1]
         wbDf[1,"HYD_DELSFCHEAD"] <- rtoutDf$SFCHEADSUBRT[nrow(rtoutDf)] -
                                       rtoutDf$SFCHEADSUBRT[1]
-        wbDf[1,"HYD_QBDRY"] <- -(rtoutDf$QBDRY[nrow(rtoutDf)] - rtoutDf$QBDRY[1])
+        wbDf[1,"HYD_QBDRY"] <- -(rtoutDf$QBDRYRT[nrow(rtoutDf)] - rtoutDf$QBDRYRT[1])
         }
     else {
         message('Message: No routing output dataframe (rtoutDf) was provided. Proceeding using LSM surface runoff.')

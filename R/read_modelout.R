@@ -442,30 +442,111 @@ ReadRtout <- function(pathOutdir, pathDomfile,
         }
     basin.surf <-  list(start=c(1,1,1), end=c(dim(mskvar)[1],dim(mskvar)[2],1), 
                         stat='basin_avg', mskvar, env=environment())
+    # Get files
+    rtoutFilesList <- list( rtout = list.files(path=pathOutdir, 
+                                                   pattern=glob2rx('*.RTOUT_DOMAIN*'), 
+                                                   full.names=TRUE))
+    if (length(rtoutFilesList)==0) stop("No matching files in specified directory.")
     # Setup RTOUT variables to use
-    variableNames <- c('QSTRMVOLRT','SFCHEADSUBRT','QBDRYRT')
+    variableNames <- c('QSTRMVOLRT','SFCHEADSUBRT','QBDRYRT', 'ZWATTABLRT')
+    fileVars <- names(ncdump(unlist(rtoutFilesList)[1], quiet=TRUE)$var)
+    variableNames <- variableNames[variableNames %in% fileVars]
+    rtoutVars <- as.list( variableNames )
+    names(rtoutVars) <- variableNames
+    rtoutVariableList <- list( rtout = rtoutVars )
+    # For each variable, setup relevant areas and levels to do averaging
+    cell <-  basin.surf
+    rtoutInd <- list( cell, cell, cell, cell )
+    names(rtoutInd) <- names(rtoutVars)
+    rtoutIndexList <- list( rtout = rtoutInd )
+    # Run GetMultiNcdf
+    if (ncores > 1) {
+        rtoutDF <- GetMultiNcdf(indexList=rtoutIndexList, 
+                                  variableList=rtoutVariableList, 
+                                  filesList=rtoutFilesList, parallel=TRUE )
+        }
+    else {
+        rtoutDF <- GetMultiNcdf(indexList=rtoutIndexList, 
+                                  variableList=rtoutVariableList, 
+                                  filesList=rtoutFilesList, parallel=FALSE )
+        }
+    outDf <- ReshapeMultiNcdf(rtoutDF)
+    outDf
+}
+
+#' Read WRF-Hydro RTOUT data files and generate basin-wide mean water fluxes.
+#'
+#' \code{ReadChrtout} reads in WRF-Hydro CHRTOUT files and outputs a time series of
+#' fluxes.
+#'
+#' \code{ReadChrtout} reads standard-format WRF-Hydro CHRTOUT NetCDF files and 
+#' outputs a time series of fluxes.
+#'
+#' OUTPUT CHRTOUT water budget variables:
+#' \itemize{
+#'    \item QSTRMVOLRT: Mean accumulated depth of stream channel inflow (mm)
+#'    \item SFCHEADSUBRT: Mean depth of ponded water (mm)
+#'    \item QBDRYRT: Mean accumulated flow volume routed outside of the domain 
+#'              from the boundary cells (mm)
+#' }
+#'
+#' @param pathOutdir The full pathname to the output directory containing the 
+#' RTOUT files.
+#' @param idList Optional list of station IDs to import (must be consistent
+#' with IDs as used in the "station_id" variable.
+#' @param ncores If multi-core processing is available, the number of cores to 
+#' use (DEFAULT=1). Must have doMC installed if ncores is more than 1.
+#' @return A dataframe containing a time series of channel variables.
+#'
+#' @examples
+#' ## Take an OUTPUT directory for an hourly routing timestep model run of 
+#' ## Fourmile Creek (Basin ID = 1) and create a new dataframe containing the 
+#' ## basin-wide mean values for the major water budget components over the 
+#' ## time series.
+#'
+#' \dontrun{
+#' modRtout1h.mod1.fc <- 
+#'   ReadRtout("../RUN.MOD1/OUTPUT", "../DOMAIN/Fulldom_hires_hydrofile_4mile.nc", 
+#'             basid=1, ncores=16)
+#' }
+#' @keywords IO univar ts
+#' @concept dataGet
+#' @family modelDataReads
+#' @export
+ReadChrtout <- function(pathOutdir, 
+                        idList = NULL,
+                        ncores=1) {
+    if (ncores > 1) {
+        doMC::registerDoMC(ncores)
+    }
+    # Get files
+    chrtoutFilesList <- list( chrtout = list.files(path=pathOutdir, 
+                                                   pattern=glob2rx('*.CHRTOUT_DOMAIN*'), 
+                                                   full.names=TRUE))
+    if (length(chrtoutFilesList)==0) stop("No matching files in specified directory.")
+    # Setup RTOUT variables to use
+    variableNames <- c('streamflow')
+    fileVars <- names(ncdump(unlist(chrtoutFilesList)[1], quiet=TRUE)$var)
+    variableNames <- variableNames[variableNames %in% fileVars]
     chrtoutVars <- as.list( variableNames )
     names(chrtoutVars) <- variableNames
     chrtoutVariableList <- list( chrtout = chrtoutVars )
     # For each variable, setup relevant areas and levels to do averaging
-    cell <-  basin.surf
-    chrtoutInd <- list( cell, cell, cell )
+    cell <-  list(start=c(1), end=c(1), env=environment())
+    chrtoutInd <- list( cell )
     names(chrtoutInd) <- names(chrtoutVars)
     chrtoutIndexList <- list( chrtout = chrtoutInd )
     # Run GetMultiNcdf
-    chrtoutFilesList <- list( chrtout = list.files(path=pathOutdir, 
-                                                   pattern=glob2rx('*.RTOUT_DOMAIN*'), 
-                                                   full.names=TRUE))
     if (ncores > 1) {
         chrtoutDF <- GetMultiNcdf(indexList=chrtoutIndexList, 
                                   variableList=chrtoutVariableList, 
                                   filesList=chrtoutFilesList, parallel=TRUE )
-        }
+    }
     else {
         chrtoutDF <- GetMultiNcdf(indexList=chrtoutIndexList, 
                                   variableList=chrtoutVariableList, 
                                   filesList=chrtoutFilesList, parallel=FALSE )
-        }
+    }
     outDf <- ReshapeMultiNcdf(chrtoutDF)
     outDf
 }
