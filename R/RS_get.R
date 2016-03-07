@@ -234,12 +234,13 @@ GetMODIS <- function(extent, prodName, outDir, begin=NULL, end=NULL,
 #'   outFile is provided.
 #' @param varNA Value to set for "NA" or "no data". Default is -1.e+36. Only
 #'   required if outFile is provided.
-#' @param pos1 From MODIS orgTime: Start position of date in the filename (DEFAULT=10).
-#' @param pos2 From MODIS orgTime: End position of date in the filename (DEFAULT=16).
-#' @param format From MODIS orgTime: How is the date formatted in the file, default 
-#'   expects: 'YYYYDDD' ("%Y%j"). Read ?as.Date for for more information.
+#' @param pos1 From MODIS orgTime: Start position of date in the filename 
+#'   (DEFAULT=10).
+#' @param pos2 From MODIS orgTime: End position of date in the filename 
+#'   (DEFAULT=16).
+#' @param format From MODIS orgTime: How is the date formatted in the file.
+#'   Default is "\%Y\%j" ('YYYYDDD'). Read ?as.Date for for more information.
 #' @return A raster stack.
-#'   
 #' @examples
 #' ## Import the already processed LAI TIF images into a raster stack. Use 
 #' ## the full time series of images.
@@ -264,7 +265,7 @@ GetMODIS <- function(extent, prodName, outDir, begin=NULL, end=NULL,
 ConvertRS2Stack <- function(inPath, matchStr, begin=NULL, end=NULL,
                             noData=NULL, noDataQual="exact", valScale=1, valAdd=0,
                             outFile=NULL, varName=NULL, varUnit=NULL, varLong=NULL, 
-                            varNA=-1.e+36,
+                            varNA=(-1.e+36),
                             pos1=10, pos2=16, format="%Y%j") {
     # Get file list
     if (!is.null(begin) & !is.null(end)) {
@@ -278,7 +279,7 @@ ConvertRS2Stack <- function(inPath, matchStr, begin=NULL, end=NULL,
     } else {
         timeInfo <- MODIS::orgTime(MODIS::preStack(path=inPath, pattern=matchStr), 
                                    pillow=0, pos1=pos1, pos2=pos2, format=format)
-        }
+    }
     rsFilelist <- MODIS::preStack(path=inPath, pattern=matchStr, timeInfo=timeInfo)
     #rsFilelist <- list.files(path=inPath, pattern=glob2rx(matchStr), full.names=TRUE)
     # Loop through files
@@ -295,42 +296,42 @@ ConvertRS2Stack <- function(inPath, matchStr, begin=NULL, end=NULL,
         #begPOSIXct <- if(is.null(begin)) { dtPOSIXct } else { as.POSIXct(begin, format="%Y.%m.%d", tz="UTC") }
         #endPOSIXct <- if(is.null(end)) { dtPOSIXct } else { as.POSIXct(end, format="%Y.%m.%d", tz="UTC") }
         #if ( (dtPOSIXct >= begPOSIXct) & (dtPOSIXct <= endPOSIXct) ) {
-            rsRast <- raster::raster(rsFile)
-            # Remove MODIS nodata values
-            if (!is.null(noData)) {
-                if (noDataQual == "min") {
-                    rsRast[rsRast[] < noData]<-NA
-                } else if (noDataQual == "max") {
-                    rsRast[rsRast[] > noData]<-NA
-                } else {
-                    rsRast[rsRast[] == noData]<-NA
-                    }
-                }
-            # Apply MODIS scaling
-            if ((valScale != 1) | (valAdd != 0)) {
-                rsRast <- rsRast * valScale + valAdd
-                }
-            # Track dates
-            dtInts[n] <- as.integer(difftime(as.POSIXct(dtStr, format="%Y%j", tz="UTC"), 
-                                             as.POSIXct("198001", format="%Y%j", tz="UTC", 
-                                                        units="days")))
-            dtNames[n] <- paste0("DT", format(as.POSIXct(dtStr, format="%Y%j", tz="UTC"), 
-                                              "%Y.%m.%d"))
-            if (n==1) {
-                rsStack <- raster::stack(rsRast)
+        rsRast <- raster::raster(rsFile)
+        # Remove MODIS nodata values
+        if (!is.null(noData)) {
+            if (noDataQual == "min") {
+                rsRast[rsRast[] < noData]<-NA
+            } else if (noDataQual == "max") {
+                rsRast[rsRast[] > noData]<-NA
             } else {
-                rsStack <- raster::addLayer(rsStack, rsRast)
-                }
-            n <- n+1
-         #   } # end date check
-        } # end for loop
+                rsRast[rsRast[] == noData]<-NA
+            }
+        }
+        # Apply MODIS scaling
+        if ((valScale != 1) | (valAdd != 0)) {
+            rsRast <- rsRast * valScale + valAdd
+        }
+        # Track dates
+        dtInts[n] <- as.integer(difftime(as.POSIXct(dtStr, format="%Y%j", tz="UTC"), 
+                                         as.POSIXct("198001", format="%Y%j", tz="UTC", 
+                                                    units="days")))
+        dtNames[n] <- paste0("DT", format(as.POSIXct(dtStr, format="%Y%j", tz="UTC"), 
+                                          "%Y.%m.%d"))
+        if (n==1) {
+            rsStack <- raster::stack(rsRast)
+        } else {
+            rsStack <- raster::addLayer(rsStack, rsRast)
+        }
+        n <- n+1
+        #   } # end date check
+    } # end for loop
     names(rsStack) <- dtNames
     if (!is.null(outFile)) {
-	ConvertStack2NC(rsStack, outFile, varName, varUnit, varLong, varNA)
+        ConvertStack2NC(rsStack, outFile, varName, varUnit, varLong, varNA)
         return(rsStack)
-        }
-    return(rsStack)
     }
+    return(rsStack)
+}
 
 
 #' Convert a raster stack to a NetCDF file.
