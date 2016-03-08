@@ -402,16 +402,16 @@ NtwKReExToNcdf <- function(toFile, fromFile) {
 }
 
 #============================================
-#'  Gather upstream or downstream distance from a given starting location
+#' Gather upstream or downstream distance from a given starting location
 #'  
-#'  @param stream List of stream information containing either from/to and start and end positions, returned from ReExpNetwork.
-#'  @param start Indexed location (NOT comID) of where stream starts
-#'  @param length Vector of link lengths for each re-indexed reach, contained in reExp.nc.
-#'  @param indDist Optional list of indices and distance to that index. Typically not used externally to the recursion.
+#' @param stream List of stream information containing either from/to and start and end positions, returned from ReExpNetwork.
+#' @param start Indexed location (NOT comID) of where stream starts
+#' @param length Vector of link lengths for each re-indexed reach, contained in reExp.nc.
+#' @param indDist Optional list of indices and distance to that index. Typically not used externally to the recursion.
 #'  
-#'  @return List containing indices and accumulated distance from start
-#'  @examples 
-#'  \dontrun{
+#' @return List containing indices and accumulated distance from start
+#' @examples 
+#' \dontrun{
 #'      PlotRouteLink <- 
 #'          VisualizeRouteLink(file='~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.nc')
 #'      PlotRouteLink()
@@ -422,7 +422,7 @@ NtwKReExToNcdf <- function(toFile, fromFile) {
 #'      upstreamInds <- GatherStreamInds(from, 379, length=reInd$length)
 #'      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reExpTo.Rdb')
 #'      downstreamInds <- GatherStreamInds(to, 91, length=reInd$length)
-#'  }
+#' }
 #' @keywords manip
 #' @concept nudging dataMgmt
 #' @family networkExpression nudging
