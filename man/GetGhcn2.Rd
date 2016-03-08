@@ -4,15 +4,10 @@
 \alias{GetGhcn2}
 \title{Get GHCN data for specified siteIds.}
 \usage{
-GetGhcn2(siteIds, elements, startDate, endDate, parallel = FALSE,
+GetGhcn2(siteIDs, elements, startDate, endDate, parallel = FALSE,
   fileAdd = NULL)
 }
 \arguments{
-\item{siteIds}{A single site ID or vector of site IDs to download and process. 
-SiteIds should match the standardized GHCN IDs (for example : ACW00011604).
-See \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt}
-for a list of siteIds.}
-
 \item{elements}{A character vector defining what type of observation you 
 are interested in. There are five core elements as well as a number of 
 additional elements. The five core elements are:
@@ -20,7 +15,7 @@ additional elements. The five core elements are:
 \item{PRCP}{ = Precipitation (tenths of mm)}
 \item{SNOW}{ = Snowfall (mm)}
 \item{SNWD}{ = Snow depth (mm)}
-\item{MAX}{ = Maximum temperature (tenths of degrees C)}
+\item{TMAX}{ = Maximum temperature (tenths of degrees C)}
 \item{TMIN}{ = Minimum temperature (tenths of degrees C)}
 }
 For the full list of elemenst refer to 
@@ -32,6 +27,11 @@ For the full list of elemenst refer to
 
 \item{fileAdd}{Address to the url containg the csv files of daily GHCN by year. 
 default is \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_year/}}
+
+\item{siteIds}{A single site ID or vector of site IDs to download and process. 
+SiteIds should match the standardized GHCN IDs (for example : ACW00011604).
+See \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt}
+for a list of siteIds.}
 }
 \value{
 A dataframe containing the siteIds, date, daily GHCN, element,sFlag, qFlag, 

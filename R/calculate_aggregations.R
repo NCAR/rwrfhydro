@@ -7,8 +7,9 @@
 #' even differ for the same gauge but different elements. One can obtain the 
 #' report time using \code{GetGhcn2}. 
 #' 
-#' @param sg A dataframe of the selectedGauges, it should have at least one column
-#' with name of siteIds.
+#' @param sg A dataframe of the selectedGauges, it should a column called siteIds. 
+#' It also should have a timeZone column or if not available it should have latitude 
+#' and longitude which will be used to find the timeZone.
 #' siteIds should match the the standardized GHCN IDs (for example : ACW00011604).
 #' See \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt}
 #' for a list of siteIds.
@@ -17,7 +18,8 @@
 #' POSIXct, statArg, and DEL_ACCPRCP. POSIXct has the time in UTC, statArg has the 
 #' site ID, and DEL_ACCPRCP is the depth of rainfall for that hour. The DEL_ACCPRCP  
 #' column will be with the same name if you use GetMultiNcdf, ReshapeMultiNcdf and
-#' CalcNoahmpFluxes to get the precipitation from WRF-Hydro output files.
+#' CalcNoahmpFluxes to get the precipitation from WRF-Hydro output files. 
+#' Otherwise, rename the your datafram accordingly to have POSIXct, DEL_ACCPRCP and statArg.
 #' 
 #' @param reportTime A vector of reportTime matching with sg$siteIds. 
 #' reportTime is a unique reporting time for each elelment of each gauge.
@@ -57,20 +59,24 @@ CalcDailyGhcn<-function(sg, prcp, reportTime=700, parallel=FALSE){
   
   # add a day index to each hour compatible with GHCN time stamp 
   if ("reportTime" %in% colnames(sg)){
+    sg$reportTime[which (sg$reportTime=="" | is.na(sg$reportTime))]<-700
+
     # Add the report time column to prcp data 
     TZ<-sg$reportTime
     names(TZ)<-(sg$siteIds)
     prcp$reportTime<-TZ[as.character(prcp$statArg)]
     
-    prcp$ghcnDay<-as.Date(trunc(prcp$lstTime+as.difftime((23-as.numeric(prcp$reportTime)/100),units="hours"),"days"))
+    prcp$ghcnDay<-as.Date(trunc(prcp$lstTime+as.difftime((23-as.numeric(as.character(prcp$reportTime))/100),units="hours"),"days"))
   }else{
-    prcp$ghcnDay<-as.Date(trunc(prcp$lstTime+as.difftime((23-as.numeric(reportTime)/100),units="hours"),"days"))
+    prcp$ghcnDay<-as.Date(trunc(prcp$lstTime+as.difftime((23-as.numeric(as.character(reportTime))/100),units="hours"),"days"))
   }
+  # removw the unnecessary columns  
+  prcp<-prcp[,which(names(prcp) %in% c("ghcnDay","statArg","DEL_ACCPRCP"))]
   
-  # calculate the daily precip form hourly prcp
+# calculate the daily precip form hourly prcp
   dailyData<-plyr::ddply(prcp, c("ghcnDay","statArg"), 
                          plyr::summarise, 
-                         dailyPrcpMod=sum(DEL_ACCPRCP[DEL_ACCPRCP>=0], na.rm=TRUE),
+                         dailyPrcp=sum(DEL_ACCPRCP[DEL_ACCPRCP>=0], na.rm=TRUE),
                          .parallel=parallel)
   
 }

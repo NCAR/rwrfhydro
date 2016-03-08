@@ -107,7 +107,7 @@ SelectGhcnGauges <- function(countryCode=NULL,networkCode=NULL,states=NULL,
 #' \item{PRCP}{ = Precipitation (tenths of mm)}
 #' \item{SNOW}{ = Snowfall (mm)}
 #' \item{SNWD}{ = Snow depth (mm)}
-#' \item{MAX}{ = Maximum temperature (tenths of degrees C)}
+#' \item{TMAX}{ = Maximum temperature (tenths of degrees C)}
 #' \item{TMIN}{ = Minimum temperature (tenths of degrees C)}
 #' }
 #' For the full list of elemenst refer to 
@@ -195,7 +195,10 @@ GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
   if (nrow(data)== 0) {
     return("warning: there is no available observation for the specified period")
   }else{
-    if (element=="PRCP") data$value<-data$value/10
+
+  if ("PRCP" %in% elements) {
+    dat$value <- ifelse(dat$element == "PRCP", dat$value/10, dat$value)
+  }
     names(data)<-c("siteIds","Date","dailyGhcn","qFlag")
     return(data)
   }
@@ -220,7 +223,7 @@ GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
 #' \item{PRCP}{ = Precipitation (tenths of mm)}
 #' \item{SNOW}{ = Snowfall (mm)}
 #' \item{SNWD}{ = Snow depth (mm)}
-#' \item{MAX}{ = Maximum temperature (tenths of degrees C)}
+#' \item{TMAX}{ = Maximum temperature (tenths of degrees C)}
 #' \item{TMIN}{ = Minimum temperature (tenths of degrees C)}
 #' }
 #' For the full list of elemenst refer to 
@@ -260,7 +263,7 @@ GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
 #' @family GHCN
 #' @export
 
-GetGhcn2 <- function(siteIds, elements, startDate, endDate, parallel=FALSE,
+GetGhcn2 <- function(siteIDs, elements, startDate, endDate, parallel=FALSE,
                     fileAdd=NULL) {
  if (is.null(fileAdd)) fileAdd="ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/by_year/"
  # get all the years in the time period
@@ -274,13 +277,15 @@ GetGhcn2 <- function(siteIds, elements, startDate, endDate, parallel=FALSE,
     unlink(temp)
   
     # subset based on siteIds, element, date
-    dat$date<-as.Date(as.character(dat$date),"%Y%m%d")
-    dat<-subset(dat,dat$siteIds %in% siteIds & dat$element %in% elements)
-    dat<-subset(dat,dat$date >= as.Date(startDate) & dat$date <= as.Date(endDate))
+    dat$date <- as.Date(as.character(dat$date),"%Y%m%d")
+    dat <- subset(dat,dat$siteIds %in% siteIDs)
+    dat <- subset(dat,dat$element %in% elements)
+    dat <- subset(dat,dat$date >= as.Date(startDate) & dat$date <= as.Date(endDate))
     },.parallel=parallel)
 
- if (element=="PRCP") dat$value<-dat$value/10
-
+ if ("PRCP" %in% elements) {
+    dat$value <- ifelse(dat$element == "PRCP", dat$value/10, dat$value)
+ }
  return(dat)
 }
 

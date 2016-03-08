@@ -20,7 +20,7 @@ additional elements. The five core elements are:
 \item{PRCP}{ = Precipitation (tenths of mm)}
 \item{SNOW}{ = Snowfall (mm)}
 \item{SNWD}{ = Snow depth (mm)}
-\item{MAX}{ = Maximum temperature (tenths of degrees C)}
+\item{TMAX}{ = Maximum temperature (tenths of degrees C)}
 \item{TMIN}{ = Minimum temperature (tenths of degrees C)}
 }
 For the full list of elemenst refer to 

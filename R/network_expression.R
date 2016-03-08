@@ -121,7 +121,11 @@ ReExpNetwork <- function(routeLinkReInd, upstream=TRUE, parallel=FALSE) {
   #                                      reInd$from[which(reInd$comId == ind)] )
   #FindDownstream <- function(ind) union(reInd$comId[which(reInd$from == ind)], 
   #                                      reInd$to[which(reInd$comId   == ind)] )
-  FindUpstream   <- function(ind) union(which(reInd$to   == ind), reInd$from[ind])
+  FindUpstream   <- function(ind) {
+    theUnion <- union(which(reInd$to   == ind), reInd$from[ind])
+    if(length(theUnion)>1) theUnion <- setdiff(theUnion,0)
+    theUnion
+  }
   FindDownstream <- function(ind) union(which(reInd$from == ind), reInd$to[ind]  )
 
   FindFunc <- if(upstream) { FindUpstream } else { FindDownstream }
@@ -268,7 +272,7 @@ if(FALSE) {
 
 ## totally incomplete... 
 ## a few checks on RouteLink
-routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink3.nc'
+#routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink3.nc'
 CheckRouteLink <- function(routeLinkFile) {
   ncid <- ncdf4::nc_open(routeLinkFile)
   link  <- ncdf4::ncvar_get(ncid,'link')
@@ -504,6 +508,33 @@ VisualizeSubsetStream <- function(indDist,ncFile, comIds=TRUE, ...){
   print(ggObj)
   invisible(ggObj)
 } 
+
+
+
+## dummy check
+## FRNG
+#load("/d6/jamesmcc/WRF_Hydro/FRNG_NHD/4DAY/NHDPLUS/DOMAIN/Route_Link_2.reExpFrom.Rdb")
+#rl <- as.data.frame(GetNcdfFile("/d6/jamesmcc/WRF_Hydro/FRNG_NHD/4DAY/NHDPLUS/DOMAIN/Route_Link_2.nc", quiet=TRUE))
+#checkReExpFirstOrd(from, rl)
+
+## Boulder_Creek
+#load("/d6/jamesmcc/WRF_Hydro/Boulder_Creek_NHD/DOMAIN/Route_Link_NHD_2015_09_29.reExpFrom.Rdb")
+#rl <- as.data.frame(GetNcdfFile("/d6/jamesmcc/WRF_Hydro/Boulder_Creek_NHD/DOMAIN/Route_Link_NHD_2015_09_29.nc", quiet=TRUE))
+#checkReExpFirstOrd(from, rl)
+
+checkReExpFirstOrd <- function(from, rl) {
+  cat("Orders of links with no upstream links\n")
+  whFrom1 <- which(from$start==0)
+  print(table(rl$order[whFrom1]))
+  
+  cat("O2+ links with no upstream links\n")
+  whGtO1 <- which(rl$order[whFrom1] > 1)
+  print(rl[whFrom1[whGtO1],c('link','order','to')])
+
+  cat('any of these links in "to"?\n')
+  print(any(rl[whFrom1[whGtO1],c('link')] %in% rl$to))
+  invisible(TRUE)
+}
 
 
 
