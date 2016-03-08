@@ -30,7 +30,8 @@ up- and down- stream traversal, depending on the upstream argument.
 }
 }
 \seealso{
-Other networkExpression nudging: \code{\link{NtwKReExToNcdf}},
+Other networkExpression nudging: \code{\link{GatherStreamInds}},
+  \code{\link{NtwKReExToNcdf}},
   \code{\link{ReExpressRouteLink}},
   \code{\link{ReIndexRouteLink}},
   \code{\link{VisualizeRouteLink}},

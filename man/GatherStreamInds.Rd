@@ -4,8 +4,7 @@
 \alias{GatherStreamInds}
 \title{Gather upstream or downstream distance from a given starting location}
 \usage{
-GatherStreamInds(stream, start, length = 0, indDist = list(ind = c(), dist =
-  c()))
+GatherStreamInds(stream, start, linkLengths)
 }
 \arguments{
 \item{stream}{List of stream information containing either from/to and start and end positions, returned from ReExpNetwork.}
@@ -20,7 +19,8 @@ GatherStreamInds(stream, start, length = 0, indDist = list(ind = c(), dist =
 List containing indices and accumulated distance from start
 }
 \description{
-Gather upstream or downstream distance from a given starting location
+A non-recursive function (recusive version runs in to stack overflow problems for large
+domains. Both are available internally).
 }
 \examples{
 \dontrun{
@@ -31,10 +31,18 @@ Gather upstream or downstream distance from a given starting location
      PlotRouteLink(indices=TRUE)
      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reInd.Rdb')
      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reExpFrom.Rdb')
-     upstreamInds <- GatherStreamInds(from, 379, length=reInd$length)
+     upstreamInds <- GatherStreamInds(from, 379, linkLengths=reInd$length)
      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reExpTo.Rdb')
      downstreamInds <- GatherStreamInds(to, 91, length=reInd$length)
 }
+}
+\seealso{
+Other networkExpression nudging: \code{\link{NtwKReExToNcdf}},
+  \code{\link{ReExpNetwork}},
+  \code{\link{ReExpressRouteLink}},
+  \code{\link{ReIndexRouteLink}},
+  \code{\link{VisualizeRouteLink}},
+  \code{\link{VisualizeSubsetStream}}
 }
 \concept{
 nudging dataMgmt

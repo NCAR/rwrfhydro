@@ -30,18 +30,17 @@ if(FALSE){
   
 }
 
+#' Write a pretty usgs format object to file
 
-## For now there variable length (ragged) arrays are not supported in the ncdf4 package. After  
-## emailing Pierce, who welcomded the addition, I sketched how this might be done and we may 
-## do it.
-## For now, we will have to create one file per station*product. If returning the file name
-## as success, that's a plyr::daply. 
-
+#' For now there variable length (ragged) arrays are not supported in the ncdf4 package. After  
+#' emailing Pierce, who welcomded the addition, I sketched how this might be done and we may 
+#' do it.
+#' For now, we will have to create one file per station*product. If returning the file name
+#' as success, that's a plyr::daply. 
+#' keyrwords 
 #' @export
-WriteNcPrettyUsgs <- function(prettyDf, outPath='.') {
-  
+WriteNcPrettyUsgs <- function(prettyDf, outPath='.') { 
   ## break up by site*product until we get ragged arrays. 
-  
   varList = list()
   varList[[1]] <- list( name='streamflow',
                         longname='Precipitation Multiplier',
@@ -61,14 +60,12 @@ WriteNcPrettyUsgs <- function(prettyDf, outPath='.') {
   #' globalAttList[[1]] <- list(name='Restart_Time',value='2012-07-05_00:00:00', precision="text")
   #' globalAttList[[2]] <- list(name='Some reall atts',value='#$%^!!', precision="text" )
   dum <- MkNcdf( varList, globalAttList=globalAttList, filename='~/testHistoricalStreamData.nc' )
-  
-  
 }
 
 
 #' Write a USGS discharge timeslice to a netcdf file. 
 #' 
-#' @param dfByPosix  Dataframe, a data frame with the following columns: \code{site_no}, \code{dateTime}, \code{dateTimeRound}, \code{code}, \code{queryTime}, \code{discharge.cms}, and \code{variance} where dateTime is the same for the entire dataframe.
+#' @param dfByPosix   Dataframe, a data frame with the following columns: \code{site_no}, \code{dateTime}, \code{dateTimeRound}, \code{code}, \code{queryTime}, \code{discharge.cms}, and \code{variance} where dateTime is the same for the entire dataframe. 
 #' @param outPath     Character, the path for the output netcdf file. 
 #' @param sliceResolution 
 #' @examples

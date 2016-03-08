@@ -4,7 +4,8 @@
 \alias{VisualizeSubsetStream}
 \title{Visualize upstream or downstream links determined from GatherStreamInds}
 \usage{
-VisualizeSubsetStream(indDist, ncFile, comIds = TRUE, ...)
+VisualizeSubsetStream(indDist, ncFile, comIds = TRUE, downstreamReExp = "",
+  ...)
 }
 \arguments{
 \item{indDist}{List containing indies and accumulated distance from start, obtained from GatherStreamInds}
@@ -32,8 +33,8 @@ Visualize upstream or downstream links determined from GatherStreamInds
 }
 }
 \seealso{
-Other networkExpression nudging: \code{\link{NtwKReExToNcdf}},
-  \code{\link{ReExpNetwork}},
+Other networkExpression nudging: \code{\link{GatherStreamInds}},
+  \code{\link{NtwKReExToNcdf}}, \code{\link{ReExpNetwork}},
   \code{\link{ReExpressRouteLink}},
   \code{\link{ReIndexRouteLink}},
   \code{\link{VisualizeRouteLink}}
