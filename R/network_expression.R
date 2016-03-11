@@ -408,8 +408,7 @@ NtwKReExToNcdf <- function(toFile, fromFile) {
 }
 
 
-
-##' \code{GatherStreamInds} gathers upstream or downstream indices and distances from a given starting location.
+##' ##' \code{GatherStreamInds} gathers upstream or downstream indices and distances from a given starting location.
 ##'
 ##' A non-recursive function (recusive version runs in to stack overflow problems for large domains. Both are available internally).
 ##' @param stream List of stream information containing either from/to and start and end positions, returned from ReExpNetwork.
@@ -434,6 +433,13 @@ NtwKReExToNcdf <- function(toFile, fromFile) {
 ##' @family networkExpression
 ##' @export
 GatherStreamInds <- function(stream, start, linkLengths) {
+  ## For mo information on tip, see GatherStreamIndsNRInner.
+  ## downstream only has one tip
+  ## upstream can have multiple tips
+  ## the "tip" has three states
+  ## 0: not at tip
+  ## 1: an end tip
+  ## 2: a temporary tip (still solving)
   ## use the plural here: indDists
   indDists <- GatherStreamIndsNRInner(stream, start, linkLengths) 
   while(any(indDists$tip>1)){
@@ -498,6 +504,7 @@ GatherStreamIndsNRInner <- function(stream, start, linkLengths=0,
       indDist$tip  <- 2
       startDist = 0
       indDist$dist <- startDist + linkLengths[ss]/2 + linkLengths[start]/2
+      #if(is.na(indDist$dist)) stop()
     } else {
       indDist$ind <- append(indDist$ind, ss)
       indDist$tip <- append(indDist$tip, 2 )

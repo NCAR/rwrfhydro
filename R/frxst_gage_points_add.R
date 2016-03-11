@@ -21,7 +21,40 @@
 #'              82   #FOURMILE_CREEK_AT_ORODELL_CO
 #'               )
 #' newCopyId <- 'threeRealGagesTEST'
-#' AddRouteLinkGage(rlFile, gageIds, comIds, new=identifier)
+##' AddRouteLinkGage(rlFile, gageIds, comIds, new=identifier)
+
+if(FALSE) {
+library(rwrfhydro)
+rlFile <- '~/RouteLink_2015_12_15.nc'
+p <- ncdump("~/nudgingParams.conusPstActive.nc",'stationId',q=TRUE)
+g <- ncdump(rlFile,'gages',q=TRUE)
+whGAndP <- which(g %in% p)
+whGNotP <- which(!(g %in% p))
+(length(whGAndP)+length(whGNotP))==length(g)
+g[whGNotP] <- formatC('', width=15)
+setdiff(g,p)
+setdiff(p,g)
+comIds <- ncdump(rlFile,'link', q=TRUE)
+newCopyId <- 'conusPstActive'
+gageIds <- g
+
+## NO HI and PR
+library(rwrfhydro)
+#rlFile <- '~/RouteLink_2016_02_19_no_HI_PR.nc'
+rlFile <- '~/WRF_Hydro/TESTING/TEST_FILES/CONUS/WORKING/DOMAIN/RouteLink_2016_02_19_no_HI_PR_goodlakes1260.nc'
+p <- ncdump("~/nudgingParams.conusPstActive.nc",'stationId',q=TRUE)
+g <- ncdump(rlFile,'gages',q=TRUE)
+whGAndP <- which(g %in% p)
+whGNotP <- which(!(g %in% p))
+(length(whGAndP)+length(whGNotP))==length(g)
+g[whGNotP] <- formatC('', width=15)
+setdiff(g,p)
+setdiff(p,g)
+comIds <- ncdump(rlFile,'link', q=TRUE)
+newCopyId <- 'conusPstActive'
+gageIds <- g
+}
+
 #' }
 #' @keywords manip IO
 #' @concept nudging dataMgmt
@@ -37,9 +70,12 @@ AddRouteLinkGage <- function(rlFile, gageIds, comIds, newCopyId, gageMiss='', ov
   rl <- as.data.frame(GetNcdfFile(rlFile, quiet=TRUE))
   gagesInOrig <- any(names(rl)=='gages')
   rl$gages <- formatC(gageMiss, width=15) ## populate with missing
-  
-  for(ii in 1:length(gageIds)) {
-    rl$gages[which(rl$link==comIds[ii])] = formatC(substr(gageIds[ii], 1, 15),width = 15)
+
+  if(nrow(rl)==length(gageIds)) {
+    rl$gages <- gageIds
+  } else {
+    for(ii in 1:length(gageIds)) 
+      rl$gages[which(rl$link==comIds[ii])] = formatC(substr(gageIds[ii], 1, 15),width = 15)
   }
 
   newDir <- dirname(rlFile)
