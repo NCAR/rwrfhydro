@@ -34,11 +34,13 @@
 #' @concept dataGet usgsStreamObs
 #' @family streamObs
 #' @examples
+#' \dontrun{
 #' stnDf <- FindUsgsStns(huc8='10190005')
 #' stnDf <- FindUsgsStns(huc8=c('10190005','03160203'))
 #' stnDf <- FindUsgsStns(stnLon=254.67374999999998408,stnLat=40.018666670000001773,within=.001)
 #' stnDf <- FindUsgsStns(stnLon=c(254.67374999999998408,-87.747224700000004),
 #'                       stnLat=c(40.018666670000001773, 31.864042489999999),within=.001)
+# } #dontrun
 #' @export
 FindUsgsStns <- function(stnLon=NULL, stnLat=NULL, within=NULL,
                          huc8=NULL, siteType='ST', hasDataTypeCd='iv') {
@@ -372,11 +374,13 @@ GetUsgsIvProduct <- function( prodDf ) {
 #' @param site Character USGS site number.
 #' @return character HUC8
 #' @examples
+#' \dontrun{
 #' GetSiteHuc(FindUsgsStns(stnLon=254.67374999999998408,
 #'                         stnLat=40.018666670000001773,
 #'                         within=.001)$site_no)
 #' huc <- GetSiteHuc(gages2AttrPlus$STAID[1:3])
 #' names(huc)<-gages2AttrPlus$STAID[1:3]
+#' } #dontrun
 #' @keywords IO 
 #' @concept dataGet usgsStreamObs
 #' @family streamObs
