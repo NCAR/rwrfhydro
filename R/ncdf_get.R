@@ -53,7 +53,7 @@ GetNcdfFile <- function(file, variables, exclude=FALSE, quiet=FALSE, flip2D=TRUE
   if( !(all(nDims==nDims[1])) | !(all(nDims==1)) ) return(outList)
   
   vecLen <- plyr::laply(outList[-10], length)
-  if( all(vecLen==vecLen[1]) ) as.data.frame(outList)
+  if( all(vecLen==vecLen[1]) ) as.data.frame(outList) else outList
     
 }
 

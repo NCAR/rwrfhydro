@@ -422,7 +422,8 @@ NtwKReExToNcdf <- function(toFile, fromFile) {
 #'  @param length Vector of link lengths for each re-indexed reach, contained in reExp.nc.
 #'  @param indDist Optional list of indices and distance to that index. Typically not used externally to the recursion.
 #'  
-#'  @return List containing indices and accumulated distance from start
+#'  @return List containing indices, accumulated distance from start, and
+#'          tip information (0=not a tip, 1=a tip, 2=temporary tip/still solving)
 #'  @examples 
 #'  \dontrun{
 #'      PlotRouteLink <- 
@@ -441,6 +442,13 @@ NtwKReExToNcdf <- function(toFile, fromFile) {
 #' @family networkExpression nudging
 #'  @export
 GatherStreamInds <- function(stream, start, linkLengths) {
+  ## For mo information on tip, see GatherStreamIndsNRInner.
+  ## downstream only has one tip
+  ## upstream can have multiple tips
+  ## the "tip" has three states
+  ## 0: not at tip
+  ## 1: an end tip
+  ## 2: a temporary tip (still solving)
   ## use the plural here: indDists
   indDists <- GatherStreamIndsNRInner(stream, start, linkLengths) 
   while(any(indDists$tip>1)){
@@ -504,6 +512,7 @@ GatherStreamIndsNRInner <- function(stream, start, linkLengths=0,
       indDist$tip  <- 2
       startDist = 0
       indDist$dist <- startDist + linkLengths[ss]/2 + linkLengths[start]/2
+      #if(is.na(indDist$dist)) stop()
     } else {
       indDist$ind <- append(indDist$ind, ss)
       indDist$tip <- append(indDist$tip, 2 )
