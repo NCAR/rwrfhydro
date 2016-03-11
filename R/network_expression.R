@@ -1,18 +1,18 @@
-#' ReExpress the Route_Link.nc file.
-#' 
-#' A wrapper on the individual functions which perform this full reexpression and generate the netcdf file. 
-#' @param routeLink.nc Character path/file to the desired Route_link.nc netcdf file for the link/reach-based routing.
-#' @param parallel Logical use a registered backend for plyr?
-#' @return Named Character vector for each of the 4 files created as outputs with full paths. 
-#' @examples 
-#' \dontrun{
-#' ReExpressRouteLink("~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.nc")
-#' ReExpressRouteLink() # if there is a Route_Link.nc file in getwd() (the current directory).
-#' }
-#' @keywords manip
-#' @concept dataMgmt nudging
-#' @family networkExpression nudging
-#' @export
+##' ReExpress the Route_Link.nc file.
+##' 
+##' A wrapper on the individual functions which perform this full reexpression and generate the netcdf file. 
+##' @param routeLink.nc Character path/file to the desired Route_link.nc netcdf file for the link/reach-based routing.
+##' @param parallel Logical use a registered backend for plyr?
+##' @return Named Character vector for each of the 4 files created as outputs with full paths. 
+##' @examples 
+##' \dontrun{
+##' ReExpressRouteLink("~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.nc")
+##' ReExpressRouteLink() # if there is a Route_Link.nc file in getwd() (the current directory).
+##' }
+##' @keywords manip
+##' @concept dataMgmt nudging
+##' @family networkExpression nudging
+##' @export
 ReExpressRouteLink <- function(routeLink.nc='Route_Link.nc', parallel=FALSE) {
   reInd.Rdb  <- ReIndexRouteLink(routeLink.nc)
   upstream.Rdb   <- ReExpNetwork(reInd.Rdb, parallel=parallel)
@@ -26,29 +26,29 @@ ReExpressRouteLink <- function(routeLink.nc='Route_Link.nc', parallel=FALSE) {
   invisible(outFiles)
 }
 
-#' ReIndex RouteLink.nc (netcdf) files for indexed network traversal.
-#' 
-#' \code{ReIndexRouteLink} reIndexes by order in the RouteLink file,
-#' replacing ComID with this index.
-#' 
-#' @param routeLinkFile The netcdf routelink file to process. 
-#' @return The resulting file which was written to disk, of the form "infile.reInd.nc"
-#'   
-#' @examples
-#'  \dontrun{
-#'reIndFile <-
-#'  ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.nc')
-#'reIndFile <-
-#'  ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink4.nc')
-#'reIndFile <-
-#'  ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink3.nc')
-#' reIndFile <-
-#'   ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.nc')
-#' }
-#' @keywords manip
-#' @concept dataMgmt
-#' @family networkExpression nudging
-#' @export
+##' ReIndex RouteLink.nc (netcdf) files for indexed network traversal.
+##' 
+##' \code{ReIndexRouteLink} reIndexes by order in the RouteLink file,
+##' replacing ComID with this index.
+##' 
+##' @param routeLinkFile The netcdf routelink file to process. 
+##' @return The resulting file which was written to disk, of the form "infile.reInd.nc"
+##'   
+##' @examples
+##'  \dontrun{
+##'reIndFile <-
+##'  ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.nc')
+##'reIndFile <-
+##'  ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink4.nc')
+##'reIndFile <-
+##'  ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink3.nc')
+##' reIndFile <-
+##'  ReIndexRouteLink(routeLinkFile <- '~/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.nc')
+##' }
+##' @keywords manip
+##' @concept dataMgmt
+##' @family networkExpression nudging
+##' @export
 ReIndexRouteLink <- function(routeLinkFile) {
   ncid <- ncdf4::nc_open(routeLinkFile)
   link  <- ncdf4::ncvar_get(ncid,'link')
@@ -183,41 +183,39 @@ ReExpNetwork <- function(routeLinkReInd, upstream=TRUE, parallel=FALSE) {
 #'   for (ii in seq(1,2720000,1000)) { print(ii); print(CheckConn(ii), up=FALSE) }
 #'   for (ii in seq(1,2000)) { print(ii); print(CheckConn(ii)) }
 #'   for (ii in seq(1,2000)) { print(ii); print(CheckConn(ii),up=FALSE) }
-#'   }
-# 
-# if(FALSE) {
-# load("/home/jamesmcc/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.reInd.Rdb")
-#   
-# load("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reExpFrom.Rdb")
-# load("/home/jamesmcc/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.reExpFrom.Rdb")
-# ## number of contributing/upstream links.
-# nContrib<-from$end-from$start
-# nContrib[which(from$start>0)] <-nContrib[which(from$start>0)] +1
-# table(nContrib) 
-# for (ii in which(nContrib >3)) { print(ii); print(CheckConn(ii),up=FALSE) } 
-# comIdWhContribGt3 <-
-#   data.frame(nContrib = nContrib[which(nContrib > 16)],
-#              comId = reInd$comId[which(nContrib > 16)] )
-# comIdWhContribGt3 <- comIdWhContribGt3[order(comIdWhContribGt3$nContrib),]
-# write.table(comIdWhContribGt3, row.names=FALSE,
-#             file='~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink4.comIdWhContribGt3.txt')
-# 
-# load("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reExpTo.Rdb")
-# load("/home/jamesmcc/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.reExpFrom.Rdb")
-# ## number of downstream/outflow links.
-# nOut<-to$end-to$start
-# nOut[which(to$start>0)] <-nOut[which(to$start>0)] +1
-# table(nOut)
-# for (ii in which(nOut >1)) { print(ii); print(CheckConn(ii),up=FALSE) }
-# comIdWhOutGt1 <-
-#   data.frame(nOut = nOut[which(nOut > 1)],
-#              comId = reInd$comId[which(nOut > 1)] )
-# comIdWhOutGt1 <- comIdWhOutGt1[order(comIdWhOutGt1$nOut),]
-# write.table(comIdWhOutGt1, row.names=FALSE,
-#             file='~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink4.comIdWhOutGt1.txt')
-# 
-# load("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reInd.Rdb")
-# }
+#' 
+#' load("/home/jamesmcc/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.reInd.Rdb")
+#'
+#' load("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reExpFrom.Rdb")
+#' load("/home/jamesmcc/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.reExpFrom.Rdb")
+#' ## number of contributing/upstream links.
+#' nContrib<-from$end-from$start
+#' nContrib[which(from$start>0)] <-nContrib[which(from$start>0)] +1
+#' table(nContrib) 
+#' for (ii in which(nContrib >3)) { print(ii); print(CheckConn(ii),up=FALSE) } 
+#' comIdWhContribGt3 <-
+#'   data.frame(nContrib = nContrib[which(nContrib > 16)],
+#'              comId = reInd$comId[which(nContrib > 16)] )
+#' comIdWhContribGt3 <- comIdWhContribGt3[order(comIdWhContribGt3$nContrib),]
+#' write.table(comIdWhContribGt3, row.names=FALSE,
+#'             file='~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink4.comIdWhContribGt3.txt')
+#' 
+#' load("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reExpTo.Rdb")
+#' load("/home/jamesmcc/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.reExpFrom.Rdb")
+#' ## number of downstream/outflow links.
+#' nOut<-to$end-to$start
+#' nOut[which(to$start>0)] <-nOut[which(to$start>0)] +1
+#' table(nOut)
+#' for (ii in which(nOut >1)) { print(ii); print(CheckConn(ii),up=FALSE) }
+#' comIdWhOutGt1 <-
+#'   data.frame(nOut = nOut[which(nOut > 1)],
+#'              comId = reInd$comId[which(nOut > 1)] )
+#' comIdWhOutGt1 <- comIdWhOutGt1[order(comIdWhOutGt1$nOut),]
+#' write.table(comIdWhOutGt1, row.names=FALSE,
+#'             file='~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink4.comIdWhOutGt1.txt')
+#' 
+#' load("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reInd.Rdb")
+#' }  #dontrun
 #' @keywords manip
 #' @concept dataMgmt nudging
 #' @family networkExpression nudging
@@ -291,8 +289,6 @@ CheckRouteLink <- function(routeLinkFile) {
   setdiff(reInd$to, link)
   #write.table(setdiff(reInd$to, link), file='~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink3.toLinkDiff.txt', row.names=FALSE)
 }
-
-
 # fromFile <- "~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink.reExpFrom.Rdb"
 # toFile <- "~/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink.reExpTo.Rdb"
 # 
@@ -300,7 +296,7 @@ CheckRouteLink <- function(routeLinkFile) {
 # toFile <- "~/WRF_Hydro/DOMAIN_library/BoCr_100m_1km_NHDPlus_2015_08_11/Route_Link.reExpTo.Rdb"
 
 
-##----------------------
+
 #' Output the network reexpression to netcdf.
 #' 
 #' @param  toFile The Rdb (r binary file) for the downstream connectivity created by ReExpNetwork.
@@ -411,35 +407,32 @@ NtwKReExToNcdf <- function(toFile, fromFile) {
   paste0(dir,'/',base,'.reExp.nc')
 }
 
-#============================================
-#'  Gather upstream or downstream distance from a given starting location
-#'
-#'  A non-recursive function (recusive version runs in to stack overflow problems for large
-#'  domains. Both are available internally).
-#'
-#'  @param stream List of stream information containing either from/to and start and end positions, returned from ReExpNetwork.
-#'  @param start Indexed location (NOT comID) of where stream starts
-#'  @param length Vector of link lengths for each re-indexed reach, contained in reExp.nc.
-#'  @param indDist Optional list of indices and distance to that index. Typically not used externally to the recursion.
-#'  
-#'  @return List containing indices and accumulated distance from start
-#'  @examples 
-#'  \dontrun{
-#'      PlotRouteLink <- 
-#'          VisualizeRouteLink(file='~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.nc')
-#'      PlotRouteLink()
-#'      PlotRouteLink(comId=TRUE)
-#'      PlotRouteLink(indices=TRUE)
-#'      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reInd.Rdb')
-#'      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reExpFrom.Rdb')
-#'      upstreamInds <- GatherStreamInds(from, 379, linkLengths=reInd$length)
-#'      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reExpTo.Rdb')
-#'      downstreamInds <- GatherStreamInds(to, 91, length=reInd$length)
-#'  }
-#' @keywords manip
-#' @concept nudging dataMgmt
-#' @family networkExpression nudging
-#'  @export
+
+
+##' \code{GatherStreamInds} gathers upstream or downstream indices and distances from a given starting location.
+##'
+##' A non-recursive function (recusive version runs in to stack overflow problems for large domains. Both are available internally).
+##' @param stream List of stream information containing either from/to and start and end positions, returned from ReExpNetwork.
+##' @param start Indexed location (NOT comID) of where stream starts
+##' @param linkLengths Vector of link lengths for each re-indexed reach, contained in reExp.nc.
+##' @return List containing indices and accumulated distance from start
+##' @examples 
+##' \dontrun{
+##'      PlotRouteLink <- 
+##'          VisualizeRouteLink(file='~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.nc')
+##'      PlotRouteLink()
+##'      PlotRouteLink(comId=TRUE)
+##'      PlotRouteLink(indices=TRUE)
+##'      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reInd.Rdb')
+##'      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reExpFrom.Rdb')
+##'      upstreamInds <- GatherStreamInds(from, 379, linkLengths=reInd$length)
+##'      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reExpTo.Rdb')
+##'      downstreamInds <- GatherStreamInds(to, 91, length=reInd$length)
+##' }
+##' @keywords manip
+##' @concept nudging dataMgmt
+##' @family networkExpression
+##' @export
 GatherStreamInds <- function(stream, start, linkLengths) {
   ## use the plural here: indDists
   indDists <- GatherStreamIndsNRInner(stream, start, linkLengths) 
@@ -473,6 +466,7 @@ GatherNeighborStreamGages <- function(stream, start, linkLengths, gageIndices) {
   c(plyr::llply(indDists[c('ind','dist','tip')], '[', whGages) ,
     indDists['startInd'] )
 }
+
 
   
 GatherStreamIndsNRInner <- function(stream, start, linkLengths=0,
@@ -521,7 +515,8 @@ GatherStreamIndsNRInner <- function(stream, start, linkLengths=0,
   indDist
 }
 
-##
+
+
 ## Deprecated.
 ## testing non-recursive collection,
 ## see hydro:/home/jamesmcc/WRF_Hydro/CONUS/gageRelationship.R  
@@ -561,26 +556,27 @@ GatherStreamIndsRecursive <- function(stream, start, linkLengths=0,
 
 
 #========================================================
-#'Visualize upstream or downstream links determined from GatherStreamInds
-#'
-#' @param indDist List containing indies and accumulated distance from start, obtained from GatherStreamInds
-#' @param ncFile Route Link file read in/initially processed with VisualizeRouteLink()
-#' @param comIds Logical, show the comIds or the link indices in the Route_Link.nc file.
-#' @param ... arguments to the function returned by VisualizeRouteLink.
-#' @return Map of Route Links with selected upstream/downstream links highlighted in red, starting location in black
-#' @examples
-#' \dontrun{
-#'  ## see example for GatherStream
-#'  file <- '~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.nc'
-#'  VisualizeSubsetStream(upstreamInds, file)
-#'  VisualizeSubsetStream(upstreamInds, file, com=FALSE, zoom=10, textColor='purple')
-#'  VisualizeSubsetStream(downstreamInds, file, com=TRUE, zoom=10)
-#'  VisualizeSubsetStream(downstreamInds, file, com=FALSE, zoom=10, linkColor='lightblue', maptype='satellite')
-#' }
-#' @keywords hplot
-#' @concept nudging plot
-#' @family networkExpression nudging
-#' @export
+##'Visualize upstream or downstream links determined from GatherStreamInds
+##'
+##' @param indDist List containing indies and accumulated distance from start, obtained from GatherStreamInds
+##' @param ncFile Route Link file read in/initially processed with VisualizeRouteLink()
+##' @param comIds Logical, show the comIds or the link indices in the Route_Link.nc file.
+##' @param downstreamReExp Character, eliminate searching by providing the re-expressed network file
+##' @param ... arguments to the function returned by VisualizeRouteLink.
+##' @return Map of Route Links with selected upstream/downstream links highlighted in red, starting location in black
+##' @examples
+##' \dontrun{
+##'  ## see example for GatherStream
+##'  file <- '~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.nc'
+##'  VisualizeSubsetStream(upstreamInds, file)
+##'  VisualizeSubsetStream(upstreamInds, file, com=FALSE, zoom=10, textColor='purple')
+##'  VisualizeSubsetStream(downstreamInds, file, com=TRUE, zoom=10)
+##'  VisualizeSubsetStream(downstreamInds, file, com=FALSE, zoom=10, linkColor='lightblue', maptype='satellite')
+##' }
+##' @keywords hplot
+##' @concept nudging plot
+##' @family networkExpression nudging
+##' @export
 VisualizeSubsetStream <- function(indDist,ncFile, comIds=TRUE, downstreamReExp='', ...){
   plotData <- VisualizeRouteLink(ncFile, downstreamReExp=downstreamReExp)(doPlot=FALSE, ...)
   plotData$rl$ind <- 1:nrow(plotData$rl)
@@ -638,10 +634,10 @@ checkReExpFirstOrd <- function(from, rl) {
 
 
 
-#' Reformat a CHANNEL_CONNECTIVITY.nc file as a Route_Link.nc file
-#' The idea here is to simply reexpress the CHANNEL_CONNECTIVITY.nc file as
-#' a pseudo - Route_Link.nc file with only the basic information, so that it can
-#' be passed to all the existing network processing routines as any Route_Link.nc
+# Reformat a CHANNEL_CONNECTIVITY.nc file as a Route_Link.nc file
+# The idea here is to simply reexpress the CHANNEL_CONNECTIVITY.nc file as
+# a pseudo - Route_Link.nc file with only the basic information, so that it can
+# be passed to all the existing network processing routines as any Route_Link.nc
 ChanConnToRouteLink <- function(chanConnFile, fullDomFile, overwrite=TRUE) {
 
   ncid <- ncdf4::nc_open(chanConnFile)

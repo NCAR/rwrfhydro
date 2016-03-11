@@ -2,23 +2,25 @@
 % Please edit documentation in R/network_expression.R
 \name{GatherStreamInds}
 \alias{GatherStreamInds}
-\title{Gather upstream or downstream distance from a given starting location}
+\title{\code{GatherStreamInds} gathers upstream or downstream indices and distances from a given starting location.}
 \usage{
 GatherStreamInds(stream, start, linkLengths)
 }
-\description{
-A non-recursive function (recusive version runs in to stack overflow problems for large
- domains. Both are available internally).
+\arguments{
+\item{stream}{List of stream information containing either from/to and start and end positions, returned from ReExpNetwork.}
+
+\item{start}{Indexed location (NOT comID) of where stream starts}
+
+\item{linkLengths}{Vector of link lengths for each re-indexed reach, contained in reExp.nc.}
 }
-\details{
-@param stream List of stream information containing either from/to and start and end positions, returned from ReExpNetwork.
- @param start Indexed location (NOT comID) of where stream starts
- @param length Vector of link lengths for each re-indexed reach, contained in reExp.nc.
- @param indDist Optional list of indices and distance to that index. Typically not used externally to the recursion.
- 
- @return List containing indices and accumulated distance from start
- @examples 
- \dontrun{
+\value{
+List containing indices and accumulated distance from start
+}
+\description{
+A non-recursive function (recusive version runs in to stack overflow problems for large domains. Both are available internally).
+}
+\examples{
+\dontrun{
      PlotRouteLink <- 
          VisualizeRouteLink(file='~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.nc')
      PlotRouteLink()
@@ -29,7 +31,7 @@ A non-recursive function (recusive version runs in to stack overflow problems fo
      upstreamInds <- GatherStreamInds(from, 379, linkLengths=reInd$length)
      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reExpTo.Rdb')
      downstreamInds <- GatherStreamInds(to, 91, length=reInd$length)
- }
+}
 }
 \concept{
 nudging dataMgmt

@@ -7,6 +7,19 @@
 LsObjects(pos = 1, pattern, order.by, decreasing = FALSE, head = FALSE,
   n = 5)
 }
+\arguments{
+\item{pos}{position}
+
+\item{pattern}{pattern}
+
+\item{order.by}{ordering variable}
+
+\item{decreasing}{decreasing order}
+
+\item{head}{head}
+
+\item{n}{n}
+}
 \value{
 dataframe
 }

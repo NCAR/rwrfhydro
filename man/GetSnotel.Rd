@@ -54,9 +54,11 @@ specified sites and outputs a dataframe with consistent date and data columns
 for use with other rwrfhydro tools.
 }
 \examples{
-sno.santafe <- GetSnotel(c("921","922"), series="Daily", startYr=2009, endYr=2010)
-sno.niwot <- GetSnotel(c("663"), series="Hourly", startYr=2009, month=4)
-sno.santafe <- GetSnotel(c("921","922"), intervaltype="Current", current="WEEK")
+\dontrun{
+  sno.santafe <- GetSnotel(c("921","922"), series="Daily", startYr=2009, endYr=2010)
+  sno.niwot <- GetSnotel(c("663"), series="Hourly", startYr=2009, month=4)
+  sno.santafe <- GetSnotel(c("921","922"), intervaltype="Current", current="WEEK")
+} #dontrun
 }
 \seealso{
 Other SNOTEL: \code{\link{snotelMeta}}

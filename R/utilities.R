@@ -1,5 +1,4 @@
 ##=============================================================================
-
 #' Simplifed loading of rwrfhydro data included with the package.
 #' 
 #' \code{GetPkgRawDataPath} is a simplified wrapper (for system.file) for
@@ -569,12 +568,12 @@ CalcDateTrunc <- function(timePOSIXct, timeZone="UTC") {
 #' \code{LsObjects} lists objects with more detailed info on type, size,
 #' etc. Blatantly plagiarized from the following sources:
 #' Petr Pikal, David Hinds, Dirk Eddelbuettel, Tony Breyal.
-#' @param pos
-#' @param pattern
-#' @param order.by
-#' @param decreasing
-#' @param head
-#' @param n
+#' @param pos           position
+#' @param pattern       pattern
+#' @param order.by      ordering variable
+#' @param decreasing    decreasing order
+#' @param head          head
+#' @param n             n
 #' @return dataframe
 #' @keywords utilities internal
 #' @export
@@ -606,8 +605,8 @@ LsObjects <- function (pos = 1, pattern, order.by,
 #' \code{lsOS} Shorthand call for LsObjects
 #' Blatantly plagiarized from the following sources:
 #' Petr Pikal, David Hinds, Dirk Eddelbuettel, Tony Breyal.
-#' @param n
-#' @return dataframe
+#' @param n   n
+#' @return dataframe 
 #' @keywords utilities internal
 #' @export
 lsOS <- function(..., n=10) {

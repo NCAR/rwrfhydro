@@ -4,11 +4,14 @@
 ##' @param R Numeric vector same length as gageId which describes the radius of influence at each gage.
 ##' @param G Numeric vector same length as gageId which describes the nudging amplitude at each gage.
 ##' @param tau Numeric vector same length as gageId which describes the size of the temporal half-window in minutes.
+##' @param qThresh Numeric [length(gageId), 12, nThresh] threshhold of flow for acf selection.
+##' @param acf     Numeric [length(gageId), 12, nThresh+1] actually the denominator in exp(-y/b).
 ##' @param outFile Character path/file to the desired output file
 ##' @param overwrite Logical, overwrite outFile if it already exists?
+##' @param rmBlankGages Take out gages where the name is blank?
 ##' @examples 
 ##' \dontrun{
-##'   ## once and future CONUS example snippett
+##'   ## Once and future CONUS example snippett
 ##'   gageParams <- read.csv('~/ncar/WRF_Hydro/DOMAIN_library/CONUS/nhdRtIntersect.csv',
 ##'                          colClasses = 'character' )
 ##'                          
@@ -21,39 +24,33 @@
 ##'                   G=gageParams$G, tau=gageParams$tau, 
 ##'                   outFile='~/WRF_Hydro/Col_Bldr_Creek/PMO/nudgingParams.PMOallGages.nc', 
 ##'                   overwrite=TRUE)
-##' # FRNG example
-## The existing params file
-if(FALSE) {
-library(rwrfhydro)
-## existing parameter file to change/extend
-paramPath <- '~/WRF_Hydro/FRNG_NHD/RUN/prstTestFeb2016/DOMAIN/'
-frnParams <- paste0(paramPath,'nudgingParams.rwValid5.nc')
-gageParamId <- ncdump(frnParams,'stationId',q=TRUE)
-gageParamR <- ncdump(frnParams,'R',q=TRUE)
-gageParamG <- ncdump(frnParams,'G',q=TRUE)
-gageParamTau <- ncdump(frnParams,'tau',q=TRUE)
-nGages=length(gageParamId)
-
-## the existing parameter file had blanks, remove them.
-options(warn=1)
-MkNudgingParams(gageId=gageParamId, R=gageParamR, 
-                G=gageParamG, tau=gageParamTau, 
-                outFile=paste0(paramPath,'nudgingParams.rwValid5.rmBlanks.nc'),
-                overwrite=TRUE, rmBlankGages=TRUE)
-
-
-## In this example the exponent only depends on threshold, not location nor month.
-gageParamqThresh1=
-  array(rep(c(.5,.8),each=4*12),dim=c(4,12,2))
-
-
-MkNudgingParams(gageId=gageParams$gageId, R=gageParams$R, 
-                G=gageParams$G, tau=gageParams$tau, 
-                outFile=paste0(paramPath,'nudgingParams.rwValid5.persistence.nc'),
-                overwrite=TRUE, rmBlankGages=TRUE)
-}
+##' ## FRNG example
+##' ## The existing params file
+##' ## existing parameter file to change/extend
+##' paramPath <- '~/WRF_Hydro/FRNG_NHD/RUN/prstTestFeb2016/DOMAIN/'
+##' frnParams <- paste0(paramPath,'nudgingParams.rwValid5.nc')
+##' gageParamId <- ncdump(frnParams,'stationId',q=TRUE)
+##' gageParamR <- ncdump(frnParams,'R',q=TRUE)
+##' gageParamG <- ncdump(frnParams,'G',q=TRUE)
+##' gageParamTau <- ncdump(frnParams,'tau',q=TRUE)
+##' nGages=length(gageParamId)
 ##' 
-##' }
+##' ## the existing parameter file had blanks, remove them.
+##' options(warn=1)
+##' MkNudgingParams(gageId=gageParamId, R=gageParamR, 
+##'                 G=gageParamG, tau=gageParamTau, 
+##'                 outFile=paste0(paramPath,'nudgingParams.rwValid5.rmBlanks.nc'),
+##'                 overwrite=TRUE, rmBlankGages=TRUE)
+##' 
+##' 
+##' ## In this example the exponent only depends on threshold, not location nor month.
+##' gageParamqThresh1 = array(rep(c(.5,.8),each=4*12),dim=c(4,12,2))
+##' 
+##' MkNudgingParams(gageId=gageParams$gageId, R=gageParams$R, 
+##'                 G=gageParams$G, tau=gageParams$tau, 
+##'                 outFile=paste0(paramPath,'nudgingParams.rwValid5.persistence.nc'),
+##'                 overwrite=TRUE, rmBlankGages=TRUE)
+##' }  #dontrun
 ##' @keywords manip IO
 ##' @concept dataMgmt nudging
 ##' @family nudging
@@ -137,8 +134,6 @@ MkNudgingParams <- function(gageId, R, G, tau,
                                                unlimited=FALSE,
                                                create_dimvar=FALSE)
   }
-
-
 
   
   varList = list()

@@ -1,6 +1,18 @@
 # For the next release 
 Add your new features and bug fixes to the top of the following list:
 
+* CalcModPerf: option to output pair data frame to an R binary file in a directory.
+
+* GatherStreamInds: removed recusion, some improvements.
+
+* GatherNeighborStreamGages: Find the first upstream gages (dont go beyond any gage).
+
+* MkNudgingParams: Accept/write persistence parameters.
+
+* New MkNudgingParams function and new perfect model nudging vignette. Updates to WriteNcTimeSlice, ReadFrxstPts.
+
+* VisualizeDomain: Improvements to correct projection.
+
 * VisualizeRouteLink: Visualize a Route_Link.nc file.
 
 * Adding the "gage" variable to Route_Link.nc files (reach-based routing) or editing the frxst_pts layer in Fulldom domain files: AddRouteLinkGage, EditFrxstPts. 

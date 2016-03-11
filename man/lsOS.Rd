@@ -6,6 +6,9 @@
 \usage{
 lsOS(..., n = 10)
 }
+\arguments{
+\item{n}{n}
+}
 \value{
 dataframe
 }

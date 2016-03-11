@@ -2,6 +2,7 @@
 #' 
 #' @param file Character path/file to the desired Route_Link.nc netcdf file. 
 #' @param parallel Logical, use a registerred parallel backend for plyr?
+#' @param downstreamReExp Character, eliminate searching by providing the re-expressed network file
 #' @examples
 #' \dontrun{
 #' library(rwrfhydro)

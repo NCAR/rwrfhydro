@@ -4,14 +4,16 @@
 #' @param files Character vector path/file to CHANOBS files. 
 #' @param sliceResolutionMin Integer must be <= 60 and evenly divide 60.
 #' @param outputDir Character the directory where the ouput files are to be written
-#' 
+#' @param na.rm Remove NA's from the timeseries?
+#' @param parallel Create the output files in parallel?
 #' @examples 
 #' \dontrun{
 #'   files <- list.files('~/WRF_Hydro/testChanobs/', pattern = 'CHANOBS_DOMAIN', full.names=TRUE)
 #'   sliceResolutionMin <- 12
 #'   outputDir <- '~/WRF_Hydro/testChanobs/timeSliceTest/'
 #'   ChanObsToTimeSlice(files, sliceResolutionMin, outputDir) 
-#' } 
+#' }
+#' @author James McCreight
 #' @keywords manip IO
 #' @concept nudging 
 #' @family nudging

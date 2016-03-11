@@ -9,9 +9,11 @@ VisualizeDomain(file, plotVar = NULL, plot = TRUE, plotDf = NULL)
 \arguments{
 \item{file}{A path/name to a geo or hydro domain file.}
 
+\item{plotVar}{An optional variable name of interest within the file.}
+
 \item{plot}{Logical: plot or not?}
 
-\item{variable}{An optional variable name of interest within the file.}
+\item{plotDf}{An optional data frame with the data from file already reprojected.}
 }
 \value{
 A function which can be called to plot the data and allow adjustment of its arguments, the plotting parameters.

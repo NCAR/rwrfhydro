@@ -30,7 +30,6 @@
 ##' testLat <- hydroCoords$lat
 ##' tally=list()
 ##' for(i in 1:300) {
-##' #  for(i in 1:(length(testLon)-1)) {
 ##'   matches <- (testLon[(i+1):length(testLat)] == testLon[i] &
 ##'               testLat[(i+1):length(testLat)] == testLat[i]   )
 ##'   whMatch <- which(matches)+i  
@@ -40,6 +39,7 @@
 ##'     print(length(tally))
 ##'   }
 ##' }
+##' } #dontrun
 ##' @concept plot
 ##' @keywords hplot
 ##' @family domain
@@ -130,83 +130,85 @@ GetDomainCoordsProj <- function(file, proj4Str="+proj=longlat +datum=WGS84") {
 
 
 
-#' Visualize WRF Hydro domain files. 
-#'
-#' \code{VisualizeDomain} creates basic plots of WRF Hydro domains.
-#' 
-#' Crude plots of the WRF Hydro domain files. The routine accepts a file path/name for either the geo 
-#' (coarse resolution) or hydro (fine resolution) files. Spatial variables of interest are listed
-#' if none is provided. The return is a function (a closure which encapuslates the domain data) which 
-#' creates a plot when called. The arguments to the function can be changed to tailor the plot 
-#' (arguments are passed to ggmap and ggplot inside the function). This function (the closure) returns
-#' a ggplot object whose data can be accessed.
-#' 
-#' @param file A path/name to a geo or hydro domain file.
-#' @param variable An optional variable name of interest within the file.
-#' @param plot Logical: plot or not?
-#' @return A function which can be called to plot the data and allow adjustment of its arguments, the plotting parameters.
-#' @examples
-#' ## See the vignette "WRF Hydro Domain and Channel Visualization", for details. 
-#' ## set your test case path
-#' \dontrun{
-#' hydroFile <- '/home/adugger/WRF_Hydro/Fourmile_fire/DOMAIN/hydro_OrodellBasin_100m_8msk.nc'
-#'  GgMapFunction <- VisualizeDomain(hydroFile, "CHANNELGRID")
-#'  ggMap1 <- GgMapFunction(zoom=11, pointshape=15, pointsize=7, 
-#'                          source="google", maptype="terrain")
-#'  # Add a streamflow gauge point; compare reality and the model.
-#'  orodellLonLat <- data.frame(lon=c(254.6722259521484375, 254.67374999999998408)-360, 
-#'                             lat=c(40.019321441650390625, 40.018666670000001773),
-#'                             gauge=c('model','USGS'))
-#'  ggMap2 <- GgMapFunction(location=c(lon=orodellLonLat$lon[1], lat=orodellLonLat$lat[1]),
-#'                          zoom=14, pointshape=15, pointsize=7, 
-#'                          source="google", maptype="terrain", plot=FALSE) 
-#' ggMap2$ggMapObj +
-#'   geom_point(data=orodellLonLat, aes(x=lon,y=lat, shape=gauge)) +
-#'   scale_x_continuous(limits=rev(orodellLonLat$lon+c( .01 ,-.01 ))) +
-#'   scale_y_continuous(limits=rev(orodellLonLat$lat+c( .005,-.005)))
-#' 
-#' ## fourmile redux
-#' ## geogrid
-#' geoFile <- '/home/adugger/WRF_Hydro/Fourmile_fire/DOMAIN/geo_OrodellBasin_1km_8.nc'
-#' coordsProj <- GetDomainCoordsProj(geoFile)
-#' ClosureGeo <- VisualizeDomain(geoFile, plotVar='HGT_M', plot=FALSE, plotDf=coordsProj)
-#' mapMargin <- .01*c(-1,1)
-#' closureRtnGeo <-
-#'   ClosureGeo(zoom=11, pointsize=35,
-#'              grad=topo.colors(15), alpha=.4, maptype='terrain',
-#'              subsetRange=range(plotDf$value),
-#'              xlim=range(plotDf$long)+mapMargin,
-#'              ylim = range(plotDf$lat)+mapMargin) ##gross reservoir
-#' 
-#' ## hydro
-#' hydroFile <- '/home/adugger/WRF_Hydro/Fourmile_fire/DOMAIN/hydro_OrodellBasin_100m_8msk.nc'
-#' ClosureHydro <- VisualizeDomain(hydroFile, plotVar='CHANNELGRID', plot=FALSE)
-#' 
-#' closureRtnHydro <-
-#'   ClosureHydro(zoom=11, pointsize=2,
-#'                ## can reference the internal plotDf (or other variables internal to the closure)
-#'                location=c(lon=mean(plotDf$long), lat=mean(plotDf$lat)), alpha=.2,
-#'                grad=c('white','blue'), maptype='terrain') ##gross reservoir
-#' 
-#' closureRtnHydro <-
-#'   ClosureHydro(zoom=11, pointsize=2,
-#'                ## can reference the internal plotDf (or other variables internal to the closure)
-#'                location=c(lon=mean(plotDf$long), lat=mean(plotDf$lat)),
-#'                subsetRange=c(0),
-#'                grad='blue', maptype='terrain') ##gross reservoir
-#' 
-#' 
-#' ## put them together
-#' closureRtnGeo$ggObj +
-#'   geom_point(data=closureRtnHydro$plotDf,
-#'              aes(x=long, y=lat), color='darkblue') +
-#'                ggtitle('Fourmile Creek, CO - Elevation and Stream Channel')
-#' 
-#' }
-#' @concept plot
-#' @keywords hplot
-#' @family domain
-#' @export
+##' Visualize WRF Hydro domain files. 
+##'
+##' \code{VisualizeDomain} creates basic plots of WRF Hydro domains.
+##' 
+##' Crude plots of the WRF Hydro domain files. The routine accepts a file path/name for either the geo 
+##' (coarse resolution) or hydro (fine resolution) files. Spatial variables of interest are listed
+##' if none is provided. The return is a function (a closure which encapuslates the domain data) which 
+##' creates a plot when called. The arguments to the function can be changed to tailor the plot 
+##' (arguments are passed to ggmap and ggplot inside the function). This function (the closure) returns
+##' a ggplot object whose data can be accessed.
+##' 
+##' @param file A path/name to a geo or hydro domain file.
+##' @param plotVar An optional variable name of interest within the file.
+##' @param plot Logical: plot or not?
+##' @param plotDf An optional data frame with the data from file already reprojected.
+##' 
+##' @return A function which can be called to plot the data and allow adjustment of its arguments, the plotting parameters.
+##' @examples
+##' ## See the vignette "WRF Hydro Domain and Channel Visualization", for details. 
+##' ## set your test case path
+##' \dontrun{
+##' hydroFile <- '/home/adugger/WRF_Hydro/Fourmile_fire/DOMAIN/hydro_OrodellBasin_100m_8msk.nc'
+##'  GgMapFunction <- VisualizeDomain(hydroFile, "CHANNELGRID")
+##'  ggMap1 <- GgMapFunction(zoom=11, pointshape=15, pointsize=7, 
+##'                          source="google", maptype="terrain")
+##'  # Add a streamflow gauge point; compare reality and the model.
+##'  orodellLonLat <- data.frame(lon=c(254.6722259521484375, 254.67374999999998408)-360, 
+##'                             lat=c(40.019321441650390625, 40.018666670000001773),
+##'                             gauge=c('model','USGS'))
+##'  ggMap2 <- GgMapFunction(location=c(lon=orodellLonLat$lon[1], lat=orodellLonLat$lat[1]),
+##'                          zoom=14, pointshape=15, pointsize=7, 
+##'                          source="google", maptype="terrain", plot=FALSE) 
+##' ggMap2$ggMapObj +
+##'   geom_point(data=orodellLonLat, aes(x=lon,y=lat, shape=gauge)) +
+##'   scale_x_continuous(limits=rev(orodellLonLat$lon+c( .01 ,-.01 ))) +
+##'   scale_y_continuous(limits=rev(orodellLonLat$lat+c( .005,-.005)))
+##' 
+##' ## fourmile redux
+##' ## geogrid
+##' geoFile <- '/home/adugger/WRF_Hydro/Fourmile_fire/DOMAIN/geo_OrodellBasin_1km_8.nc'
+##' coordsProj <- GetDomainCoordsProj(geoFile)
+##' ClosureGeo <- VisualizeDomain(geoFile, plotVar='HGT_M', plot=FALSE, plotDf=coordsProj)
+##' mapMargin <- .01*c(-1,1)
+##' closureRtnGeo <-
+##'   ClosureGeo(zoom=11, pointsize=35,
+##'              grad=topo.colors(15), alpha=.4, maptype='terrain',
+##'              subsetRange=range(plotDf$value),
+##'              xlim=range(plotDf$long)+mapMargin,
+##'              ylim = range(plotDf$lat)+mapMargin) ##gross reservoir
+##' 
+##' ## hydro
+##' hydroFile <- '/home/adugger/WRF_Hydro/Fourmile_fire/DOMAIN/hydro_OrodellBasin_100m_8msk.nc'
+##' ClosureHydro <- VisualizeDomain(hydroFile, plotVar='CHANNELGRID', plot=FALSE)
+##' 
+##' closureRtnHydro <-
+##'   ClosureHydro(zoom=11, pointsize=2,
+##'                ## can reference the internal plotDf (or other variables internal to the closure)
+##'                location=c(lon=mean(plotDf$long), lat=mean(plotDf$lat)), alpha=.2,
+##'                grad=c('white','blue'), maptype='terrain') ##gross reservoir
+##' 
+##' closureRtnHydro <-
+##'   ClosureHydro(zoom=11, pointsize=2,
+##'                ## can reference the internal plotDf (or other variables internal to the closure)
+##'                location=c(lon=mean(plotDf$long), lat=mean(plotDf$lat)),
+##'                subsetRange=c(0),
+##'                grad='blue', maptype='terrain') ##gross reservoir
+##' 
+##' 
+##' ## put them together
+##' closureRtnGeo$ggObj +
+##'   geom_point(data=closureRtnHydro$plotDf,
+##'              aes(x=long, y=lat), color='darkblue') +
+##'                ggtitle('Fourmile Creek, CO - Elevation and Stream Channel')
+##' 
+##' }
+##' @concept plot
+##' @keywords hplot
+##' @family domain
+##' @export
 VisualizeDomain <- function(file, plotVar=NULL, plot=TRUE, plotDf=NULL) {
   
   ## get the file coordinates
