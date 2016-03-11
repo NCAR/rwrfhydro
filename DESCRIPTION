@@ -22,6 +22,7 @@ Imports:
     reshape2 (>= 1.4.1),
     foreach (>= 1.4.2),
     curl (>= 0.5),
+    RCurl (>= 1.95),  
     dataRetrieval (>= 2.1.2),
     raster (>= 2.3),
     httr (>= 0.6.1),
