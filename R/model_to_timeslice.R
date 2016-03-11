@@ -39,7 +39,7 @@ ChanObsToTimeSlice <- function(files, sliceResolutionMin, outputDir, na.rm=FALSE
       as.POSIXct(substr(basename(chobsFile),1,12), format='%Y%m%d%H%M', tz='UTC')
     
     ## Need these names
-    ##'\code{site_no}, \code{dateTime}, \code{code}, \code{queryTime}, \code{discharge.cms}
+    ## \code{site_no}, \code{dateTime}, \code{code}, \code{queryTime}, \code{discharge.cms}
     renamer <- c('station_id'='site_no', 'time_observation'='dateTime', 'streamflow'='discharge.cms')
     chobs <- plyr::rename(chobs, renamer)
     chobs$queryTime <- lubridate::with_tz(file.mtime(chobsFile), tz='UTC')

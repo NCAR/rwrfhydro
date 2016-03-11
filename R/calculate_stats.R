@@ -644,6 +644,9 @@ CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q
 #'   used). Date MUST be specified in POSIXct format with appropriate timezone 
 #'   (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S",
 #'   tz="UTC"))
+#' @param writeOutPairDf character path/name for file to output the data frame constructed
+#'   before calculating the statistics and various aggregations. NULL by default gives
+#'   no output. 
 #' @return A new dataframe containing the model performance statistics.
 #'   
 #' @examples
@@ -671,7 +674,7 @@ CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q
 #' @family modelEvaluation
 #' @export
 CalcModPerfMulti <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q_cms", 
-                              stdate=NULL, enddate=NULL) {
+                              stdate=NULL, enddate=NULL, writeOutPairDf=NULL, fileTag=NULL) {
   # Internal functions
   which.max.dt <- function(dd, qcol, dtcol) { dd[which.max(dd[,qcol]), dtcol] }
   CalcCOM.dt <- function(dd, qcol, dtcol) { dd[CalcCOM(dd[,qcol]), dtcol] }
@@ -692,10 +695,23 @@ CalcModPerfMulti <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.o
   flxDf.obs$qcomp <- flxDf.obs[,flxCol.obs]
   modT <- as.integer(flxDf.mod$POSIXct[2])-as.integer(flxDf.mod$POSIXct[1]) # model timestep in secs
   #if (as.integer(flxDf.obs$POSIXct[2])-as.integer(flxDf.obs$POSIXct[1]) >= 86400) {flxDf.obs$POSIXct=as.POSIXct(round(flxDf.obs$POSIXct,"days"), tz="UTC")}
-  flxDf.mod <- merge(flxDf.mod[c("POSIXct","qcomp")], flxDf.obs[c("POSIXct","qcomp")], by<-c("POSIXct"), suffixes=c(".mod",".obs"))
+  flxDf.mod <- merge(flxDf.mod[c("POSIXct","qcomp")], flxDf.obs[c("POSIXct","qcomp",'discharge_quality')], by<-c("POSIXct"), suffixes=c(".mod",".obs"))
   flxDf.mod <- subset(flxDf.mod, !is.na(flxDf.mod$qcomp.mod) & !is.na(flxDf.mod$qcomp.obs))
   flxDf.mod <- CalcDates(flxDf.mod)
   flxDf.mod$date <- as.POSIXct(trunc(flxDf.mod$POSIXct, "days"))
+
+  if(!is.null(writeOutPairDf) && is.character(writeOutPairDf) && writeOutPairDf!='') {
+    modPerfPairDf <- flxDf.mod
+    wopdFileName <- if(!is.null(fileTag) && fileTag!='') {
+      wopdBase <- tools::file_path_sans_ext(writeOutPairDf)
+      wopdExt <- tools::file_ext(writeOutPairDf)
+      paste0(wopdBase,'.',fileTag,'.',wopdExt)
+    } else writeOutPairDf
+    print(wopdFileName)
+    save(modPerfPairDf, file=wopdFileName)
+    rm('modPerfPairDf')
+  }
+
   results <- as.data.frame(matrix(nrow = 1, ncol = 57))
   colnames(results) = c("t_n", "t_nse", "t_nselog", "t_cor", "t_rmse", "t_rmsenorm", "t_bias", "t_msd", "t_mae", "t_errfdc",
                         "dy_n", "dy_nse", "dy_nselog", "dy_cor", "dy_rmse", "dy_rmsenorm", "dy_bias", "dy_msd", "dy_mae", "dy_errcom", "dy_errmaxt", "dy_errfdc",
