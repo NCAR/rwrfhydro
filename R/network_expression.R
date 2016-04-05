@@ -482,7 +482,74 @@ GatherNeighborStreamGages <- function(stream, start, linkLengths, gageIndices) {
     indDists['startInd'] )
 }
 
-  
+
+
+
+## Traverse the stream network until a link of order less than the originating/start order
+## is found
+## the tip of gages with less stream order are returned as -1
+GatherOrder <- function(stream, start, linkLengths, linkOrder) {
+  if(!(any(names(stream) %in% 'from'))) {
+    print("Only designed for upstream traversal")
+    return(NULL) }
+  lowerOrderInds <- NULL
+  ## use the plural here: indDists
+  indDists <- GatherStreamIndsNRInner(stream, start, linkLengths)
+  tipInds <- indDists$ind[which(indDists$tip>1)]
+  while(length(tipInds)>0){
+    ## once you arrive at at tip which is a of less order, stop there.
+    ords <- linkOrder[indDists$ind]
+    whLessOrd <- which(ords < linkOrder[start] & indDists$tip>0)
+    tipInds <- indDists$ind[which(indDists$tip>1)]
+    if(length(whLessOrd)) {
+      indDists$tip[whLessOrd] <- -1
+      lowerOrderInds <- c(lowerOrderInds, indDists$ind[whLessOrd])
+      tipInds <- indDists$ind[which(indDists$tip>1)]
+      if(!length(tipInds)) break
+    }
+    tipInds <- indDists$ind[which(indDists$tip>1)]
+    for(ss in tipInds)
+      indDists <- GatherStreamIndsNRInner(stream, ss, linkLengths, indDist=indDists)
+  }
+  ##whLessOrd <- which(indDists$tip == -1)
+  ##if(!length(whLessOrd)) return(NULL)
+  ##c(plyr::llply(indDists[c('ind','dist','tip')], '[', whLessOrd) ,
+  ##  indDists['startInd'] )
+  indDists$order <- linkOrder[start]
+  indDists$lowerOrderInds <- as.vector(lowerOrderInds)
+  indDists$orderInds <- setdiff(indDists$ind, as.vector(lowerOrderInds))
+  indDists
+}
+if(FALSE) {
+## test the above
+some10 <- which(rlOrder == 10)[4]
+## WTF 4, 551 -diversions clipped ?
+## but what about
+some10A <- GatherOrder(from, some10, reInd$length, rlOrder) 
+str(some10A)
+rlOrder[some10A$orderInds]
+rlOrder[some10A$lowerOrderInds]
+## ?????
+##> zz <- 1092788
+##> zz; rlOrder[zz]; from$from[ from$start[zz] : from$end[zz] ]; rlOrder[from$from[ from$start[zz] : from$end[zz] ]]; zz <- to$to[ to$start[zz]:to$end[zz] ]
+##[1] 1092788
+##[1] 10
+##[1] 1092784
+##[1] 10
+##> zz; rlOrder[zz]; from$from[ from$start[zz] : from$end[zz] ]; rlOrder[from$from[ from$start[zz] : from$end[zz] ]]; zz <- to$to[ to$start[zz]:to$end[zz] ]
+##[1] 1092789
+##[1] 2
+##[1] 1041293 1092788
+##[1]  2 10
+##> zz; rlOrder[zz]; from$from[ from$start[zz] : from$end[zz] ]; rlOrder[from$from[ from$start[zz] : from$end[zz] ]]; zz <- to$to[ to$start[zz]:to$end[zz] ]
+##[1] 1092792
+##[1] 2
+##[1] 1092789
+##[1] 2
+}
+
+
+
 GatherStreamIndsNRInner <- function(stream, start, linkLengths=0,
                                     indDist = list(ind = c(), dist = c(),
                                                    tip=c(), startInd=NA)) {

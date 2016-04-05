@@ -99,6 +99,7 @@ nGages <- length(whGages <- which(!(gageParamId %in% rmGages)))
 
 #nGages <- length(gageParamId)
 gageParamQThresh1 <- array(c(-100),dim=c(nGages,12,1))
+
 ## *** THIS IS THE CORRECT WAY OF FILLING THE ARRAY : KISS ***
 gageExpCoeff1 <- array(c(1e-38,120),dim=c(nGages,12,2))
 print(
