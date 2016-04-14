@@ -656,7 +656,8 @@ CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q
 #' maximum flux. Reported as number of hours for daily time scale and number of
 #' days for monthly and yearly time scales). \item errfdc: Error in the
 #' integrated flow duration curve between 0.05 and 0.95 exceedance thresholds 
-#' (in native flow units). }
+#' (in native flow units). \item errflash: Error in the Richards-Baker 
+#' Flashiness Index \deqn{R-B Index = sum(abs(q_t - q_t-1)) / sum(q)}. }
 #' 
 #' Time scales/Flux types: \itemize{ \item t = native model/observation time
 #' step (e.g., hourly) \item dy = daily time step \item mo = monthly time step 
@@ -701,10 +702,12 @@ CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q
 #' CalcModPerfMulti(modStrd.chrt.fc, obsStr5min.fc)
 #' 
 #' > Output:
-#' t_n t_nse t_nselog t_cor t_rmse t_rmsenorm t_bias  t_msd  t_mae t_errfdc dy_n dy_nse dy_nselog dy_cor dy_rmse dy_rmsenorm dy_bias dy_msd
-#' 116  0.81     0.67  0.91  0.211       8.48    7.1 0.0313 0.1385     0.04  116   0.81      0.67   0.91   0.211        8.48     7.1 0.0313
-#' dy_mae dy_errcom dy_errmaxt dy_errfdc mo_n mo_nse mo_nselog mo_cor mo_rmse mo_rmsenorm mo_bias mo_msd mo_mae mo_errcom mo_errmaxt yr_n
-#' 0.1385         0          0      0.04    5   0.92      0.82   0.96  0.1073       10.35     9.1 0.0324 0.0833      -1.2        0.2    1
+#' t_n t_nse t_nselog t_cor t_rmse t_rmsenorm t_bias  t_msd  t_mae t_errfdc t_errflash
+#' 116  0.81     0.67  0.91  0.211       8.48    7.1 0.0313 0.1385     0.04     0.0132
+#' dy_n dy_nse dy_nselog dy_cor dy_rmse dy_rmsenorm dy_bias dy_msd dy_mae dy_errcom dy_errmaxt dy_errfdc dy_errflash
+#'  116   0.81      0.67   0.91   0.211        8.48     7.1 0.0313 0.1385         0          0      0.04      0.0092
+#' mo_n mo_nse mo_nselog mo_cor mo_rmse mo_rmsenorm mo_bias mo_msd mo_mae mo_errcom mo_errmaxt yr_n
+#'    5   0.92      0.82   0.96  0.1073       10.35     9.1 0.0324 0.0833      -1.2        0.2    1
 #' yr_bias yr_msd yr_mae yr_errcom yr_errmaxt max10_n max10_nse max10_nselog max10_cor max10_rmse max10_rmsenorm max10_bias max10_msd max10_mae
 #'     7.1 0.0313 0.0313         0          4      12      0.46         0.58      0.71      0.348          23.63       -2.8    -0.044     0.248
 #' min10_n min10_nse min10_nselog min10_cor min10_rmse min10_rmsenorm min10_bias min10_msd min10_mae
@@ -748,12 +751,12 @@ CalcModPerfMulti <- function (flxDf.mod, flxDf.obs,
   }
   flxDf.mod <- CalcDates(flxDf.mod)
   flxDf.mod$date <- as.POSIXct(trunc(flxDf.mod$POSIXct, "days"))
-  results <- as.data.frame(matrix(nrow = 1, ncol = 57))
+  results <- as.data.frame(matrix(nrow = 1, ncol = 59))
   colnames(results) = c("t_n", "t_nse", "t_nselog", "t_cor", "t_rmse", "t_rmsenorm", 
-                        "t_bias", "t_msd", "t_mae", "t_errfdc",
+                        "t_bias", "t_msd", "t_mae", "t_errfdc", "t_errflash",
                         "dy_n", "dy_nse", "dy_nselog", "dy_cor", "dy_rmse", 
                         "dy_rmsenorm", "dy_bias", "dy_msd", "dy_mae", 
-                        "dy_errcom", "dy_errmaxt", "dy_errfdc",
+                        "dy_errcom", "dy_errmaxt", "dy_errfdc", "dy_errflash",
                         "mo_n", "mo_nse", "mo_nselog", "mo_cor", "mo_rmse", 
                         "mo_rmsenorm", "mo_bias", "mo_msd", "mo_mae", 
                         "mo_errcom", "mo_errmaxt",
@@ -856,6 +859,7 @@ CalcModPerfMulti <- function (flxDf.mod, flxDf.obs,
                                  integrate(splinefun(flxDf.mod[,"qcomp.obs.fdc"], 
                                                      flxDf.mod[,"qcomp.obs"], method='natural'), 
                                            0.05, 0.95, subdivisions=2000)$value, 2 )
+  results["t_errflash"] <- round(RBFlash(flxDf.mod$qcomp.obs) - RBFlash(flxDf.mod$qcomp.mod), 2)
   
   results["dy_n"] <- length(flxDf.mod.d$qcomp.mod)
   results["dy_nse"] <- round(Nse(flxDf.mod.d$qcomp.mod, flxDf.mod.d$qcomp.obs), 2)
@@ -882,6 +886,7 @@ CalcModPerfMulti <- function (flxDf.mod, flxDf.obs,
                                                       flxDf.mod.d[,"qcomp.obs"], 
                                                       method='natural'), 0.05, 0.95, 
                                             subdivisions=2000)$value, 2 )
+  results["dy_errflash"] <- round(RBFlash(flxDf.mod.d$qcomp.obs) - RBFlash(flxDf.mod.d$qcomp.mod), 2)
   
   results["mo_n"] <- length(flxDf.mod.mwy$qcomp.mod)
   results["mo_nse"] <- round(Nse(flxDf.mod.mwy$qcomp.mod, flxDf.mod.mwy$qcomp.obs), 2)
@@ -954,6 +959,7 @@ CalcModPerfMulti <- function (flxDf.mod, flxDf.obs,
                                 t_msd="mean signed deviation", 
                                 t_mae="mean absolute error", 
                                 t_errfdc="integrated flow duration curve error",
+                                t_errflash="flashiness index error",
                                 dy_n="sample size", 
                                 dy_nse="nash-sutcliffe efficiency", 
                                 dy_nselog="log nash-sutcliffe efficiency",
@@ -966,6 +972,7 @@ CalcModPerfMulti <- function (flxDf.mod, flxDf.obs,
                                 dy_errcom="error in center-of-mass timing", 
                                 dy_errmaxt="error in max timing",
                                 dy_errfdc="integrated flow duration curve error",
+                                dy_errflash="flashiness index error",
                                 mo_n="sample size", 
                                 mo_nse="nash-sutcliffe efficiency", 
                                 mo_nselog="log nash-sutcliffe efficiency",
@@ -1011,6 +1018,7 @@ CalcModPerfMulti <- function (flxDf.mod, flxDf.obs,
                               t_msd="native flux units", 
                               t_mae="native flux units", 
                               t_errfdc="native flux units",
+                              t_errflash="unitless",
                               dy_n="count", 
                               dy_nse="unitless (-Inf->1)", 
                               dy_nselog="unitless (-Inf->1)",
@@ -1023,6 +1031,7 @@ CalcModPerfMulti <- function (flxDf.mod, flxDf.obs,
                               dy_errcom="hours", 
                               dy_errmaxt="hours",
                               dy_errfdc="native flux units",
+                              dy_errflash="unitless",
                               mo_n="count", 
                               mo_nse="unitless (-Inf->1)", 
                               mo_nselog="unitless (-Inf->1)",

@@ -303,6 +303,19 @@ CalcCOM <- function (x) {
     ts
 }
 
+#' Calculate Richards-Baker Flashiness Index.
+#' 
+#' \code{RBFlash} calculates the Richards-Baker Flashiness Index.
+#' Calculate the Richards-Baker Flashiness Index for vectors
+#' of modelled or observed values.
+#' @param m The vector of values.
+#' @return The Richards-Baker Flashiness Index.
+#' @keywords internal
+#' @export
+RBFlash <- function (m) {
+    sum(abs(diff(m)), na.rm=TRUE)/sum(m, na.rm=TRUE)
+}
+
 #' "Flatten" the output from GetMultiNcdf
 #' 
 #' \code{ReshapeMultiNcdf} flattens the output from GetMultiNcdf.
