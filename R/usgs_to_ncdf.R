@@ -50,28 +50,30 @@ WriteNcPrettyUsgs <- function(prettyDf, outPath='.') {
                                                          create_dimvar=FALSE)),
                         data = 1:1 )
   
-  #// global attributes:
-  #  :featureType = "timeSeries" ;
-  #:Conventions = "CF-1.6" ;
+  # global attributes:
+  # featureType = "timeSeries" ;
+  # Conventions = "CF-1.6" ;
+  
   # globalAttList <- list()
   # globalAttList[[1]] <- list(name='Restart_Time',value='2012-07-05_00:00:00', precision="text")
   # globalAttList[[2]] <- list(name='Some reall atts',value='#$%^!!', precision="text" )
-  dum <- MkNcdf( varList, globalAttList=globalAttList, filename='~/testHistoricalStreamData.nc' )
+  dum <- MkNcdf( varList, globalAttList=globalAttList, filename='~/testHistoricalStreamData.nc')
 }
 
 
-##' Write a USGS discharge timeslice to a netcdf file. 
-##' 
-##' @param dfByPosix   Dataframe, a data frame with the following columns:
-##'   \code{site_no}, \code{dateTime}, \code{dateTimeRound}, \code{code},
-##'   \code{queryTime}, \code{discharge.cms}, and \code{variance}
-##' where dateTime is the same for the entire dataframe. 
-##' @param outPath     Character, the path for the output netcdf file. 
-##' @param sliceResolution 
-##' @examples
-##' ## See \link{MkUsgsTimeSlice}.
-##' @keywords internal
-##' @export
+#' Write a USGS discharge timeslice to a netcdf file.
+#' 
+#' @param dfByPosix Dataframe, a data frame with the following columns: 
+#'   \code{site_no}, \code{dateTime}, \code{dateTimeRound}, \code{code},
+#'   \code{queryTime}, \code{discharge.cms}, and \code{variance} where dateTime
+#'   is the same for the entire dataframe.
+#' @param outPath     Character, the path for the output netcdf file.
+#' @param sliceResolution The Temporal resolution.
+#' @examples
+#' ## See \link{MkUsgsTimeSlice}.
+#' @keywords internal
+#' @export
+
 WriteNcTimeSlice <- function(dfByPosix, outPath, sliceResolution) {
     
     dateTimeRound <- dfByPosix$dateTimeRound   ## this is a string
