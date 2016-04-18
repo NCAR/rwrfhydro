@@ -1,0 +1,127 @@
+---
+title: "Regrid multiple GRIB files and variables"
+author: Logan Karsten
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Regrid multiple GRIB files and variables}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+# Background
+Building on the calls to the [ECMWF GRIB API](https://software.ecmwf.int/wiki/display/GRIB/Home), rwrfhydro contains the ability to regrid GRIB data to any
+WRF-Hydro modeling domain. In addition, multiple groups of files, and multiple
+variables can be regridded in one function call within R. This streamlines
+the regridding process and passes the data directly back to the user in
+R. This shows an example of regridding 2-meter temperature from both the
+GFS and HRRR NCEP products to a WRF-Hydro modeling domain.
+
+# Setup
+Load the rwrfhydro package.
+```{r, results='hide'}
+library("rwrfhydro")
+```
+
+# Weight Files
+
+Note that the user will need to provide a weight file path for each file group. In this example,
+a weight file path needs to be provided for the GFS and HRRR data independtly. rwrfhydro will
+check to see if the weight files exist. If they do not exist, they will be generated. So, 
+provide a weight file path regardless of if it exists or not. It's recommended to name weight
+files that are unique to a particular product and WRF-Hydro modeling domain.
+
+```{r, eval=FALSE}
+wghtFilesHRRR <- list(wghtFile='./rio_hrrr_wghts.Rdata')
+wghtFilesGFS <- list(wghtFile='./rio_gfs_wghts.nc')
+wghtList <- list(listHRRR=wghtFilesHRRR,listGFS=wghtFilesGFS)
+```
+
+# Input Files, Variables, Levels, and Level Types
+
+This section outlines setting up lists of variables, level types, and level
+for all file groups. It's not necessary to call GRIB functions before 
+calling the regrid function call as the function has wrappers to do all
+of that internally. 
+
+We will setup lists for the HRRR model. If you are unsure of varialbe
+names, levels, etc, it's probably best to use the GRIP API command line
+utility to look at an inventory to see exactly what you need.
+
+```{r, eval=FALSE}
+filesHRRR <- list.files(path='./HRRR',pattern='hrrr.',full.names=TRUE)
+varsHRRR <- list(var1='2t')
+levelTypesHRRR <- list(levType1='heightAboveGround')
+levelsHRRR <- list(level1=2)
+```
+
+Next, setup the lists for GFS.
+```{r, eval=FALSE}
+filesGFS <- list.files(path='./GFS',pattern='gfs.',full.names=TRUE)
+varsGFS <- list(var1='2t')
+levelTypesGFS <- list(levType1='heightAboveGround')
+levelsGFS <- list(level1=2)
+```
+
+Establish a geogrid file for the WRF-Hydro modeling domain of interest.
+```{r, eval=FALSE}
+geoFile <- '../geo_conus_1km.d01.nc'
+```
+
+Combine the HRRR and GFS lists. Note the collation of list names, this is important
+as the function will break if these rules aren't followed. 
+```{r, eval=FALSE}
+fList <- list(listHRRR=filesHRRR,listGFS=filesGFS)
+vList <- list(listHRRR=varsHRRR,listGFS=varsGFS)
+levList <- list(listHRRR=levelsHRRR,listGFS=levelsGFS)
+levTypeList <- list(listHRRR=levelTypesHRRR,listGFS=levelTypesGFS)
+```
+
+# Calling RegridMultiGRIB
+
+Finally, call 'RegridMultiGRIB', which will return a structured list containing 
+the regridded data. Note we are specifying 'bilinear' for bilinear interpolation.
+Future iterations of rwrfhydro will contain additional regridding methods, such
+as nearest neighbor, patch, and conservative. As of now, only 'bilinear' is
+supported.
+```{r, eval=FALSE}
+dataOut <- RegridMultiGRIB(fList,vList,levTypeList,levList,wghtList,geoFile,'bilinear')
+```
+
+# Output in R
+
+The first layer of the output list will specify the file groups (HRRR and GFS).
+
+```{r, eval=FALSE}
+names(dataOut$listHRRR)
+names(dataOut$listGFS)
+```
+
+The second layer of the output list will specify the variable for that
+file group (2 meter temperature for both in this case). Note that you can have
+different variables for different files. This example could just as easily 
+chosen 10 meter U-wind for the HRRR file, while specifying the variable
+of interest for GFS to be downard shortwave radiation at the surface.
+
+```{r, eval=FALSE}
+names(dataOut$listHRRR$var1)
+```
+
+Within each variable within the list, there will be the actual grids of regridded
+data, which will have a shape of [nCol,nRow,nTimesPerFile,nFiles]. In addition,
+meta data about the grids, such as units, long name, short name, ndv, and 
+date information will be present. 
+
+```{r, eval=FALSE}
+print(dataOut$listHRRR$var1$name)
+print(dataOut$listHRRR$var1$missing)
+print(dataOut$listHRRR$var1$verfPOSIXct)
+print(dataOut$listHRRR$var1$begVerifPOSIXct)
+print(dataOut$listHRRR$var1$cyclePOSIXct)
+print(dataOut$listHRRR$var1$longname)
+print(dataOut$listHRRR$var1$units)
+print(dataOut$listHRRR$var1$precision)
+print(dataOut$listHRRR$var1$nativeFiles)
+print(dataOut$listHRRR$var1$dimensionList)
+print(dataOut$listHRRR$var1$data[200,200,1,1])
+```

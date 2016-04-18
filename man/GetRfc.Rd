@@ -26,7 +26,7 @@ sg <- GetRfc(sg)
 }
 \seealso{
 Other geospatial: \code{\link{ExportGeogrid}},
-  \code{\link{GetGeogridIndex}},
+  \code{\link{GRIBLatLon}}, \code{\link{GetGeogridIndex}},
   \code{\link{GetGeogridSpatialInfo}},
   \code{\link{GetPoly}}, \code{\link{GetTimeZone}}
 }

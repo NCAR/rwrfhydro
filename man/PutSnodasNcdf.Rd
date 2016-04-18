@@ -4,12 +4,16 @@
 \alias{PutSnodasNcdf}
 \title{Write output of ReadSnodasDepthSweDate to netcdf.}
 \usage{
-PutSnodasNcdf(snodasList, outputDir = ".")
+PutSnodasNcdf(snodasList, outputDir = ".", lat = NULL, lon = NULL)
 }
 \arguments{
 \item{snodasList}{The output of ReadSnodasDepthSweDate.}
 
 \item{outputDir}{Character. The directory path where the output files are to be written.}
+
+\item{lat}{Optional array of latitude values to be written out. Must be 1D.}
+
+\item{lon}{Optional array of longitude values to be written out. Must be 1D.}
 }
 \value{
 Success if the filename which is (SNODAS_YYYYMMDD.nc), otherwise NULL.

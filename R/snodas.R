@@ -165,6 +165,8 @@ ReadSnodasDepthSweDate <- function(datePOSIXct, outputDir='.') {
 #' 
 #' @param snodasList The output of ReadSnodasDepthSweDate. 
 #' @param outputDir Character. The directory path where the output files are to be written. 
+#' @param lat Optional array of latitude values to be written out. Must be 1D.
+#' @param lon Optional array of longitude values to be written out. Must be 1D.
 #' @return Success if the filename which is (SNODAS_YYYYMMDD.nc), otherwise NULL.
 #' @examples
 #' \dontrun{
@@ -177,10 +179,9 @@ ReadSnodasDepthSweDate <- function(datePOSIXct, outputDir='.') {
 #' @concept SNODAS
 #' @family SNODAS
 #' @export
-PutSnodasNcdf <- function(snodasList, outputDir='.') {
+PutSnodasNcdf <- function(snodasList, outputDir='.', lat=NULL, lon=NULL) {
   ## make it a vanilla date... 
   theDate <- as.POSIXct(format(snodasList$datePOSIXct,'%Y-%m-%d'),'UTC')
-  print(dim(snodasList$swe.m))
   varList = list()
   varList[[1]] <- list( name='SNEQV', #Name to be consistent with LDASOUT files
                        longname='Snow water equivalent',
@@ -219,6 +220,32 @@ PutSnodasNcdf <- function(snodasList, outputDir='.') {
                               create_dimvar=TRUE)
                             ),
                        data = snodasList$depth.m )
+  
+  #Create lat/lon variables if arrays passed in.
+  if((!is.null(lat)) & (!is.null(lon))){
+    varList[[3]] <- list( name = 'Lat',
+                          longname = 'Latitude',
+                          units = 'degrees north',
+                          precision = 'double',
+                          missing = -9999,
+                          dimensionList = 
+                          list(
+                               x=list(name='Latitude',values=1:snodasList$nRowNative,
+                                      units='Degrees North',unlimited=FALSE,
+                                      create_dimvar=FALSE)),
+                          data = lat )
+    varList[[4]] <- list( name = 'Lon',
+                          longname = 'Longitude',
+                          units = 'degrees east',
+                          precision = 'double',
+                          missing = -9999,
+                          dimensionList =
+                          list( 
+                               x=list(name='Longitude',values=1:snodasList$nColNative,
+                                      units='Degrees East',unlimited=FALSE,
+                                      create_dimvar=FALSE)),
+                          data = lon )
+  }
   
   globalAttList <- list()
   globalAttList[[1]] <- list(name='Time',value='2012-07-05_00:00:00', precision="text")

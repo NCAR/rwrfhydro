@@ -35,7 +35,7 @@ sg<-GetPoly(sg,  polygonAddress= "/glade/scratch/arezoo/QPF_verification_rwrfhyd
 }
 \seealso{
 Other geospatial: \code{\link{ExportGeogrid}},
-  \code{\link{GetGeogridIndex}},
+  \code{\link{GRIBLatLon}}, \code{\link{GetGeogridIndex}},
   \code{\link{GetGeogridSpatialInfo}},
   \code{\link{GetRfc}}, \code{\link{GetTimeZone}}
 }
