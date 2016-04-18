@@ -512,31 +512,95 @@ GatherOrder <- function(stream, start, linkLengths, linkOrder) {
   indDists
 }
 if(FALSE) {
-## test the above
-some10 <- which(rlOrder == 10)[4]
-## WTF 4, 551 -diversions clipped ?
-## but what about
-some10A <- GatherOrder(from, some10, reInd$length, rlOrder) 
-str(some10A)
-rlOrder[some10A$orderInds]
-rlOrder[some10A$lowerOrderInds]
-## ?????
-##> zz <- 1092788
-##> zz; rlOrder[zz]; from$from[ from$start[zz] : from$end[zz] ]; rlOrder[from$from[ from$start[zz] : from$end[zz] ]]; zz <- to$to[ to$start[zz]:to$end[zz] ]
-##[1] 1092788
-##[1] 10
+  ## test the above
+#  rlFile <- '/home/jamesmcc/WRF_Hydro/TESTING/TEST_FILES/CONUS/WORKING/DOMAIN/RouteLink_2016_02_19_no_HI_PR.conusPstActiveNoHiPr_corrLength_chanparms1a.nc'
+  rlFile <- '~/WRF_Hydro/TESTING/TEST_FILES/CONUS/WORKING/DOMAIN/RouteLink_2016_04_07.nudgingOperational2016-04-08_chanparm3_mann_BtmWdth.nc'
+  rlOrder <- ncdump(rlFile,'order',q=TRUE)
+  rlLink <- ncdump(rlFile,'link',q=TRUE)
+  print(load("~/WRF_Hydro/TESTING/TEST_FILES/CONUS/WORKING/DOMAIN/RouteLink_2016_02_19_no_HI_PR_goodlakes1266.reExpFrom.Rdb"))
+
+  
+  some10 <- which(rlOrder == 10)[4]
+  ## WTF 4, 551 -diversions clipped ?
+  ## but what about
+  some10A <- GatherOrder(from, some10, reInd$length, rlOrder) 
+  str(some10A)
+  rlOrder[some10A$orderInds]
+  rlOrder[some10A$lowerOrderInds]
+  ## ?????
+  
+  zz <- 1092788
+  
+  zz ## start index
+  reInd$comId[zz] # start comId
+  rlOrder[zz] # start order
+
+  toInds <- to$to[ to$start[zz]:to$end[zz] ]  ## go down stream
+  toInds
+  reInd$comId[toInds]  ## to Inds
+  rlOrder[toInds]  ## to order
+
+  zz <- toInds
+
+  
+
+  from$from[ from$start[zz] : from$end[zz] ] ## upstream indices from start 
+  rlOrder[from$from[ from$start[zz] : from$end[zz] ]];  ## order upstream for start
+
+  
+  ##[1] 1092788 start
+##[1] 10   
 ##[1] 1092784
 ##[1] 10
-##> zz; rlOrder[zz]; from$from[ from$start[zz] : from$end[zz] ]; rlOrder[from$from[ from$start[zz] : from$end[zz] ]]; zz <- to$to[ to$start[zz]:to$end[zz] ]
+ zz; rlOrder[zz]; from$from[ from$start[zz] : from$end[zz] ]; rlOrder[from$from[ from$start[zz] : from$end[zz] ]]; zz <- to$to[ to$start[zz]:to$end[zz] ]
 ##[1] 1092789
 ##[1] 2
 ##[1] 1041293 1092788
 ##[1]  2 10
-##> zz; rlOrder[zz]; from$from[ from$start[zz] : from$end[zz] ]; rlOrder[from$from[ from$start[zz] : from$end[zz] ]]; zz <- to$to[ to$start[zz]:to$end[zz] ]
+ zz; rlOrder[zz]; from$from[ from$start[zz] : from$end[zz] ]; rlOrder[from$from[ from$start[zz] : from$end[zz] ]]; zz <- to$to[ to$start[zz]:to$end[zz] ]
 ##[1] 1092792
 ##[1] 2
 ##[1] 1092789
 ##[1] 2
+
+  downStreamLinks <- which(from$start > 0)
+  CheckOrderUp <- function(ind, rlOrd){
+    indOrd <- rlOrd[ind]
+    upInds <- from$from[ from$start[ind] : from$end[ind] ] ## upstream indices from start
+    upOrds <- rlOrd[upInds]
+    if(!any(upOrds == indOrd)) if(length(which(upOrds == (indOrd-1))) < 2) return(ind)
+    if(any(upOrds > indOrd)) return(ind)
+    NULL
+  }
+
+  upCheck <- plyr::ldply(downStreamLinks, CheckOrderUp, rlOrder, .progress='text')
+
+  str(upCheck)
+  UpCheckInfo <- function(ind, rlOrder) {   
+    fromInds <- from$from[ from$start[ind] : from$end[ind] ] ## upstream indices from start    
+    fromOrds <- rlOrder[fromInds ]  ## order upstream for start
+
+    ##cat('From (index) :\n')
+    ##cat(fromInds,'\n')
+
+    cat('From (comId) :\n')
+    cat(rlLink[fromInds],'\n')
+
+    cat(fromOrds,'\n')
+
+    ##cat('To (index): \n')
+    ##cat(ind ,'\n')
+
+    cat('To (comId) : \n')
+    cat(rlLink[ind],'\n')
+    
+    cat(rlOrder[ind],'\n') # start order
+    cat('------------------------\n')
+    invisible(NA)
+  }
+  
+for(i in 1:nrow(upCheck)) UpCheckInfo(upCheck$V1[i], rlOrder=rlOrder)   
+1092789 %in% upCheck$V1
 }
 
 
