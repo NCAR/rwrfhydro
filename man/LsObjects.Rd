@@ -8,6 +8,7 @@ LsObjects(pos = 1, pattern, order.by, decreasing = FALSE, head = FALSE,
   n = 5)
 }
 \arguments{
+<<<<<<< HEAD
 \item{pos}{pos}
 
 \item{pattern}{pattern}
@@ -15,6 +16,15 @@ LsObjects(pos = 1, pattern, order.by, decreasing = FALSE, head = FALSE,
 \item{order.by}{order.by}
 
 \item{decreasing}{decreasing}
+=======
+\item{pos}{position}
+
+\item{pattern}{pattern}
+
+\item{order.by}{ordering variable}
+
+\item{decreasing}{decreasing order}
+>>>>>>> 5fd43922988a528979b189a4ea65340872c07f72
 
 \item{head}{head}
 

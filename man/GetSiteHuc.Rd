@@ -16,11 +16,13 @@ character HUC8
 \code{GetSiteHuc} returns a HUC8 given a USGS site name.
 }
 \examples{
+\dontrun{
 GetSiteHuc(FindUsgsStns(stnLon=254.67374999999998408,
                         stnLat=40.018666670000001773,
                         within=.001)$site_no)
 huc <- GetSiteHuc(gages2AttrPlus$STAID[1:3])
 names(huc)<-gages2AttrPlus$STAID[1:3]
+} #dontrun
 }
 \seealso{
 Other streamObs: \code{\link{FindUsgsStns}},

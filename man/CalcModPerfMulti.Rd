@@ -5,7 +5,8 @@
 \title{Computes model performance statistics for WRF-Hydro flux output}
 \usage{
 CalcModPerfMulti(flxDf.mod, flxDf.obs, flxCol.mod = "q_cms",
-  flxCol.obs = "q_cms", stdate = NULL, enddate = NULL)
+  flxCol.obs = "q_cms", stdate = NULL, enddate = NULL,
+  writeOutPairDf = NULL, fileTag = NULL)
 }
 \arguments{
 \item{flxDf.mod}{The flux output dataframe (required). Assumes only one
@@ -34,6 +35,10 @@ tz="UTC"))}
 used). Date MUST be specified in POSIXct format with appropriate timezone 
 (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S",
 tz="UTC"))}
+
+\item{writeOutPairDf}{character path/name for file to output the data frame constructed
+before calculating the statistics and various aggregations. NULL by default gives
+no output.}
 }
 \value{
 A new dataframe containing the model performance statistics.

@@ -1,6 +1,6 @@
 
-## this code is for development of WriteNcPrettyUsgs
 if(FALSE){
+  ## this code is for development of WriteNcPrettyUsgs
   ## look at platoro example
   poNcid <- ncdf4::nc_open('~/Desktop/ALL_PLATORO_DATA.nc')
   names(poNcid)
@@ -24,24 +24,21 @@ if(FALSE){
   collatedAbsc <- data.frame(site=rep(theSites, each=length(theProds)), product=theProds, 
                                       stringsAsFactors=FALSE)
   siteData <- plyr::mdply(collatedAbsc, GetMultiSiteData, .inform=TRUE)
-  
-  
-  ## would be nice to have both station_id and station_names in here
-  
+ 
+  ## would be nice to have both station_id and station_names in here  
 }
 
 
-## For now there variable length (ragged) arrays are not supported in the ncdf4 package. After  
-## emailing Pierce, who welcomded the addition, I sketched how this might be done and we may 
-## do it.
-## For now, we will have to create one file per station*product. If returning the file name
-## as success, that's a plyr::daply. 
-
-#' @export
 WriteNcPrettyUsgs <- function(prettyDf, outPath='.') {
+  ## Write a pretty usgs format object to file
+  ## For now there variable length (ragged) arrays are not supported in the ncdf4 package. After  
+  ## emailing Pierce, who welcomded the addition, I sketched how this might be done and we may 
+  ## do it.
+  ## For now, we will have to create one file per station*product. If returning the file name
+  ## as success, that's a plyr::daply.
+  ## keep this internal...
   
   ## break up by site*product until we get ragged arrays. 
-  
   varList = list()
   varList[[1]] <- list( name='streamflow',
                         longname='Precipitation Multiplier',
@@ -76,6 +73,7 @@ WriteNcPrettyUsgs <- function(prettyDf, outPath='.') {
 #' ## See \link{MkUsgsTimeSlice}.
 #' @keywords internal
 #' @export
+
 WriteNcTimeSlice <- function(dfByPosix, outPath, sliceResolution) {
     
     dateTimeRound <- dfByPosix$dateTimeRound   ## this is a string
@@ -95,7 +93,7 @@ WriteNcTimeSlice <- function(dfByPosix, outPath, sliceResolution) {
     
     ## could have multiple of the same station at a given time. 
     ## simly take the most recent. if it got this far it has had some qc
-dfByPosix0 <- dfByPosix
+    dfByPosix0 <- dfByPosix
     dfByPosix$dateTime <- as.numeric(dfByPosix$dateTime)
     dfByPosix$queryTime <- as.numeric(dfByPosix$queryTime)
     dfByPosix <- plyr::ddply(dfByPosix, plyr::.(site_no),
@@ -220,19 +218,19 @@ TimeSliceFileName <- function(POSIXctOrChr, sliceResolution) {
                 '.usgsTimeSlice.ncdf')
 }
 ##====================================================================================
-#'
-#' Read a USGS discharge data timeslice from a netcdf file. 
-#' 
-#' This is kind of the inverse of WriteNcTimeSlice to be used in extending existing
-#' timeslices on file.
-#' @param file, the ncdf file to read.
-#' @examples
-#' \dontrun{
-#' sliceFiles <- list.files('~/usgsStreamData/timeSliceData/','.*', full.names=TRUE)
-#' ReadNcTimeSlice(tail(sliceFiles,1))
-#' }
-#' @keywords internal
-#' @export
+##'
+##' Read a USGS discharge data timeslice from a netcdf file. 
+##' 
+##' This is kind of the inverse of WriteNcTimeSlice to be used in extending existing
+##' timeslices on file.
+##' @param file, the ncdf file to read.
+##' @examples
+##' \dontrun{
+##' sliceFiles <- list.files('~/usgsStreamData/timeSliceData/','.*', full.names=TRUE)
+##' ReadNcTimeSlice(tail(sliceFiles,1))
+##' }
+##' @keywords internal
+##' @export
 ReadNcTimeSlice <- function(file) {  
   ncRead <- ncdf4::nc_open(file)
 
