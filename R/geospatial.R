@@ -10,7 +10,7 @@
 #' @param inFile A netcdf file containing the variable to be converted to a TIF. 
 #' @param inVar The name of the variable to be converted, should exists in inFile.
 #' @param outFile The geoTiff filename to create.
-#' @param geoFile (OPTIONAL) The netcdf file containing the lat/lon
+#' @param inCoordFile (OPTIONAL) The netcdf file containing the lat/lon
 #' coordinates if they are not included in the inFile. This is useful,
 #' for example, when creating a geotiff from an LDASOUT output file which
 #' does not contain lat/lon coordinates but matches the spatial coordinate
@@ -29,14 +29,14 @@
 #' ExportGeogrid("~/wrfHydroTestCases/Fourmile_Creek/RUN.RTTESTS/OUTPUT_ALLRT_DAILY/2013031500.LDASOUT_DOMAIN1",
 #'              inVar="SOIL_M",
 #'              outFile="20130315_soilm3.tif",
-#'              geoFile="~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/geo_em.d01_1km_nlcd11.nc",
+#'              inCoordFile="~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/geo_em.d01_1km_nlcd11.nc",
 #'              inLyr=3)
 #' }
 #' @keywords IO
 #' @concept dataMgmt geospatial
 #' @family geospatial
 #' @export
-ExportGeogrid <- function(inFile, inVar, outFile, geoFile=NA, inLyr=NA) {
+ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, inLyr=NA) {
   # Check packages
   if (!(require("rgdal") & require("raster") & require("ncdf4") )) {
     stop("Required packages not found. Must have R packages: rgdal (requires GDAL system install), raster, ncdf4")
@@ -66,11 +66,11 @@ ExportGeogrid <- function(inFile, inVar, outFile, geoFile=NA, inLyr=NA) {
                   "int64"="Int64",
                   "uint64"="UInt64")
   # Get coords
-  if (is.na(geoFile)) {
+  if (is.na(inCoordFile)) {
     coordNC <- inNC
     coordvarList <- varList
   } else {
-    coordNC <- ncdf4::nc_open(geoFile)
+    coordNC <- ncdf4::nc_open(inCoordFile)
     coordvarList <- names(coordNC$var)
   }
   if ("XLONG_M" %in% coordvarList & "XLAT_M" %in% coordvarList) {
@@ -150,7 +150,7 @@ ExportGeogrid <- function(inFile, inVar, outFile, geoFile=NA, inLyr=NA) {
   rgdal::saveDataset(tds.out, outFile)
   rgdal::GDAL.close(tds.out)
   if (!all(is.na(inNC)))  ncdf4::nc_close(inNC)
-  if (!is.na(geoFile)) ncdf4::nc_close(coordNC)
+  if (!is.na(inCoordFile)) ncdf4::nc_close(coordNC)
 }
 
 #' Get geogrid cell indices from lat/lon (or other) coordinates.

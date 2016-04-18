@@ -105,7 +105,7 @@ file = paste0(fcPath,"/RUN.FLUXCOMP/OUTPUT_ALLRT_MAY13_HOURLY/RESTART.2013060100
 ExportGeogrid(file,
              inVar="SOIL_T",
              outFile="20130315_soilm3.tif",
-             geoFile=geoFile,
+             inCoordFile=geoFile,
              inLyr=3)
 
 # read the  created tiff file

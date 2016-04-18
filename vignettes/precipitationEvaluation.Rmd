@@ -49,7 +49,7 @@ GHCN-daily data are archived for each individual gauge in a text file in http://
 
 ```{r, eval = FALSE}
 startDate <- "2013/08/01"
-endDate <- "2013/11/01"
+endDate <- "2013/09/30"
 element <- "PRCP"
 obsPrcp <- GetGhcn(sg$siteIds, element, startDate, endDate, parallel = FALSE)
 ```
@@ -59,7 +59,7 @@ NCDC also provides GHCN-daily categorized by year under http://www1.ncdc.noaa.go
 
 ```{r message=FALSE, warning=FALSE}
 startDate <- "2013/08/01"
-endDate <- "2013/11/01"
+endDate <- "2013/09/30"
 element <- "PRCP"
 obsPrcp <- GetGhcn2(sg$siteIds, element, startDate, endDate, parallel = FALSE)
 head(obsPrcp)
