@@ -57,8 +57,8 @@ nGages=length(gageParamId)
 
 ## the existing parameter file had blanks, remove them.
 options(warn=1)
-MkNudgingParams(gageId=gageParamId, R=gageParamR,
-                G=gageParamG, tau=gageParamTau,
+MkNudgingParams(gageId=gageParamId, R=gageParamR, 
+                G=gageParamG, tau=gageParamTau, 
                 outFile=paste0(paramPath,'nudgingParams.rwValid5.rmBlanks.nc'),
                 overwrite=TRUE, rmBlankGages=TRUE)
 
@@ -66,8 +66,8 @@ MkNudgingParams(gageId=gageParamId, R=gageParamR,
 ## In this example the exponent only depends on threshold, not location nor month.
 gageParamqThresh1 = array(rep(c(.5,.8),each=4*12),dim=c(4,12,2))
 
-MkNudgingParams(gageId=gageParams$gageId, R=gageParams$R,
-                G=gageParams$G, tau=gageParams$tau,
+MkNudgingParams(gageId=gageParams$gageId, R=gageParams$R, 
+                G=gageParams$G, tau=gageParams$tau, 
                 outFile=paste0(paramPath,'nudgingParams.rwValid5.persistence.nc'),
                 overwrite=TRUE, rmBlankGages=TRUE)
 }  #dontrun

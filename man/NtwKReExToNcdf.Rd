@@ -23,18 +23,10 @@ reExp.nc    <- NtwKReExToNcdf(downstream.Rdb, upstream.Rdb)
 }
 }
 \seealso{
-<<<<<<< HEAD
-Other networkExpression nudging: \code{\link{GatherStreamInds}},
-  \code{\link{ReExpNetwork}},
+Other networkExpression nudging: \code{\link{ReExpNetwork}},
   \code{\link{ReExpressRouteLink}},
   \code{\link{ReIndexRouteLink}},
   \code{\link{VisualizeRouteLink}},
-=======
-Other networkExpression nudging: \code{\link{ReExpNetwork}};
-  \code{\link{ReExpressRouteLink}};
-  \code{\link{ReIndexRouteLink}};
-  \code{\link{VisualizeRouteLink}};
->>>>>>> 5fd43922988a528979b189a4ea65340872c07f72
   \code{\link{VisualizeSubsetStream}}
 }
 \concept{

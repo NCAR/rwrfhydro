@@ -566,23 +566,15 @@ CalcDateTrunc <- function(timePOSIXct, timeZone="UTC") {
 #' List objects with more detailed metadata
 #' 
 #' \code{LsObjects} lists objects with more detailed info on type, size,
-#' etc. Blatantly plagiarized from the following sources:
+#' etc. Taken from
+## http://stackoverflow.com/questions/1358003/tricks-to-manage-the-available-memory-in-an-r-session
 #' Petr Pikal, David Hinds, Dirk Eddelbuettel, Tony Breyal.
-<<<<<<< HEAD
-#' @param pos pos
-#' @param pattern pattern
-#' @param order.by order.by
-#' @param decreasing decreasing
-#' @param head head
-#' @param n n
-=======
 #' @param pos           position
 #' @param pattern       pattern
 #' @param order.by      ordering variable
 #' @param decreasing    decreasing order
 #' @param head          head
 #' @param n             n
->>>>>>> 5fd43922988a528979b189a4ea65340872c07f72
 #' @return dataframe
 #' @keywords utilities internal
 #' @export
@@ -609,18 +601,12 @@ LsObjects <- function (pos = 1, pattern, order.by,
     out <- head(out, n)
   out
 }
+
 #' Shorthand call for LsObjects.
 #' 
 #' \code{lsOS} Shorthand call for LsObjects
-#' Blatantly plagiarized from the following sources:
-#' Petr Pikal, David Hinds, Dirk Eddelbuettel, Tony Breyal.
-<<<<<<< HEAD
-#' @param n n
-#' @return dataframe
-=======
 #' @param n   n
-#' @return dataframe 
->>>>>>> 5fd43922988a528979b189a4ea65340872c07f72
+#' @return    dataframe 
 #' @keywords utilities internal
 #' @export
 lsOS <- function(..., n=10) {

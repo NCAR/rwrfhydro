@@ -7,23 +7,10 @@
 GatherStreamInds(stream, start, linkLengths)
 }
 \arguments{
-\item{stream}{List of stream information containing either from/to and start
-and end positions, returned from ReExpNetwork.}
+\item{stream}{List of stream information containing either from/to and start and end positions, returned from ReExpNetwork.}
 
 \item{start}{Indexed location (NOT comID) of where stream starts}
 
-<<<<<<< HEAD
-\item{length}{Vector of link lengths for each re-indexed reach, contained in
-reExp.nc.}
-
-\item{indDist}{Optional list of indices and distance to that index. Typically
-not used externally to the recursion.}
-}
-\value{
-List containing indices and accumulated distance from start
- @examples
- \dontrun{
-=======
 \item{linkLengths}{Vector of link lengths for each re-indexed reach, contained in reExp.nc.}
 }
 \value{
@@ -34,8 +21,7 @@ A non-recursive function (recusive version runs in to stack overflow problems fo
 }
 \examples{
 \dontrun{
->>>>>>> 5fd43922988a528979b189a4ea65340872c07f72
-     PlotRouteLink <-
+     PlotRouteLink <- 
          VisualizeRouteLink(file='~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.nc')
      PlotRouteLink()
      PlotRouteLink(comId=TRUE)
@@ -46,19 +32,6 @@ A non-recursive function (recusive version runs in to stack overflow problems fo
      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reExpTo.Rdb')
      downstreamInds <- GatherStreamInds(to, 91, length=reInd$length)
 }
-<<<<<<< HEAD
-\description{
-Gather upstream or downstream distance from a given starting location
-}
-\seealso{
-Other networkExpression nudging: \code{\link{NtwKReExToNcdf}},
-  \code{\link{ReExpNetwork}},
-  \code{\link{ReExpressRouteLink}},
-  \code{\link{ReIndexRouteLink}},
-  \code{\link{VisualizeRouteLink}},
-  \code{\link{VisualizeSubsetStream}}
-=======
->>>>>>> 5fd43922988a528979b189a4ea65340872c07f72
 }
 \concept{
 nudging dataMgmt
