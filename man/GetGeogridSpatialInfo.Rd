@@ -25,8 +25,9 @@ lccGeoDF <- GetGeogridSpatialInfo('./geo_em.d02.nc')
 \seealso{
 Other geospatial: \code{\link{ExportGeogrid}},
   \code{\link{GRIBLatLon}}, \code{\link{GetGeogridIndex}},
-  \code{\link{GetPoly}}, \code{\link{GetRfc}},
-  \code{\link{GetTimeZone}}
+  \code{\link{GetPoly}}, \code{\link{GetProj}},
+  \code{\link{GetRfc}}, \code{\link{GetTimeZone}},
+  \code{\link{PolyToRaster}}
 }
 \concept{
 geospatial getData

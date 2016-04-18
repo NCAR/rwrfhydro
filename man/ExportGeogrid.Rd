@@ -7,9 +7,9 @@
 ExportGeogrid(inFile, inVar, outFile, inCoordFile = NA, inLyr = NA)
 }
 \arguments{
-\item{inFile}{The geogrid NetCDF file.}
+\item{inFile}{A netcdf file containing the variable to be converted to a TIF.}
 
-\item{inVar}{The name of the variable to be converted.}
+\item{inVar}{The name of the variable to be converted, should exists in inFile.}
 
 \item{outFile}{The geoTiff filename to create.}
 
@@ -49,8 +49,9 @@ ExportGeogrid("~/wrfHydroTestCases/Fourmile_Creek/RUN.RTTESTS/OUTPUT_ALLRT_DAILY
 Other geospatial: \code{\link{GRIBLatLon}},
   \code{\link{GetGeogridIndex}},
   \code{\link{GetGeogridSpatialInfo}},
-  \code{\link{GetPoly}}, \code{\link{GetRfc}},
-  \code{\link{GetTimeZone}}
+  \code{\link{GetPoly}}, \code{\link{GetProj}},
+  \code{\link{GetRfc}}, \code{\link{GetTimeZone}},
+  \code{\link{PolyToRaster}}
 }
 \concept{
 dataMgmt geospatial

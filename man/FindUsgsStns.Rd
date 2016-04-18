@@ -30,11 +30,13 @@ improvement here would be to order results by proximity to supplied lat/lon
 and filter to nClosest.
 }
 \examples{
+\dontrun{
 stnDf <- FindUsgsStns(huc8='10190005')
 stnDf <- FindUsgsStns(huc8=c('10190005','03160203'))
 stnDf <- FindUsgsStns(stnLon=254.67374999999998408,stnLat=40.018666670000001773,within=.001)
 stnDf <- FindUsgsStns(stnLon=c(254.67374999999998408,-87.747224700000004),
                       stnLat=c(40.018666670000001773, 31.864042489999999),within=.001)
+} #dontrun
 }
 \seealso{
 Other streamObs: \code{\link{GetSiteHuc}},

@@ -25,7 +25,7 @@ dataframe
 }
 \description{
 \code{LsObjects} lists objects with more detailed info on type, size,
-etc. Blatantly plagiarized from the following sources:
+etc. Taken from
 Petr Pikal, David Hinds, Dirk Eddelbuettel, Tony Breyal.
 }
 \keyword{internal}

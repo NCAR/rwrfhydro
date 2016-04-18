@@ -4,15 +4,19 @@ Title: R tools for the WRF Hydro Model
 Version: 1.0.9000
 Date: 2015-05-01
 Authors@R: c(
-    person("James", "McCreight", email = "jamesmcc@ucar.edu", role = c("aut","cre")),
-    person("Aubrey", "Dugger",   email = "adugger@ucar.edu",  role = "aut") )
+    person("James", "McCreight", email = "", role = c("aut","cre")),
+    person("Aubrey", "Dugger",   email = "",  role = "aut"),
+    person("Arezoo", "RafieeiNasab",   email = "",  role = "aut"),
+    person("Logan", "Karsten",   email = "",  role = "aut"),
+    person("Alyssa", "Hendricks",   email = "",  role = "aut") )
 Maintainer: James McCreight <jamesmcc@ucar.edu>
 Description: A community-contributed tool box for managing, analyzing, and
     visualizing WRF Hydro (and HydroDART) input and output files in R.
 License: https://github.com/mccreigh/rwrfhydro/blob/master/LICENSE.md
 Depends:
-    R (>= 3.1.0)
+    R (>= 3.2.0)
 Imports:
+    data.table (>= 1.9.6),
     plyr (>= 1.8.1),
     grid (>= 3.1.2),
     lubridate (>= 1.3.3),
@@ -36,7 +40,8 @@ Suggests:
     sp,
     pander,
     doMC,
-    ptw
+    ptw,
+    rmarkdown
 BuildVignettes: false
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1

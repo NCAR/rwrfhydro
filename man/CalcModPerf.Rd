@@ -110,7 +110,9 @@ Other modelEvaluation: \code{\link{CalcMetContGrid}},
   \code{\link{CalcMetCont}},
   \code{\link{CalcModPerfMulti}},
   \code{\link{CalcNoahmpFluxes}},
-  \code{\link{CalcNoahmpWatBudg}}
+  \code{\link{CalcNoahmpWatBudg}},
+  \code{\link{CalcStatCategorical}},
+  \code{\link{CalcStatCont}}
 }
 \concept{
 modelEval

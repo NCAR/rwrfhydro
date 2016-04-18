@@ -55,23 +55,23 @@ ReIndexRouteLink <- function(routeLinkFile) {
   reInd <- data.frame(from   = ncdf4::ncvar_get(ncid,'from'),
                       to     = ncdf4::ncvar_get(ncid,'to'),
                       length = ncdf4::ncvar_get(ncid,'Length')
-                      )
+  )
   if('NHD_Gage' %in% names(ncid$var))
     reInd$gage <- ncdf4::ncvar_get(ncid,'NHD_Gage')
   ncdf4::nc_close(ncid)
-
+  
   ## Zero stands for 1st order or pourpoint, but dosenot have a comm/link id!
   ReExp <- 0:length(link)
   names(ReExp) <-  AsCharLongInt(c(0,link))
   ### bad: names(ReExp) <-  as.character(c(0,link))
-
+  
   ##When there are NA's or issues with the following expressions,
   ## they take more than a few (ie 2) seconds
   ## it's a check that the inputs are all correct
   reInd$from  <- ReExp[AsCharLongInt(reInd$from)]
   reInd$to    <- ReExp[AsCharLongInt(reInd$to)]
   reInd$comId <- link
-
+  
   #print(summary(reInd))
   
   base <- strsplit(basename(routeLinkFile),'\\.')[[1]]
@@ -131,9 +131,9 @@ ReExpNetwork <- function(routeLinkReInd, upstream=TRUE, parallel=FALSE) {
   #FindDownstream <- function(ind) union(which(reInd$from == ind), reInd$to[ind]  )
   ## since the "from" field is defunct in Route_Link and b/c all spilts are removed.
   FindDownstream <- function(ind) unique( reInd$to[ind]  )
-
+  
   FindFunc <- if(upstream) { FindUpstream } else { FindDownstream }
-
+  
   theList <- plyr::llply( 1:length(reInd$to), FindFunc, .parallel=parallel)
   
   theLen <- plyr::laply( theList, function(ll) if(ll[1]==0) 0 else length(ll) )
@@ -168,7 +168,7 @@ ReExpNetwork <- function(routeLinkReInd, upstream=TRUE, parallel=FALSE) {
   
   outFile
 }
-  
+
 #' CheckConn checks a re-expressed network.
 #' 
 #' \code{CheckConn} checks that a re-expressed network matches it's original expression.
@@ -226,13 +226,13 @@ CheckConn <- function(ind, upstream=TRUE, printInds=FALSE) {
   } else {
     if(to$start[ind] >0)   to$to[to$start[ind]:to$start[end]] else integer(0)
   }
-
+  
   nhdWay <- if(upstream) {
     union(which(reInd$to==ind),  reInd$from[ind])
   } else {
     union(which(reInd$from==ind),reInd$to[ind]  )
   }
- 
+  
   test <- all(newWay %in% nhdWay) & all(nhdWay %in% newWay)
   if(!test) stop(paste0('test failed at index: ',ind))
   if(printInds) print(nhdWay)
@@ -281,7 +281,7 @@ CheckRouteLink <- function(routeLinkFile) {
   reInd <- data.frame(from   = ncdf4::ncvar_get(ncid,'from'),
                       to     = ncdf4::ncvar_get(ncid,'to'),
                       length = ncdf4::ncvar_get(ncid,'Length')
-                      )
+  )
   ncdf4::nc_close(ncid)
   length(setdiff(reInd$from, link))
   setdiff(reInd$from, link) 
@@ -312,98 +312,98 @@ CheckRouteLink <- function(routeLinkFile) {
 #' @family networkExpression nudging
 #' @export
 NtwKReExToNcdf <- function(toFile, fromFile) {
-
+  
   load(toFile)
   load(fromFile)
-
+  
   ## need to set the missing value used by ncdf4? i think it's NA by default
   dimensionList <-
     list(  # n.b. the dimension order: z,y,x,t
-         baseDim=list(name='baseDim',
-           units='-', 
-           values=1:length(to$start),
-           unlimited=FALSE,
-           create_dimvar=FALSE),
-         
-         downDim=list(name='downDim',
-           units='-', 
-           values=1:length(to$to),
-           unlimited=FALSE,
-           create_dimvar=FALSE),
-         
-         upDim=list(name='upDim',
-           units='-', 
-           values=1:length(from$from),
-           unlimited=FALSE,
-           create_dimvar=FALSE)
-         )
+      baseDim=list(name='baseDim',
+                   units='-', 
+                   values=1:length(to$start),
+                   unlimited=FALSE,
+                   create_dimvar=FALSE),
+      
+      downDim=list(name='downDim',
+                   units='-', 
+                   values=1:length(to$to),
+                   unlimited=FALSE,
+                   create_dimvar=FALSE),
+      
+      upDim=list(name='upDim',
+                 units='-', 
+                 values=1:length(from$from),
+                 unlimited=FALSE,
+                 create_dimvar=FALSE)
+    )
   
   varList = list()
   varList[[1]] <- 
     list( name='upGo',
-         longname='indices in the upstream direction',
-         units='-',
-         precision = 'integer',
-         dimensionList=dimensionList[c('upDim')],
-         data = from$from )
+          longname='indices in the upstream direction',
+          units='-',
+          precision = 'integer',
+          dimensionList=dimensionList[c('upDim')],
+          data = from$from )
   
   varList[[2]] <- 
     list( name='upStart',
-         longname='start index in upGo for a given index',
-         units='-',
-         precision = 'integer',
-         dimensionList=dimensionList[c('baseDim')],
-         data = from$start )
+          longname='start index in upGo for a given index',
+          units='-',
+          precision = 'integer',
+          dimensionList=dimensionList[c('baseDim')],
+          data = from$start )
   
   varList[[3]] <- 
     list( name='upEnd',
-         longname='end index in upGo for a given index',
-         units='-',
-         precision = 'integer',
-         dimensionList=dimensionList[c('baseDim')],
-         data = from$end )
+          longname='end index in upGo for a given index',
+          units='-',
+          precision = 'integer',
+          dimensionList=dimensionList[c('baseDim')],
+          data = from$end )
   
   varList[[4]] <- 
     list( name='downGo',
-         longname='indices in the downstream direction',
-         units='-',
-         precision = 'integer',
-         dimensionList=dimensionList[c('downDim')],
-         data = to$to )
+          longname='indices in the downstream direction',
+          units='-',
+          precision = 'integer',
+          dimensionList=dimensionList[c('downDim')],
+          data = to$to )
   
   varList[[5]] <- 
     list( name='downStart',
-         longname='start index in downGo for a given index',
-         units='-',
-         precision = 'integer',
-         dimensionList=dimensionList[c('baseDim')],
-         data = to$start )
+          longname='start index in downGo for a given index',
+          units='-',
+          precision = 'integer',
+          dimensionList=dimensionList[c('baseDim')],
+          data = to$start )
   
   varList[[6]] <- 
     list( name='downEnd',
-         longname='end index in downGo for a given index',
-         units='-',
-         precision = 'integer',
-         dimensionList=dimensionList[c('baseDim')],
-         data = to$end )
-
+          longname='end index in downGo for a given index',
+          units='-',
+          precision = 'integer',
+          dimensionList=dimensionList[c('baseDim')],
+          data = to$end )
+  
   globalAttList <- list()
   globalAttList[[1]] <- list(name='This File Created',
                              value=format(Sys.time(),'%Y-%m-%d_%H:%M:%S'),
                              precision="text")
   globalAttList[[2]] <- list(name='toFile',  value=toFile,   precision="text" )
   globalAttList[[3]] <- list(name='fromFile',value=fromFile, precision="text" )
-
+  
   base <- strsplit(basename(toFile),'\\.')[[1]]
   base <- paste(base[-length(base)+(0:1)],collapse='.')
-
+  
   dir  <- dirname(toFile)
   
   MkNcdf( varList, globalAttList=globalAttList,
-         filename=paste0(dir,'/',base,'.reExp.nc'), 
-         overwrite=TRUE )
-
-    #upGo <- ncdump(paste0(dir,'/',base,'.reExp.nc'),'upGo')
+          filename=paste0(dir,'/',base,'.reExp.nc'), 
+          overwrite=TRUE )
+  
+  #upGo <- ncdump(paste0(dir,'/',base,'.reExp.nc'),'upGo')
   paste0(dir,'/',base,'.reExp.nc')
 }
 
@@ -438,8 +438,8 @@ GatherStreamInds <- function(stream, start, linkLengths) {
   indDists <- GatherStreamIndsNRInner(stream, start, linkLengths) 
   while(any(indDists$tip>1)){
     tipInds <- indDists$ind[which(indDists$tip>1)]
-      for(ss in tipInds)
-        indDists <- GatherStreamIndsNRInner(stream, ss, linkLengths, indDist=indDists) 
+    for(ss in tipInds)
+      indDists <- GatherStreamIndsNRInner(stream, ss, linkLengths, indDist=indDists) 
   }
   indDists
 }
@@ -468,7 +468,7 @@ GatherNeighborStreamGages <- function(stream, start, linkLengths, gageIndices) {
 }
 
 
-  
+
 GatherStreamIndsNRInner <- function(stream, start, linkLengths=0,
                                     indDist = list(ind = c(), dist = c(),
                                                    tip=c(), startInd=NA)) {
@@ -481,7 +481,7 @@ GatherStreamIndsNRInner <- function(stream, start, linkLengths=0,
   indDist$tip[which(indDist$ind==start)] <- 1
   anyStream <- stream$start[start] > 0
   if (!anyStream) return(indDist)
-
+  
   indDist$tip[which(indDist$ind==start)] <- 0
   
   whGo <- which(!(names(stream) %in% c('start','end')))
@@ -507,11 +507,11 @@ GatherStreamIndsNRInner <- function(stream, start, linkLengths=0,
         warning('Problem with input topology', immediate. = TRUE)
       indDist$dist <- append(indDist$dist, startDist + linkLengths[ss]/2 + linkLengths[start]/2)
     }
-#    coll <<- c(coll,tail(indDist$ind,1))
-#    indDist <- GatherStreamInds(stream, start=ss, length=length, indDist=indDist)
+    #    coll <<- c(coll,tail(indDist$ind,1))
+    #    indDist <- GatherStreamInds(stream, start=ss, length=length, indDist=indDist)
   }
-
- 
+  
+  
   indDist
 }
 
@@ -521,7 +521,7 @@ GatherStreamIndsNRInner <- function(stream, start, linkLengths=0,
 ## testing non-recursive collection,
 ## see hydro:/home/jamesmcc/WRF_Hydro/CONUS/gageRelationship.R  
 GatherStreamIndsRecursive <- function(stream, start, linkLengths=0,
-                             indDist = list(ind = c(), dist = c())) {
+                                      indDist = list(ind = c(), dist = c())) {
   anyStream <- stream$start[start] > 0
   if (!anyStream) return(indDist)
   
@@ -545,7 +545,7 @@ GatherStreamIndsRecursive <- function(stream, start, linkLengths=0,
         warning('Problem with input topology', immediate. = TRUE)
       indDist$dist <- append(indDist$dist, startDist + linkLengths[ss]/2 + linkLengths[start]/2)
     }
-#    coll <<- c(coll,tail(indDist$ind,1))
+    #    coll <<- c(coll,tail(indDist$ind,1))
     indDist <- GatherStreamIndsRecursive(stream, start=ss, linkLengths=linkLengths,
                                          indDist=indDist)
   }
@@ -586,18 +586,18 @@ VisualizeSubsetStream <- function(indDist,ncFile, comIds=TRUE, downstreamReExp='
   ggObj <-
     plotData$ggObj + 
     ggplot2::geom_segment(data=selectLinks,ggplot2::aes(x=lon,y=lat,xend=to_lon,yend=to_lat),color="red1")
-
+  
   if(!is.na(comIds)) {
     if(comIds) { # convert to comId by default
       ggObj <- ggObj + 
         ggplot2::geom_text(data=selectLinks,ggplot2::aes(x=lon/2+to_lon/2,y=lat/2+to_lat/2,label=as.character(link)),color="darkred") +
-          ggplot2::geom_text(data=startLink,ggplot2::aes(x=lon/2+to_lon/2,y=lat/2+to_lat/2,label=as.character(link))) + 
-            ggplot2::ggtitle("Link comIds")
+        ggplot2::geom_text(data=startLink,ggplot2::aes(x=lon/2+to_lon/2,y=lat/2+to_lat/2,label=as.character(link))) + 
+        ggplot2::ggtitle("Link comIds")
     } else {
       ggObj <- ggObj + 
         ggplot2::geom_text(data=selectLinks,ggplot2::aes(x=lon/2+to_lon/2,y=lat/2+to_lat/2,label=as.character(ind)),color="darkred") +
-          ggplot2::geom_text(data=startLink,ggplot2::aes(x=lon/2+to_lon/2,y=lat/2+to_lat/2,label=as.character(ind))) + 
-            ggplot2::ggtitle("Link indices")
+        ggplot2::geom_text(data=startLink,ggplot2::aes(x=lon/2+to_lon/2,y=lat/2+to_lat/2,label=as.character(ind))) + 
+        ggplot2::ggtitle("Link indices")
     }
   }
   
@@ -626,7 +626,7 @@ checkReExpFirstOrd <- function(from, rl) {
   cat("O2+ links with no upstream links\n")
   whGtO1 <- which(rl$order[whFrom1] > 1)
   print(rl[whFrom1[whGtO1],c('link','order','to')])
-
+  
   cat('any of these links in "to"?\n')
   print(any(rl[whFrom1[whGtO1],c('link')] %in% rl$to))
   invisible(TRUE)
@@ -639,14 +639,14 @@ checkReExpFirstOrd <- function(from, rl) {
 # a pseudo - Route_Link.nc file with only the basic information, so that it can
 # be passed to all the existing network processing routines as any Route_Link.nc
 ChanConnToRouteLink <- function(chanConnFile, fullDomFile, overwrite=TRUE) {
-
+  
   ncid <- ncdf4::nc_open(chanConnFile)
   reInd <- data.frame(from   = ncdf4::ncvar_get(ncid,'FROM_NODE'),
                       to     = ncdf4::ncvar_get(ncid,'TO_NODE'),
                       Length = ncdf4::ncvar_get(ncid,'CHANLEN'),
                       lon    = ncdf4::ncvar_get(ncid,'LONGITUDE'),
                       lat    = ncdf4::ncvar_get(ncid,'LATITUDE')
-                      )
+  )
   ccXi <- ncdf4::ncvar_get(ncid,'CHANXI')
   ccYj <- ncdf4::ncvar_get(ncid,'CHANYJ')
   ncdf4::nc_close(ncid)
@@ -655,11 +655,11 @@ ChanConnToRouteLink <- function(chanConnFile, fullDomFile, overwrite=TRUE) {
   reInd$link <- 1:nrow(reInd) 
   reInd$from <- 0
   reInd$to[which(is.na(reInd$to))] <- 0
-
+  
   ## Prep the above variables for ouput
   dimList <- list(linkDim=list(name='linkDim',values=reInd$link,
-                  units='-', unlimited=FALSE,
-                  create_dimvar=FALSE))
+                               units='-', unlimited=FALSE,
+                               create_dimvar=FALSE))
   varList <- list() 
   for(ll in 1:length(names(reInd))) {
     varList[[ll]] <- list(name=names(reInd)[ll],
@@ -677,25 +677,25 @@ ChanConnToRouteLink <- function(chanConnFile, fullDomFile, overwrite=TRUE) {
   frxst <- FlipUD(ncdf4::ncvar_get(ncid,'frxst_pts'))
   fLat <- FlipUD(ncdf4::ncvar_get(ncid,'LATITUDE'))
   fLon <- FlipUD(ncdf4::ncvar_get(ncid,'LONGITUDE'))
-#  frxst <- FlipUD(RotateCw(RotateCw(ncdf4::ncvar_get(ncid,'frxst_pts'))))
-#  fLat <- FlipUD(RotateCw(RotateCw(ncdf4::ncvar_get(ncid,'LATITUDE'))))
-#  fLon <- FlipUD(RotateCw(RotateCw(ncdf4::ncvar_get(ncid,'LONGITUDE'))))
+  #  frxst <- FlipUD(RotateCw(RotateCw(ncdf4::ncvar_get(ncid,'frxst_pts'))))
+  #  fLat <- FlipUD(RotateCw(RotateCw(ncdf4::ncvar_get(ncid,'LATITUDE'))))
+  #  fLon <- FlipUD(RotateCw(RotateCw(ncdf4::ncvar_get(ncid,'LONGITUDE'))))
   ## Changrid useful to help eliminate head scratching
-#  chanGrid <- FlipUD(RotateCw(RotateCw(ncdf4::ncvar_get(ncid,'CHANNELGRID'))))
-   chanGrid <- FlipUD(ncdf4::ncvar_get(ncid,'CHANNELGRID'))
+  #  chanGrid <- FlipUD(RotateCw(RotateCw(ncdf4::ncvar_get(ncid,'CHANNELGRID'))))
+  chanGrid <- FlipUD(ncdf4::ncvar_get(ncid,'CHANNELGRID'))
   ncdf4::nc_close(ncid)
-
+  
   frxstValues <- frxst[frxst >= 0]
   for(ff in frxstValues) {#
     cat('fval:',ff,'\n')
     whF <- which(frxst==ff)
     whReInd <- which(reInd$lon == fLon[whF] & reInd$lat == fLat[whF])
-#    if(length(whReInd)>1) next
+    #    if(length(whReInd)>1) next
     cat('whreind:',whReInd,'\n')
     cat('xi,yj:',ccXi[whReInd], ccYj[whReInd],'\n')
   }
-
-stop()
+  
+  stop()
   
   ## Have a known N-S flip, but also a double rotation... !
   ## There are assumptions from ARC, FORTRAN, and R all combining for these gymnastics
@@ -709,7 +709,7 @@ stop()
     warning(paste0('Apparently the following points are not on the CHANGRID in fulldom:',
                    paste(notOnChgrid, collapse=', ')))
   }
-
+  
   length(which(chanGrid > -1 & frxst >= 0))  # make sure these are still lined up... 
   whFrxstValuesXy <- which(frxst >= 0, arr.ind=TRUE) 
   for(xy in 1:nrow(whFrxstValuesXy)) print(which(ccXi==whFrxstValuesXy[xy,1] & ccYj==whFrxstValuesXy[xy,2]))
@@ -719,15 +719,15 @@ stop()
   frxst2 <- frxst[cbind(ccXi,ccYj)]
   reInd$gages <- formatC('',width=15)
   reInd$gages[which(frxst2 >= 0)] <- formatC(frxst2[which(frxst2 >= 0)],width=15)
-
-#  hri <- head(reInd[which(frxst2 >= 0),])
-#  whG <- which(frxst %in% as.numeric(hri$gages))
-#  fLat[whG]
-#  fLon[whG]
+  
+  #  hri <- head(reInd[which(frxst2 >= 0),])
+  #  whG <- which(frxst %in% as.numeric(hri$gages))
+  #  fLat[whG]
+  #  fLon[whG]
   
   dimList[['charDim']] <- list(name='IDLength', values=1:15,
                                units='', unlimited=FALSE, create_dimvar=FALSE)
-
+  
   varList[[ll+1]] <- list(name='gages',
                           longname='gages from CHANNEL_CONNECTIVITY.nc',
                           units='',
@@ -742,5 +742,5 @@ stop()
   dum <- MkNcdf(varList, filename=outFull, overwrite=overwrite)
   ncdump(outFull)
   invisible(outFull)
-
+  
 }

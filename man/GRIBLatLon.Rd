@@ -27,8 +27,9 @@ latLon <- GRIBLatLon('hrrr.grib2',1200,800)
 Other geospatial: \code{\link{ExportGeogrid}},
   \code{\link{GetGeogridIndex}},
   \code{\link{GetGeogridSpatialInfo}},
-  \code{\link{GetPoly}}, \code{\link{GetRfc}},
-  \code{\link{GetTimeZone}}
+  \code{\link{GetPoly}}, \code{\link{GetProj}},
+  \code{\link{GetRfc}}, \code{\link{GetTimeZone}},
+  \code{\link{PolyToRaster}}
 
 Other metadata: \code{\link{GRIBNumForecastTimes}}
 }

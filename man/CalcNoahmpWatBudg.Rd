@@ -97,7 +97,10 @@ wb.allrt.fc
 Other modelEvaluation: \code{\link{CalcMetContGrid}},
   \code{\link{CalcMetCont}},
   \code{\link{CalcModPerfMulti}},
-  \code{\link{CalcModPerf}}, \code{\link{CalcNoahmpFluxes}}
+  \code{\link{CalcModPerf}},
+  \code{\link{CalcNoahmpFluxes}},
+  \code{\link{CalcStatCategorical}},
+  \code{\link{CalcStatCont}}
 }
 \concept{
 modelEval
