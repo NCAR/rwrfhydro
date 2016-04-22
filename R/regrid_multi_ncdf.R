@@ -183,7 +183,7 @@ regridNcdf <- function(var,files,latVar,lonVar,wghtFile,geoFile,method){
     #weight generation.
     srcDummy <- array(ndvSrc,c(nColIn,nRowIn))
     srcDummy[,] <- dataIn[,,1,1]
-
+  
     genWghtFile(geoFile,nColIn,nRowIn,latArray,lonArray,methodInt,srcDummy,
                 ndvSrc,wghtFile)
 
