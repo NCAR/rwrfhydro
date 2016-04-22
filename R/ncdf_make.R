@@ -120,16 +120,9 @@ MkNcdf <- function( varList, filename,
           dim$values=1:length(dim$values)          
         }
         
-        if (compLev == -1){
-          ncdf4::ncdim_def(name=dim$name, units=dim$units,
-                           vals=dim$values, unlim=dim$unlim,
-                           create_dimvar=dim$create_dimvar)
-        } else {
-          ncdf4::ncdim_def(nam=dim$nam, units=dim$units,
-                           vals=dim$values, unlim=dim$unlim,
-                           create_dimvar=dim$create_dimvar,
-                           compression=compLev)
-        }
+        ncdf4::ncdim_def(name=dim$name, units=dim$units,
+                         vals=dim$values, unlim=dim$unlim,
+                         create_dimvar=dim$create_dimvar)
       }
       
       dimList <- plyr::llply( var$dimensionList, doDimDef )
