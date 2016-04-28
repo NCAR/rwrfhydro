@@ -303,16 +303,16 @@ RegridMultiGRIBFile <- function(fileInd, fileList, varList, levTypeList,
 #' # Refresh GRIB data files.
 #' \dontrun{
 #' hrrrPath <- '/d4/karsten/data/HRRR/20151001'
-#' GRIBFiles <- list.files(path=hrrrPath,pattern='hrrr.t00z.wrfnatf',
+#' GRIBFiles <- list.files(path=hrrrPath, pattern='hrrr.t00z.wrfnatf',
 #'                         full.names=TRUE)
 #' #fileList <- These are the groups of files.
-#' fileList <- list(GRIBList1 = GRIBFiles )
+#' fileList <- list(GRIBList1 = GRIBFiles)
 #' #varList <- Define which variables are desired for each file group.
-#' GRIBVars <- list(TEMPERATURE='2t',PRES='pres',DSWRF='dwsrf')
-#' varList <- list(GRIBList1 = GRIBVars )
+#' GRIBVars <- list(TEMPERATURE='2t', PRES='pres', DSWRF='dwsrf')
+#' varList <- list(GRIBList1 = GRIBVars)
 #' #levelTypeList <- Define type of vertical levels for each variables.
-#' GRIBLevTypes <- list(levType='heightAboveGround,levType='surface',
-#'                      levType='surface')
+#' GRIBLevTypes <- list(levType='heightAboveGround',
+#'                      levType='surface', levType='surface')
 #' levTypeList <- list(GRIBList1 = GRIBLevTypes)
 #' #levelList <- Define which vertical levels for each variable.
 #' GRIBLevels <- list(level=0, level=0, level=0)
@@ -324,7 +324,6 @@ RegridMultiGRIBFile <- function(fileInd, fileList, varList, levTypeList,
 #' regridData <- regridMultiGRIB(fileList=fileList,varList=variableList,
 #'                               levList=levelList,wghtList=wghtList,
 #'                               geoFile=geoFile,'bilinear')
-#'                               
 #' }
 #' @export
 RegridMultiGRIB <- function(fileList,varList,levTypeList,levList,

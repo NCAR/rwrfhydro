@@ -341,21 +341,21 @@ regridMultiNcdfFile <- function(fileInd,fileList,varList,latList,
 #' @return A list containing regridded data along with meta-data.
 #'
 #' @examples
-#' #This example shows opening multiple SNODAS NetCDF conus files containing
-#' #snow depth and SWE for regridding.
+#' ##This example shows opening multiple SNODAS NetCDF conus files containing
+#' ##snow depth and SWE for regridding.
 #' \dontrun{
 #' snodasPath <- '/d4/karsten/data/SNODAS'
-#' NCFiles <- list.files(path=snodasPath,pattern='SNODAS_CONUS_',full.names=TRUE)
+#' NCFiles <- list.files(path=snodasPath, pattern='SNODAS_CONUS_', full.names=TRUE)
 #' #fileList <- these are the groups of files.
 #' fileList <- list(SNODASList1 = NCFiles)
 #' #varList <- Define which variables are desired for each file group.
-#' NCVars <- list(SWE='SNEQV',DEPTH='SNOWH')
+#' NCVars <- list(SWE='SNEQV', DEPTH='SNOWH')
 #' varList <- list(SNODASList1 = NCVars)
 #' latVars <- list(lat='latitude')
 #' latList <- list(SNODASList1 = latVars)
 #' lonVars <- list(lon='longitude')
 #' lonList <- list(SNODASList1 = lonVars)
-#' wghtFiles <- list(wght1 = "./wght_snodas_ioc_1km.nc')
+#' wghtFiles <- list(wght1 = "./wght_snodas_ioc_1km.nc")
 #' wghtList <- list(SNODASList1 = wghtFiles
 #' geoFile <- '/d4/karsten/geospatial/geo_em.d01.nc'
 #' regridData <- regridMultiNcdf(fileList=fileList,varList=varList,latList=latList,lonList=lonList,

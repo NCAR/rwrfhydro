@@ -1,5 +1,4 @@
 ##=============================================================================
-
 #' Simplifed loading of rwrfhydro data included with the package.
 #' 
 #' \code{GetPkgRawDataPath} is a simplified wrapper (for system.file) for
@@ -381,7 +380,6 @@ AllSame <- function(x, na.rm=FALSE) all(x==x[which(!is.na(x))[1]], na.rm=na.rm)
 cfs2cms <- 0.0283168466  
 feet2meters <- 0.30480
 
-
 #' Get a package's metadata fields and associated entries.
 #' 
 #' \code{GetPkgMeta} Get metadata fields and associated entries from a package's
@@ -592,14 +590,15 @@ CalcDateTrunc <- function(timePOSIXct, timeZone="UTC") {
 #' List objects with more detailed metadata
 #' 
 #' \code{LsObjects} lists objects with more detailed info on type, size,
-#' etc. Blatantly plagiarized from the following sources:
+#' etc. Taken from
+## http://stackoverflow.com/questions/1358003/tricks-to-manage-the-available-memory-in-an-r-session
 #' Petr Pikal, David Hinds, Dirk Eddelbuettel, Tony Breyal.
-#' @param pos
-#' @param pattern
-#' @param order.by
-#' @param decreasing
-#' @param head
-#' @param n
+#' @param pos           position
+#' @param pattern       pattern
+#' @param order.by      ordering variable
+#' @param decreasing    decreasing order
+#' @param head          head
+#' @param n             n
 #' @return dataframe
 #' @keywords utilities internal
 #' @export
@@ -626,13 +625,12 @@ LsObjects <- function (pos = 1, pattern, order.by,
     out <- head(out, n)
   out
 }
+
 #' Shorthand call for LsObjects.
 #' 
 #' \code{lsOS} Shorthand call for LsObjects
-#' Blatantly plagiarized from the following sources:
-#' Petr Pikal, David Hinds, Dirk Eddelbuettel, Tony Breyal.
-#' @param n
-#' @return dataframe
+#' @param n   n
+#' @return    dataframe 
 #' @keywords utilities internal
 #' @export
 lsOS <- function(..., n=10) {
@@ -680,3 +678,20 @@ FillOutliers <- function(x, thresh) {
     }
   return(x)
 }
+
+#' Convert long-ish integers to characters without mutilation
+#' 
+#' \code{AsCharLongInt} is simply a usage of format.
+#' @param x Vector of values
+#' @return Vector of characters.
+#' @keywords utilities internal
+#' @export
+AsCharLongInt <- function(vec) {
+  allIntegers <- all((vec %% 1) == 0)
+  if(!allIntegers)
+    warning("Non-integer values supplied to AsCharLongInt")
+  if(any(abs(vec) > 2^.Machine$double.digits))
+    warning("Values passed to AsCharLongInt exceed bounds of representable integers in R") 
+  format((vec), trim=TRUE, nsmall=0, scientific=0,digits=16)
+}
+
