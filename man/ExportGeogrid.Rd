@@ -7,9 +7,9 @@
 ExportGeogrid(inFile, inVar, outFile, inCoordFile = NA, inLyr = NA)
 }
 \arguments{
-\item{inFile}{The geogrid NetCDF file.}
+\item{inFile}{A netcdf file containing the variable to be converted to a TIF.}
 
-\item{inVar}{The name of the variable to be converted.}
+\item{inVar}{The name of the variable to be converted, should exist in inFile.}
 
 \item{outFile}{The geoTiff filename to create.}
 
@@ -27,9 +27,9 @@ than 2 dimensions, e.g., for soil or snow layer variables.}
 variable into a georeferenced TIF file.
 }
 \details{
-\code{ExportGeogrid} takes a standard geogrid in NetCDF format and converts
-the specified variable to a georeferenced geoTiff for use in standard GIS
-tools.
+\code{ExportGeogrid} takes a standard geogrid in NetCDF format and
+converts the specified variable to a georeferenced geoTiff for use
+in standard GIS tools.
 }
 \examples{
 ## Export the HGT_M field from the geogrid file geo_em.d01_1km.nc
@@ -48,8 +48,9 @@ ExportGeogrid("~/wrfHydroTestCases/Fourmile_Creek/RUN.RTTESTS/OUTPUT_ALLRT_DAILY
 \seealso{
 Other geospatial: \code{\link{GetGeogridIndex}},
   \code{\link{GetGeogridSpatialInfo}},
-  \code{\link{GetPoly}}, \code{\link{GetRfc}},
-  \code{\link{GetTimeZone}}
+  \code{\link{GetPoly}}, \code{\link{GetProj}},
+  \code{\link{GetRfc}}, \code{\link{GetTimeZone}},
+  \code{\link{PolyToRaster}}
 }
 \concept{
 dataMgmt geospatial

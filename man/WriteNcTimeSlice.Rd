@@ -7,11 +7,14 @@
 WriteNcTimeSlice(dfByPosix, outPath, sliceResolution)
 }
 \arguments{
-\item{dfByPosix}{Dataframe, a data frame with the following columns: \code{site_no}, \code{dateTime}, \code{dateTimeRound}, \code{code}, \code{queryTime}, \code{discharge.cms}, and \code{variance} where dateTime is the same for the entire dataframe.}
+\item{dfByPosix}{Dataframe, a data frame with the following columns: 
+\code{site_no}, \code{dateTime}, \code{dateTimeRound}, \code{code},
+\code{queryTime}, \code{discharge.cms}, and \code{variance} where dateTime
+is the same for the entire dataframe.}
 
 \item{outPath}{Character, the path for the output netcdf file.}
 
-\item{sliceResolution}{}
+\item{sliceResolution}{The Temporal resolution.}
 }
 \description{
 Write a USGS discharge timeslice to a netcdf file.

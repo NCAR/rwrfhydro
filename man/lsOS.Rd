@@ -6,13 +6,14 @@
 \usage{
 lsOS(..., n = 10)
 }
+\arguments{
+\item{n}{n}
+}
 \value{
 dataframe
 }
 \description{
 \code{lsOS} Shorthand call for LsObjects
-Blatantly plagiarized from the following sources:
-Petr Pikal, David Hinds, Dirk Eddelbuettel, Tony Breyal.
 }
 \keyword{internal}
 \keyword{utilities}

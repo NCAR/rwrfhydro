@@ -13,6 +13,10 @@ ChanObsToTimeSlice(files, sliceResolutionMin, outputDir, na.rm = FALSE,
 \item{sliceResolutionMin}{Integer must be <= 60 and evenly divide 60.}
 
 \item{outputDir}{Character the directory where the ouput files are to be written}
+
+\item{na.rm}{Remove NA's from the timeseries?}
+
+\item{parallel}{Create the output files in parallel?}
 }
 \description{
 Process model CHANOBS to observation timeSlice format for nudging DA.
@@ -23,7 +27,10 @@ Process model CHANOBS to observation timeSlice format for nudging DA.
   sliceResolutionMin <- 12
   outputDir <- '~/WRF_Hydro/testChanobs/timeSliceTest/'
   ChanObsToTimeSlice(files, sliceResolutionMin, outputDir) 
-} 
+}
+}
+\author{
+James McCreight
 }
 \seealso{
 Other nudging: \code{\link{AddRouteLinkGage}},

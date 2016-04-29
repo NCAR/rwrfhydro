@@ -2,18 +2,19 @@
 % Please edit documentation in R/calculate_aggregations.R
 \name{CalcDailyGhcn}
 \alias{CalcDailyGhcn}
-\title{To aggregate model output hourly precipitation data into daily values 
+\title{Aggregate hourly precipitation data into daily values to be
 comparable to GHCN daily data.}
 \usage{
 CalcDailyGhcn(sg, prcp, reportTime = 700, parallel = FALSE)
 }
 \arguments{
-\item{sg}{A dataframe of the selectedGauges, it should a column called siteIds. 
-It also should have a timeZone column or if not available it should have latitude 
-and longitude which will be used to find the timeZone.
+\item{sg}{A dataframe of the selectedGauges, it should have a column called siteIds,
+which refer to the name of the station. 
 siteIds should match the the standardized GHCN IDs (for example : ACW00011604).
 See \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt}
-for a list of siteIds.}
+for a list of siteIds.
+It also should have a timeZone column or if not available it should have latitude 
+and longitude which will be used whithin the function to find the timeZone.}
 
 \item{prcp}{A dataframe of hourly data. It should have at least three columns:
 POSIXct, statArg, and DEL_ACCPRCP. POSIXct has the time in UTC, statArg has the 
@@ -24,7 +25,7 @@ Otherwise, rename the your datafram accordingly to have POSIXct, DEL_ACCPRCP and
 
 \item{reportTime}{A vector of reportTime matching with sg$siteIds. 
 reportTime is a unique reporting time for each elelment of each gauge.
-It may vary for different elemenets for a single gauge. 
+It may vary for different elements for a single gauge. 
 The report time values are retrived when reading the daily GHCN data 
 using  \code{GetGhcn2}. Note, use 700 wherever the report time is missing. 
 It will be overwritten if sg$reportTime exits.}
@@ -32,11 +33,11 @@ It will be overwritten if sg$reportTime exits.}
 \item{parallel}{Logical (DEFAULT=FALSE)}
 }
 \value{
-Daily precipitation comparable with daily GHCN data.
+A dataframe having 4 columns, the Daily precipitation comparable with daily GHCN data.
 }
 \description{
-This function inputs the model output hourly data and aggregate the  
-hourly data into daily info. GHCN gauges report data usually at 7:00 AM, 
+This function inputs the hourly forcing / model output data and aggregate then to daily.
+GHCN gauges report data usually at 7:00 AM, 
 however, that is not the case for all gauges. The reporting time may 
 even differ for the same gauge but different elements. One can obtain the 
 report time using \code{GetGhcn2}.

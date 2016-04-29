@@ -7,12 +7,25 @@
 LsObjects(pos = 1, pattern, order.by, decreasing = FALSE, head = FALSE,
   n = 5)
 }
+\arguments{
+\item{pos}{position}
+
+\item{pattern}{pattern}
+
+\item{order.by}{ordering variable}
+
+\item{decreasing}{decreasing order}
+
+\item{head}{head}
+
+\item{n}{n}
+}
 \value{
 dataframe
 }
 \description{
 \code{LsObjects} lists objects with more detailed info on type, size,
-etc. Blatantly plagiarized from the following sources:
+etc. Taken from
 Petr Pikal, David Hinds, Dirk Eddelbuettel, Tony Breyal.
 }
 \keyword{internal}

@@ -14,6 +14,8 @@ VisualizeSubsetStream(indDist, ncFile, comIds = TRUE, downstreamReExp = "",
 
 \item{comIds}{Logical, show the comIds or the link indices in the Route_Link.nc file.}
 
+\item{downstreamReExp}{Character, eliminate searching by providing the re-expressed network file}
+
 \item{...}{arguments to the function returned by VisualizeRouteLink.}
 }
 \value{
@@ -33,8 +35,8 @@ Visualize upstream or downstream links determined from GatherStreamInds
 }
 }
 \seealso{
-Other networkExpression nudging: \code{\link{GatherStreamInds}},
-  \code{\link{NtwKReExToNcdf}}, \code{\link{ReExpNetwork}},
+Other networkExpression nudging: \code{\link{NtwKReExToNcdf}},
+  \code{\link{ReExpNetwork}},
   \code{\link{ReExpressRouteLink}},
   \code{\link{ReIndexRouteLink}},
   \code{\link{VisualizeRouteLink}}

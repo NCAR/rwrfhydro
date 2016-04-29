@@ -4,10 +4,13 @@
 \alias{VisualizeRouteLink}
 \title{Visualize RouteLink.nc files.}
 \usage{
-VisualizeRouteLink(file = "Route_Link.nc", parallel = FALSE)
+VisualizeRouteLink(file = "Route_Link.nc", downstreamReExp = "",
+  parallel = FALSE)
 }
 \arguments{
 \item{file}{Character path/file to the desired Route_Link.nc netcdf file.}
+
+\item{downstreamReExp}{Character, eliminate searching by providing the re-expressed network file}
 
 \item{parallel}{Logical, use a registerred parallel backend for plyr?}
 }
@@ -72,8 +75,8 @@ foo$ggObj + ggplot2::geom_text(data=foo$rl,
 }
 }
 \seealso{
-Other networkExpression nudging: \code{\link{GatherStreamInds}},
-  \code{\link{NtwKReExToNcdf}}, \code{\link{ReExpNetwork}},
+Other networkExpression nudging: \code{\link{NtwKReExToNcdf}},
+  \code{\link{ReExpNetwork}},
   \code{\link{ReExpressRouteLink}},
   \code{\link{ReIndexRouteLink}},
   \code{\link{VisualizeSubsetStream}}

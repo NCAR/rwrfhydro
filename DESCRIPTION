@@ -13,6 +13,7 @@ License: https://github.com/mccreigh/rwrfhydro/blob/master/LICENSE.md
 Depends:
     R (>= 3.1.0)
 Imports:
+    data.table (>= 1.9.6),
     plyr (>= 1.8.1),
     grid (>= 3.1.2),
     lubridate (>= 1.3.3),
@@ -22,6 +23,7 @@ Imports:
     reshape2 (>= 1.4.1),
     foreach (>= 1.4.2),
     curl (>= 0.5),
+    RCurl (>= 1.95),  
     dataRetrieval (>= 2.1.2),
     raster (>= 2.3),
     httr (>= 0.6.1),
@@ -32,9 +34,11 @@ Suggests:
     testthat,
     knitr,
     rgdal,
+    sp,
     pander,
     doMC,
-    ptw
+    ptw,
+    rmarkdown
 BuildVignettes: false
 VignetteBuilder: knitr
 RoxygenNote: 5.0.1

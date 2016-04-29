@@ -388,7 +388,7 @@ ConvertStack2NC <- function(inStack, outFile=NULL, varName=NULL, varUnit=NULL,
     ncdf4::ncvar_put(ncFile, "Time", dtInts)
     ncdf4::nc_close(ncFile)
     if (flipY) {
-      system(paste0('ncpdq -O -a -south_north ', outfile, ' ', outfile))
+      system(paste0('ncpdq -O -a -south_north ', outFile, ' ', outFile))
     }
 }
 

@@ -49,7 +49,7 @@ MODISoptions(localArcPath="~/wrfHydroTestCases/MODIS_ARC",
 #' Here we download the relevant MODIS tiles and resample to the Fourmile Creek geogrid. The GetMODIS tool calls the MODIS-R runGdal tool to identify the required MODIS tiles to cover the domain, download the appropriate product tiles, mosaic them, and clip/resample (nearest neighbor) to the geogrid extent and resolution. The result will be a directory of processed TIF images in the outDirPath specified in MODISoptions. We specify the geogrid, a start and end date, and the MOD15A2 (FPAR/LAI) MODIS product name.
 #' 
 ## ------------------------------------------------------------------------
-GetMODIS(geogrdPath=paste0(dataPath, '/DOMAIN/geo_em.d01_1km_nlcd11.nc'), prodName="MOD15A2",  
+GetMODIS(extent=paste0(dataPath, '/DOMAIN/geo_em.d01_1km_nlcd11.nc'), prodName="MOD15A2",  
          outDir="FOURMILE_LAI", begin="2013.03.01", end="2013.07.31",
          exclList=list("Fpar_1km"="gt 100", 
                        "Lai_1km"="gt 100", 

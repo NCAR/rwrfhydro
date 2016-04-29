@@ -2,19 +2,26 @@
 % Please edit documentation in R/get_poly.R
 \name{GetRfc}
 \alias{GetRfc}
-\title{Return the RFC name for gauge locations.}
+\title{Return the RFC name for any point.}
 \usage{
-GetRfc(points)
+GetRfc(points,
+  proj4 = "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0",
+  parallel = FALSE)
 }
 \arguments{
-\item{points}{A dataframe of the gauges. The dataframe should contain at least two
+\item{points}{A dataframe of the points. The dataframe should contain at least two
 fields: "latitude" and "longitude".}
+
+\item{proj4}{Character: Projection to be used for points's dataframe.
+(DEFAULT = "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")}
+
+\item{parallel}{Logical (DEFAULT= FALSE)}
 }
 \value{
-Point dataframe with an extra column containing the RFC name for each gauge.
+Dataframe with an extra column containing the RFC name.
 }
 \description{
-\code{GetRfc} takes a dataframe of gauge locations containing at least
+\code{GetRfc} takes a dataframe of points containing at least
 two fields of latitude and longitude, overlays the points with RFC
 shapefile, and adds the RFC name as a field to the input dataframe.
 }
@@ -28,7 +35,8 @@ sg <- GetRfc(sg)
 Other geospatial: \code{\link{ExportGeogrid}},
   \code{\link{GetGeogridIndex}},
   \code{\link{GetGeogridSpatialInfo}},
-  \code{\link{GetPoly}}, \code{\link{GetTimeZone}}
+  \code{\link{GetPoly}}, \code{\link{GetProj}},
+  \code{\link{GetTimeZone}}, \code{\link{PolyToRaster}}
 }
 \concept{
 dataMgmt

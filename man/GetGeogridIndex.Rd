@@ -46,8 +46,9 @@ GetGeogridIndex(data.frame(lon=-105.54, lat=40.04),
 \seealso{
 Other geospatial: \code{\link{ExportGeogrid}},
   \code{\link{GetGeogridSpatialInfo}},
-  \code{\link{GetPoly}}, \code{\link{GetRfc}},
-  \code{\link{GetTimeZone}}
+  \code{\link{GetPoly}}, \code{\link{GetProj}},
+  \code{\link{GetRfc}}, \code{\link{GetTimeZone}},
+  \code{\link{PolyToRaster}}
 }
 \concept{
 dataGet geospatial

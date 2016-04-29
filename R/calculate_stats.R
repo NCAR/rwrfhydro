@@ -688,6 +688,10 @@ CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q
 #'   used). Date MUST be specified in POSIXct format with appropriate timezone 
 #'   (e.g., as.POSIXct("2013-05-01 00:00:00", format="\%Y-\%m-\%d \%H:\%M:\%S",
 #'   tz="UTC"))
+#' @param writeOutPairDf character path/name for file to output the data frame constructed
+#'   before calculating the statistics and various aggregations. NULL by default gives
+#'   no output. 
+#  @param fileTag 
 #' @return A new dataframe containing the model performance statistics.
 #'   
 #' @examples
@@ -717,9 +721,8 @@ CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q
 #' @concept modelEval
 #' @family modelEvaluation
 #' @export
-CalcModPerfMulti <- function (flxDf.mod, flxDf.obs, 
-                              flxCol.mod="q_cms", flxCol.obs="q_cms", 
-                              stdate=NULL, enddate=NULL) {
+CalcModPerfMulti <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q_cms", 
+                              stdate=NULL, enddate=NULL, writeOutPairDf=NULL, fileTag=NULL) {
   # Internal functions
   which.max.dt <- function(dd, qcol, dtcol) { dd[which.max(dd[,qcol]), dtcol] }
   CalcCOM.dt <- function(dd, qcol, dtcol) { dd[CalcCOM(dd[,qcol]), dtcol] }
@@ -751,15 +754,28 @@ CalcModPerfMulti <- function (flxDf.mod, flxDf.obs,
   }
   flxDf.mod <- CalcDates(flxDf.mod)
   flxDf.mod$date <- as.POSIXct(trunc(flxDf.mod$POSIXct, "days"))
+
+  if(!is.null(writeOutPairDf) && is.character(writeOutPairDf) && writeOutPairDf!='') {
+    modPerfPairDf <- flxDf.mod
+    wopdFileName <- if(!is.null(fileTag) && fileTag!='') {
+      wopdBase <- tools::file_path_sans_ext(writeOutPairDf)
+      wopdExt <- tools::file_ext(writeOutPairDf)
+      paste0(wopdBase,'.',fileTag,'.',wopdExt)
+    } else writeOutPairDf
+    print(wopdFileName)
+    save(modPerfPairDf, file=wopdFileName)
+    rm('modPerfPairDf')
+  }
+
   results <- as.data.frame(matrix(nrow = 1, ncol = 59))
   colnames(results) = c("t_n", "t_nse", "t_nselog", "t_cor", "t_rmse", "t_rmsenorm", 
-                        "t_bias", "t_msd", "t_mae", "t_errfdc", "t_errflash",
-                        "dy_n", "dy_nse", "dy_nselog", "dy_cor", "dy_rmse", 
-                        "dy_rmsenorm", "dy_bias", "dy_msd", "dy_mae", 
-                        "dy_errcom", "dy_errmaxt", "dy_errfdc", "dy_errflash",
-                        "mo_n", "mo_nse", "mo_nselog", "mo_cor", "mo_rmse", 
-                        "mo_rmsenorm", "mo_bias", "mo_msd", "mo_mae", 
-                        "mo_errcom", "mo_errmaxt",
+                      "t_bias", "t_msd", "t_mae", "t_errfdc", "t_errflash",
+                      "dy_n", "dy_nse", "dy_nselog", "dy_cor", "dy_rmse", 
+                      "dy_rmsenorm", "dy_bias", "dy_msd", "dy_mae", 
+                      "dy_errcom", "dy_errmaxt", "dy_errfdc", "dy_errflash",
+                      "mo_n", "mo_nse", "mo_nselog", "mo_cor", "mo_rmse", 
+                      "mo_rmsenorm", "mo_bias", "mo_msd", "mo_mae", 
+                      "mo_errcom", "mo_errmaxt",
                         "yr_n", "yr_bias", "yr_msd", "yr_mae", "yr_errcom", "yr_errmaxt",
                         "max10_n", "max10_nse", "max10_nselog", "max10_cor", 
                         "max10_rmse", "max10_rmsenorm", "max10_bias", 

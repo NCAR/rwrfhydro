@@ -4,14 +4,16 @@
 #' @param files Character vector path/file to CHANOBS files. 
 #' @param sliceResolutionMin Integer must be <= 60 and evenly divide 60.
 #' @param outputDir Character the directory where the ouput files are to be written
-#' 
+#' @param na.rm Remove NA's from the timeseries?
+#' @param parallel Create the output files in parallel?
 #' @examples 
 #' \dontrun{
 #'   files <- list.files('~/WRF_Hydro/testChanobs/', pattern = 'CHANOBS_DOMAIN', full.names=TRUE)
 #'   sliceResolutionMin <- 12
 #'   outputDir <- '~/WRF_Hydro/testChanobs/timeSliceTest/'
 #'   ChanObsToTimeSlice(files, sliceResolutionMin, outputDir) 
-#' } 
+#' }
+#' @author James McCreight
 #' @keywords manip IO
 #' @concept nudging 
 #' @family nudging
@@ -38,7 +40,8 @@ ChanObsToTimeSlice <- function(files, sliceResolutionMin, outputDir, na.rm=FALSE
     chobs$time_observation <-
       as.POSIXct(substr(basename(chobsFile),1,12), format='%Y%m%d%H%M', tz='UTC')
     
-
+    ## Need these names
+    ## \code{site_no}, \code{dateTime}, \code{code}, \code{queryTime}, \code{discharge.cms}
     renamer <- c('station_id'='site_no', 'time_observation'='dateTime', 'streamflow'='discharge.cms')
     chobs <- plyr::rename(chobs, renamer)
     chobs$queryTime <- lubridate::with_tz(file.mtime(chobsFile), tz='UTC')

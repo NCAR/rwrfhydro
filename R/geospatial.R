@@ -2,13 +2,13 @@
 #' 
 #' \code{ExportGeogrid} takes a NetCDF geogrid and converts the specified
 #' variable into a georeferenced TIF file.
-#' 
-#' \code{ExportGeogrid} takes a standard geogrid in NetCDF format and converts
-#' the specified variable to a georeferenced geoTiff for use in standard GIS
-#' tools.
-#' 
-#' @param inFile The geogrid NetCDF file.
-#' @param inVar The name of the variable to be converted.
+#'
+#' \code{ExportGeogrid} takes a standard geogrid in NetCDF format and
+#' converts the specified variable to a georeferenced geoTiff for use
+#' in standard GIS tools.
+#'
+#' @param inFile A netcdf file containing the variable to be converted to a TIF. 
+#' @param inVar The name of the variable to be converted, should exist in inFile.
 #' @param outFile The geoTiff filename to create.
 #' @param inCoordFile (OPTIONAL) The netcdf file containing the lat/lon
 #'   coordinates if they are not included in the inFile. This is useful, for
@@ -37,35 +37,35 @@
 #' @family geospatial
 #' @export
 ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, inLyr=NA) {
-	# Check packages
-    if (!(require("rgdal") & require("raster") & require("ncdf4") )) {
-        stop("Required packages not found. Must have R packages: rgdal (requires GDAL system install), raster, ncdf4")
-    }
-
+  # Check packages
+  if (!(require("rgdal") & require("raster") & require("ncdf4") )) {
+    stop("Required packages not found. Must have R packages: rgdal (requires GDAL system install), raster, ncdf4")
+  }
+  
   inNC <- tryCatch(suppressWarnings(ncdf4::nc_open(inFile)),
-                        error=function(cond) {message(cond); return(NA)})
-
+                   error=function(cond) {message(cond); return(NA)})
+  
   if (!all(is.na(inNC))){
-  inNCVar <- ncdf4::ncvar_get(inNC, inVar)
-  if (!is.na(inLyr)) inNCVar <- inNCVar[,inLyr,]
-	varList <- names(inNC$var)
+    inNCVar <- ncdf4::ncvar_get(inNC, inVar)
+    if (!is.na(inLyr)) inNCVar <- inNCVar[,inLyr,]
+    varList <- names(inNC$var)
   }else{
     inNCVar<-inFile
   }
-	# Data types
-	typlist <- list("byte"="Byte",
-					"short"="Int16",
-					"int"="Int32",
-					"long"="Int32",
-					"float"="Float32",
-					"real"="Float32",
-					"double"="Float64",
-					"ubyte"="qmin_cfs",
-					"ushort"="UInt16",
-					"uint"="UInt32",
-					"int64"="Int64",
-					"uint64"="UInt64")
-	# Get coords
+  # Data types
+  typlist <- list("byte"="Byte",
+                  "short"="Int16",
+                  "int"="Int32",
+                  "long"="Int32",
+                  "float"="Float32",
+                  "real"="Float32",
+                  "double"="Float64",
+                  "ubyte"="qmin_cfs",
+                  "ushort"="UInt16",
+                  "uint"="UInt32",
+                  "int64"="Int64",
+                  "uint64"="UInt64")
+  # Get coords
   if (is.na(inCoordFile)) {
     coordNC <- inNC
     coordvarList <- varList
@@ -73,84 +73,84 @@ ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, inLyr=NA) {
     coordNC <- ncdf4::nc_open(inCoordFile)
     coordvarList <- names(coordNC$var)
   }
-	if ("XLONG_M" %in% coordvarList & "XLAT_M" %in% coordvarList) {
-		inNCLon <- ncdf4::ncvar_get(coordNC, "XLONG_M")
-		inNCLat <- ncdf4::ncvar_get(coordNC, "XLAT_M")
-	} else if ("XLONG" %in% coordvarList & "XLAT" %in% coordvarList) {
-		inNCLon <- ncdf4::ncvar_get(coordNC, "XLONG")
-		inNCLat <- ncdf4::ncvar_get(coordNC, "XLAT")
-	} else if ("lon" %in% coordvarList & "lat" %in% coordvarList) {
-		inNCLon <- ncdf4::ncvar_get(coordNC, "lon")
-		inNCLat <- ncdf4::ncvar_get(coordNC, "lat")
-	} else {
-		stop('Error: Latitude and longitude fields not found (tried: XLAT_M/XLONG_M, XLAT/XLONG, lat/lon')
-	}
-	# Reverse column order to get UL in UL
-	x <- as.vector(inNCLon[,ncol(inNCLon):1])
-	y <- as.vector(inNCLat[,ncol(inNCLat):1])
-	#coords <- data.frame(lon=x, lat=y)
-	#coordinates(coords) <- c("lon", "lat")
-	#proj4string(coords) <- CRS("+proj=longlat +a=6370000 +b=6370000 +no_defs")
-	coords <- as.matrix(cbind(x, y))
-	# Get geogrid and projection info
-	map_proj <- ncdf4::ncatt_get(coordNC, varid=0, attname="MAP_PROJ")$value
-	cen_lat <- ncdf4::ncatt_get(coordNC, varid=0, attname="CEN_LAT")$value
-	cen_lon <- ncdf4::ncatt_get(coordNC, varid=0, attname="STAND_LON")$value
-	truelat1 <- ncdf4::ncatt_get(coordNC, varid=0, attname="TRUELAT1")$value
-	truelat2 <- ncdf4::ncatt_get(coordNC, varid=0, attname="TRUELAT2")$value
-	if (map_proj==1) {
-		geogrd.proj <- paste0("+proj=lcc +lat_1=",
+  if ("XLONG_M" %in% coordvarList & "XLAT_M" %in% coordvarList) {
+    inNCLon <- ncdf4::ncvar_get(coordNC, "XLONG_M")
+    inNCLat <- ncdf4::ncvar_get(coordNC, "XLAT_M")
+  } else if ("XLONG" %in% coordvarList & "XLAT" %in% coordvarList) {
+    inNCLon <- ncdf4::ncvar_get(coordNC, "XLONG")
+    inNCLat <- ncdf4::ncvar_get(coordNC, "XLAT")
+  } else if ("lon" %in% coordvarList & "lat" %in% coordvarList) {
+    inNCLon <- ncdf4::ncvar_get(coordNC, "lon")
+    inNCLat <- ncdf4::ncvar_get(coordNC, "lat")
+  } else {
+    stop('Error: Latitude and longitude fields not found (tried: XLAT_M/XLONG_M, XLAT/XLONG, lat/lon')
+  }
+  # Reverse column order to get UL in UL
+  x <- as.vector(inNCLon[,ncol(inNCLon):1])
+  y <- as.vector(inNCLat[,ncol(inNCLat):1])
+  #coords <- data.frame(lon=x, lat=y)
+  #coordinates(coords) <- c("lon", "lat")
+  #proj4string(coords) <- CRS("+proj=longlat +a=6370000 +b=6370000 +no_defs")
+  coords <- as.matrix(cbind(x, y))
+  # Get geogrid and projection info
+  map_proj <- ncdf4::ncatt_get(coordNC, varid=0, attname="MAP_PROJ")$value
+  cen_lat <- ncdf4::ncatt_get(coordNC, varid=0, attname="CEN_LAT")$value
+  cen_lon <- ncdf4::ncatt_get(coordNC, varid=0, attname="STAND_LON")$value
+  truelat1 <- ncdf4::ncatt_get(coordNC, varid=0, attname="TRUELAT1")$value
+  truelat2 <- ncdf4::ncatt_get(coordNC, varid=0, attname="TRUELAT2")$value
+  if (map_proj==1) {
+    geogrd.proj <- paste0("+proj=lcc +lat_1=",
                           truelat1, " +lat_2=", truelat2, " +lat_0=",
                           cen_lat, " +lon_0=", cen_lon,
                           " +x_0=0 +y_0=0 +a=6370000 +b=6370000 +units=m +no_defs")
-	#geogrd.crs <- CRS(geogrd.proj)
-    } else {
-		stop('Error: Projection type not supported (currently this tool only works for Lambert Conformal Conic projections).')
-	}
-	dx <- ncdf4::ncatt_get(coordNC, varid=0, attname="DX")$value
-	dy <- ncdf4::ncatt_get(coordNC, varid=0, attname="DY")$value
-	if ( dx != dy ) {
-		stop(paste0('Error: Asymmetric grid cells not supported. DX=', dx, ', DY=', dy))
-	}
-	#coords.proj <- spTransform(coords, geogrd.crs)
-	projcoords <- rgdal::project(coords, geogrd.proj)
-	ul <- projcoords[1,]
-	# Define geo transform:
-	# x coord of UL corner of UL cell
-	gt0 = ul[1] - dx/2.0
-	# x pixel resolution
-	gt1 = dx
-	# x rotation
-	gt2 = 0.0
-	# y coord of UL corner of UL cell
-	gt3 = ul[2] + dy/2.0
-	# y rotation
-	gt4 = 0.0
-	# y pixel resolution, should be negative
-	gt5 = -dy
-	gt = c(gt0,gt1,gt2,gt3,gt4,gt5)
-	# Setup temp geotif
-	d.drv <- new("GDALDriver", "GTiff")
-
-	if (!all(is.na(inNC))) {
-	  typ<-typlist[[inNC$var[[inVar]]$prec]]
-	  }else{
-	  typ<-typlist[7]
-	  }
-	tds.out <- new("GDALTransientDataset", driver = d.drv,
-				   rows = dim(inNCVar)[2], cols = dim(inNCVar)[1],
-				   bands = 1, type = typ)
-	.Call("RGDAL_SetGeoTransform", tds.out, gt, PACKAGE = "rgdal")
-	.Call("RGDAL_SetProject", tds.out, geogrd.proj, PACKAGE = "rgdal")
-	# Prep NC variable
-	inNCVarRast <- raster::as.matrix(raster::raster(inNCVar))
-	inNCVarRast <- inNCVarRast[,ncol(inNCVarRast):1]
-	# Insert data and export geotiff
-	rgdal::putRasterData(tds.out, as.matrix(inNCVarRast))
-	rgdal::saveDataset(tds.out, outFile)
-	rgdal::GDAL.close(tds.out)
-	if (!all(is.na(inNC)))  ncdf4::nc_close(inNC)
-	if (!is.na(inCoordFile)) ncdf4::nc_close(coordNC)
+    #geogrd.crs <- CRS(geogrd.proj)
+  } else {
+    stop('Error: Projection type not supported (currently this tool only works for Lambert Conformal Conic projections).')
+  }
+  dx <- ncdf4::ncatt_get(coordNC, varid=0, attname="DX")$value
+  dy <- ncdf4::ncatt_get(coordNC, varid=0, attname="DY")$value
+  if ( dx != dy ) {
+    stop(paste0('Error: Asymmetric grid cells not supported. DX=', dx, ', DY=', dy))
+  }
+  #coords.proj <- spTransform(coords, geogrd.crs)
+  projcoords <- rgdal::project(coords, geogrd.proj)
+  ul <- projcoords[1,]
+  # Define geo transform:
+  # x coord of UL corner of UL cell
+  gt0 = ul[1] - dx/2.0
+  # x pixel resolution
+  gt1 = dx
+  # x rotation
+  gt2 = 0.0
+  # y coord of UL corner of UL cell
+  gt3 = ul[2] + dy/2.0
+  # y rotation
+  gt4 = 0.0
+  # y pixel resolution, should be negative
+  gt5 = -dy
+  gt = c(gt0,gt1,gt2,gt3,gt4,gt5)
+  # Setup temp geotif
+  d.drv <- new("GDALDriver", "GTiff")
+  
+  if (!all(is.na(inNC))) {
+    typ<-typlist[[inNC$var[[inVar]]$prec]]
+  }else{
+    typ<-typlist[7]
+  }
+  tds.out <- new("GDALTransientDataset", driver = d.drv,
+                 rows = dim(inNCVar)[2], cols = dim(inNCVar)[1],
+                 bands = 1, type = typ)
+  .Call("RGDAL_SetGeoTransform", tds.out, gt, PACKAGE = "rgdal")
+  .Call("RGDAL_SetProject", tds.out, geogrd.proj, PACKAGE = "rgdal")
+  # Prep NC variable
+  inNCVarRast <- raster::as.matrix(raster::raster(inNCVar))
+  inNCVarRast <- inNCVarRast[,ncol(inNCVarRast):1]
+  # Insert data and export geotiff
+  rgdal::putRasterData(tds.out, as.matrix(inNCVarRast))
+  rgdal::saveDataset(tds.out, outFile)
+  rgdal::GDAL.close(tds.out)
+  if (!all(is.na(inNC)))  ncdf4::nc_close(inNC)
+  if (!is.na(inCoordFile)) ncdf4::nc_close(coordNC)
 }
 
 #' Get geogrid cell indices from lat/lon (or other) coordinates.
@@ -360,3 +360,60 @@ GetGeogridSpatialInfo <- function(geoFile){
   }
   return(dataOut)
 } 
+
+
+
+
+#' Pull projection information from geogrid file 
+#'  
+#' \code{GetProj} Pull projection information of WRF-Hydro
+#'  modeling domain from geogrid file.
+#'  
+#' @param geoFile The geogrid file information is being pulled from
+#' @return Character Projection
+#' @examples
+#' \dontrun{
+#' proj4 <- GetProj('./geo_em.d02.nc')
+#' }
+#' @keywords IO
+#' @concept geospatial getData
+#' @family geospatial
+#' @export
+GetProj <- function(geoFile){
+  
+  # First check for existence of file
+  if(!file.exists(geoFile)){
+    warning(paste0('ERROR: Geogrid file: ',geoFile,' not found.'))
+    return(0)
+  }
+  
+  # open the geoFile
+  coordNC <- tryCatch(suppressWarnings(ncdf4::nc_open(geoFile)),
+                      error=function(cond) {message(cond); return(NA)})
+  
+  # Get geogrid and projection info
+  mapProj <- ncdf4::ncatt_get(coordNC, varid=0, attname="MAP_PROJ")$value
+  
+  #Only support lambert conformal for now
+  
+  if(mapProj != 1){
+    
+    warning('ERROR: Geogrid either missing MAP_PROJ or contains invalid value.')
+    warning('ERROR: Only MAP_PROJ of 1 (lambert conformal) is supported at this time')
+    return(0)
+    
+  }else{
+    
+  cen_lat <- ncdf4::ncatt_get(coordNC, varid=0, attname="CEN_LAT")$value
+  cen_lon <- ncdf4::ncatt_get(coordNC, varid=0, attname="STAND_LON")$value
+  truelat1 <- ncdf4::ncatt_get(coordNC, varid=0, attname="TRUELAT1")$value
+  truelat2 <- ncdf4::ncatt_get(coordNC, varid=0, attname="TRUELAT2")$value
+  
+  ncdf4::nc_close(coordNC)
+  geogrd.proj <- paste0("+proj=lcc +lat_1=",
+                          truelat1, " +lat_2=", truelat2, " +lat_0=",
+                          cen_lat, " +lon_0=", cen_lon,
+                          " +x_0=0 +y_0=0 +a=6370000 +b=6370000 +units=m +no_defs")
+  return(geogrd.proj)
+  }
+}
