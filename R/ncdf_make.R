@@ -10,7 +10,9 @@
 #' @param overwrite      Logical, overwrite (i.e. clobber in netcdf parlance) existing 
 #' file? Otherwise, the file will be appended if existing and correct (unlimited) dims 
 #' are extended. 
-#' @param force_v4       Logical, make netcdf version 4 files. 
+#' @param force_v4       Logical, make netcdf version 4 files.
+#' @param compLev        integer, Optional compression level. If not specified,
+#'                       no compression used. 
 #' @return Returns the filename invisibly, if successful.
 #' @examples
 #' # Example 1 - Basic write. 
@@ -99,7 +101,8 @@
 MkNcdf <- function( varList, filename, 
                     globalAttList=NULL,
                     overwrite=FALSE, 
-                    force_v4=TRUE ) {   
+                    force_v4=TRUE,
+                    compLev=-1) {   
 
   names(varList) <- plyr::laply(varList,'[[', 'name')
   
@@ -124,8 +127,14 @@ MkNcdf <- function( varList, filename,
       
       dimList <- plyr::llply( var$dimensionList, doDimDef )
       
-      ncdf4::ncvar_def(var$name, var$units, dimList, var$missing,
-                       longname=var$longname, prec=var$precision)
+      if (compLev == -1){
+        ncdf4::ncvar_def(var$name, var$units, dimList, var$missing,
+                         longname=var$longname, prec=var$precision)
+      } else {
+        ncdf4::ncvar_def(var$name, var$units, dimList, var$missing,
+                         longname=var$longname, prec=var$precision,
+                         compression=compLev)
+      }
     }
     
     defVarList <- plyr::llply(varList, doDefVar)    

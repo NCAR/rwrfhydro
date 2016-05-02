@@ -173,7 +173,7 @@ genWghtFile <- function(geoFile,nxIn,nyIn,latSrc,lonSrc,method,srcDummy,
   if((method != 1) & (method != 3) & (method != 5)){
     stop(paste0(method,' Not a valid integer method value.'))
   }
-  
+
   #Open geogrid file and extract 2D lat/lon 
   ncid <- ncdf4::nc_open(geoFile)
   latGeo <- ncdf4::ncvar_get(ncid,'XLAT_M')
@@ -183,7 +183,7 @@ genWghtFile <- function(geoFile,nxIn,nyIn,latSrc,lonSrc,method,srcDummy,
   nxGeo <- as.integer(nxGeo)
   nyGeo <- as.integer(nyGeo)
   ncdf4::nc_close(ncid)
-  
+
   #Establish variables for generation of weights.
   nxIn <- as.integer(nxIn)
   nyIn <- as.integer(nyIn)
