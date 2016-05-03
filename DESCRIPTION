@@ -4,7 +4,7 @@ Title: R tools for the WRF Hydro Model
 Version: 1.0.9000
 Date: 2015-05-01
 Authors@R: c(
-    person("James", "McCreight", email = "", role = c("aut","cre")),
+    person("James", "McCreight", email = "jamesmcc@ucar.edu", role = c("aut","cre")),
     person("Aubrey", "Dugger",   email = "",  role = "aut"),
     person("Arezoo", "RafieeiNasab",   email = "",  role = "aut"),
     person("Logan", "Karsten",   email = "",  role = "aut"),
