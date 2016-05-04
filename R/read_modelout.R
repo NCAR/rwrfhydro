@@ -448,7 +448,8 @@ ReadRtout <- function(pathOutdir, pathDomfile,
                                                    full.names=TRUE))
     if (length(rtoutFilesList)==0) stop("No matching files in specified directory.")
     # Setup RTOUT variables to use
-    variableNames <- c('QSTRMVOLRT','SFCHEADSUBRT','QBDRYRT', 'ZWATTABLRT')
+    variableNames <- c('QSTRMVOLRT', 'SFCHEADSUBRT', 'sfcheadsubrt',
+                       'QBDRYRT', 'ZWATTABLRT', 'zwattablrt')
     fileVars <- names(ncdump(unlist(rtoutFilesList)[1], quiet=TRUE)$var)
     variableNames <- variableNames[variableNames %in% fileVars]
     rtoutVars <- as.list( variableNames )
@@ -471,6 +472,8 @@ ReadRtout <- function(pathOutdir, pathDomfile,
                                   filesList=rtoutFilesList, parallel=FALSE )
         }
     outDf <- ReshapeMultiNcdf(rtoutDF)
+    names(outDf)[names(outDf)=="sfcheadsubrt"] <- 'SFCHEADSUBRT'
+    names(outDf)[names(outDf)=="zwattablrt"] <- 'ZWATTABLRT'
     outDf
 }
 

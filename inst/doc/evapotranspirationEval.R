@@ -19,7 +19,7 @@ library("rwrfhydro")
 #' 
 #' Set a data path to the Fourmile Creek test case.
 ## ------------------------------------------------------------------------
-dataPath <- '~/wrfHydroTestCases/Fourmile_Creek'
+dataPath <- '~/wrfHydroTestCases/Fourmile_Creek_testcase_v2.0/'
 
 #' 
 #' 
@@ -29,7 +29,7 @@ dataPath <- '~/wrfHydroTestCases/Fourmile_Creek'
 #' 
 #' Generate the list of filenames for the GetMultiNcdf tool by providing the pathname to the model OUTPUT directory and the filename pattern to match (in this case we want the LDASOUT files).
 ## ------------------------------------------------------------------------
-lsmFiles <- list.files(path=paste0(dataPath, '/RUN.RTTESTS/OUTPUT_ALLRT_DAILY'), 
+lsmFiles <- list.files(path=paste0(dataPath, '/run.FullRouting'), 
                        pattern=glob2rx('*LDASOUT*'), full.names=TRUE)
 flList <- list(lsm=lsmFiles)
 
@@ -130,7 +130,7 @@ pander::pandoc.table(CalcModPerf(modLsm.allrt.niw, obsFlux1d.usnr1,
 #' 
 #' Provide the new pathname to the hourly output. We will limit the LDASIN data to just May 2013 since the FORCING directory contains a full year's worth of data.
 ## ------------------------------------------------------------------------
-lsmFiles <- list.files(path=paste0(dataPath,'/RUN.FLUXCOMP/OUTPUT_ALLRT_MAY13_HOURLY'), 
+lsmFiles <- list.files(path=paste0(dataPath,'/run.FluxEval'), 
                        pattern=glob2rx('*LDASOUT*'), full.names=TRUE)
 forcFiles <- list.files(path=paste0(dataPath, '/FORCING'), pattern=glob2rx('201305*LDASIN*'), 
                         full.names=TRUE)

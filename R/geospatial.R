@@ -167,7 +167,7 @@ ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, inLyr=NA) {
 #' @param ncfile The full pathname to the WRF-Hydro geogrid domain file.
 #' @param x The column name for the x coordinate value (DEFAULT="lon")
 #' @param y The column name for the y coordinate value (DEFAULT="lat")
-#' @param id The unique ID field value (DEFAULT="id")
+#' @param id The unique ID field value (OPTIONAL)
 #' @param proj4 The proj4 string for the x/y coordinate projection 
 #'   (DEFAULT='+proj=longlat +datum=WGS84')
 #' @return A dataframe containing the i (we=west->east), j (sn=south->north)
@@ -184,7 +184,7 @@ ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, inLyr=NA) {
 #' @concept dataGet geospatial
 #' @family geospatial
 #' @export
-GetGeogridIndex <- function(xy, ncfile, x="lon", y="lat", id="id",
+GetGeogridIndex <- function(xy, ncfile, x="lon", y="lat", id=NULL,
                             proj4='+proj=longlat +datum=WGS84') {
   # Create temp geogrid tif
   tmpfile <- tempfile(fileext=".tif")
@@ -199,7 +199,7 @@ GetGeogridIndex <- function(xy, ncfile, x="lon", y="lat", id="id",
   outDf$we <- outDf$col
   # Change row count from N->S to S->N
   outDf$sn <- dim(geohgt)[1] - outDf$row + 1
-  outDf$id <- xy[,id]
+  if (!is.null(id)) outDf$id <- xy[,id]
   outDf$row<-NULL
   outDf$col<-NULL
   outDf
