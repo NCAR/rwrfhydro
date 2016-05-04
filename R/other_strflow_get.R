@@ -34,17 +34,20 @@ GetCoDwrData <- function(siteIDs, paramCodes, timeInt=1,
   # Initialize dataframe
   data <- data.frame()
   for (siteID in siteIDs) {
-    # The DWR server seems to fail when more than 2 parameters given, so we'll loop if more than 2.
+    # The DWR server seems to fail when more than 2 parameters given, 
+    # so we'll loop if more than 2.
     i <- 1
     while (i <= length(paramCodes)) {
       # Build URL
-      fullurl <- paste0(server, "ID=", siteID, "&MTYPE=", paste(paramCodes[i:min(i+1, length(paramCodes))], collapse=","),
+      fullurl <- paste0(server, "ID=", siteID, "&MTYPE=", 
+                        paste(paramCodes[i:min(i+1, length(paramCodes))], collapse=","),
                       "&INTERVAL=", timeList[[timeInt]],
                       "&START=", startDate, "&END=", endDate)
       # Get data and parse (tab-delim)
       tmp <- read.delim(fullurl, comment.char="#", sep="\t", 
                         stringsAsFactors=FALSE,
-                        na.strings=c("B","Bw","Dis","E","Eqp","Ice","M","na","nf","Prov","Rat","S","Ssn","wtr op","----"))
+                        na.strings=c("B","Bw","Dis","E","Eqp","Ice","M","na",
+                                     "nf","Prov","Rat","S","Ssn","wtr op","----"))
       if (length(grep("DOCTYPE.html.PUBLIC",names(tmp))) > 0) {
         print(fullurl)
         stop("Error returned from the DWR server.")
@@ -56,7 +59,8 @@ GetCoDwrData <- function(siteIDs, paramCodes, timeInt=1,
     data <- plyr::rbind.fill(data, datatmp)
   }
   # Set POSIXct
-  data$POSIXct <- as.POSIXct(format(as.POSIXct(data$Date.Time, format="%Y-%m-%d %H:%M", tz="America/Denver"),
+  data$POSIXct <- as.POSIXct(format(as.POSIXct(data$Date.Time, format="%Y-%m-%d %H:%M", 
+                                               tz="America/Denver"),
                         tz="UTC"), tz="UTC")
   data <- subset(data, !is.na(data$POSIXct))
   data$wy <- CalcWaterYear(data$POSIXct)

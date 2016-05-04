@@ -19,12 +19,12 @@ library("rwrfhydro")
 #' 
 ## ----, echo=FALSE--------------------------------------------------------
 options(width = 190)
-#library(printr)
+library(printr)
 
 #' 
 #' Set a data path to the Fourmile Creek test case.
 ## ------------------------------------------------------------------------
-dataPath <- '~/wrfHydroTestCases/Fourmile_Creek/'
+dataPath <- '~/wrfHydroTestCases/Fourmile_Creek_testcase_v2.0/'
 
 #' 
 #' 
@@ -32,12 +32,12 @@ dataPath <- '~/wrfHydroTestCases/Fourmile_Creek/'
 #' 
 #' Model 1: Only channel routing turned on (hourly model run).
 ## ------------------------------------------------------------------------
-modStrd.chrt.fc <- ReadFrxstPts(paste0(dataPath, '/RUN.RTTESTS/OUTPUT_CHRT_DAILY/frxst_pts_out.txt'))
+modStrd.chrt.fc <- ReadFrxstPts(paste0(dataPath, '/run.ChannelRouting/frxst_pts_out.txt'))
 
 #' 
 #' Model 2: All WRF-Hydro routing options turned on (hourly model run).
 ## ------------------------------------------------------------------------
-modStrd.allrt.fc <- ReadFrxstPts(paste0(dataPath, '/RUN.RTTESTS/OUTPUT_ALLRT_DAILY/frxst_pts_out.txt'))
+modStrd.allrt.fc <- ReadFrxstPts(paste0(dataPath, '/run.FullRouting/frxst_pts_out.txt'))
 
 #' 
 #' USGS gage observed data at 5-minute intervals. Find the nearest gage to the forecast point in the above files. (The following approach can be used when multiple forecast points are output by the model. The ddply function essentially performs a loop over unique st_id passing the corresponding subset of the data frame modStrd.chrt.fc to the function which just returns the first row's lon and lat.)
@@ -126,8 +126,8 @@ CalcModPerf(modStrd.chrt.fc, obsStr5min.fc)
 
 #' 
 ## ----, , results = "asis", echo=FALSE------------------------------------
-#library(pander)
-#pander::pandoc.table(CalcModPerf(modStrd.chrt.fc, obsStr5min.fc),split.table=Inf)
+library(pander)
+pander::pandoc.table(CalcModPerf(modStrd.chrt.fc, obsStr5min.fc),split.table=Inf)
 
 #' 
 ## ----, results='hide'----------------------------------------------------
@@ -135,7 +135,7 @@ CalcModPerf(modStrd.allrt.fc, obsStr5min.fc)
 
 #' 
 ## ----, , results = "asis", echo=FALSE------------------------------------
-#pander::pandoc.table(CalcModPerf(modStrd.allrt.fc, obsStr5min.fc), split.table=Inf)
+pander::pandoc.table(CalcModPerf(modStrd.allrt.fc, obsStr5min.fc), split.table=Inf)
 
 #' 
 #' Help on CalcModPerf gives details on the individual statistics returned.
@@ -157,7 +157,7 @@ CalcFdcPerf(modStrd.allrt.fc, obsStr5min.fc)
 
 #' 
 ## ----, , results = "asis", echo=FALSE------------------------------------
-#pander::pandoc.table(CalcFdcPerf(modStrd.allrt.fc, obsStr5min.fc),split.table=Inf)
+pander::pandoc.table(CalcFdcPerf(modStrd.allrt.fc, obsStr5min.fc),split.table=Inf)
 
 #' 
 #' Again, help on CalcFdcPerf gives details on the individual statistics returned.

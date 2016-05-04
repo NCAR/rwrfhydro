@@ -35,7 +35,8 @@
 #' @concept dataGet
 #' @family obsDataReads
 #' @export
-ReadUsgsGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, timeZone=NULL) {
+ReadUsgsGage <- function(pathGageData, returnMetric=TRUE, 
+                         returnEnglish=TRUE, timeZone=NULL) {
 
   outDf <- read.table(pathGageData, sep="\t", na.strings=c("","Rat","Mnt"),
                       stringsAsFactors=F, comment.char="#")
@@ -80,7 +81,8 @@ ReadUsgsGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, ti
      "%Y-%m-%d %H:%M" # instantaneous
   } else { "%Y-%m-%d" }  # daily avg
 
-  outDf$POSIXct <- as.POSIXct(as.character(outDf$datetime), format=usgsTimeFmt, tz=timeZone)
+  outDf$POSIXct <- as.POSIXct(as.character(outDf$datetime), format=usgsTimeFmt, 
+                              tz=timeZone)
 
   outDf$wy <- CalcWaterYear(outDf$POSIXct)
   #outDf$wy <- ifelse(as.numeric(format(outDf$POSIXct,"%m"))>=10,
@@ -147,11 +149,14 @@ ReadUsgsGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, ti
 #' @concept dataGet
 #' @family obsDataReads
 #' @export
-ReadCoDwrGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, timeZone="America/Denver") {
-  # Manually remove commented lines since cannot automate due to mismatch between column names and column count
+ReadCoDwrGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, 
+                          timeZone="America/Denver") {
+  # Manually remove commented lines since cannot automate due to mismatch 
+  # between column names and column count
   ncomm <- as.integer(system(paste('grep "#"', pathGageData, '| wc -l'), intern=TRUE))
   outDf <- read.table(pathGageData, sep="\t", stringsAsFactors=F, skip=ncomm+1,
-                      na.strings=c("B","Bw","Dis","E","Eqp","Ice","M","na","nf","Prov","Rat","S","Ssn","wtr op","----"))
+                      na.strings=c("B","Bw","Dis","E","Eqp","Ice","M","na","nf","Prov",
+                                   "Rat","S","Ssn","wtr op","----"))
   # Deal with header (not 1:1 with data columns)
   outDf.tmp <- read.table(pathGageData, sep="\t", na.strings=c(""),
                            stringsAsFactors=F, skip=ncomm, nrows=1)
@@ -161,7 +166,8 @@ ReadCoDwrGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, t
     outDf.head[i] <- unlist(strsplit(outDf.tmp[1,i], split=" ", fixed=TRUE))[1]
     outDf.units[i] <- unlist(strsplit(outDf.tmp[1,i], split=" ", fixed=TRUE))[2]
   }
-  # Deal with duplicate "Date/Time" header. We need to know the index so we can remove it from "units" too.
+  # Deal with duplicate "Date/Time" header. We need to know the index so 
+  # we can remove it from "units" too.
   tmp<-grep("Date/Time", outDf.head, fixed=TRUE)
   outDf.head[tmp[2]]<-"datetime"
   outDf.head<-c(outDf.head[1:(tmp[1]-1)], outDf.head[(tmp[1]+1):length(outDf.head)])
@@ -192,12 +198,14 @@ ReadCoDwrGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, t
     }
   }
   # Deal with time
-  #if (is.null(timeZone)) { timeZone <- "MST" } # assuming local time for all gages, no daylight savings?
+  #if (is.null(timeZone)) { timeZone <- "MST" } 
+  # assuming local time for all gages, no daylight savings?
   usgsTimeFmt <- if (grepl(" ",outDf$datetime[1])) {
     "%Y-%m-%d %H:%M" # instantaneous
   } else { "%Y-%m-%d" }  # daily avg
   outDf$POSIXct <- as.POSIXct(as.character(outDf$datetime), format=usgsTimeFmt, tz=timeZone)
-  # Screen out NA times, since CO DWR leaves in null values for the missing daylight savings hour.
+  # Screen out NA times, since CO DWR leaves in null values for the 
+  # missing daylight savings hour.
   outDf <- subset(outDf, !is.na(outDf$POSIXct))
   outDf$wy <- CalcWaterYear(outDf$POSIXct)
   
@@ -257,13 +265,23 @@ ReadAmerifluxNC <- function(pathFluxData, timeZone=NULL, utcOffset=NULL) {
     ncdf4::nc_close(ncFile)
     if (is.null(utcOffset)) {
       outDf$POSIXct <- as.POSIXct( paste(as.character(outDf$YEAR), as.character(outDf$DOY),
-                                         as.character(ifelse(substr(outDf$HRMIN,1,nchar(outDf$HRMIN)-2)=='', "00", substr(outDf$HRMIN,1,nchar(outDf$HRMIN)-2))),
-                                         as.character(substr(outDf$HRMIN,nchar(outDf$HRMIN)-1,nchar(outDf$HRMIN))), sep="-"),
+                                         as.character(ifelse(substr(outDf$HRMIN,1,
+                                                                    nchar(outDf$HRMIN)-2)=='', 
+                                                             "00", substr(outDf$HRMIN,1,
+                                                                      nchar(outDf$HRMIN)-2))),
+                                         as.character(substr(outDf$HRMIN,
+                                                             nchar(outDf$HRMIN)-1,
+                                                             nchar(outDf$HRMIN))), sep="-"),
                                    format="%Y-%j-%H-%M", tz=timeZone )
     } else {
       outDf$POSIXct <- as.POSIXct( paste(as.character(outDf$YEAR), as.character(outDf$DOY),
-                                         as.character(ifelse(substr(outDf$HRMIN,1,nchar(outDf$HRMIN)-2)=='', "00", substr(outDf$HRMIN,1,nchar(outDf$HRMIN)-2))),
-                                         as.character(substr(outDf$HRMIN,nchar(outDf$HRMIN)-1,nchar(outDf$HRMIN))), sep="-"),
+                                         as.character(ifelse(substr(outDf$HRMIN,1,
+                                                                    nchar(outDf$HRMIN)-2)=='', 
+                                                             "00", substr(outDf$HRMIN,1,
+                                                                      nchar(outDf$HRMIN)-2))),
+                                         as.character(substr(outDf$HRMIN,
+                                                             nchar(outDf$HRMIN)-1,
+                                                             nchar(outDf$HRMIN))), sep="-"),
                                    format="%Y-%j-%H-%M", tz="UTC" ) - (utcOffset*3600)
     }
     outDf$wy <- CalcWaterYear(outDf$POSIXct)
@@ -310,18 +328,25 @@ ReadAmerifluxCSV <- function(pathFluxData, timeZone=NULL, utcOffset=NULL) {
     if ((is.null(utcOffset)) & (is.null(timeZone))) {
       stop("No time zone or UTC offset provided. Please determine the site's local time zone and re-run the tool.")
     }
-    outDf <- read.table(pathFluxData, sep=",", skip=20, na.strings=c(-6999,-9999), strip.white=T)
+    outDf <- read.table(pathFluxData, sep=",", skip=20, na.strings=c(-6999,-9999), 
+                        strip.white=T)
     outDf.head <- read.table(pathFluxData, sep=",", skip=17, nrows=1, strip.white=T)
     colnames(outDf) <- as.matrix(outDf.head)[1,]
     if (is.null(utcOffset)) {
       outDf$POSIXct <- as.POSIXct( paste(as.character(outDf$YEAR), as.character(outDf$DOY),
-                        as.character(ifelse(substr(outDf$HRMIN,1,nchar(outDf$HRMIN)-2)=='', "00", substr(outDf$HRMIN,1,nchar(outDf$HRMIN)-2))),
-                        as.character(substr(outDf$HRMIN,nchar(outDf$HRMIN)-1,nchar(outDf$HRMIN))), sep="-"),
+                        as.character(ifelse(substr(outDf$HRMIN,1,nchar(outDf$HRMIN)-2)=='', 
+                                            "00", substr(outDf$HRMIN,1,nchar(outDf$HRMIN)-2))),
+                        as.character(substr(outDf$HRMIN,nchar(outDf$HRMIN)-1,
+                                            nchar(outDf$HRMIN))), sep="-"),
                         format="%Y-%j-%H-%M", tz=timeZone )
     } else {
       outDf$POSIXct <- as.POSIXct( paste(as.character(outDf$YEAR), as.character(outDf$DOY),
-                                         as.character(ifelse(substr(outDf$HRMIN,1,nchar(outDf$HRMIN)-2)=='', "00", substr(outDf$HRMIN,1,nchar(outDf$HRMIN)-2))),
-                                         as.character(substr(outDf$HRMIN,nchar(outDf$HRMIN)-1,nchar(outDf$HRMIN))), sep="-"),
+                                         as.character(ifelse(substr(outDf$HRMIN,1,
+                                                                    nchar(outDf$HRMIN)-2)=='', 
+                                                             "00", substr(outDf$HRMIN,1,
+                                                                      nchar(outDf$HRMIN)-2))),
+                                         as.character(substr(outDf$HRMIN,nchar(outDf$HRMIN)-1,
+                                                             nchar(outDf$HRMIN))), sep="-"),
                                    format="%Y-%j-%H-%M", tz="UTC" ) - (utcOffset*3600)
       }
     outDf$wy <- CalcWaterYear(outDf$POSIXct)
