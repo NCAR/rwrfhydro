@@ -1,10 +1,11 @@
 #' ---
 #' title: rwrfhydro introduction
-#' author: James & Aubrey
+#' author: James McCreight, Aubrey Dugger, Logan Karsten
 #' ---
 #' 
+#' 
 #' #### What is rwrfhydro?
-#' A community-contributed tool box for managing, analyzing, and visualizing WRF Hydro input and output files in R.
+#' A community-contributed tool box for managing, analyzing, and visualizing WRF Hydro input and output files in R (everything but the model and the GIS).
 #' 
 #' Intentionally, “rwrfhydro” can be read as “our wrf hydro”. The purpose of this R package is to focus **community development** of tools for working with and analyzing data related to the WRF Hydro model. These tools are both free and open-source, just like R, which should help make them accessible and popular. 
 #' 
@@ -13,37 +14,46 @@
 #' The [README.Rmd](https://github.com/mccreigh/rwrfhydro/blob/master/README.Rmd) provides instructions on installing, using, and contributing. Additional resouces for learning R are listed there as well.
 #' 
 #' 
-#' # Lecture Outline 
-#' This lecture covers installation on the lab computers and discussion of R fundamentals. Then an overview of the existing rwrfhydro functionality with special focus on several of the existing [vignettes](https://github.com/mccreigh/rwrfhydro/blob/master/vignettes.Rmd) is provided. Finally, we allow for a free-form exploration of the week's data with some of these R tools and for individual questions. 
+#' # Purpose
+#' This vignette 
+#' 1) Provides an a list of current vignettes,
+#' 2) Covers basic R installation and usage. 
 #' 
-#' The goal of this lecture is endocterination so that you will help contribute to the rwrfhydro source code.
+#' The ultimate goal is endocterination so that you will help contribute to the rwrfhydro source code.
 #' 
-#' --- - -------------------------------  -  -------------------------------------------------------------------------------------------------------------
-#'  1.   [Install](#Install)                                                                                                                              
+#' # Vignettes
+#' ----------------------------------- -------------------------------------------------------------------------------
+#' R Basics                            [ [html](#RBasics) - [R](rwrfhydro_intro.R) ]
 #' 
-#'  2.   R Basics                                                               [ [html](#RBasics) - [Rmd](rwrfhydro_intro.Rmd) - [R](rwrfhydro_intro.R) ]
+#' rwrfhydro overview                  [ [html](overview.html) - [R](overview.R) ]
 #' 
-#'  3.   rwrfhydro overview                                                              [ [html](overview.html) - [Rmd](overview.Rmd) - [R](overview.R) ]
+#' Domain visualization                [ [html](domainChannelVis.html) - [R](domainChannelVis.R) ]
 #' 
-#'  4.   Domain visualization                                    [ [html](domainChannelVis.html) - [Rmd](domainChannelVis.Rmd) - [R](domainChannelVis.R) ]
+#' Streamflow evaluation               [ [html](streamflowEval.html) - [R](streamflowEval.R) ]
 #' 
-#'  5.   USGS historical data                                                         [ [html](usgsObsDb.html) - [Rmd](usgsObsDb.Rmd) - [R](usgsObsDb.R) ]
+#' Water balance                       [  [html](waterBudget.html) - [R](waterBudget.R) ]
 #' 
-#'  6.   Multi-ncdf grabs                                              [ [html](getMultiNetcdf.html) - [Rmd](getMultiNetcdf.Rmd) - [R](getMultiNetcdf.R) ]
+#' GetMultiNcdf                        [ [html](getMultiNetcdf.html) - [R](getMultiNetcdf.R) ]
 #' 
-#'  7.   Streamflow evaluation                                         [ [html](streamflowEval.html) - [Rmd](streamflowEval.Rmd) - [R](streamflowEval.R) ]
+#' ET                                  [ [html](evapotranspirationEval.html) - [R](evapotranspirationEval.R) ]
 #' 
-#'  8.   Water balance                                                          [ [html](waterBudget.html) - [Rmd](waterBudget.Rmd) - [R](waterBudget.R) ]
+#' **-The following require optional**  **libraries or compiled code.-** 
 #' 
-#'  9.   ET                                    [ [html](evapotranspirationEval.html) - [Rmd](evapotranspirationEval.Rmd) - [R](evapotranspirationEval.R) ]
+#' Regridding (devCompile branch)      [ [html](foo.html) - [R](foo.R) ]
 #' 
-#' 10.   Free-for-all                                                                                                                                     
-#' --- - -------------------------------  -  -------------------------------------------------------------------------------------------------------------
+#' Geospatial Tools (rgdal)            [ [html](geoSpatialTools.html) - [R](geospatialTools.R) ]
+#' 
+#' Precipitation evalation (rgdal)     [ [html](precipitationEvaluation.html) - [R](precipitationEvaluation.R) ]
+#' 
+#' MODIS (modis)                       [ [html](modisProcessing.html) - [R](modisProcessing.R) ]
+#' 
+#' ----------------------------------- -------------------------------------------------------------------------------
+#' 
 #' 
 #' *** 
 #' <a id="Install"></a>
 #' 
-#' # Install
+#' # Installation Tips
 #' The [installation instructions](https://github.com/mccreigh/rwrfhydro/blob/master/README.Rmd#installing) require a minor detour for 2 reasons: 1) ncdf4 in a non-standard location, 2) there is no local R library yet. First we'll install `devtools`.
 #' 
 #' 

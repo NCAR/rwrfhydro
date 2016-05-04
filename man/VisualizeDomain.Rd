@@ -90,7 +90,8 @@ closureRtnGeo$ggObj +
 }
 \seealso{
 Other domain: \code{\link{GetDomainCoordsProj}},
-  \code{\link{VisualizeChanNtwk}}
+  \code{\link{VisualizeChanNtwk}},
+  \code{\link{VisualizeSpatial}}
 }
 \concept{
 plot

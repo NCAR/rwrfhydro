@@ -54,7 +54,8 @@ for(i in 1:300) {
 }
 \seealso{
 Other domain: \code{\link{VisualizeChanNtwk}},
-  \code{\link{VisualizeDomain}}
+  \code{\link{VisualizeDomain}},
+  \code{\link{VisualizeSpatial}}
 }
 \concept{
 plot
