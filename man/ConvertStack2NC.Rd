@@ -5,7 +5,7 @@
 \title{Convert a raster stack to a NetCDF file.}
 \usage{
 ConvertStack2NC(inStack, outFile = NULL, varName = NULL, varUnit = NULL,
-  varLong = NULL, varNA = -1e+36)
+  varLong = NULL, varNA = -1e+36, flipY = TRUE)
 }
 \arguments{
 \item{inStack}{The name of the raster stack to export.}
@@ -19,6 +19,9 @@ ConvertStack2NC(inStack, outFile = NULL, varName = NULL, varUnit = NULL,
 \item{varLong}{Long name for the NetCDF export variable.}
 
 \item{varNA}{Value to set for "NA" or "no data". Default is -1.e+36.}
+
+\item{flipY}{Reverse y indices, e.g., to match geogrid S->N 
+orientation (DEFAULT=TRUE).}
 }
 \description{
 \code{ConvertStack2NC} takes a raster stack of RS images and outputs a NetCDF
@@ -41,8 +44,9 @@ ConvertStack2NC(lai.b, outFile="BCNED_LAI.nc", varName="LAI",
 }
 \seealso{
 Other MODIS: \code{\link{CalcStatsRS}},
-  \code{\link{ConvertRS2Stack}}, \code{\link{GetMODIS}},
-  \code{\link{InsertRS}}, \code{\link{SmoothStack}}
+  \code{\link{ConvertRS2Stack}}, \code{\link{GapFillRS}},
+  \code{\link{GetMODIS}}, \code{\link{InsertRS}},
+  \code{\link{SmoothStack}}
 }
 \concept{
 MODIS dataMgmt

@@ -19,7 +19,7 @@ library("rwrfhydro")
 #' 
 #' Set a data path to the Fourmile Creek test case.
 ## ------------------------------------------------------------------------
-dataPath <- '~/wrfHydroTestCases/Fourmile_Creek'
+dataPath <- '~/wrfHydroTestCases/Fourmile_Creek_testcase_v2.0'
 
 #' 
 #' 
@@ -29,21 +29,21 @@ dataPath <- '~/wrfHydroTestCases/Fourmile_Creek'
 ## ------------------------------------------------------------------------
 library(doMC)
 registerDoMC(3)
-modLdasoutWb1h.allrt.fc <- ReadLdasoutWb(paste0(dataPath, '/RUN.RTTESTS/OUTPUT_ALLRT_DAILY'), 
-                                         paste0(dataPath, '/DOMAIN/Fulldom_hydro_OrodellBasin_100m.nc'), 
+modLdasoutWb1h.allrt.fc <- ReadLdasoutWb(paste0(dataPath, '/run.FullRouting'), 
+                                         paste0(dataPath, '/DOMAIN/Fulldom_hires_hydrofile.Fourmile100m.nc'), 
                                          mskvar="basn_msk", basid=1, aggfact=10, ncores=3)
 
 #' 
 #' Calculate basin-averaged routing water fluxes. 
 ## ------------------------------------------------------------------------
-modRtout1h.allrt.fc <- ReadRtout(paste0(dataPath, '/RUN.RTTESTS/OUTPUT_ALLRT_DAILY'), 
-                                 paste0(dataPath, '/DOMAIN/Fulldom_hydro_OrodellBasin_100m.nc'), 
+modRtout1h.allrt.fc <- ReadRtout(paste0(dataPath, '/run.FullRouting'), 
+                                 paste0(dataPath, '/DOMAIN/Fulldom_hires_hydrofile.Fourmile100m.nc'), 
                                  mskvar="basn_msk", basid=1, ncores=3)
 
 #' 
 #' Import groundwater outflow model output.
 ## ------------------------------------------------------------------------
-modGwout.allrt.fc <- ReadGwOut(paste0(dataPath, '/RUN.RTTESTS/OUTPUT_ALLRT_DAILY/GW_outflow.txt'))
+modGwout.allrt.fc <- ReadGwOut(paste0(dataPath, '/run.FullRouting/GW_outflow.txt'))
 
 #' 
 #' 

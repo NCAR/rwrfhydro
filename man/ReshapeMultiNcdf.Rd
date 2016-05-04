@@ -10,7 +10,9 @@ ReshapeMultiNcdf(myDf)
 \item{myDf}{The output dataframe from GetMultiNcdf.}
 }
 \value{
-The reshaped output dataframe.
+The reshaped output dataframe(s) (a single dataframe if
+only one fileGroup, a list of multiple dataframes if multiple
+fileGroups.
 }
 \description{
 \code{ReshapeMultiNcdf} flattens the output from GetMultiNcdf.

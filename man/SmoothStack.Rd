@@ -87,8 +87,8 @@ lai.b.sm <- SmoothStack(lai.b,
 \seealso{
 Other MODIS: \code{\link{CalcStatsRS}},
   \code{\link{ConvertRS2Stack}},
-  \code{\link{ConvertStack2NC}}, \code{\link{GetMODIS}},
-  \code{\link{InsertRS}}
+  \code{\link{ConvertStack2NC}}, \code{\link{GapFillRS}},
+  \code{\link{GetMODIS}}, \code{\link{InsertRS}}
 }
 \concept{
 MODIS dataAnalysis

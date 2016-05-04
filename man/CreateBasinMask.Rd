@@ -40,8 +40,9 @@ aggFact=10)
 }
 }
 \seealso{
-Other modelDataReads: \code{\link{ReadFrxstPts}},
-  \code{\link{ReadGwOut}}, \code{\link{ReadLdasoutAll}},
+Other modelDataReads: \code{\link{ReadChrtout}},
+  \code{\link{ReadFrxstPts}}, \code{\link{ReadGwOut}},
+  \code{\link{ReadLdasoutAll}},
   \code{\link{ReadLdasoutWb}}, \code{\link{ReadRtout}}
 }
 \concept{

@@ -7,7 +7,8 @@ file.}
 \usage{
 ConvertRS2Stack(inPath, matchStr, begin = NULL, end = NULL, noData = NULL,
   noDataQual = "exact", valScale = 1, valAdd = 0, outFile = NULL,
-  varName = NULL, varUnit = NULL, varLong = NULL, varNA = -1e+36)
+  varName = NULL, varUnit = NULL, varLong = NULL, varNA = (-1e+36),
+  pos1 = 10, pos2 = 16, format = "\%Y\%j")
 }
 \arguments{
 \item{inPath}{The path to the directory that holds the already processed
@@ -66,6 +67,15 @@ outFile is provided.}
 
 \item{varNA}{Value to set for "NA" or "no data". Default is -1.e+36. Only
 required if outFile is provided.}
+
+\item{pos1}{From MODIS orgTime: Start position of date in the filename 
+(DEFAULT=10).}
+
+\item{pos2}{From MODIS orgTime: End position of date in the filename 
+(DEFAULT=16).}
+
+\item{format}{From MODIS orgTime: How is the date formatted in the file.
+Default is "\%Y\%j" ('YYYYDDD'). Read ?as.Date for for more information.}
 }
 \value{
 A raster stack.
@@ -96,7 +106,7 @@ lai.b <- ConvertRS2Stack("/d6/adugger/WRF_Hydro/RS/MODIS_ARC/PROCESSED/BCNED_LAI
 ## Export a subset of the already processed LAI TIF images into an output netcdf file
 
 lai.b <- ConvertRS2Stack("/d6/adugger/WRF_Hydro/RS/MODIS_ARC/PROCESSED/BCNED_LAI", 
-                         "*Lai_1km.tif", begin=c("2011.06.01", end="2011.06.30", 
+                         "*Lai_1km.tif", begin="2011.06.01", end="2011.06.30", 
                          noData=100, noDataQual="max", valScale=0.1, valAdd=0, 
                          outFile="BCNED_LAI.nc", varName="LAI",
                          varUnit="(m^2)/(m^2)", varLong="Leaf area index")
@@ -104,8 +114,9 @@ lai.b <- ConvertRS2Stack("/d6/adugger/WRF_Hydro/RS/MODIS_ARC/PROCESSED/BCNED_LAI
 }
 \seealso{
 Other MODIS: \code{\link{CalcStatsRS}},
-  \code{\link{ConvertStack2NC}}, \code{\link{GetMODIS}},
-  \code{\link{InsertRS}}, \code{\link{SmoothStack}}
+  \code{\link{ConvertStack2NC}}, \code{\link{GapFillRS}},
+  \code{\link{GetMODIS}}, \code{\link{InsertRS}},
+  \code{\link{SmoothStack}}
 }
 \concept{
 MODIS dataMgmt

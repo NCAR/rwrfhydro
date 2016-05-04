@@ -80,7 +80,8 @@ for monthly and yearly time scales. \item errmaxt: Error in the time of
 maximum flux. Reported as number of hours for daily time scale and number of
 days for monthly and yearly time scales). \item errfdc: Error in the
 integrated flow duration curve between 0.05 and 0.95 exceedance thresholds 
-(in native flow units). }
+(in native flow units). \item errflash: Error in the Richards-Baker 
+Flashiness Index \deqn{R-B Index = sum(abs(q_t - q_t-1)) / sum(q)}. }
 
 Time scales/Flux types: \itemize{ \item t = native model/observation time
 step (e.g., hourly) \item dy = daily time step \item mo = monthly time step 
@@ -91,20 +92,23 @@ time series where the observed flux is in the lowest 10\% (native time step)
 }
 }
 \examples{
-## Take forecast point model output for Fourmile Creek (modStrh.mod1.fc) and a corresponding
-## USGS gage observation file (obsStrh.fc), both at an hourly time step, and calculate
-## model performance statistics. The model forecast point data was imported using ReadFrxstPts
-## and the gage observation data was imported using ReadUsgsGage.
+## Take forecast point model output for Fourmile Creek (modStrh.mod1.fc) and a 
+## corresponding USGS gage observation file (obsStrh.fc), both at an hourly time 
+## step, and calculate model performance statistics. The model forecast point 
+## data was imported using ReadFrxstPts and the gage observation data was
+## imported using ReadUsgsGage.
 
 
 \dontrun{
 CalcModPerfMulti(modStrd.chrt.fc, obsStr5min.fc)
 
 > Output:
-t_n t_nse t_nselog t_cor t_rmse t_rmsenorm t_bias  t_msd  t_mae t_errfdc dy_n dy_nse dy_nselog dy_cor dy_rmse dy_rmsenorm dy_bias dy_msd
-116  0.81     0.67  0.91  0.211       8.48    7.1 0.0313 0.1385     0.04  116   0.81      0.67   0.91   0.211        8.48     7.1 0.0313
-dy_mae dy_errcom dy_errmaxt dy_errfdc mo_n mo_nse mo_nselog mo_cor mo_rmse mo_rmsenorm mo_bias mo_msd mo_mae mo_errcom mo_errmaxt yr_n
-0.1385         0          0      0.04    5   0.92      0.82   0.96  0.1073       10.35     9.1 0.0324 0.0833      -1.2        0.2    1
+t_n t_nse t_nselog t_cor t_rmse t_rmsenorm t_bias  t_msd  t_mae t_errfdc t_errflash
+116  0.81     0.67  0.91  0.211       8.48    7.1 0.0313 0.1385     0.04     0.0132
+dy_n dy_nse dy_nselog dy_cor dy_rmse dy_rmsenorm dy_bias dy_msd dy_mae dy_errcom dy_errmaxt dy_errfdc dy_errflash
+ 116   0.81      0.67   0.91   0.211        8.48     7.1 0.0313 0.1385         0          0      0.04      0.0092
+mo_n mo_nse mo_nselog mo_cor mo_rmse mo_rmsenorm mo_bias mo_msd mo_mae mo_errcom mo_errmaxt yr_n
+   5   0.92      0.82   0.96  0.1073       10.35     9.1 0.0324 0.0833      -1.2        0.2    1
 yr_bias yr_msd yr_mae yr_errcom yr_errmaxt max10_n max10_nse max10_nselog max10_cor max10_rmse max10_rmsenorm max10_bias max10_msd max10_mae
     7.1 0.0313 0.0313         0          4      12      0.46         0.58      0.71      0.348          23.63       -2.8    -0.044     0.248
 min10_n min10_nse min10_nselog min10_cor min10_rmse min10_rmsenorm min10_bias min10_msd min10_mae

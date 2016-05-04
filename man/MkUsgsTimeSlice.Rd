@@ -26,10 +26,8 @@ the current time. QC procedures involving the temporal domain will be
 applied elsewhere.}
 
 \item{varianceFunction}{Function, used to derive the observation variance
-from a dataframe with the following columns: \code{site_no},
-\code{dateTime}, \code{code}, \code{queryTime}, and \code{discharge.cms}.
-The function accepts the dataframe and returns the data frame with the new
-\code{variance} column.}
+from a dataframe with the following columns: \code{site_no}, \code{dateTime}, \code{code}, \code{queryTime}, and \code{discharge.cms}.
+The function accepts the dataframe and returns the data frame with the new \code{variance} column.}
 }
 \value{
 A dataframe with two columns: \code{POSIXct} and \code{filename}

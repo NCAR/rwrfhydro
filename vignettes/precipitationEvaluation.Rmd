@@ -26,7 +26,7 @@ Global Historical Climatology Network-Daily (GHCN-D) dataset contains daily data
 First step is to select the gauges you want to use for verification based on some criteria. GHCN-daily contains the precipitation data from different sources such as COOP or CoCoRaHS. The selection criteria can be country code, states if country is US, type of rain gauge network (for example CoCoRaHS), or a rectangle domain. 
 
 ```{r}
-setInternet2(use=FALSE) # If using windows, you may need this.
+#setInternet2(use=FALSE) # If using windows, you may need this.
 
 # Return all the gauges within US from observation network of COOP (C) and CoCoRaHS (1)
 countryCodeList <- c("US")
@@ -72,7 +72,7 @@ Forcing data used in WRF-Hydro modeling are usually stored in forcing files (suc
 Set a data path to the Fourmile Creek test case.
 
 ```{r}
-fcPath <- '~/wrfHydroTestCases/Fourmile_Creek_newGMD'
+fcPath <- '~/wrfHydroTestCases/Fourmile_Creek_testcase_v2.0'
 ```
 
 First make a list of all the forcing files.
@@ -86,7 +86,7 @@ files <- list.files(path = forcingPath, full.names = TRUE, pattern = glob2rx("20
 In order to be able to pull data from the netcdf files, one needs the location of the points in the geogrid domain file. However, only lat/lon locations of rain gauges are available if using `SelectGhcnGauges` function. Therefore, it is required to map lat/lon information to x/y information in geogrid in order to pull the data from the netcdf files. This can be done using `GetGeogridIndex` function in rwrfhydro. One needs to provide the address to geogrid file, the lat/lon info and the `GetGeogridIndex` function return a dataframe with two column `sn` (south-north) and `ew` (east-west). 
 
 ```{r message=FALSE, warning=FALSE}
-geoFile <- paste0(fcPath,'/DOMAIN/geo_OrodellBasin_1km_8nlcd11.nc')
+geoFile <- paste0(fcPath,'/DOMAIN/geo_em_d01.Fourmile1km.nlcd11.nc')
 rainGgaugeInds <- GetGeogridIndex(xy = data.frame(lon=sg$longitude, lat=sg$latitude),
                                   ncfile = geoFile)
 sg <- cbind(sg,rainGgaugeInds)
@@ -100,9 +100,9 @@ flList <- list(forcing = files)
 varList <- list(forcing = list(PRCP = 'RAINRATE'))
 prcpIndex <- list()
 for (i in 1:length(sg$siteIds)) {
-  if (!is.na(sg$ew[i]) & !is.na(sg$sn[i])) {
-    prcpIndex[[as.character(sg$siteIds[i])]] <- list(start=c(sg$ew[i], sg$sn[i],1),
-                                                     end=c(sg$ew[i], sg$sn[i],1), stat="mean")
+  if (!is.na(sg$we[i]) & !is.na(sg$sn[i])) {
+    prcpIndex[[as.character(sg$siteIds[i])]] <- list(start=c(sg$we[i], sg$sn[i],1),
+                                                     end=c(sg$we[i], sg$sn[i],1), stat="mean")
   }
 }
 indList <-list(forcing = list(PRCP = prcpIndex))

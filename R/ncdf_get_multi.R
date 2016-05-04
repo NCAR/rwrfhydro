@@ -151,7 +151,13 @@ GetFileStat <- function(theFile, variable, index, env=parent.frame(), parallel=F
               data.frame( do.call(statFunc, append(list(data), statArg), envir=env) ) else data.frame(data)
   
     names(outDf) <- c(variable)
-    if (!is.function(time)) outDf$POSIXct <- time else outDf$POSIXct <- theFile
+    if (!is.function(time)) {
+            outDf$POSIXct <- time
+            } else {
+                tmpDate <- as.POSIXct(unlist(strsplit(basename(theFile), split="[.]"))[1], 
+                        format="%Y%m%d%H%M", tz="UTC")
+                outDf$POSIXct <- tmpDate
+            }
     outDf$inds <-paste( paste(dataStart,dataEnd,sep=':'), collapse=',' )
     if(is.null(statChar)) statChar <- '-'
     outDf$stat <- statChar
