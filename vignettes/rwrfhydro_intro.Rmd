@@ -37,6 +37,8 @@ GetMultiNcdf                        [ [html](getMultiNetcdf.html) - [R](getMulti
 
 ET                                  [ [html](evapotranspirationEval.html) - [R](evapotranspirationEval.R) ]
 
+SNODAS retrieval                    [ [html](snodas.html) - [R](snodas.R) ]
+
 **-The following require optional**  **libraries or compiled code.-** 
 
 Regridding (devCompile branch)      [ [html](foo.html) - [R](foo.R) ]
