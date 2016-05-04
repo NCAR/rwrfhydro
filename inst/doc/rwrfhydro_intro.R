@@ -29,7 +29,7 @@
 #' 
 #' Domain visualization                [ [html](domainChannelVis.html) - [R](domainChannelVis.R) ]
 #' 
-#' Streamflow evaluation               [ [html](streamflowEval.html) - [R](streamflowEval.R) ]
+#' Streamflow evaluation               [ [html](streamflowEvalUsgsObs.html) - [R](streamflowEval.R) ]
 #' 
 #' Water balance                       [  [html](waterBudget.html) - [R](waterBudget.R) ]
 #' 
