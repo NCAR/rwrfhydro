@@ -24,7 +24,7 @@ library("rwrfhydro")
 #' 
 ## ---- echo=FALSE---------------------------------------------------------
 options(width = 100)
-#library(printr)
+library(printr)
 
 #' 
 #' # R `help` and `help.search`

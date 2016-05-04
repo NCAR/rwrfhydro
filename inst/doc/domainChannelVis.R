@@ -41,7 +41,7 @@ options(width = 120, warn=1)
 #' We begin by taking a look at the spatial information file for the LSM. First we specify the path to the 'Fourmile_Creek' test
 #' We pick the "geo" file, which holds the geospatial information for the LSM. The following commands plot the topographic height for each cell over a map. 
 ## ---- fig.width = 12, fig.height = 6, out.width='700', out.height='350'----
-geoFile <- paste0(fcPath,'/DOMAIN/geo_OrodellBasin_1km_8.nc')
+geoFile <- paste0(fcPath,'/run.ChannelRouting/DOMAIN/geo_em_d01.Fourmile1km.nlcd11.nc')
 coordsProj <- GetDomainCoordsProj(geoFile)
 ClosureGeo <- VisualizeDomain(geoFile, plotVar='HGT_M', plot=FALSE, plotDf=coordsProj)
 mapMargin <- .05*c(-1,1)
@@ -63,7 +63,7 @@ closureRtnGeo <-
 #' ### Routing pixels
 #' A similar set of function calls allows visualization of the hydrologic grids. We look at the gridded channel network file. This time we skip the call to GetDomainCoordsProj. 
 ## ---- fig.width = 12, fig.height = 10.29, out.width='700', out.height='600'----
-hydroFile <- paste0(fcPath,'/DOMAIN/hydro_OrodellBasin_100m_8msk.nc')
+hydroFile <- paste0(fcPath,'/run.ChannelRouting/DOMAIN/Fulldom_hires_hydrofile.Fourmile100m.nc')
 ClosureHydro <- VisualizeDomain(hydroFile, plotVar='CHANNELGRID', plot=FALSE)
 closureRtnHydro <-
   ClosureHydro(zoom=11, pointsize=1,
@@ -102,7 +102,7 @@ closureRtnGeo$ggObj +
 #' #`VisualizeChanNtwk()`
 #' Let's use look at simulated flows to also see that the flow at the basin outlet is zero. Setup the path to a "CHRTOUT" data file.
 ## ------------------------------------------------------------------------
-chrtFile <- paste0(fcPath,'/run.ovLnd/201306010000.CHRTOUT_DOMAIN1')
+chrtFile <- paste0(fcPath,'/run.FullRouting/201306010000.CHRTOUT_DOMAIN1')
 
 #' 
 #' This is the basic function which shows the flow on the network
