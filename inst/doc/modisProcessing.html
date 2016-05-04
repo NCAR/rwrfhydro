@@ -10,7 +10,7 @@
 
 <meta name="author" content="Aubrey Dugger" />
 
-<meta name="date" content="2015-07-21" />
+<meta name="date" content="2016-05-03" />
 
 <title>Download and process MODIS LAI images</title>
 
@@ -54,7 +54,7 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <div id="header">
 <h1 class="title">Download and process MODIS LAI images</h1>
 <h4 class="author"><em>Aubrey Dugger</em></h4>
-<h4 class="date"><em>2015-07-21</em></h4>
+<h4 class="date"><em>2016-05-03</em></h4>
 </div>
 
 
@@ -65,7 +65,7 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;rwrfhydro&quot;</span>)</code></pre>
 <pre><code>## To check rwrfhydro updates run: CheckForUpdates()</code></pre>
 <p>Set a data path to the Fourmile Creek test case.</p>
-<pre class="sourceCode r"><code class="sourceCode r">dataPath &lt;-<span class="st"> '~/wrfHydroTestCases/Fourmile_Creek'</span></code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">dataPath &lt;-<span class="st"> '~/wrfHydroTestCases/Fourmile_Creek_testcase_v2.0/'</span></code></pre>
 </div>
 <div id="setup-the-modis-r-tool." class="section level1">
 <h1>Setup the MODIS-R tool.</h1>
@@ -99,10 +99,9 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <span class="co"># Sys.setenv(PATH=bashPath)</span>
 gdalPath &lt;-<span class="st"> </span><span class="kw">sub</span>(<span class="st">&quot;gdalinfo&quot;</span>, <span class="dt">replacement=</span><span class="st">&quot;&quot;</span>, <span class="kw">system</span>(<span class="st">&quot;which gdalinfo&quot;</span>, <span class="dt">intern=</span><span class="ot">TRUE</span>))
 <span class="kw">MODISoptions</span>(<span class="dt">localArcPath=</span><span class="st">&quot;~/wrfHydroTestCases/MODIS_ARC&quot;</span>, 
-             <span class="dt">outDirPath=</span><span class="st">&quot;~/wrfHydroTestCases/MODIS_ARC/PROCESSED&quot;</span>, <span class="dt">gdalPath=</span>gdalPath)</code></pre>
-<pre><code>## To install all required and suggested packages run:
-##  setRepositories() # activate CRAN, R-forge, and Omegahat and then: 
-##  install.packages(c(' mapdata '),dependencies=TRUE)</code></pre>
+             <span class="dt">outDirPath=</span><span class="st">&quot;~/wrfHydroTestCases/MODIS_ARC/PROCESSED&quot;</span>, <span class="dt">gdalPath=</span>gdalPath,
+             <span class="dt">stubbornness=</span><span class="st">&quot;low&quot;</span>)</code></pre>
+<pre><code>## All suggested packages are installed</code></pre>
 <pre><code>## Setting 'localArcPath' to '/Volumes/d1/adugger/WRF_Hydro/test_cases/MODIS_ARC'
 ## If you already have downloaded some HDF-files to '/Volumes/d1/adugger/WRF_Hydro/test_cases/MODIS_ARC' you can use '?orgStruc()' to re-arrange your HDF-data!
 ## 'outDirPath' has been changed from '/Volumes/d1/adugger/WRF_Hydro/test_cases/MODIS_ARC/PROCESSED' to '/Volumes/d1/adugger/WRF_Hydro/test_cases/MODIS_ARC/PROCESSED'</code></pre>
@@ -118,12 +117,12 @@ gdalPath &lt;-<span class="st"> </span><span class="kw">sub</span>(<span class="
 ## _______________
 ## MODISserverOrder : LPDAAC, LAADS 
 ## dlmethod         : auto 
-## stubbornness     : high 
+## stubbornness     : low 
 ## 
 ## 
 ## PROCESSING:
 ## _______________
-## GDAL           : GDAL 1.11.0, released 2014/04/16 
+## GDAL           : GDAL 1.11.4, released 2016/01/25 
 ## MRT            : Not available. Use 'MODIS:::checkTools('MRT')' for more information! 
 ## pixelSize      : asIn 
 ## outProj        : asIn 
@@ -139,7 +138,7 @@ gdalPath &lt;-<span class="st"> </span><span class="kw">sub</span>(<span class="
 <div id="download-and-process-modis-tiles" class="section level1">
 <h1>Download and process MODIS tiles</h1>
 <p>Here we download the relevant MODIS tiles and resample to the Fourmile Creek geogrid. The GetMODIS tool calls the MODIS-R runGdal tool to identify the required MODIS tiles to cover the domain, download the appropriate product tiles, mosaic them, and clip/resample (nearest neighbor) to the geogrid extent and resolution. The result will be a directory of processed TIF images in the outDirPath specified in MODISoptions. We specify the geogrid, a start and end date, and the MOD15A2 (FPAR/LAI) MODIS product name.</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">GetMODIS</span>(<span class="dt">geogrdPath=</span><span class="kw">paste0</span>(dataPath, <span class="st">'/DOMAIN/geo_em.d01_1km_nlcd11.nc'</span>), <span class="dt">prodName=</span><span class="st">&quot;MOD15A2&quot;</span>,  
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">GetMODIS</span>(<span class="dt">extent=</span><span class="kw">paste0</span>(dataPath, <span class="st">'/DOMAIN/geo_em_d01.Fourmile1km.nlcd11.nc'</span>), <span class="dt">prodName=</span><span class="st">&quot;MOD15A2&quot;</span>,  
          <span class="dt">outDir=</span><span class="st">&quot;FOURMILE_LAI&quot;</span>, <span class="dt">begin=</span><span class="st">&quot;2013.03.01&quot;</span>, <span class="dt">end=</span><span class="st">&quot;2013.07.31&quot;</span>,
          <span class="dt">exclList=</span><span class="kw">list</span>(<span class="st">&quot;Fpar_1km&quot;</span>=<span class="st">&quot;gt 100&quot;</span>, 
                        <span class="st">&quot;Lai_1km&quot;</span>=<span class="st">&quot;gt 100&quot;</span>, 
@@ -154,6 +153,7 @@ gdalPath &lt;-<span class="st"> </span><span class="kw">sub</span>(<span class="
                        <span class="st">&quot;FparStdDev_1km&quot;</span>=<span class="st">&quot;bilinear&quot;</span>, 
                        <span class="st">&quot;LaiStdDev_1km&quot;</span>=<span class="st">&quot;bilinear&quot;</span>),
          <span class="dt">quiet=</span><span class="ot">TRUE</span>)</code></pre>
+<pre><code>## Assuming file is a geogrid in netcdf format.</code></pre>
 <pre><code>## ########################
 ## outProj          =  +proj=lcc +lat_1=30 +lat_2=50 +lat_0=40.0403709411621 +lon_0=-105 +x_0=0 +y_0=0 +a=6370000 +b=6370000 +units=m +no_defs  (Specified by raster*/spatial* object)
 ## pixelSize        =  1000 1000  (Specified by raster* object)
@@ -195,7 +195,8 @@ Usage
 <pre class="r">
 ConvertRS2Stack(inPath, matchStr, begin = NULL, end = NULL, noData = NULL,
   noDataQual = &quot;exact&quot;, valScale = 1, valAdd = 0, outFile = NULL,
-  varName = NULL, varUnit = NULL, varLong = NULL, varNA = -1e+36)
+  varName = NULL, varUnit = NULL, varLong = NULL, varNA = (-1e+36),
+  pos1 = 10, pos2 = 16, format = &quot;%Y%j&quot;)
 </pre>
 <h3>
 Arguments
@@ -331,6 +332,36 @@ Value to set for “NA” or “no data”. Default is -1.e+36. Only required if
 </p>
 </td>
 </tr>
+<tr valign="top">
+<td>
+<code>pos1</code>
+</td>
+<td>
+<p>
+From MODIS orgTime: Start position of date in the filename (DEFAULT=10).
+</p>
+</td>
+</tr>
+<tr valign="top">
+<td>
+<code>pos2</code>
+</td>
+<td>
+<p>
+From MODIS orgTime: End position of date in the filename (DEFAULT=16).
+</p>
+</td>
+</tr>
+<tr valign="top">
+<td>
+<code>format</code>
+</td>
+<td>
+<p>
+From MODIS orgTime: How is the date formatted in the file. Default is “%Y%j” (‘YYYYDDD’). Read ?as.Date for for more information.
+</p>
+</td>
+</tr>
 </table>
 <h3>
 Details
@@ -348,25 +379,25 @@ A raster stack.
 See Also
 </h3>
 <p>
-Other MODIS: <code>CalcStatsRS</code>; <code>ConvertStack2NC</code>; <code>GetMODIS</code>; <code>InsertRS</code>; <code>SmoothStack</code>
+Other MODIS: <code>CalcStatsRS</code>, <code>ConvertStack2NC</code>, <code>GapFillRS</code>, <code>GetMODIS</code>, <code>InsertRS</code>, <code>SmoothStack</code>
 </p>
 <h3>
 Examples
 </h3>
 <pre class="r">
-## Import the already processed LAI TIF images into a raster stack. Use
+## Import the already processed LAI TIF images into a raster stack. Use 
 ## the full time series of images.
 
 ## Not run: 
 lai.b &lt;- ConvertRS2Stack(&quot;/d6/adugger/WRF_Hydro/RS/MODIS_ARC/PROCESSED/BCNED_LAI&quot;,
-                         &quot;*Lai_1km.tif&quot;, noData=100, noDataQual=&quot;max&quot;,
+                         &quot;*Lai_1km.tif&quot;, noData=100, noDataQual=&quot;max&quot;, 
                          valScale=0.1, valAdd=0)
 
 ## Export a subset of the already processed LAI TIF images into an output netcdf file
 
-lai.b &lt;- ConvertRS2Stack(&quot;/d6/adugger/WRF_Hydro/RS/MODIS_ARC/PROCESSED/BCNED_LAI&quot;,
-                         &quot;*Lai_1km.tif&quot;, begin=c(&quot;2011.06.01&quot;, end=&quot;2011.06.30&quot;,
-                         noData=100, noDataQual=&quot;max&quot;, valScale=0.1, valAdd=0,
+lai.b &lt;- ConvertRS2Stack(&quot;/d6/adugger/WRF_Hydro/RS/MODIS_ARC/PROCESSED/BCNED_LAI&quot;, 
+                         &quot;*Lai_1km.tif&quot;, begin=&quot;2011.06.01&quot;, end=&quot;2011.06.30&quot;, 
+                         noData=100, noDataQual=&quot;max&quot;, valScale=0.1, valAdd=0, 
                          outFile=&quot;BCNED_LAI.nc&quot;, varName=&quot;LAI&quot;,
                          varUnit=&quot;(m^2)/(m^2)&quot;, varLong=&quot;Leaf area index&quot;)
 
@@ -375,7 +406,7 @@ lai.b &lt;- ConvertRS2Stack(&quot;/d6/adugger/WRF_Hydro/RS/MODIS_ARC/PROCESSED/B
 </div>
 </div>
 <p><br> We can export the processed raster stack to a NetCDF file for use outside of R.</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ConvertStack2NC</span>(lai.b, <span class="dt">outFile=</span><span class="kw">paste0</span>(dataPath, <span class="st">'/ANALYSIS/FOURMILE_LAI_SUM13.nc'</span>), 
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ConvertStack2NC</span>(lai.b, <span class="dt">outFile=</span><span class="kw">paste0</span>(dataPath, <span class="st">'/DOMAIN/FOURMILE_LAI_SUM13.nc'</span>), 
                 <span class="dt">varName=</span><span class="st">&quot;LAI&quot;</span>, <span class="dt">varUnit=</span><span class="st">&quot;(m^2)/(m^2)&quot;</span>, <span class="dt">varLong=</span><span class="st">&quot;Leaf area index&quot;</span>, <span class="dt">varNA=</span>-<span class="fl">1.e+36</span>)</code></pre>
 <p>Let’s take a look at the raster stack we created. List the available layers (labelled by date).</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(lai.b)</code></pre>

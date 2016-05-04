@@ -36,13 +36,13 @@ library(rwrfhydro)
 Set a data path to Fourmile Creek test case.
 
 ```{r}
-fcPath <- '~/wrfHydroTestCases/Fourmile_Creek_newGMD'
+fcPath <- '~/wrfHydroTestCases/Fourmile_Creek_testcase_v2.0'
 ```
 
 Geogrid file is the main file containing all the base geographic information on the model domain such as the geographic coordinate system, latitude, longitude of each pixel and so on. We use this file frequently. Set a path to geogrid file.
 
 ```{r}
-geoFile <- paste0(fcPath,'/DOMAIN/geo_OrodellBasin_1km_8nlcd11.nc')
+geoFile <- paste0(fcPath,'/DOMAIN/geo_em_d01.Fourmile1km.nlcd11.nc')
 ```
 
 
@@ -98,7 +98,7 @@ r
 Many of the input and output files such as LDASOUT output file does not contain lat/lon coordinates but matches the spatial coordinate system of the geogrid input file. In that case, you could feed the geogrid file `geoFile` which the lat/lon information will be taken from that file. 
 
 ```{r plot2, fig.width = 8, fig.height = 8, out.width='600', out.height='600'}
-file = paste0(fcPath,"/RUN.FLUXCOMP/OUTPUT_ALLRT_MAY13_HOURLY/RESTART.2013060100_DOMAIN1")
+file = paste0(fcPath,"/run.FluxEval/RESTART.2013060100_DOMAIN1")
 # ncdump(file) # check if the SOIL_T exist in the file
 
 # we will read the third layer of soil temperature
