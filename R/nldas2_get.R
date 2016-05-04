@@ -22,9 +22,11 @@
 #' @param quiet Flag whether or not to output messages (DEFAULT=TRUE)
 #' @return raster stack object
 #' @examples
-#' sno.santafe <- GetSnotel(c("921","922"), series="Daily", startYr=2009, endYr=2010)
-#' sno.niwot <- GetSnotel(c("663"), series="Hourly", startYr=2009, month=4)
-#' sno.santafe <- GetSnotel(c("921","922"), intervaltype="Current", current="WEEK")
+#' /dontrun{
+#'   sno.santafe <- GetSnotel(c("921","922"), series="Daily", startYr=2009, endYr=2010)
+#'   sno.niwot <- GetSnotel(c("663"), series="Hourly", startYr=2009, month=4)
+#'   sno.santafe <- GetSnotel(c("921","922"), intervaltype="Current", current="WEEK")
+#' }
 #' @keywords IO
 #' @concept NLDAS
 #' @family NLDAS

@@ -96,19 +96,6 @@ fileData <- GetMultiNcdf(filesList=flList, variableList=varList, indexList=indLi
 ## ------------------------------------------------------------------------
 str(fileData)
 
-#' Because the LDASOUT files did not contain the time dimension, the POSIXct variable was returned as a character vector with filenames in certain entries. Deal with this
-## ------------------------------------------------------------------------
-whLsm <- which(fileData$fileGroup == 'lsm')
-whHydro <- which(fileData$fileGroup == 'hydro')
-posixChar <- fileData$POSIXct
-fileData$POSIXct <- Sys.time() 
-fileData$POSIXct[whLsm] <- 
-  as.POSIXct(plyr::laply(strsplit(basename(posixChar[whLsm]),'\\.'),'[',1),'%Y%m%d%H%M', tz='UTC')
-fileData$POSIXct[whHydro] <- as.POSIXct(posixChar[whHydro], '%Y-%m-%d', tz='UTC')
-## this is annoying
-fileData$POSIXct <- lubridate::with_tz(fileData$POSIXct, 'UTC')
-summary(fileData$POSIXct)
-
 #' 
 #' The `fileData` dataframe shows the time (`POSIXct`) at which certain indices (`inds`) were summarized with statistic `stat` for each `variable` (variable names in the file, e.g. sh2ox) The resulting `value` is given with the `variableGroup` (e.g. smc1-4 and not sh2ox) and `fileGroup`. 
 #' 

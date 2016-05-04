@@ -100,7 +100,7 @@ img {
 </tr>
 <tr class="even">
 <td align="left">Streamflow evaluation</td>
-<td align="left">[ <a href="streamflowEval.html">html</a> - <a href="streamflowEval.R">R</a> ]</td>
+<td align="left">[ <a href="streamflowEvalUsgsObs.html">html</a> - <a href="streamflowEval.R">R</a> ]</td>
 </tr>
 <tr class="odd">
 <td align="left">Water balance</td>
@@ -246,7 +246,7 @@ identical(result1,result2)</code></pre>
 ##  $ result: num 9
 ##  $ func  :function (x)  
 ##   ..- attr(*, &quot;srcref&quot;)=Class 'srcref'  atomic [1:8] 1 14 4 1 14 1 1 4
-##   .. .. ..- attr(*, &quot;srcfile&quot;)=Classes 'srcfilecopy', 'srcfile' &lt;environment: 0x7ff5da84bed0&gt;</code></pre>
+##   .. .. ..- attr(*, &quot;srcfile&quot;)=Classes 'srcfilecopy', 'srcfile' &lt;environment: 0x7fe55c002580&gt;</code></pre>
 <p>The result of this function is not a scalar or vector, it is a <code>list</code> object which contains a possibly arbitrary collection of things. The <code>list</code> object is the fundamental way to get more than a single object out of a function. The <code>str()</code> function reveals the structure of objects, including <code>lists</code>. It helps structure complicated, hierarchical items as we’ll see later. It also provides object type and class information.</p>
 <p><a id="Lists"></a></p>
 </div>
@@ -284,7 +284,7 @@ str(result1)</code></pre>
 ##  $ names.b  : num 9
 ##  $ names.(c):function (x)  
 ##   ..- attr(*, &quot;srcref&quot;)=Class 'srcref'  atomic [1:8] 1 14 4 1 14 1 1 4
-##   .. .. ..- attr(*, &quot;srcfile&quot;)=Classes 'srcfilecopy', 'srcfile' &lt;environment: 0x7ff5da84bed0&gt;</code></pre>
+##   .. .. ..- attr(*, &quot;srcfile&quot;)=Classes 'srcfilecopy', 'srcfile' &lt;environment: 0x7fe55c002580&gt;</code></pre>
 <pre class="r"><code>result1$names.b</code></pre>
 <pre><code>## [1] 9</code></pre>
 <pre class="r"><code>result1$`names.(c)`(2)   ## backquote can handle illegal names </code></pre>
@@ -10008,7 +10008,7 @@ print(try(ttt))</code></pre>
 ##         z$qr &lt;- NULL
 ##     z
 ## }
-## &lt;bytecode: 0x7ff5de1c0db8&gt;
+## &lt;bytecode: 0x7fe5620bccd8&gt;
 ## &lt;environment: namespace:stats&gt;</code></pre>
 <p>Beyond reading the body of the text, note that the arguments are listed at the top with default values following <code>=</code>. The <code>...</code> argument is for passing arguments to “low-level” regression functions (described in <code>?lm</code>). We also see that the function belongs to the <code>stats</code> namespace.</p>
 <p>See also (not run here):</p>
@@ -10042,9 +10042,10 @@ print(try(ttt))</code></pre>
 ## loaded via a namespace (and not attached):
 ##  [1] plyr_1.8.3         magrittr_1.5       formatR_1.2       
 ##  [4] tools_3.2.0        htmltools_0.2.6    yaml_2.1.13       
-##  [7] rwrfhydro_1.0.9000 Rcpp_0.12.3        stringi_1.0-1     
-## [10] rmarkdown_0.5.3.2  knitr_1.10         stringr_1.0.0     
-## [13] digest_0.6.9       evaluate_0.7</code></pre>
+##  [7] rwrfhydro_1.0.9000 Rcpp_0.12.4        stringi_1.0-1     
+## [10] rmarkdown_0.5.3.2  data.table_1.9.6   knitr_1.10        
+## [13] stringr_1.0.0      digest_0.6.9       chron_2.3-47      
+## [16] evaluate_0.7</code></pre>
 <pre class="r"><code>library(rwrfhydro)  ## this adds rwrfhydro to the 'other attached packages' list</code></pre>
 <pre><code>## To check rwrfhydro updates run: CheckForUpdates()</code></pre>
 <pre class="r"><code>sessionInfo()</code></pre>
@@ -10064,27 +10065,31 @@ print(try(ttt))</code></pre>
 ## loaded via a namespace (and not attached):
 ##  [1] plyr_1.8.3        magrittr_1.5      formatR_1.2      
 ##  [4] tools_3.2.0       htmltools_0.2.6   yaml_2.1.13      
-##  [7] Rcpp_0.12.3       stringi_1.0-1     rmarkdown_0.5.3.2
-## [10] knitr_1.10        stringr_1.0.0     digest_0.6.9     
-## [13] evaluate_0.7</code></pre>
+##  [7] Rcpp_0.12.4       stringi_1.0-1     rmarkdown_0.5.3.2
+## [10] data.table_1.9.6  knitr_1.10        stringr_1.0.0    
+## [13] digest_0.6.9      chron_2.3-47      evaluate_0.7</code></pre>
 <pre class="r"><code>PlotFdc  ## this function is available in the global environment.</code></pre>
-<pre><code>## function(strDf, strCol=&quot;q_cms&quot;, spline=TRUE, fdcProb=NULL) {
-##     plot(strDf[,paste0(strCol,&quot;.fdc&quot;)], strDf[,strCol], log='y', 
-##          xlab=&quot;Probability of Exceedance&quot;, ylab=c(&quot;Flow (log scale)&quot;), 
-##          main=c(paste(&quot;Flow Duration Curve: &quot;, deparse(substitute(strDf)), &quot;:&quot;, 
-##                       deparse(substitute(strCol)), &quot;, n=&quot;, sum(!is.na(strDf[,strCol])))))
+<pre><code>## function (strDf, strCol = &quot;q_cms&quot;, spline = TRUE, fdcProb = NULL) 
+## {
+##     plot(strDf[, paste0(strCol, &quot;.fdc&quot;)], strDf[, strCol], log = &quot;y&quot;, 
+##         xlab = &quot;Probability of Exceedance&quot;, ylab = c(&quot;Flow (log scale)&quot;), 
+##         main = c(paste(&quot;Flow Duration Curve: &quot;, deparse(substitute(strDf)), 
+##             &quot;:&quot;, deparse(substitute(strCol)), &quot;, n=&quot;, sum(!is.na(strDf[, 
+##                 strCol])))))
 ##     if (spline | !is.null(fdcProb)) {
-##         fdcSplineFun &lt;- splinefun(strDf[,paste0(strCol,&quot;.fdc&quot;)], strDf[,strCol], method='natural')
+##         fdcSplineFun &lt;- splinefun(strDf[, paste0(strCol, &quot;.fdc&quot;)], 
+##             strDf[, strCol], method = &quot;natural&quot;)
 ##         if (spline) {
-##             curve(fdcSplineFun(x), col='red', lwd=2, lty=1, add=T)
-##             }
-##         if (!is.null(fdcProb)) {
-##             abline(v=fdcProb,h=fdcSplineFun(fdcProb),col='grey')
-##             text(fdcProb,fdcSplineFun(fdcProb),
-##                  labels=paste(&quot;P =&quot;,fdcProb*100,&quot;%, Q=&quot;,round(fdcSplineFun(fdcProb),2)), 
-##                  adj=c(-0.05,-1), cex=0.9)
-##             }
+##             curve(fdcSplineFun(x), col = &quot;red&quot;, lwd = 2, lty = 1, 
+##                 add = T)
 ##         }
+##         if (!is.null(fdcProb)) {
+##             abline(v = fdcProb, h = fdcSplineFun(fdcProb), col = &quot;grey&quot;)
+##             text(fdcProb, fdcSplineFun(fdcProb), labels = paste(&quot;P =&quot;, 
+##                 fdcProb * 100, &quot;%, Q=&quot;, round(fdcSplineFun(fdcProb), 
+##                   2)), adj = c(-0.05, -1), cex = 0.9)
+##         }
+##     }
 ## }
 ## &lt;environment: namespace:rwrfhydro&gt;</code></pre>
 <p>Now all the functions in the rwrfhydro namespace are available because it is attached.</p>
@@ -10113,11 +10118,12 @@ head(reshape2::melt(mtcars[,c(&quot;mpg&quot;,&quot;cyl&quot;,&quot;disp&quot;,&
 ## [1] rwrfhydro_1.0.9000 ncdf4_1.15        
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] plyr_1.8.3        magrittr_1.5      formatR_1.2      
-##  [4] tools_3.2.0       htmltools_0.2.6   reshape2_1.4.1   
-##  [7] yaml_2.1.13       Rcpp_0.12.3       stringi_1.0-1    
-## [10] rmarkdown_0.5.3.2 knitr_1.10        stringr_1.0.0    
-## [13] digest_0.6.9      evaluate_0.7</code></pre>
+##  [1] Rcpp_0.12.4       digest_0.6.9      chron_2.3-47     
+##  [4] plyr_1.8.3        formatR_1.2       magrittr_1.5     
+##  [7] evaluate_0.7      stringi_1.0-1     reshape2_1.4.1   
+## [10] data.table_1.9.6  rmarkdown_0.5.3.2 tools_3.2.0      
+## [13] stringr_1.0.0     yaml_2.1.13       htmltools_0.2.6  
+## [16] knitr_1.10</code></pre>
 <pre class="r"><code>print(try(melt))  ## since plyr is not attached, the melt function is not available.</code></pre>
 <pre><code>## [1] &quot;Error in try(melt) : object 'melt' not found\n&quot;
 ## attr(,&quot;class&quot;)

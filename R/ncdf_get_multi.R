@@ -115,7 +115,7 @@ GetFileStat <- function(theFile, variable, index, env=parent.frame(), parallel=F
     time <- ncdf4::ncatt_get( ncid, 0 )[possibleTimeNames[whTimeName]]
     time <- as.POSIXct(sub('_',' ',time), tz='UTC') ## wrf hydro is UTC
   } 
-  if(is.function(time)) warning('Time dimension not found in file, therefore the file name is returned in POSIXct')
+  #if(is.function(time)) warning('Time dimension not found in file, therefore the file name is returned in POSIXct')
   
   dimSize <- ncid$var[[variable]]$size
 
