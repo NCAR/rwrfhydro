@@ -28,8 +28,8 @@ information on which variable you are interested in is needed. The ECMWF GRIB
 API offers a couple tools for examining a GRIB inventory. The easiest and
 quickest is 'grib_ls'. A variable short name, level, and level type is needed
 for proper extraction.
-```{r, eval=FALSE}
-fileIn <- './hrrr.t02z.wrfsfcf02.grib2'
+```{r}
+fileIn <- '~/wrfHydroTestCases/Fourmile_Creek_Regrid_Testcase/HRRR/hrrr.t12z.wrfnatf00_testcase.grib2'
 var <- '2t'
 levelType <- 'heightAboveGround'
 level <- 2
@@ -38,8 +38,9 @@ level <- 2
 # Determine GRIB projection
 Next step is to determine the grid type using GRIBgridType. Possible results include
 gaussian, regular lat/lon grids, lamert conformal, and polar stererographic.
-```{r, eval=FALSE}
+```{r}
 gridType <- GRIBgridType(fileIn)
+print(gridType)
 ```
 
 # Extract geospatial metadata
@@ -48,8 +49,9 @@ information that can be extracted. Meta data may include number of rows/columns,
 grid spacing, corner lat/lon information, parallel lat/lon values (lambert conformal).
 The extent of the meta-data depends on the grid type, which was derived in the previous
 step. The output of this call is a data frame that contains relevant information.
-```{r, eval=FALSE}
+```{r}
 gridMeta <- GRIBgeospatial(gridType,fileIn)
+print(gridMeta)
 ```
 
 # Extract number of forecast times
@@ -61,10 +63,11 @@ variables. The first represents total precipitation from the beginning of the
 model cycle (I.E. from 0-6 hours). The second instance would represent precipitation
 accumulation from the previous forecast step to the current one (I.E. from 5-6 hours).
 For most cases, there will be only one time instance of a variable as most GRIB
-files are broken up by forecast times. If you are unsure though, therer is a tool
+files are broken up by forecast times. If you are unsure though, there is a tool
 to determine this. 
-```{r, eval=FALSE}
+```{r}
 nTimes <- GRIBNumForecastTimes(fileIn,var,levelType,level)
+print(nTimes)
 ```
 
 # Extract GRIB data and relevant metadata
@@ -75,7 +78,7 @@ there are multiple steps and you specify 1, The function will only read in the
 first instance of the variable it encounters. Output will include not only
 the grid, but the missing value, long name, units, model cycle, and 
 additional time stamp information.
-```{r, eval=FALSE}
+```{r}
 dataOut <- extractGRIBGrid(fileIn,var,levelType,level,gridMeta$NX,gridMeta$NY,
                            numFTimes=nTimes)
 ```

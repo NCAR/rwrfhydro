@@ -96,7 +96,8 @@ LocLinkFun(zoom=15, gaugeShape=16, gaugeZoom='loganMill', pad=15, click=TRUE)
 }
 \seealso{
 Other domain: \code{\link{GetDomainCoordsProj}};
-  \code{\link{VisualizeDomain}}
+  \code{\link{VisualizeDomain}};
+  \code{\link{VisualizeSpatial}}
 }
 \concept{
 plot DART
