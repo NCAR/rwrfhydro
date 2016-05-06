@@ -85,10 +85,11 @@ ExportGeogrid(geoFile,"HGT_M", "geogrid_hgt.tif")
 #' 
 ## ----plot1, fig.show = "hold", fig.width = 8, fig.height = 8, out.width='600', out.height='600'----
 # read the saved tiff file
-r <- raster::raster("geogrid_hgt.tif")
+library(raster)
+r <- raster("geogrid_hgt.tif")
 
 # plot the imported raster from tif file
-raster::plot(r, main = "HGT_M")
+plot(r, main = "HGT_M")
 
 # check the raser information and notice taht geographic coordinate information has been added.
 r
@@ -109,10 +110,10 @@ ExportGeogrid(file,
              inLyr=3)
 
 # read the  created tiff file
-r <- raster::raster("20130315_soilm3.tif")
+r <- raster("20130315_soilm3.tif")
 
 # plot the imported raster from tiff file
-raster::plot(r, main = "Soil Temperature")
+plot(r, main = "Soil Temperature")
 
 # check the raster information and notice geographic coordinate information has been added
 r
@@ -257,7 +258,7 @@ r@data@attributes
 #' rasterize the HUC12 `SpatialPolygonDataFrame` based on the `HUC12` field. The clipped HUC12 shapefile is provided with the test case which is quite larger than the model domain. You could read the shapefile and plot it as below.
 ## ----results="hide", plot4, fig.width = 8, fig.height = 8, out.width='600', out.height='600'----
 polyg <- rgdal::readOGR(paste0(path.expand(fcPath), "/polygons"), "clipped_huc12")
-raster::plot(polyg, main = "Clipped HUC12")
+plot(polyg, main = "Clipped HUC12")
 
 #' 
 #' Our study domain partially covers a few basins at northeast of this shapefile.
@@ -294,6 +295,6 @@ r <- PolyToRaster(geoFile = geoFile,
                   polygonShapeFile = "clipped_huc12",
                   field = "HUC12",
                   getCover = TRUE)
-raster::plot(r)
+plot(r)
 
 #' 

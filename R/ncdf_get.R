@@ -47,7 +47,7 @@ GetNcdfFile <- function(file, variables, exclude=FALSE, quiet=FALSE, flip2D=TRUE
   
   if(flip2D & any(nDims==2)){
     wh2D <- which(nDims==2)
-    for(ww in wh2D) outList[[ww]] <- FlipVert(outList[[ww]])
+    for(ww in wh2D) outList[[ww]] <- FlipUD(outList[[ww]])
   }
     
   if( !(all(nDims==nDims[1])) | !(all(nDims==1)) ) return(outList)
