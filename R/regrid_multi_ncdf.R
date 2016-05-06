@@ -79,7 +79,8 @@ regridNcdf <- function(var,files,latVar,lonVar,wghtFile,geoFile,method){
     if("_FillValue" %in% names(attDf)){
       ndvSrc <- ncdf4::ncatt_get(ncIdLL,var,'_FillValue')$value
     } else {
-      stop('ERROR: _FillValue not found.')
+      message("WARNING: _FillValue not found. Defaulting to -9999.")
+      ndvSrc <- -9999
     }
   } else {
     stop('ERROR: ',var,' not found in NetCDF file.')
