@@ -1,0 +1,207 @@
+---
+title: "Regrid spatial datasets"
+author: Logan Karsten
+date: "`r Sys.Date()`"
+vignette: >
+  %\VignetteIndexEntry{Regrid Various Spatial Datasets}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+# Background
+rwrfhydro contains the ability to regrid GRIB1, GRIB2, and NetCDF
+data to any WRF-Hydro modeling domain. In addition, multiple groups of
+files, and multiple variables can be regridded in one function call 
+within R. This streamlines the regridding process and passes the data
+directly back to the user in R. This vignette shows various examples,
+from simple to more complex, of regridding spatial datasets to a 
+WRF-Hydro modeling domain. Spatial datasets chosen for this vignette
+utilize GRIB routines written in R and the ncdf4 library to read
+data in for regridding. Three examples show regridding GRIB data,
+NetCDF data, and a more complex call to regrid multiple groups
+of files and variables from GRIB files. 
+
+# Setup 
+Load the rwrfhydro package.
+```{r, results='hide'}
+library("rwrfhydro")
+```
+
+# Example 1 - Regrid single variable from GRIB data
+
+This example regrids 2-meter temperature data from the National Weather Service
+Global Forecast System (GFS) model, which is ran on a global grid. The
+data is regridded to the Fourmile Creek domain using the geogrid file 
+generated during modeling domain setup. 
+
+The user will need to provide a weight file path, variable name, variable
+level, and variable level type. If the user is unsure what information 
+to pass for regridding GRIB data, the grib_ls command line utility will
+dump a list of available variables and associated metadata to use.
+
+First setup a list for the weight file to be used. If the weight file
+does not exist, it will be generated automatically.
+
+```{r}
+wghtFiles <- list(wghtFile='~/wrfHydroTestCases/Fourmile_Creek_Regrid_Testcase/weight_files/gfs_weights_Fourmile_Creek.Rdata')
+wghtList <- list(listGFS=wghtFiles)
+```
+
+Establish GFS files to regrid, along with the 2-meter temperature information.
+Also establish the geogrid file used for regridding.
+
+```{r}
+filesGFS <- list.files(path='~/wrfHydroTestCases/Fourmile_Creek_Regrid_Testcase/GFS',pattern='gfs.',full.names=TRUE)
+varsGFS <- list(var2T='2t')
+levelTypesGFS <- list(levTypeGFS='heightAboveGround')
+levelsGFS <- list(levelGFS=2)
+geoFile <- '~/wrfHydroTestCases/Fourmile_Creek_Regrid_Testcase/geo_OrodellBasin_1km_8.nc'
+
+fList <- list(listGFS=filesGFS)
+vList <- list(listGFS=varsGFS)
+levList <- list(listGFS=levelsGFS)
+levTypeList <- list(listGFS=levelTypesGFS)
+```
+
+Finally, we call 'RegridMultiGRIB', which will return a structured list containing the 
+regridded data. Note we are specifying 'bilinear' for bilinear interpolation. 
+Future iterations of rwrfhydro will contain additional regridding methods, such as 
+nearest neighbor, patch, and conservative. As of now, only 'bilinear' is supported.
+```{r}
+dataOut <- RegridMultiGRIB(fList,vList,levTypeList,levList,wghtList,geoFile,'bilinear')
+```
+
+Visualize data.
+```{r, fig.width = 12, fig.height = 6, out.width = '700', out.height = '350'}
+coordsProj <- GetDomainCoordsProj(geoFile)
+ClosureGeo <- VisualizeSpatial(dataOut$listGFS$var2T$data[,,1,2],varName='2m T',plot=FALSE,plotDf=coordsProj)
+mapMargin <- .05*c(-1,1)
+closureRegrid <-
+  ClosureGeo(zoom=11,pointsize=9,
+             gradNColors = topo.colors(15), alpha=.6, maptype='terrain',
+             subsetRange=range(plotDf$value),
+             xlim=range(plotDf$long)+mapMargin*1.5,
+             ylim=range(plotDf$lat)+mapMargin)
+```
+
+# Example 2 - Regrid single variable from NetCDF data.
+
+This example regrids snow water equivalent data from the National Water Center
+to the Fourmile Creek domain. The snow data comes in a NetCDF file with associated
+latitude and longitude variables specifying the grid. A similar procedure is used 
+to regrid the data as with GRIB, with minor differences. 
+
+First, as with before, setup a list for the weight file to be used. If the weight
+file does not exist, it will be generated automatically. 
+
+```{r}
+wghtFiles <- list(wghtFile='~/wrfHydroTestCases/Fourmile_Creek_Regrid_Testcase/weight_files/fourmile_snodas_wghts.Rdata')
+wghtList <- list(listSNODAS=wghtFiles)
+```
+
+Establish snow files to regrid, along with the variable information. For NetCDF
+regridding, the files must contain latitude and longitude variables as either 
+a 1-D or 2-D grid. This information is critical for the regridding process.
+
+```{r}
+filesSNODAS <- list.files(path='~/wrfHydroTestCases/Fourmile_Creek_Regrid_Testcase/SNODAS',pattern='SNODAS',full.names=TRUE)
+varsSNODAS <- list(varSWE='SNEQV')
+latVarsSNODAS <- list(lat1='Lat')
+lonVarsSNODAS <- list(lon1='Lon')
+geoFile <- '~/wrfHydroTestCases/Fourmile_Creek_Regrid_Testcase/geo_OrodellBasin_1km_8.nc'
+
+fList <- list(listSNODAS=filesSNODAS)
+vList <- list(listSNODAS=varsSNODAS)
+latList <- list(listSNODAS=latVarsSNODAS)
+lonList <- list(listSNODAS=lonVarsSNODAS)
+```
+
+Call 'RegridMultiNcdf', which will return a structured list containing the regridded
+data. 
+
+```{r}
+dataOut <- regridMultiNcdf(fList,vList,latList,lonList,wghtList,geoFile,'bilinear')
+```
+
+Visualize the data.
+
+```{r, fig.width = 12, fig.height = 6, out.width = '700', out.height = '350'}
+coordsProj <- GetDomainCoordsProj(geoFile)
+ClosureGeo <- VisualizeSpatial(dataOut$listSNODAS$varSWE$data[,,1,1],varName='SWE',plot=FALSE,plotDf=coordsProj)
+mapMargin <- .05*c(-1,1)
+closureRegrid <-
+  ClosureGeo(zoom=11,pointsize=9,
+             gradNColors = topo.colors(15), alpha=.6, maptype='terrain',
+             subsetRange=range(plotDf$value),
+             xlim=range(plotDf$long)+mapMargin*1.5,
+             ylim=range(plotDf$lat)+mapMargin)
+```
+
+# Example 3 - Regrid multiple variables from multiple groups of files.
+
+This example takes example #1 a step further and regrids 2-meter temperature data from
+the GFS, 10 meter U-wind from the High Resolution Rapid Refresh (HRRR) model from
+the NWS, and 2-meter surface humidity from HRRR as well. The setup is very similar to example #1, except a few additional lists for
+the different file groups needs to be constructed. 
+
+Setup the weight file paths, except now there are two lists for the two file groups.
+
+```{r}
+wghtFileGFS <- list(wghtFile='~/wrfHydroTestCases/Fourmile_Creek_Regrid_Testcase/weight_files/gfs_weights_Fourmile_Creek.Rdata')
+wghtFileHRRR <- list(wghtFile='~/wrfHydroTestCases/Fourmile_Creek_Regrid_Testcase/weight_files/hrrr_weights_Fourmile_Creek.Rdata')
+wghtList <- list(listHRRR=wghtFileHRRR,listGFS=wghtFileGFS)
+```
+
+Next, setup lists for files, variables, etc, as before. Note we have two lists now for GFS
+and HRRR data.
+
+```{r}
+filesGFS <- list.files(path='~/wrfHydroTestCases/Fourmile_Creek_Regrid_Testcase/GFS',pattern='gfs.',full.names=TRUE)
+filesHRRR <- list.files(path='~/wrfHydroTestCases/Fourmile_Creek_Regrid_Testcase/HRRR',pattern='hrrr.',full.names=TRUE)
+varsGFS <- list(var2T='2t')
+varsHRRR <- list(var10U='10u',varQ='q')
+levelTypesGFS <- list(levType2T='heightAboveGround')
+levelTypesHRRR <- list(levType10U='heightAboveGround',levTypeQ='heightAboveGround')
+levelsGFS <- list(levels2T=2)
+levelsHRRR <- list(levels10U=10,levelsQ=2)
+
+fList <- list(listHRRR=filesHRRR,listGFS=filesGFS)
+vList <- list(listHRRR=varsHRRR,listGFS=varsGFS)
+levList <- list(listHRRR=levelsHRRR,listGFS=levelsGFS)
+levTypeList <- list(listHRRR=levelTypesHRRR,listGFS=levelTypesGFS)
+
+geoFile <- '~/wrfHydroTestCases/Fourmile_Creek_Regrid_Testcase/geo_OrodellBasin_1km_8.nc'
+```
+
+Call 'RegridMultiGRIB' as before. Note that since the GFS weight file already exists,
+it does not need to be created again.
+
+```{r}
+dataOut <- RegridMultiGRIB(fList,vList,levTypeList,levList,wghtList,geoFile,'bilinear')
+```
+
+Visualize the 10-meter U wind from the HRRR file.
+```{r, fig.width = 12, fig.height = 6, out.width = '700', out.height = '350'}
+coordsProj <- GetDomainCoordsProj(geoFile)
+ClosureGeo <- VisualizeSpatial(dataOut$listHRRR$var10U$data[,,1,2],varName='10-m U HRRR',plot=FALSE,plotDf=coordsProj)
+mapMargin <- .05*c(-1,1)
+closureRegrid <-
+  ClosureGeo(zoom=11,pointsize=8,
+             gradNColors = topo.colors(15), alpha=.6, maptype='terrain',
+             subsetRange=range(plotDf$value),
+             xlim=range(plotDf$long)+mapMargin*1.5,
+             ylim=range(plotDf$lat)+mapMargin)
+```
+
+Visualize the 2-meter specific humidity from the HRRR file.
+```{r, fig.width = 12, fig.height = 6, out.width = '700', out.height = '350'}
+coordsProj <- GetDomainCoordsProj(geoFile)
+ClosureGeo <- VisualizeSpatial(dataOut$listHRRR$varQ$data[,,1,2],varName='2m Q HRRR',plot=FALSE,plotDf=coordsProj)
+mapMargin <- .05*c(-1,1)
+closureRegrid <-
+  ClosureGeo(zoom=11,pointsize=9,
+             gradNColors = topo.colors(15), alpha=.6, maptype='terrain',
+             subsetRange=range(plotDf$value),
+             xlim=range(plotDf$long)+mapMargin*1.5,
+             ylim=range(plotDf$lat)+mapMargin)
+```

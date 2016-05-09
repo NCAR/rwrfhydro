@@ -14,6 +14,7 @@
 #' @useDynLib rwrfhydro
 #' @export
 GRIBgridType <- function(fileIn){
+  fileIn <- path.expand(fileIn)
   #Check for GRIB file existence
   if(!file.exists(fileIn)){
     warning(paste0('ERROR: GRIB file: ',fileIn,' not found.'))
@@ -62,6 +63,8 @@ GRIBgridType <- function(fileIn){
 #' @family io geospatial GRIB
 #' @export
 GRIBgeospatial <- function(proj,fileIn){
+  fileIn <- path.expand(fileIn)
+  
   #Check for existence of GRIB file
   if(!file.exists(fileIn)){
     stop(paste0('ERROR: GRIB file: ',fileIn,' not found'))
@@ -101,7 +104,8 @@ GRIBgeospatial <- function(proj,fileIn){
 #' @useDynLib rwrfhydro
 #' @export
 GRIBgeospatialLambert <- function(fileIn){
-
+  fileIn <- path.expand(fileIn)
+  
   #Establish data frame and variables
   fLen <- as.integer(nchar(fileIn))
   nxTemp <- as.integer(0)
@@ -170,6 +174,7 @@ GRIBgeospatialLambert <- function(fileIn){
 #' @useDynLib rwrfhydro
 #' @export
 GRIBgeospatialGauss <- function(fileIn){
+  fileIn <- path.expand(fileIn)
   
   #Establish data frame and variables
   fLen <- as.integer(nchar(fileIn))
@@ -232,6 +237,7 @@ GRIBgeospatialGauss <- function(fileIn){
 #' @useDynLib rwrfhydro
 #' @export
 GRIBgeospatialLL <- function(fileIn){
+  fileIn <- path.expand(fileIn)
   
   #Establish data frame and variables
   fLen <- as.integer(nchar(fileIn))
@@ -296,6 +302,7 @@ GRIBgeospatialLL <- function(fileIn){
 #' @useDynLib rwrfhydro
 #' @export
 GRIBgeospatialPolar <- function(fileIn){
+  fileIn <- path.expand(fileIn)
   
   #Establish data frame and variables
   fLen <- as.integer(nchar(fileIn))
@@ -366,6 +373,8 @@ GRIBgeospatialPolar <- function(fileIn){
 #' @useDynLib rwrfhydro
 #' @export
 extractGRIBGrid <- function(fileIn,var,levType,level,nx,ny,numFTimes=1){
+  fileIn <- path.expand(fileIn)
+  
   #Check for existence of GRIB file
   if(!file.exists(fileIn)){
     stop(paste0('ERROR: GRIB file: ',fileIn,' not found'))
@@ -469,6 +478,8 @@ extractGRIBGrid <- function(fileIn,var,levType,level,nx,ny,numFTimes=1){
 #' @useDynLib rwrfhydro
 #' @export
 GRIBLatLon <- function(fileIn,nx,ny){
+  fileIn <- path.expand(fileIn)
+  
   #Check for existence of GRIB file.
   if(!file.exists(fileIn)){
     warning(paste0('ERROR: GRIB file: ',fileIn,' not found.'))
@@ -522,6 +533,8 @@ GRIBLatLon <- function(fileIn,nx,ny){
 #' @useDynLib rwrfhydro
 #' @export
 GRIBNumForecastTimes <- function(fileIn,var,levType,lev){
+  fileIn <- path.expand(fileIn)
+  
   #Check for existence of GRIB file.
   if(!file.exists(fileIn)){
     stop(paste0('ERROR: GRIB file: ',fileIn,' not found.'))
