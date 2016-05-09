@@ -1,16 +1,15 @@
 [![Travis-CI Build Status](https://travis-ci.org/mccreigh/rwrfhydro.png?branch=devBranch)](https://travis-ci.org/mccreigh/rwrfhydro)
 
-# rwrfhydro
+# rwrfhydro: **compile and devCompile branches**
 A community-contributed tool box for managing, analyzing, and visualizing WRF Hydro (and HydroDART) input and output files in R.
-Specifically, the devCompile branch was developed to utilize R's ability to compile source code and call external library
-functions, such as the ESMF and ECMWF GRIB API libraries.
+**Specifically, the compile and devCompile branches were developed to utilize R's ability to compile source code and call external library functions, such as the ESMF and ECMWF GRIB API libraries.**
 
 # Purpose
 Intentionally, “rwrfhydro” can be read as “our wrf hydro”. The purpose of this R package is to focus community development of 
 tools for working with and analyzing data related to the WRF Hydro model. These tools are both free and open-source, just like
-R, which should help make them accessible and popular. the devCompile branch utilizes external libraries to regrid various gridded
+R, which should help make them accessible and popular. **The devCompile branch utilizes external libraries to regrid various gridded
 forcing datasets, or other datasets of interest to a WRF-Hydro modeling domain for data preparation or analysis that augments 
-existing rwfhydro capabilities. For users new to R, several introductory resources are listed below. 
+existing rwfhydro capabilities.** For users new to R, several introductory resources are listed below. 
 
 The purposes of this README are 1) to get you started using rwrfhydro and 2) to explain the basics (and then some) of how we 
 develop the package so you can quickly start adding your contributions. 
