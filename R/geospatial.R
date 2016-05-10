@@ -145,6 +145,7 @@ ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, inLyr=NA) {
   # Prep NC variable
   inNCVarRast <- raster::as.matrix(raster::raster(inNCVar))
   inNCVarRast <- inNCVarRast[,ncol(inNCVarRast):1]
+  inNCVarRast[is.na(inNCVarRast)] <- NaN
   # Insert data and export geotiff
   rgdal::putRasterData(tds.out, as.matrix(inNCVarRast))
   rgdal::saveDataset(tds.out, outFile)
