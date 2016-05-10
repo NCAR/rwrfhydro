@@ -48,6 +48,7 @@ ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, inLyr=NA) {
   if (!all(is.na(inNC))){
     inNCVar <- ncdf4::ncvar_get(inNC, inVar)
     if (!is.na(inLyr)) inNCVar <- inNCVar[,inLyr,]
+    inNCVar[is.na(inNCVar)] <- NaN
     varList <- names(inNC$var)
   }else{
     inNCVar<-inFile
