@@ -45,7 +45,8 @@ obsStr15min.alaterco <-
 }
 }
 \seealso{
-Other obsDataReads: \code{\link{ReadAmerifluxCSV}},
+Other obsDataReads: \code{\link{GetStage4Files}},
+  \code{\link{ReadAmerifluxCSV}},
   \code{\link{ReadAmerifluxNC}}, \code{\link{ReadUsgsGage}}
 }
 \concept{

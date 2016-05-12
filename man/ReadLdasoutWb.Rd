@@ -76,7 +76,7 @@ modLdasoutWb1d.mod1.fc <-
 Other modelDataReads: \code{\link{CreateBasinMask}},
   \code{\link{ReadChrtout}}, \code{\link{ReadFrxstPts}},
   \code{\link{ReadGwOut}}, \code{\link{ReadLdasoutAll}},
-  \code{\link{ReadRtout}}
+  \code{\link{ReadRouteLink}}, \code{\link{ReadRtout}}
 }
 \concept{
 dataGet

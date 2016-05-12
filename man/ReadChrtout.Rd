@@ -2,56 +2,56 @@
 % Please edit documentation in R/read_modelout.R
 \name{ReadChrtout}
 \alias{ReadChrtout}
-\title{Read WRF-Hydro RTOUT data files and generate basin-wide mean water fluxes.}
+\title{Read WRF-Hydro CHRTOUT data files.}
 \usage{
-ReadChrtout(pathOutdir, idList = NULL, ncores = 1)
+ReadChrtout(pathOutdir, idList = NULL, gageList = NULL, rtlinkFile = NULL,
+  parallel = FALSE)
 }
 \arguments{
 \item{pathOutdir}{The full pathname to the output directory containing the 
 RTOUT files.}
 
 \item{idList}{Optional list of station IDs to import (must be consistent
-with IDs as used in the "station_id" variable.}
+with IDs as used in the "station_id" variable).}
 
-\item{ncores}{If multi-core processing is available, the number of cores to 
-use (DEFAULT=1). Must have doMC installed if ncores is more than 1.}
+\item{gageList}{Optional list of gage IDs to import. Must provide a corresponding
+route link file (used to map gage IDs to link IDs). Available only for reach-based
+channel routing model runs.}
+
+\item{rtlinkFile}{Optional path to the route link file. Available only for 
+reach-based channel routing model runs.}
+
+\item{parallel}{Logical for running in parallel mode (must have a parallel
+backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)}
 }
 \value{
-A dataframe containing a time series of channel variables.
+A datatable containing a time series of channel fluxes.
 }
 \description{
 \code{ReadChrtout} reads in WRF-Hydro CHRTOUT files and outputs a time series of
-fluxes.
+channel fluxes.
 }
 \details{
 \code{ReadChrtout} reads standard-format WRF-Hydro CHRTOUT NetCDF files and 
-outputs a time series of fluxes.
-
-OUTPUT CHRTOUT water budget variables:
-\itemize{
-   \item QSTRMVOLRT: Mean accumulated depth of stream channel inflow (mm)
-   \item SFCHEADSUBRT: Mean depth of ponded water (mm)
-   \item QBDRYRT: Mean accumulated flow volume routed outside of the domain 
-             from the boundary cells (mm)
-}
+outputs a time series of channel fluxes.
 }
 \examples{
 ## Take an OUTPUT directory for an hourly routing timestep model run of 
-## Fourmile Creek (Basin ID = 1) and create a new dataframe containing the 
-## basin-wide mean values for the major water budget components over the 
-## time series.
+## the Front Range domain and create a new dataframe containing the channel
+## fluxes for two USGS gages on Fourmile Creek.
 
 \dontrun{
-modRtout1h.mod1.fc <- 
-  ReadRtout("../RUN.MOD1/OUTPUT", "../DOMAIN/Fulldom_hires_hydrofile_4mile.nc", 
-            basid=1, ncores=16)
+ReadChrtout('~/wrfHydroTestCases/FRN.REACH/OUTPUT', 
+     gageList=c("06727500", "06730160"), 
+     rtlinkFile="~/wrfHydroTestCases/FRN.REACH/DOMAIN/RouteLink.nc")
 }
 }
 \seealso{
 Other modelDataReads: \code{\link{CreateBasinMask}},
   \code{\link{ReadFrxstPts}}, \code{\link{ReadGwOut}},
   \code{\link{ReadLdasoutAll}},
-  \code{\link{ReadLdasoutWb}}, \code{\link{ReadRtout}}
+  \code{\link{ReadLdasoutWb}}, \code{\link{ReadRouteLink}},
+  \code{\link{ReadRtout}}
 }
 \concept{
 dataGet

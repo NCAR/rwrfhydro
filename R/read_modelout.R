@@ -477,81 +477,101 @@ ReadRtout <- function(pathOutdir, pathDomfile,
     outDf
 }
 
-#' Read WRF-Hydro RTOUT data files and generate basin-wide mean water fluxes.
+#' Read WRF-Hydro CHRTOUT data files.
 #'
 #' \code{ReadChrtout} reads in WRF-Hydro CHRTOUT files and outputs a time series of
-#' fluxes.
+#' channel fluxes.
 #'
 #' \code{ReadChrtout} reads standard-format WRF-Hydro CHRTOUT NetCDF files and 
-#' outputs a time series of fluxes.
-#'
-#' OUTPUT CHRTOUT water budget variables:
-#' \itemize{
-#'    \item QSTRMVOLRT: Mean accumulated depth of stream channel inflow (mm)
-#'    \item SFCHEADSUBRT: Mean depth of ponded water (mm)
-#'    \item QBDRYRT: Mean accumulated flow volume routed outside of the domain 
-#'              from the boundary cells (mm)
-#' }
+#' outputs a time series of channel fluxes.
 #'
 #' @param pathOutdir The full pathname to the output directory containing the 
 #' RTOUT files.
 #' @param idList Optional list of station IDs to import (must be consistent
-#' with IDs as used in the "station_id" variable.
-#' @param ncores If multi-core processing is available, the number of cores to 
-#' use (DEFAULT=1). Must have doMC installed if ncores is more than 1.
-#' @return A dataframe containing a time series of channel variables.
+#' with IDs as used in the "station_id" variable). 
+#' @param gageList Optional list of gage IDs to import. Must provide a corresponding
+#' route link file (used to map gage IDs to link IDs). Available only for reach-based
+#' channel routing model runs.
+#' @param rtlinkFile Optional path to the route link file. Available only for 
+#' reach-based channel routing model runs.
+#' @param parallel Logical for running in parallel mode (must have a parallel
+#' backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)
+#' @return A datatable containing a time series of channel fluxes.
 #'
 #' @examples
 #' ## Take an OUTPUT directory for an hourly routing timestep model run of 
-#' ## Fourmile Creek (Basin ID = 1) and create a new dataframe containing the 
-#' ## basin-wide mean values for the major water budget components over the 
-#' ## time series.
+#' ## the Front Range domain and create a new dataframe containing the channel
+#' ## fluxes for two USGS gages on Fourmile Creek.
 #'
 #' \dontrun{
-#' modRtout1h.mod1.fc <- 
-#'   ReadRtout("../RUN.MOD1/OUTPUT", "../DOMAIN/Fulldom_hires_hydrofile_4mile.nc", 
-#'             basid=1, ncores=16)
+#' ReadChrtout('~/wrfHydroTestCases/FRN.REACH/OUTPUT', 
+#'      gageList=c("06727500", "06730160"), 
+#'      rtlinkFile="~/wrfHydroTestCases/FRN.REACH/DOMAIN/RouteLink.nc")
 #' }
 #' @keywords IO univar ts
 #' @concept dataGet
 #' @family modelDataReads
 #' @export
 ReadChrtout <- function(pathOutdir, 
-                        idList = NULL,
-                        ncores=1) {
-    if (ncores > 1) {
-        doMC::registerDoMC(ncores)
-    }
+                        idList=NULL,
+                        gageList=NULL, rtlinkFile=NULL,
+                        parallel=FALSE) {
     # Get files
-    chrtoutFilesList <- list( chrtout = list.files(path=pathOutdir, 
-                                                   pattern=glob2rx('*.CHRTOUT_DOMAIN*'), 
-                                                   full.names=TRUE))
-    if (length(chrtoutFilesList)==0) stop("No matching files in specified directory.")
-    # Setup RTOUT variables to use
-    variableNames <- c('streamflow')
-    fileVars <- names(ncdump(unlist(chrtoutFilesList)[1], quiet=TRUE)$var)
-    variableNames <- variableNames[variableNames %in% fileVars]
-    chrtoutVars <- as.list( variableNames )
-    names(chrtoutVars) <- variableNames
-    chrtoutVariableList <- list( chrtout = chrtoutVars )
-    # For each variable, setup relevant areas and levels to do averaging
-    cell <-  list(start=c(1), end=c(1), env=environment())
-    chrtoutInd <- list( cell )
-    names(chrtoutInd) <- names(chrtoutVars)
-    chrtoutIndexList <- list( chrtout = chrtoutInd )
-    # Run GetMultiNcdf
-    if (ncores > 1) {
-        chrtoutDF <- GetMultiNcdf(indexList=chrtoutIndexList, 
-                                  variableList=chrtoutVariableList, 
-                                  filesList=chrtoutFilesList, parallel=TRUE )
+    filesList <- list.files(path=pathOutdir, 
+                                    pattern=glob2rx('*.CHRTOUT_DOMAIN*'), 
+                                    full.names=TRUE)
+    if (length(filesList)==0) stop("No matching files in specified directory.")
+    # Compile link list
+    if (!is.null(rtlinkFile)) {
+        rtLink <- ReadRouteLink(rtlinkFile)
+        rtLink <- data.table(rtLink)
     }
-    else {
-        chrtoutDF <- GetMultiNcdf(indexList=chrtoutIndexList, 
-                                  variableList=chrtoutVariableList, 
-                                  filesList=chrtoutFilesList, parallel=FALSE )
+    if (is.null(idList)) {
+        if (exists("rtLink")) {
+            if (is.null(gageList)) {
+                rtLink <- rtLink[site_no != '',]
+            } else {
+                rtLink <- rtLink[site_no %in% gageList,]
+            }
+            idList <- unique(rtLink$link)
+        }
     }
-    outDf <- ReshapeMultiNcdf(chrtoutDF)
-    outDf
+    
+    # Single file read function
+    ReadFile4Loop <- function(file.) {
+        out <- GetNcdfFile(file., variables=c("time"), exclude=TRUE, quiet=TRUE)
+        dtstr <- basename(file.)
+        dtstr <- unlist(strsplit(dtstr, "[.]"))[1]
+        dtstr <- as.POSIXct(dtstr, format="%Y%m%d%H%M", tz="UTC")
+        out$POSIXct <- dtstr
+        data.table(out)
+    }
+    
+    # Loop through all files
+    outList <- list()
+    if (parallel) {
+        outList <- foreach(file=filesList, .packages = c("ncdf4","data.table"), .combine=c) %dopar% {
+            out <- ReadFile4Loop(file)
+            if (!is.null(idList)) out <- out[station_id %in% idList,]
+            list(out)
+        }
+    } else {
+        for (file in filesList) {
+            out <- ReadFile4Loop(file)
+            if (!is.null(idList)) out <- out[station_id %in% idList,]
+            outList <- c(outList, list(out))
+        }
+    }
+    outDT <- data.table::rbindlist(outList)
+    names(outDT)[names(outDT)=="streamflow"]<-"q_cms"
+    names(outDT)[names(outDT)=="velocity"]<-"vel_ms"
+    if (exists("rtLink")) {
+        names(outDT)[names(outDT)=="station_id"]<-"link"
+        data.table::setkey(rtLink, "link")
+        data.table::setkey(outDT, "link")
+        outDT <- merge(outDT, rtLink[, c("link", "site_no"), with=FALSE], all.x=TRUE)
+    }
+    outDT
 }
 
 #' Create a coarse-resolution basin mask grid.
@@ -600,4 +620,19 @@ ReadChrtout <- function(pathOutdir,
                                                     fact=aggfact, fun=mean))
    }
    basnmsk
+ }
+ 
+ #' Read in WRF-Hydro route link file
+ #' 
+ #' \code{ReadRouteLink} is simply a usage of format.
+ #' @param linkFile Full path to route link file
+ #' @return Dataframe of route link data
+ #' @keywords IO
+ #' @concept dataGet
+ #' @family modelDataReads
+ #' @export
+ ReadRouteLink <- function(linkFile) {
+     rtLinks <- GetNcdfFile(linkFile, variables=c("time"), exclude=TRUE, quiet=TRUE)
+     rtLinks$site_no <- stringr::str_trim(rtLinks$gages)
+     rtLinks
  }

@@ -352,3 +352,125 @@ ReadAmerifluxCSV <- function(pathFluxData, timeZone=NULL, utcOffset=NULL) {
     outDf$wy <- CalcWaterYear(outDf$POSIXct)
     outDf
 }
+
+#' Download Stage IV and II data files
+#' 
+#' \code{GetStage4Files} downloads Stage IV and Stage II data files
+#' 
+#' \code{GetStage4Files} downloads Stage IV and Stage II data files from NCEP 
+#' ftp site based on user configurations. The function downloads Stage IV or 
+#' Stage II data from NCEP ftp site, unpacks them, and removes uncessary 
+#' files (e.g., *.gif). Note for Stage II, only the multi-sensor ("ml") data 
+#' files are kept while others are removed. Both Stage IV & Stage II datasets 
+#' contain hourly, 6-hourly, and daily precipitation data.
+#' 
+#' @author Yuqiong.Liu@@noaa.gov (updated by aubreyd)
+#' @param startDate start date + hour in the form of YYYYMMDDHH
+#' @param endDate end date + hour in the form of YYYYMMDDHH
+#' @param dataTyp name of the dataset: stage4 or stage2
+#' @param dataDir directory to store the data, subdirectories YYYY/MM will be created
+#' @param keepDownloads logical for whether to keep original download files;
+#' if FALSE, dummy empty files will be used for tracking instead
+#' to conserve space (DEFAULT=FALSE)
+#' @param runParallel logical for running in parallel mode (must have a parallel
+#' backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)
+#' @return NULL
+#' #' @examples
+#' ## Pull data for May 1-5, 2015.
+#' \dontrun{
+#' datadir <- "~/wrfHydroTestCases/OBS/Stage_II/"
+#' GetStage4Files(startDate="2015050100", endDate="2015050500", 
+#'                  dataTyp="stage2", dataDir=datadir, 
+#'                  runParallel=FALSE)
+#' }
+#' @keywords IO
+#' @concept dataGet
+#' @family obsDataReads
+#' @export
+#' 
+GetStage4Files <- function(startDate, endDate, 
+                           dataTyp, dataDir, 
+                           keepDownloads=FALSE,
+                           runParallel=FALSE) {
+    # template wget url string for StageII data 
+    # ftp://ftp.emc.ncep.noaa.gov/mmb/precip/st2n4.arch/201505/ST2.20150501
+    
+    # template wget url string for StageIV data 
+    # ftp://ftp.emc.ncep.noaa.gov/mmb/precip/st2n4.arch/201405/ST4.20140506
+    
+    urlStr <- "ftp://ftp.emc.ncep.noaa.gov/mmb/precip/st2n4.arch/" 
+    
+    # time period for data retrieval
+    yr1 <- c(substr(startDate,1,4),substr(endDate,1,4))
+    mo1 <- c(substr(startDate,5,6),substr(endDate,5,6))
+    da1 <- c(substr(startDate,7,8),substr(endDate,7,8))
+    hr1 <- c(substr(startDate,9,10),substr(endDate,9,10))
+    
+    # collect all the hours for data retrieval
+    hours = seq(ISOdatetime(yr1[1],mo1[1],da1[1],hr1[1],0,0),
+                ISOdatetime(yr1[2],mo1[2],da1[2],hr1[2],0,0),by="day")      
+    
+    # create directory if it does not exist
+    if (substr(dataDir, nchar(dataDir), nchar(dataDir)) != "/") {
+        dataDir <- paste0(dataDir, "/")
+    }
+    if (!file.exists(dataDir)) dir.create(dataDir, recursive=TRUE)
+    dataDirRaw <- paste0(dataDir, "/RAW/")
+    if (!file.exists(dataDirRaw)) dir.create(dataDirRaw, recursive=TRUE)
+    
+    # create sub function that we can loop with
+    GetFiles4Loop <- function(hoursi, dataTyp.=dataTyp,
+                              dataDir.=dataDir, dataDirRaw.=dataDirRaw) {
+        # contruct the url for data retrieval
+        print(paste0("Processing: ", hoursi))
+        fname <-  paste0("ST", substr(dataTyp.,6,6),format(hoursi,".%Y%m%d"))
+        dtstr <- unlist(strsplit(fname, split="[.]"))[2]
+        dirSrc <- paste0(format(hoursi,"%Y%m/"))
+        dirDst <- paste0(dataDir., format(hoursi,"%Y%m/"))
+        
+        if (!file.exists(paste0(dataDirRaw., fname))) {
+            print("   File not in RAW directory. Downloading and uncompressing...")
+            if (!file.exists(dirDst)) dir.create(dirDst,recursive=TRUE)
+            url1 <- paste0(urlStr,dirSrc,fname)
+            try(curl::curl_download(url1, paste0(dirDst, fname)))
+            system(paste0("tar -xf ", dirDst, fname, ' -C ', dirDst), 
+                   ignore.stdout = TRUE)
+            if (keepDownloads) {
+                system(paste0("mv ", dirDst, fname, " ", dataDirRaw., "/."))
+            } else {
+                system(paste0("touch ", dataDirRaw., fname))
+                system(paste0("rm ", dirDst, fname))
+            }
+            filesToRm <- list.files(path=dirDst, 
+                                    pattern=glob2rx(paste0("*.", dtstr, "*.gif")),
+                                    full.names=TRUE)
+            filesToRm <- c(filesToRm, list.files(path=dirDst, 
+                                    pattern=glob2rx(paste0("*rd", dtstr, "*.gz")),
+                                    full.names=TRUE))
+            filesToRm <- c(filesToRm, list.files(path=dirDst, 
+                                    pattern=glob2rx(paste0("*gg", dtstr, "*.gz")),
+                                    full.names=TRUE))
+            filesToRm <- c(filesToRm, list.files(path=dirDst, 
+                                    pattern=glob2rx(paste0("*un", dtstr, "*.gz")),
+                                    full.names=TRUE))
+            if (length(filesToRm)>0) kill <- file.remove(filesToRm)
+            system(paste0("gunzip ", dirDst, paste0("*", dtstr, "*.gz")))    
+        } else {
+            print("File already in directory. Skipping...")
+        }
+    }
+               
+    if (runParallel) {
+        # PARALLEL VERSION
+        foreach (i=1:length(hours)) %dopar% {
+            GetFiles4Loop(hours[i], dataTyp, dataDir, dataDirRaw)
+        }
+    } else { 
+        # NON-PARALLEL VERSION
+        for (i in 1:length(hours)) {
+            GetFiles4Loop(hours[i], dataTyp, dataDir, dataDirRaw)
+        }
+    }
+}
+
+
