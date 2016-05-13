@@ -5,7 +5,7 @@
 \title{Read WRF-Hydro RTOUT data files and generate basin-wide mean water fluxes.}
 \usage{
 ReadRtout(pathOutdir, pathDomfile, mskvar = "basn_msk", basid = 1,
-  ncores = 1)
+  parallel = FALSE)
 }
 \arguments{
 \item{pathOutdir}{The full pathname to the output directory containing the 
@@ -19,8 +19,8 @@ used in the model run (for grabbing the basin mask).}
 
 \item{basid}{The basin ID to use (DEFAULT=1)}
 
-\item{ncores}{If multi-core processing is available, the number of cores to 
-use (DEFAULT=1). Must have doMC installed if ncores is more than 1.}
+\item{parallel}{Logical for running in parallel mode (must have a parallel
+backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)}
 }
 \value{
 A dataframe containing a time series of basin-wide mean water budget 
@@ -49,9 +49,11 @@ OUTPUT RTOUT water budget variables:
 ## time series.
 
 \dontrun{
+library(doMC)
+regsiterDoMC(3)
 modRtout1h.mod1.fc <- 
   ReadRtout("../RUN.MOD1/OUTPUT", "../DOMAIN/Fulldom_hires_hydrofile_4mile.nc", 
-            basid=1, ncores=16)
+            basid=1, parallel=TRUE)
 }
 }
 \seealso{

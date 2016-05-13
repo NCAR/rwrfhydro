@@ -6,7 +6,7 @@
 budget variables.}
 \usage{
 ReadLdasoutWb(pathOutdir, pathDomfile, mskvar = "basn_msk", basid = 1,
-  aggfact = 10, ncores = 1, pattern = glob2rx("*LDASOUT_DOMAIN*"))
+  aggfact = 10, pattern = glob2rx("*LDASOUT_DOMAIN*"), parallel = FALSE)
 }
 \arguments{
 \item{pathOutdir}{The full pathname to the output directory containing the 
@@ -23,11 +23,11 @@ used in the model run (for grabbing the basin mask).}
 \item{aggfact}{The high-res (hydro) to low-res (LSM) aggregation factor 
 (e.g., for a 100-m routing grid and a 1-km LSM grid, aggfact = 10)}
 
-\item{ncores}{If multi-core processing is available, the number of cores to 
-use (DEFAULT=1). Must have doMC installed if ncores is more than 1.}
-
 \item{pattern}{Pattern to match in the model output 
 (DEFAULT=glob2rx('*LDASOUT_DOMAIN*'))}
+
+\item{parallel}{Logical for running in parallel mode (must have a parallel
+backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)}
 }
 \value{
 A dataframe containing a time series of basin-wide mean water 
@@ -67,9 +67,11 @@ OUTPUT NoahMP LDASOUT water budget variables:
 ## budget components over the time series.
 
 \dontrun{
+library(doMC)
+registerDoMC(3)
 modLdasoutWb1d.mod1.fc <- 
   ReadLdasoutWb("../RUN.MOD1/OUTPUT", "../DOMAIN/Fulldom_hires_hydrofile_4mile.nc", 
-                ncores=16)
+                parallel=TRUE)
 }
 }
 \seealso{

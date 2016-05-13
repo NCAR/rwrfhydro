@@ -5,7 +5,7 @@
 \title{List based creation of netcdf files.}
 \usage{
 MkNcdf(varList, filename, globalAttList = NULL, overwrite = FALSE,
-  force_v4 = TRUE)
+  force_v4 = TRUE, compLev = -1)
 }
 \arguments{
 \item{varList}{List, the variable list. See structure in examples.}
@@ -19,6 +19,9 @@ file? Otherwise, the file will be appended if existing and correct (unlimited) d
 are extended.}
 
 \item{force_v4}{Logical, make netcdf version 4 files.}
+
+\item{compLev}{integer, Optional compression level. If not specified,
+no compression used.}
 }
 \value{
 Returns the filename invisibly, if successful.

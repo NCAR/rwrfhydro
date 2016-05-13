@@ -31,6 +31,7 @@ path.expand("~")
 #' 
 ## ------------------------------------------------------------------------
 library(rwrfhydro)
+options(warn=1)
 
 #' 
 #' Set a data path to Fourmile Creek test case.
@@ -71,13 +72,13 @@ geoInfo
 #' If you need to create a georeferenced TIF file from any variable in a netcdf file, then you need to use `ExportGeogrid` function. It takes a NetCDF file having lat/lon information and converts the specified variable into a georeferenced TIF file for use in standard GIS tools.
 #' Now, let's export one of the variable from the geogrid file. You can get a list of all available variables in the `geoFile` using `ncdump` function in rwrfhydro.
 #' 
-## ----, eval = FALSE------------------------------------------------------
+## ---- eval = FALSE-------------------------------------------------------
 ## head(ncdump(geoFile))
 
 #' 
 #' Now we will create a georeferenced TIF file from HGT_M field. You only need to provide the address to geogrid file (`geoFile`), the name of the variable (`HGT_M`) and the name of the output file (`geogrid_hgt.tif`).
 #' 
-## ----, results='hide', message=FALSE, warning=FALSE----------------------
+## ---- results='hide', message=FALSE, warning=FALSE-----------------------
 ExportGeogrid(geoFile,"HGT_M", "geogrid_hgt.tif")
 
 #' 
@@ -113,7 +114,7 @@ ExportGeogrid(file,
 r <- raster("20130315_soilm3.tif")
 
 # plot the imported raster from tiff file
-plot(r, main = "Soil Temperature")
+plot(r, main = "Soil Temperature") # in raster
 
 # check the raster information and notice geographic coordinate information has been added
 r
@@ -258,7 +259,7 @@ r@data@attributes
 #' rasterize the HUC12 `SpatialPolygonDataFrame` based on the `HUC12` field. The clipped HUC12 shapefile is provided with the test case which is quite larger than the model domain. You could read the shapefile and plot it as below.
 ## ----results="hide", plot4, fig.width = 8, fig.height = 8, out.width='600', out.height='600'----
 polyg <- rgdal::readOGR(paste0(path.expand(fcPath), "/polygons"), "clipped_huc12")
-plot(polyg, main = "Clipped HUC12")
+plot(polyg, main = "Clipped HUC12") ## in raster
 
 #' 
 #' Our study domain partially covers a few basins at northeast of this shapefile.
@@ -295,6 +296,6 @@ r <- PolyToRaster(geoFile = geoFile,
                   polygonShapeFile = "clipped_huc12",
                   field = "HUC12",
                   getCover = TRUE)
-plot(r)
+plot(r) ## in raster
 
 #' 

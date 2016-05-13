@@ -119,10 +119,10 @@ ReadGwOut <- function(pathOutfile) {
 #' @param basid The basin ID to use (DEFAULT=1)
 #' @param aggfact The high-res (hydro) to low-res (LSM) aggregation factor 
 #' (e.g., for a 100-m routing grid and a 1-km LSM grid, aggfact = 10)
-#' @param ncores If multi-core processing is available, the number of cores to 
-#' use (DEFAULT=1). Must have doMC installed if ncores is more than 1.
 #' @param pattern Pattern to match in the model output 
 #' (DEFAULT=glob2rx('*LDASOUT_DOMAIN*'))
+#' @param parallel Logical for running in parallel mode (must have a parallel
+#' backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)
 #' @return A dataframe containing a time series of basin-wide mean water 
 #' budget variables.
 #'
@@ -132,20 +132,20 @@ ReadGwOut <- function(pathOutfile) {
 #' ## budget components over the time series.
 #'
 #' \dontrun{
+#' library(doMC)
+#' registerDoMC(3)
 #' modLdasoutWb1d.mod1.fc <- 
 #'   ReadLdasoutWb("../RUN.MOD1/OUTPUT", "../DOMAIN/Fulldom_hires_hydrofile_4mile.nc", 
-#'                 ncores=16)
+#'                 parallel=TRUE)
 #' }
 #' @keywords IO univar ts
 #' @concept dataGet
 #' @family modelDataReads
 #' @export
 ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk", 
-                          basid=1, aggfact=10, ncores=1, 
-                          pattern=glob2rx('*LDASOUT_DOMAIN*')) {
-    if (ncores > 1) {
-        doMC::registerDoMC(ncores)
-        }
+                          basid=1, aggfact=10,
+                          pattern=glob2rx('*LDASOUT_DOMAIN*'),
+                          parallel=FALSE) {
     # Setup mask
     mskvar <- CreateBasinMask(pathDomfile, mskvar=mskvar, basid=basid, aggfact=aggfact)
     # Calculate basin area as a cell count
@@ -188,16 +188,9 @@ ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk",
     # Run GetMultiNcdf
     ldasoutFilesList <- list( ldasout = list.files(path=pathOutdir, 
                                                    pattern=pattern, full.names=TRUE))
-    if (ncores > 1) {
-        ldasoutDF <- GetMultiNcdf(indexList=ldasoutIndexList, 
+    ldasoutDF <- GetMultiNcdf(indexList=ldasoutIndexList, 
                                   variableList=ldasoutVariableList, 
-                                  filesList=ldasoutFilesList, parallel=TRUE )
-        }
-    else {
-        ldasoutDF <- GetMultiNcdf(indexList=ldasoutIndexList, 
-                                  variableList=ldasoutVariableList, 
-                                  filesList=ldasoutFilesList, parallel=FALSE )
-        }
+                                  filesList=ldasoutFilesList, parallel=parallel )
     outDf <- ReshapeMultiNcdf(ldasoutDF)
     outDf <- CalcNoahmpFluxes(outDf)
     attr(outDf, "area_cellcnt") <- basarea
@@ -225,10 +218,10 @@ ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk",
 #' @param basid The basin ID to use (DEFAULT=1)
 #' @param aggfact The high-res (hydro) to low-res (LSM) aggregation factor (e.g., for a
 #'   100-m routing grid and a 1-km LSM grid, aggfact = 10)
-#' @param ncores If multi-core processing is available, the number of cores to use
-#'   (DEFAULT=1). Must have doMC installed if ncores is more than 1.
 #' @param pattern Pattern to match in the model output
 #'   (DEFAULT=glob2rx('*LDASOUT_DOMAIN*'))
+#' @param parallel Logical for running in parallel mode (must have a parallel
+#' backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)
 #' @return A dataframe containing a time series of basin-wide mean water budget variables.
 #'   
 #' @examples
@@ -237,20 +230,20 @@ ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk",
 #' ## over the time series.
 #' 
 #' \dontrun{
+#' library(doMC)
+#' registerDoMC(3)
 #' modLdasout1d.mod1.fc <- 
 #'   ReadLdasoutAll("../RUN.MOD1/OUTPUT", "../DOMAIN/Fulldom_hires_hydrofile_4mile.nc", 
-#'                 ncores=16)
+#'                 parallel=TRUE)
 #' }
 #' @keywords IO univar ts
 #' @concept dataGet
 #' @family modelDataReads
 #' @export
 ReadLdasoutAll <- function(pathOutdir, pathDomfile, mskvar="basn_msk", 
-                          basid=1, aggfact=10, ncores=1, 
-                          pattern=glob2rx('*LDASOUT_DOMAIN*')) {
-  if (ncores > 1) {
-    doMC::registerDoMC(ncores)
-  }
+                          basid=1, aggfact=10,  
+                          pattern=glob2rx('*LDASOUT_DOMAIN*'),
+                          parallel=FALSE) {
   # Setup mask
   mskvar <- CreateBasinMask(pathDomfile, mskvar=mskvar, basid=basid, aggfact=aggfact)
   # Calculate basin area as a cell count
@@ -362,16 +355,9 @@ ReadLdasoutAll <- function(pathOutdir, pathDomfile, mskvar="basn_msk",
   # Run GetMultiNcdf
   ldasoutFilesList <- list( ldasout = list.files(path=pathOutdir, 
                                                  pattern=pattern, full.names=TRUE))
-  if (ncores > 1) {
-    ldasoutDF <- GetMultiNcdf(indexList=ldasoutIndexList, 
+  ldasoutDF <- GetMultiNcdf(indexList=ldasoutIndexList, 
                               variableList=ldasoutVariableList, 
-                              filesList=ldasoutFilesList, parallel=TRUE )
-  }
-  else {
-    ldasoutDF <- GetMultiNcdf(indexList=ldasoutIndexList, 
-                              variableList=ldasoutVariableList, 
-                              filesList=ldasoutFilesList, parallel=FALSE )
-  }
+                              filesList=ldasoutFilesList, parallel=parallel )
   outDf <- ReshapeMultiNcdf(ldasoutDF)
   outDf <- CalcNoahmpFluxes(outDf)
   attr(outDf, "area_cellcnt") <- basarea
@@ -401,8 +387,8 @@ ReadLdasoutAll <- function(pathOutdir, pathDomfile, mskvar="basn_msk",
 #' @param mskvar The variable name in pathDomfile to use for the mask 
 #' (DEFAULT="basn_msk").
 #' @param basid The basin ID to use (DEFAULT=1)
-#' @param ncores If multi-core processing is available, the number of cores to 
-#' use (DEFAULT=1). Must have doMC installed if ncores is more than 1.
+#' @param parallel Logical for running in parallel mode (must have a parallel
+#' backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)
 #' @return A dataframe containing a time series of basin-wide mean water budget 
 #' variables.
 #'
@@ -413,9 +399,11 @@ ReadLdasoutAll <- function(pathOutdir, pathDomfile, mskvar="basn_msk",
 #' ## time series.
 #'
 #' \dontrun{
+#' library(doMC)
+#' regsiterDoMC(3)
 #' modRtout1h.mod1.fc <- 
 #'   ReadRtout("../RUN.MOD1/OUTPUT", "../DOMAIN/Fulldom_hires_hydrofile_4mile.nc", 
-#'             basid=1, ncores=16)
+#'             basid=1, parallel=TRUE)
 #' }
 #' @keywords IO univar ts
 #' @concept dataGet
@@ -423,10 +411,7 @@ ReadLdasoutAll <- function(pathOutdir, pathDomfile, mskvar="basn_msk",
 #' @export
 ReadRtout <- function(pathOutdir, pathDomfile, 
                       mskvar="basn_msk", basid=1, 
-                      ncores=1) {
-    if (ncores > 1) {
-        doMC::registerDoMC(ncores)
-        }
+                      parallel=FALSE) {
     # Setup mask
     msk <- ncdf4::nc_open(pathDomfile)
     mskvar <- ncdf4::ncvar_get(msk,mskvar)
@@ -461,16 +446,9 @@ ReadRtout <- function(pathOutdir, pathDomfile,
     names(rtoutInd) <- names(rtoutVars)
     rtoutIndexList <- list( rtout = rtoutInd )
     # Run GetMultiNcdf
-    if (ncores > 1) {
-        rtoutDF <- GetMultiNcdf(indexList=rtoutIndexList, 
+    rtoutDF <- GetMultiNcdf(indexList=rtoutIndexList, 
                                   variableList=rtoutVariableList, 
-                                  filesList=rtoutFilesList, parallel=TRUE )
-        }
-    else {
-        rtoutDF <- GetMultiNcdf(indexList=rtoutIndexList, 
-                                  variableList=rtoutVariableList, 
-                                  filesList=rtoutFilesList, parallel=FALSE )
-        }
+                                  filesList=rtoutFilesList, parallel=parallel )
     outDf <- ReshapeMultiNcdf(rtoutDF)
     names(outDf)[names(outDf)=="sfcheadsubrt"] <- 'SFCHEADSUBRT'
     names(outDf)[names(outDf)=="zwattablrt"] <- 'ZWATTABLRT'
