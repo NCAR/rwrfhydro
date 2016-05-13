@@ -23,17 +23,6 @@ to conserve space (DEFAULT=FALSE)}
 \item{runParallel}{logical for running in parallel mode (must have a parallel
 backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)}
 }
-\value{
-NULL
-#' @examples
-## Pull data for May 1-5, 2015.
-\dontrun{
-datadir <- "~/wrfHydroTestCases/OBS/Stage_II/"
-GetStage4Files(startDate="2015050100", endDate="2015050500", 
-                 dataTyp="stage2", dataDir=datadir, 
-                 runParallel=FALSE)
-}
-}
 \description{
 \code{GetStage4Files} downloads Stage IV and Stage II data files
 }
@@ -44,6 +33,15 @@ Stage II data from NCEP ftp site, unpacks them, and removes uncessary
 files (e.g., *.gif). Note for Stage II, only the multi-sensor ("ml") data 
 files are kept while others are removed. Both Stage IV & Stage II datasets 
 contain hourly, 6-hourly, and daily precipitation data.
+}
+\examples{
+## Pull data for May 1-5, 2015.
+\dontrun{
+datadir <- "~/wrfHydroTestCases/OBS/Stage_II/"
+GetStage4Files(startDate="2015050100", endDate="2015050500", 
+                 dataTyp="stage2", dataDir=datadir, 
+                 runParallel=FALSE)
+}
 }
 \author{
 Yuqiong.Liu@noaa.gov (updated by aubreyd)

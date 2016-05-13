@@ -375,7 +375,7 @@ ReadAmerifluxCSV <- function(pathFluxData, timeZone=NULL, utcOffset=NULL) {
 #' @param runParallel logical for running in parallel mode (must have a parallel
 #' backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)
 #' @return NULL
-#' #' @examples
+#' @examples
 #' ## Pull data for May 1-5, 2015.
 #' \dontrun{
 #' datadir <- "~/wrfHydroTestCases/OBS/Stage_II/"

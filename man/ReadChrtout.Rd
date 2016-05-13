@@ -5,7 +5,7 @@
 \title{Read WRF-Hydro CHRTOUT data files.}
 \usage{
 ReadChrtout(pathOutdir, idList = NULL, gageList = NULL, rtlinkFile = NULL,
-  parallel = FALSE)
+  parallel = FALSE, useDatatable = TRUE)
 }
 \arguments{
 \item{pathOutdir}{The full pathname to the output directory containing the 
@@ -23,6 +23,9 @@ reach-based channel routing model runs.}
 
 \item{parallel}{Logical for running in parallel mode (must have a parallel
 backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)}
+
+\item{useDatatable}{Logical for utilizing the data.table package and 
+outputting in data.table format (DEFAULT=TRUE)}
 }
 \value{
 A datatable containing a time series of channel fluxes.
