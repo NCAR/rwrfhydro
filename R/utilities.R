@@ -89,15 +89,15 @@ FlipUD <- function(matrix) apply(matrix,2,rev)
 
 #' Flip a matrix from left to right.
 #' 
-#' \code{flipLR} Flips a matrix from left to to right.
+#' \code{FlipLR} Flips a matrix from left to to right.
 #' @param matrix A matrix.
 #' @examples
-#' x <- matrix[1:9,3]
+#' x <- matrix(1:9,3)
 #' x
-#' flipLR(x)
+#' FlipLR(x)
 #' @keywords internal
 #' @export
-flipLR <- function(matrix) t(apply(matrix,1,rev))
+FlipLR <- function(matrix) t(apply(matrix,1,rev))
 
 #' Translate (i.e. invert) timezones to the so calle Olson names used by
 #' POSIXct.
