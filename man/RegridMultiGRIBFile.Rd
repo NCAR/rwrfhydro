@@ -33,7 +33,7 @@ A dataframe
 Regrid GRIB data spread over multiple files. Typically called
 by RegridMultiGRIB.
 }
-\keyword{dataRegrid}
+\keyword{DataRegrid}
+\keyword{RegridMultiGRIB}
 \keyword{internal}
-\keyword{regridMultiGRIB}
 

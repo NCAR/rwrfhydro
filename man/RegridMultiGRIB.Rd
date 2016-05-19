@@ -68,7 +68,7 @@ levelList <- list(GRIBList1 = GRIBLevels )
 weightFiles <- list(w1='./hrrr_ioc_1km_wghts.nc')
 wghtList <- list(GRIBList1 = weightFiles )
 geoFile <- '/d4/karsten/geospatial/geo_em.d01.nc'
-regridData <- regridMultiGRIB(fileList=fileList,varList=variableList,
+regridData <- RegridMultiGRIB(fileList=fileList,varList=variableList,
                               levList=levelList,wghtList=wghtList,
                               geoFile=geoFile,'bilinear')
 }

@@ -120,7 +120,7 @@ Call 'RegridMultiNcdf', which will return a structured list containing the regri
 data. 
 
 ```{r}
-dataOut <- regridMultiNcdf(fList,vList,latList,lonList,wghtList,geoFile,'bilinear')
+dataOut <- RegridMultiNcdf(fList,vList,latList,lonList,wghtList,geoFile,'bilinear')
 ```
 
 Visualize the data.

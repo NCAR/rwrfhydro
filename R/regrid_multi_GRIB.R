@@ -15,8 +15,8 @@
 #' "bilinear"
 #' @return A dataframe containing the regridded stack.
 #' @keywords internal
-#' @concept dataRegrid
-#' @family regridMultiGRIB
+#' @concept DBataRegrid
+#' @family RegridMultiGRIB
 #' @export
 RegridGRIB <- function(files,var,levType,lev,wghtFile,geoFile,method){
   #Check for existence of GeoFile
@@ -56,8 +56,8 @@ RegridGRIB <- function(files,var,levType,lev,wghtFile,geoFile,method){
   
   #Flip data if south-north flag is not 1. Data is read north-south
   if(geospatialDf$SNFLAG == 0){
-    latGRIB <- flipLR(latGRIB)
-    lonGRIB <- flipLR(lonGRIB)
+    latGRIB <- FlipLR(latGRIB)
+    lonGRIB <- FlipLR(lonGRIB)
   }
   
   #Establish input data stack
@@ -75,13 +75,13 @@ RegridGRIB <- function(files,var,levType,lev,wghtFile,geoFile,method){
     bVerOut[,step] <- as.POSIXct('1900-01-01')
     
     file <- files[step]
-    dataTemp <- extractGRIBGrid(file,var,levType,lev,geospatialDf$NX,
+    dataTemp <- ExtractGRIBGrid(file,var,levType,lev,geospatialDf$NX,
                                 geospatialDf$NY,numFTimes=numFTimes)
     #Flip if read in north-south
     for(fTime in 1:numFTimes){
       dataGrid <- as.matrix(dataTemp$data[,,fTime])
       if(geospatialDf$SNFLAG == 0){
-        dataGrid <- flipLR(dataGrid)
+        dataGrid <- FlipLR(dataGrid)
       }
       dataIn[,,fTime,step] <- dataGrid
       cycleOut[fTime,step] <- dataTemp$cycle[fTime]
@@ -105,7 +105,7 @@ RegridGRIB <- function(files,var,levType,lev,wghtFile,geoFile,method){
     srcDummy <- array(ndv,c(geospatialDf$NX,geospatialDf$NY))
     srcDummy[,] <- dataIn[,,1,1]
     
-    genWghtFile(geoFile,geospatialDf$NX,geospatialDf$NY,latGRIB,lonGRIB,
+    GenWghtFile(geoFile,geospatialDf$NX,geospatialDf$NY,latGRIB,lonGRIB,
                 methodInt,srcDummy,ndv,wghtFile)
     #Double check to make sure file was created.
     if(!file.exists(wghtFile)){
@@ -113,7 +113,7 @@ RegridGRIB <- function(files,var,levType,lev,wghtFile,geoFile,method){
     }
   }
   #Regrid data stack
-  dataOut <- regrid(dataIn,latGRIB,lonGRIB,geoFile,methodInt,wghtFile,ndv)
+  dataOut <- Regrid(dataIn,latGRIB,lonGRIB,geoFile,methodInt,wghtFile,ndv)
   
   nxOut <- dim(dataOut)[1]
   nyOut <- dim(dataOut)[2]
@@ -154,8 +154,8 @@ RegridGRIB <- function(files,var,levType,lev,wghtFile,geoFile,method){
 #' "bilinear"
 #' @return A dataframe
 #' @keywords internal
-#' @keywords dataRegrid
-#' @family regridMultiGRIB
+#' @keywords DataRegrid
+#' @family RegridMultiGRIB
 #' @export 
 RegridMultiGRIBVar <- function(varInd, varList, levTypeList, levList, files,
                                wghtFile,geoFile,method){
@@ -204,8 +204,8 @@ RegridMultiGRIBVar <- function(varInd, varList, levTypeList, levList, files,
 #' "bilinear".
 #' @return A dataframe
 #' @keywords internal
-#' @keywords dataRegrid
-#' @keywords regridMultiGRIB
+#' @keywords DataRegrid
+#' @keywords RegridMultiGRIB
 #' @export
 RegridMultiGRIBFile <- function(fileInd, fileList, varList, levTypeList,
                                 levList,wghtList,geoFile,method){
@@ -321,7 +321,7 @@ RegridMultiGRIBFile <- function(fileInd, fileList, varList, levTypeList,
 #' weightFiles <- list(w1='./hrrr_ioc_1km_wghts.nc')
 #' wghtList <- list(GRIBList1 = weightFiles )
 #' geoFile <- '/d4/karsten/geospatial/geo_em.d01.nc'
-#' regridData <- regridMultiGRIB(fileList=fileList,varList=variableList,
+#' regridData <- RegridMultiGRIB(fileList=fileList,varList=variableList,
 #'                               levList=levelList,wghtList=wghtList,
 #'                               geoFile=geoFile,'bilinear')
 #' }

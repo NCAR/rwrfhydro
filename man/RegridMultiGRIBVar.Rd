@@ -33,8 +33,8 @@ A dataframe
 and regrid a list of variables (for a specified level) to a WRF-Hydro domain.
 }
 \seealso{
-Other regridMultiGRIB: \code{\link{RegridGRIB}}
+Other RegridMultiGRIB: \code{\link{RegridGRIB}}
 }
-\keyword{dataRegrid}
+\keyword{DataRegrid}
 \keyword{internal}
 

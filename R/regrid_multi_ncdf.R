@@ -1,7 +1,7 @@
 #' Extraction and regridding of NetCDF data for multiple files for a 
 #' given variable.
 #'
-#' \code{regridNcdf}: For a list of NetCDF files, extract and regrid
+#' \code{RegridNcdf}: For a list of NetCDF files, extract and regrid
 #' a variable WRF-Hydro domain.
 #'
 #' @param var The GRIB variable being regridded
@@ -15,10 +15,10 @@
 #' "bilinear"
 #' @return A list containing the regridded stack.
 #' @keywords internal
-#' @concept dataRegrid
-#' @family regridMultiNcdf
+#' @concept DataRegrid
+#' @family RegridMultiNcdf
 #' @export 
-regridNcdf <- function(var,files,latVar,lonVar,wghtFile,geoFile,method){
+RegridNcdf <- function(var,files,latVar,lonVar,wghtFile,geoFile,method){
   #Check for existence of GeoFile
   if(!file.exists(geoFile)){
     stop(paste0('ERROR: ',geoFile,' not found.'))
@@ -135,8 +135,8 @@ regridNcdf <- function(var,files,latVar,lonVar,wghtFile,geoFile,method){
 
   #Flip data if south-north flag is not 1. Data is read north-south
   if(snFlag == 0){
-    latArray <- flipLR(latArray)
-    lonArray <- flipLR(lonArray)
+    latArray <- FlipLR(latArray)
+    lonArray <- FlipLR(lonArray)
   }
   #Establish input data stack
   dataIn <- array(ndvSrc,c(nColIn,nRowIn,numFTimes,nSteps))
@@ -159,7 +159,7 @@ regridNcdf <- function(var,files,latVar,lonVar,wghtFile,geoFile,method){
           dataGrid <- as.matrix(dataTemp[,,fTime])
         }
         if(snFlag == 0){
-          dataGrid <- flipLR(dataGrid)
+          dataGrid <- FlipLR(dataGrid)
         }
         #Check to see if valid data was read in.
         if(length(which(dataGrid != ndvSrc)) == 0){
@@ -185,7 +185,7 @@ regridNcdf <- function(var,files,latVar,lonVar,wghtFile,geoFile,method){
     srcDummy <- array(ndvSrc,c(nColIn,nRowIn))
     srcDummy[,] <- dataIn[,,1,1]
   
-    genWghtFile(geoFile,nColIn,nRowIn,latArray,lonArray,methodInt,srcDummy,
+    GenWghtFile(geoFile,nColIn,nRowIn,latArray,lonArray,methodInt,srcDummy,
                 ndvSrc,wghtFile)
 
     #Double check to make sure file was created.
@@ -195,7 +195,7 @@ regridNcdf <- function(var,files,latVar,lonVar,wghtFile,geoFile,method){
   }
 
   #Regrid data stack
-  dataOut <- regrid(dataIn,latArray,lonArray,geoFile,methodInt,wghtFile,ndvSrc)
+  dataOut <- Regrid(dataIn,latArray,lonArray,geoFile,methodInt,wghtFile,ndvSrc)
 
   nxOut <- dim(dataOut)[1]
   nyOut <- dim(dataOut)[2]
@@ -218,9 +218,9 @@ regridNcdf <- function(var,files,latVar,lonVar,wghtFile,geoFile,method){
 }
 
   
-#' The regridMultiNcdf for getting variables out of individual files.
+#' The RegridMultiNcdf for getting variables out of individual files.
 #' 
-#' \code{regridMultiNcdfVar}: For a group of NetCDF files, extract
+#' \code{RegridMultiNcdfVar}: For a group of NetCDF files, extract
 #' and regrid a list of variables to a WRF-Hydro domain.
 #'
 #' @param varInd The variable index.
@@ -234,10 +234,10 @@ regridNcdf <- function(var,files,latVar,lonVar,wghtFile,geoFile,method){
 #' "bilinear"
 #' @return A list
 #' @keywords internal
-#' @keywords dataRegrid
-#' @family regridMultiNcdf
+#' @keywords DataRegrid
+#' @family RegridMultiNcdf
 #' @export 
-regridMultiNcdfVar <- function(varInd, varList, files, latVar, lonVar,
+RegridMultiNcdfVar <- function(varInd, varList, files, latVar, lonVar,
                                wghtFile,geoFile, method){
 
   #Check for existence of GeoFile
@@ -245,7 +245,7 @@ regridMultiNcdfVar <- function(varInd, varList, files, latVar, lonVar,
     stop(paste0('ERROR: ',geoFile,' not found.'))
   }
 
-  outList <- regridNcdf(var = varList[[varInd]],
+  outList <- RegridNcdf(var = varList[[varInd]],
                         files = files,
                         latVar = latVar,
                         lonVar = lonVar,
@@ -258,9 +258,9 @@ regridMultiNcdfVar <- function(varInd, varList, files, latVar, lonVar,
 }
 
 
-#' The regridMultiNcdf for individual file groups.
+#' The RegridMultiNcdf for individual file groups.
 #'
-#' \code{regridMultiNcdfFile} : For this file group, regrid
+#' \code{RegridMultiNcdfFile} : For this file group, regrid
 #' NetCDF data spread over multiple files. Typically called by 
 #' regridMultiNcdf.
 #' 
@@ -275,10 +275,10 @@ regridMultiNcdfVar <- function(varInd, varList, files, latVar, lonVar,
 #' 'bilinear'.
 #' @return A list
 #' @keywords internal
-#' @keywords dataRegrid
-#' @keywords regridMultiNcdf
+#' @keywords DataRegrid
+#' @keywords RegridMultiNcdf
 #' @export
-regridMultiNcdfFile <- function(fileInd,fileList,varList,latList,
+RegridMultiNcdfFile <- function(fileInd,fileList,varList,latList,
                                 lonList,wghtList,geoFile,method){
   #Check for existence of GeoFile
   if(!file.exists(geoFile)){
@@ -304,7 +304,7 @@ regridMultiNcdfFile <- function(fileInd,fileList,varList,latList,
   }
   varInd <- 1:length(varList[[fileInd]])
 
-  outList <- plyr::llply(varInd,regridMultiNcdfVar,
+  outList <- plyr::llply(varInd,RegridMultiNcdfVar,
                          varList = varList[[fileInd]],
                          files = fileList[[fileInd]],
                          latVar = latList[[fileInd]][[1]],
@@ -359,12 +359,12 @@ regridMultiNcdfFile <- function(fileInd,fileList,varList,latList,
 #' wghtFiles <- list(wght1 = "./wght_snodas_ioc_1km.nc")
 #' wghtList <- list(SNODASList1 = wghtFiles
 #' geoFile <- '/d4/karsten/geospatial/geo_em.d01.nc'
-#' regridData <- regridMultiNcdf(fileList=fileList,varList=varList,latList=latList,lonList=lonList,
+#' regridData <- RegridMultiNcdf(fileList=fileList,varList=varList,latList=latList,lonList=lonList,
 #'               wghtList=wghtList,geoFile=geoFile,'bilinear')
 #'
 #' }
 #' @export 
-regridMultiNcdf <- function(fileList,varList,latList,lonList,wghtList,geoFile,method){
+RegridMultiNcdf <- function(fileList,varList,latList,lonList,wghtList,geoFile,method){
   #Check for existence of GeoFile
   if(!file.exists(geoFile)){
     stop(paste0('ERROR: ',geoFile,' not found.'))
@@ -384,7 +384,7 @@ regridMultiNcdf <- function(fileList,varList,latList,lonList,wghtList,geoFile,me
   }
   fileInd <- 1:length(fileList)
  
-  outList <- plyr::llply(fileInd,regridMultiNcdfFile,
+  outList <- plyr::llply(fileInd,RegridMultiNcdfFile,
                          varList=varList,
                          fileList=fileList,
                          latList=latList,
