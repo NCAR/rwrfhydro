@@ -8,7 +8,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 
-<meta name="author" content="James &amp; Aubrey" />
+<meta name="author" content="James McCreight, Aubrey Dugger, Logan Karsten" />
 
 
 <title>rwrfhydro introduction</title>
@@ -62,107 +62,85 @@ img {
 
 <div id="header">
 <h1 class="title">rwrfhydro introduction</h1>
-<h4 class="author"><em>James &amp; Aubrey</em></h4>
+<h4 class="author"><em>James McCreight, Aubrey Dugger, Logan Karsten</em></h4>
 </div>
 
 
 <div id="what-is-rwrfhydro" class="section level4">
 <h4>What is rwrfhydro?</h4>
-<p>A community-contributed tool box for managing, analyzing, and visualizing WRF Hydro input and output files in R.</p>
+<p>A community-contributed tool box for managing, analyzing, and visualizing WRF Hydro input and output files in R (everything but the model and the GIS).</p>
 <p>Intentionally, “rwrfhydro” can be read as “our wrf hydro”. The purpose of this R package is to focus <strong>community development</strong> of tools for working with and analyzing data related to the WRF Hydro model. These tools are both free and open-source, just like R, which should help make them accessible and popular.</p>
 <p>The git hub repository is found here: <a href="https://github.com/mccreigh/rwrfhydro/"><a href="https://github.com/mccreigh/rwrfhydro/" class="uri">https://github.com/mccreigh/rwrfhydro/</a></a>.</p>
 <p>The <a href="https://github.com/mccreigh/rwrfhydro/blob/master/README.Rmd">README.Rmd</a> provides instructions on installing, using, and contributing. Additional resouces for learning R are listed there as well.</p>
 </div>
-<div id="lecture-outline" class="section level1">
-<h1>Lecture Outline</h1>
-<p>This lecture covers installation on the lab computers and discussion of R fundamentals. Then an overview of the existing rwrfhydro functionality with special focus on several of the existing <a href="https://github.com/mccreigh/rwrfhydro/blob/master/vignettes.Rmd">vignettes</a> is provided. Finally, we allow for a free-form exploration of the week’s data with some of these R tools and for individual questions.</p>
-<p>The goal of this lecture is endocterination so that you will help contribute to the rwrfhydro source code.</p>
+<div id="purpose" class="section level1">
+<h1>Purpose</h1>
+<p>This vignette 1) Provides an a list of current vignettes, 2) Covers basic R installation and usage.</p>
+<p>The ultimate goal is endocterination so that you will help contribute to the rwrfhydro source code.</p>
+</div>
+<div id="vignettes" class="section level1">
+<h1>Vignettes</h1>
 <table>
 <colgroup>
-<col width="2%"></col>
-<col width="1%"></col>
-<col width="21%"></col>
-<col width="1%"></col>
-<col width="72%"></col>
+<col width="31%"></col>
+<col width="68%"></col>
 </colgroup>
 <tbody>
 <tr class="odd">
-<td align="right">1.</td>
-<td align="left"></td>
-<td align="left"><a href="#Install">Install</a></td>
-<td align="left"></td>
-<td align="left"></td>
-</tr>
-<tr class="even">
-<td align="right">2.</td>
-<td align="left"></td>
 <td align="left">R Basics</td>
-<td align="left"></td>
-<td align="left">[ <a href="#RBasics">html</a> - <a href="rwrfhydro_intro.Rmd">Rmd</a> - <a href="rwrfhydro_intro.R">R</a> ]</td>
+<td align="left">[ <a href="#RBasics">html</a> - <a href="rwrfhydro_intro.R">R</a> ]</td>
 </tr>
-<tr class="odd">
-<td align="right">3.</td>
-<td align="left"></td>
+<tr class="even">
 <td align="left">rwrfhydro overview</td>
-<td align="left"></td>
-<td align="left">[ <a href="overview.html">html</a> - <a href="overview.Rmd">Rmd</a> - <a href="overview.R">R</a> ]</td>
+<td align="left">[ <a href="overview.html">html</a> - <a href="overview.R">R</a> ]</td>
 </tr>
-<tr class="even">
-<td align="right">4.</td>
-<td align="left"></td>
+<tr class="odd">
 <td align="left">Domain visualization</td>
-<td align="left"></td>
-<td align="left">[ <a href="domainChannelVis.html">html</a> - <a href="domainChannelVis.Rmd">Rmd</a> - <a href="domainChannelVis.R">R</a> ]</td>
-</tr>
-<tr class="odd">
-<td align="right">5.</td>
-<td align="left"></td>
-<td align="left">USGS historical data</td>
-<td align="left"></td>
-<td align="left">[ <a href="usgsObsDb.html">html</a> - <a href="usgsObsDb.Rmd">Rmd</a> - <a href="usgsObsDb.R">R</a> ]</td>
+<td align="left">[ <a href="domainChannelVis.html">html</a> - <a href="domainChannelVis.R">R</a> ]</td>
 </tr>
 <tr class="even">
-<td align="right">6.</td>
-<td align="left"></td>
-<td align="left">Multi-ncdf grabs</td>
-<td align="left"></td>
-<td align="left">[ <a href="getMultiNetcdf.html">html</a> - <a href="getMultiNetcdf.Rmd">Rmd</a> - <a href="getMultiNetcdf.R">R</a> ]</td>
-</tr>
-<tr class="odd">
-<td align="right">7.</td>
-<td align="left"></td>
 <td align="left">Streamflow evaluation</td>
-<td align="left"></td>
-<td align="left">[ <a href="streamflowEval.html">html</a> - <a href="streamflowEval.Rmd">Rmd</a> - <a href="streamflowEval.R">R</a> ]</td>
-</tr>
-<tr class="even">
-<td align="right">8.</td>
-<td align="left"></td>
-<td align="left">Water balance</td>
-<td align="left"></td>
-<td align="left">[ <a href="waterBudget.html">html</a> - <a href="waterBudget.Rmd">Rmd</a> - <a href="waterBudget.R">R</a> ]</td>
+<td align="left">[ <a href="streamflowEvalUsgsObs.html">html</a> - <a href="streamflowEval.R">R</a> ]</td>
 </tr>
 <tr class="odd">
-<td align="right">9.</td>
-<td align="left"></td>
-<td align="left">ET</td>
-<td align="left"></td>
-<td align="left">[ <a href="evapotranspirationEval.html">html</a> - <a href="evapotranspirationEval.Rmd">Rmd</a> - <a href="evapotranspirationEval.R">R</a> ]</td>
+<td align="left">Water balance</td>
+<td align="left">[ <a href="waterBudget.html">html</a> - <a href="waterBudget.R">R</a> ]</td>
 </tr>
 <tr class="even">
-<td align="right">10.</td>
-<td align="left"></td>
-<td align="left">Free-for-all</td>
-<td align="left"></td>
-<td align="left"></td>
+<td align="left">GetMultiNcdf</td>
+<td align="left">[ <a href="getMultiNetcdf.html">html</a> - <a href="getMultiNetcdf.R">R</a> ]</td>
+</tr>
+<tr class="odd">
+<td align="left">ET</td>
+<td align="left">[ <a href="evapotranspirationEval.html">html</a> - <a href="evapotranspirationEval.R">R</a> ]</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>-The following require optional</strong></td>
+<td align="left"><strong>libraries or compiled code.-</strong></td>
+</tr>
+<tr class="odd">
+<td align="left">Regridding (devCompile branch)</td>
+<td align="left">[ <a href="foo.html">html</a> - <a href="foo.R">R</a> ]</td>
+</tr>
+<tr class="even">
+<td align="left">Geospatial Tools (rgdal)</td>
+<td align="left">[ <a href="geoSpatialTools.html">html</a> - <a href="geospatialTools.R">R</a> ]</td>
+</tr>
+<tr class="odd">
+<td align="left">Precipitation evalation (rgdal)</td>
+<td align="left">[ <a href="precipitationEvaluation.html">html</a> - <a href="precipitationEvaluation.R">R</a> ]</td>
+</tr>
+<tr class="even">
+<td align="left">MODIS (modis)</td>
+<td align="left">[ <a href="modisProcessing.html">html</a> - <a href="modisProcessing.R">R</a> ]</td>
 </tr>
 </tbody>
 </table>
 <hr />
 <p><a id="Install"></a></p>
 </div>
-<div id="install" class="section level1">
-<h1>Install</h1>
+<div id="installation-tips" class="section level1">
+<h1>Installation Tips</h1>
 <p>The <a href="https://github.com/mccreigh/rwrfhydro/blob/master/README.Rmd#installing">installation instructions</a> require a minor detour for 2 reasons: 1) ncdf4 in a non-standard location, 2) there is no local R library yet. First we’ll install <code>devtools</code>.</p>
 <p>In the terminal:</p>
 <pre class="bash"><code>R
@@ -268,7 +246,7 @@ identical(result1,result2)</code></pre>
 ##  $ result: num 9
 ##  $ func  :function (x)  
 ##   ..- attr(*, &quot;srcref&quot;)=Class 'srcref'  atomic [1:8] 1 14 4 1 14 1 1 4
-##   .. .. ..- attr(*, &quot;srcfile&quot;)=Classes 'srcfilecopy', 'srcfile' &lt;environment: 0x7ffdab10c5c0&gt;</code></pre>
+##   .. .. ..- attr(*, &quot;srcfile&quot;)=Classes 'srcfilecopy', 'srcfile' &lt;environment: 0x7fe55c002580&gt;</code></pre>
 <p>The result of this function is not a scalar or vector, it is a <code>list</code> object which contains a possibly arbitrary collection of things. The <code>list</code> object is the fundamental way to get more than a single object out of a function. The <code>str()</code> function reveals the structure of objects, including <code>lists</code>. It helps structure complicated, hierarchical items as we’ll see later. It also provides object type and class information.</p>
 <p><a id="Lists"></a></p>
 </div>
@@ -306,7 +284,7 @@ str(result1)</code></pre>
 ##  $ names.b  : num 9
 ##  $ names.(c):function (x)  
 ##   ..- attr(*, &quot;srcref&quot;)=Class 'srcref'  atomic [1:8] 1 14 4 1 14 1 1 4
-##   .. .. ..- attr(*, &quot;srcfile&quot;)=Classes 'srcfilecopy', 'srcfile' &lt;environment: 0x7ffdab10c5c0&gt;</code></pre>
+##   .. .. ..- attr(*, &quot;srcfile&quot;)=Classes 'srcfilecopy', 'srcfile' &lt;environment: 0x7fe55c002580&gt;</code></pre>
 <pre class="r"><code>result1$names.b</code></pre>
 <pre><code>## [1] 9</code></pre>
 <pre class="r"><code>result1$`names.(c)`(2)   ## backquote can handle illegal names </code></pre>
@@ -415,8 +393,9 @@ mtcars$names &lt;- NULL                       ## remove a column</code></pre>
 <h2>Serious list example</h2>
 <p>One example of a very complicated list is all the netcdf meta data.</p>
 <pre class="r"><code>ncFile &lt;- '~/wrfHydroTestCases/Fourmile_Creek/RUN.RTTESTS/OUTPUT_CHRT_DAILY/2013051600.LDASOUT_DOMAIN1'
-library(ncdf4)
-ncid &lt;- nc_open(ncFile)</code></pre>
+library(ncdf4)</code></pre>
+<pre><code>## Warning: package 'ncdf4' was built under R version 3.2.3</code></pre>
+<pre class="r"><code>ncid &lt;- nc_open(ncFile)</code></pre>
 (Click on the color-boxed section below to skip to its end.) <br>
 <div style="border:2px solid; border-color:blue; border-radius: 25px; padding: 12px 25px;">
 <p><a href="#endofblue" style="text-decoration: none;"></p>
@@ -10029,7 +10008,7 @@ print(try(ttt))</code></pre>
 ##         z$qr &lt;- NULL
 ##     z
 ## }
-## &lt;bytecode: 0x7ffdab8cc110&gt;
+## &lt;bytecode: 0x7fe5620bccd8&gt;
 ## &lt;environment: namespace:stats&gt;</code></pre>
 <p>Beyond reading the body of the text, note that the arguments are listed at the top with default values following <code>=</code>. The <code>...</code> argument is for passing arguments to “low-level” regression functions (described in <code>?lm</code>). We also see that the function belongs to the <code>stats</code> namespace.</p>
 <p>See also (not run here):</p>
@@ -10058,13 +10037,15 @@ print(try(ttt))</code></pre>
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] ncdf4_1.13
+## [1] ncdf4_1.15
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] plyr_1.8.2         formatR_1.2        tools_3.2.0       
-##  [4] htmltools_0.2.6    yaml_2.1.13        rwrfhydro_1.0.9000
-##  [7] Rcpp_0.11.5        rmarkdown_0.5.3.2  knitr_1.10        
-## [10] stringr_0.6.2      digest_0.6.8       evaluate_0.7</code></pre>
+##  [1] plyr_1.8.3         magrittr_1.5       formatR_1.2       
+##  [4] tools_3.2.0        htmltools_0.2.6    yaml_2.1.13       
+##  [7] rwrfhydro_1.0.9000 Rcpp_0.12.4        stringi_1.0-1     
+## [10] rmarkdown_0.5.3.2  data.table_1.9.6   knitr_1.10        
+## [13] stringr_1.0.0      digest_0.6.9       chron_2.3-47      
+## [16] evaluate_0.7</code></pre>
 <pre class="r"><code>library(rwrfhydro)  ## this adds rwrfhydro to the 'other attached packages' list</code></pre>
 <pre><code>## To check rwrfhydro updates run: CheckForUpdates()</code></pre>
 <pre class="r"><code>sessionInfo()</code></pre>
@@ -10079,13 +10060,14 @@ print(try(ttt))</code></pre>
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] rwrfhydro_1.0.9000 ncdf4_1.13        
+## [1] rwrfhydro_1.0.9000 ncdf4_1.15        
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] plyr_1.8.2        formatR_1.2       tools_3.2.0      
-##  [4] htmltools_0.2.6   yaml_2.1.13       Rcpp_0.11.5      
-##  [7] rmarkdown_0.5.3.2 knitr_1.10        stringr_0.6.2    
-## [10] digest_0.6.8      evaluate_0.7</code></pre>
+##  [1] plyr_1.8.3        magrittr_1.5      formatR_1.2      
+##  [4] tools_3.2.0       htmltools_0.2.6   yaml_2.1.13      
+##  [7] Rcpp_0.12.4       stringi_1.0-1     rmarkdown_0.5.3.2
+## [10] data.table_1.9.6  knitr_1.10        stringr_1.0.0    
+## [13] digest_0.6.9      chron_2.3-47      evaluate_0.7</code></pre>
 <pre class="r"><code>PlotFdc  ## this function is available in the global environment.</code></pre>
 <pre><code>## function (strDf, strCol = &quot;q_cms&quot;, spline = TRUE, fdcProb = NULL) 
 ## {
@@ -10133,13 +10115,15 @@ head(reshape2::melt(mtcars[,c(&quot;mpg&quot;,&quot;cyl&quot;,&quot;disp&quot;,&
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] rwrfhydro_1.0.9000 ncdf4_1.13        
+## [1] rwrfhydro_1.0.9000 ncdf4_1.15        
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] plyr_1.8.2        formatR_1.2       tools_3.2.0      
-##  [4] htmltools_0.2.6   reshape2_1.4.1    yaml_2.1.13      
-##  [7] Rcpp_0.11.5       rmarkdown_0.5.3.2 knitr_1.10       
-## [10] stringr_0.6.2     digest_0.6.8      evaluate_0.7</code></pre>
+##  [1] Rcpp_0.12.4       digest_0.6.9      chron_2.3-47     
+##  [4] plyr_1.8.3        formatR_1.2       magrittr_1.5     
+##  [7] evaluate_0.7      stringi_1.0-1     reshape2_1.4.1   
+## [10] data.table_1.9.6  rmarkdown_0.5.3.2 tools_3.2.0      
+## [13] stringr_1.0.0     yaml_2.1.13       htmltools_0.2.6  
+## [16] knitr_1.10</code></pre>
 <pre class="r"><code>print(try(melt))  ## since plyr is not attached, the melt function is not available.</code></pre>
 <pre><code>## [1] &quot;Error in try(melt) : object 'melt' not found\n&quot;
 ## attr(,&quot;class&quot;)

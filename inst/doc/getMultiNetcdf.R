@@ -18,19 +18,13 @@
 library("rwrfhydro")
 
 #' 
-## ----, echo=FALSE--------------------------------------------------------
+## ---- echo=FALSE---------------------------------------------------------
 options(width = 190)
 
 #' 
-#' Set the WRF Hydro test case directory, this should be the only thing you need to customize to your machine. 
+#' Set the WRF Hydro test case directory, this should be the only thing you need to customize to your machine. We'll use daily data from the Fourmile Creek test case where the full routing physics are used. 
 ## ------------------------------------------------------------------------
-tcPath <- '~/wrfHydroTestCases/'
-
-#' 
-#' We'll use daily data from the Fourmile Creek test case where only channel routing (CHRT) is used. 
-## ------------------------------------------------------------------------
-fcPath <- paste0(tcPath,'Fourmile_Creek/')
-dataPath <- paste0(fcPath,'/RUN.RTTESTS/OUTPUT_CHRT_DAILY/')
+dataPath <- '~/wrfHydroTestCases/Fourmile_Creek_testcase_v2.0/run.FullRouting/'
 
 #' 
 #' # List-based data retrieval
@@ -61,7 +55,7 @@ varList <- list(lsm=lsmVars, hydro=hydroVars)
 #' Our statistic example is to calculate basin-average radiative temperature, basin-maximum snow water equivalent, and basin-average soil moisture on each layer. Since all of these variables are on the low-res grid, we need the basin mask from the high-res grid resampled to the low-res geogrid. We use the CreateBasinMask function to generate a basin mask weight grid (each cell value is the fraction of basin within that cell). We specify the path to the high-res routing grid (which contains the basin mask variable), the basin ID we want to run (1), and the aggregation factor between the high-res and low-res grids (10).
 ## ------------------------------------------------------------------------
 library(ncdf4)
-basinMask <- CreateBasinMask(paste0(fcPath,'DOMAIN/Fulldom_hydro_OrodellBasin_100m.nc'), 
+basinMask <- CreateBasinMask(paste0(dataPath,'DOMAIN/Fulldom_hires_hydrofile.Fourmile100m.nc'), 
                              basid=1, aggfact=10)
 
 #' 
@@ -102,11 +96,12 @@ fileData <- GetMultiNcdf(filesList=flList, variableList=varList, indexList=indLi
 ## ------------------------------------------------------------------------
 str(fileData)
 
+#' 
 #' The `fileData` dataframe shows the time (`POSIXct`) at which certain indices (`inds`) were summarized with statistic `stat` for each `variable` (variable names in the file, e.g. sh2ox) The resulting `value` is given with the `variableGroup` (e.g. smc1-4 and not sh2ox) and `fileGroup`. 
 #' 
 #' # Plot the timeseries
 #' This output format is easily plotted using `ggplot2`. 
-## ----,results='hold', fig.width = 12, fig.height = 10.29*1.2, out.width='700', out.height='720'----
+## ----results='hold', fig.width = 12, fig.height = 10.29*1.2, out.width='700', out.height='720'----
 library(ggplot2)
 library(scales)
 ggplot(fileData, aes(x=POSIXct, y=value, color=fileGroup)) +
