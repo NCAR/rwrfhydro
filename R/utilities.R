@@ -671,3 +671,14 @@ AsCharLongInt <- function(vec) {
   format((vec), trim=TRUE, nsmall=0, scientific=0,digits=16)
 }
 
+
+##' The standard posix origin 1970-01-01
+##' 
+##' \code{PosixOrigin} as either a character string or a POSIXct.
+##' @param as.POSIX Logical for return type.
+##' @param tz Character string for time zone to use.
+##' @return The standard POSIX origin in requested format.
+##' @keywords utilities internal
+##' @export
+PosixOrigin <- function(as.POSIX=FALSE, tz='UTC')
+  if(as.POSIX) as.POSIXct('1970-01-01 00:00:00', tz=tz) else '1970-01-01 00:00:00'
