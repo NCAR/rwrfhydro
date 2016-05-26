@@ -19,7 +19,7 @@ library("rwrfhydro")
 
 Set a data path to the Fourmile Creek test case.
 ```{r}
-dataPath <- '~/wrfHydroTestCases/Fourmile_Creek'
+dataPath <- '~/wrfHydroTestCases/Fourmile_Creek_testcase_v2.0/'
 ```
 
 # Setup the MODIS-R tool.
@@ -39,7 +39,8 @@ library(ncdf4)
 # Sys.setenv(PATH=bashPath)
 gdalPath <- sub("gdalinfo", replacement="", system("which gdalinfo", intern=TRUE))
 MODISoptions(localArcPath="~/wrfHydroTestCases/MODIS_ARC", 
-             outDirPath="~/wrfHydroTestCases/MODIS_ARC/PROCESSED", gdalPath=gdalPath)
+             outDirPath="~/wrfHydroTestCases/MODIS_ARC/PROCESSED", gdalPath=gdalPath,
+             stubbornness="low")
 ```
 
 
@@ -48,7 +49,7 @@ MODISoptions(localArcPath="~/wrfHydroTestCases/MODIS_ARC",
 Here we download the relevant MODIS tiles and resample to the Fourmile Creek geogrid. The GetMODIS tool calls the MODIS-R runGdal tool to identify the required MODIS tiles to cover the domain, download the appropriate product tiles, mosaic them, and clip/resample (nearest neighbor) to the geogrid extent and resolution. The result will be a directory of processed TIF images in the outDirPath specified in MODISoptions. We specify the geogrid, a start and end date, and the MOD15A2 (FPAR/LAI) MODIS product name.
 
 ```{r}
-GetMODIS(geogrdPath=paste0(dataPath, '/DOMAIN/geo_em.d01_1km_nlcd11.nc'), prodName="MOD15A2",  
+GetMODIS(extent=paste0(dataPath, '/DOMAIN/geo_em_d01.Fourmile1km.nlcd11.nc'), prodName="MOD15A2",  
          outDir="FOURMILE_LAI", begin="2013.03.01", end="2013.07.31",
          exclList=list("Fpar_1km"="gt 100", 
                        "Lai_1km"="gt 100", 
@@ -89,7 +90,7 @@ library(printr)
 <br>
 We can export the processed raster stack to a NetCDF file for use outside of R.
 ```{r}
-ConvertStack2NC(lai.b, outFile=paste0(dataPath, '/ANALYSIS/FOURMILE_LAI_SUM13.nc'), 
+ConvertStack2NC(lai.b, outFile=paste0(dataPath, '/DOMAIN/FOURMILE_LAI_SUM13.nc'), 
                 varName="LAI", varUnit="(m^2)/(m^2)", varLong="Leaf area index", varNA=-1.e+36)
 ```
 

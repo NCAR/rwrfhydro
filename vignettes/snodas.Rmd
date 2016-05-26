@@ -32,27 +32,26 @@ snodasPath <- '~/wrfHydroTestCases/snodas/'
 Grab a single date (both depth and SWE) and transform to netcdf. For the sake of illustration, grab three days ago.
 ```{r, results='hold'} 
 threeDaysBack <- Sys.Date() + lubridate::period(-3,'day')
-snodasGot <- GetSnodasDepthSweDate(threeDaysBack, outputDir=snodasPath)
+snodasGot <- GetSnodasDepthSweDate(threeDaysBack, outputDir=snodasPath, overwrite=TRUE)
 if(snodasGot) {
   snodasList <- ReadSnodasDepthSweDate(threeDaysBack, outputDir=snodasPath)
   snodasNcFile <- PutSnodasNcdf(snodasList, outputDir=snodasPath)
   snodasNcFile
 }
-
 ```
 
 # Read ncdf and visualize
 ```{r, , fig.width = 12, fig.height = 6*1.5, out.width='700', out.height='525'}
 swe <- ncdump(snodasNcFile, variable = 'SWE')
-## There were some serious outliers three days ago.
-swe[swe>quantile(as.vector(swe),.999, na.rm=TRUE)] <- NA
+## Filter outliers.
+swe[swe>quantile(as.vector(swe), .999, na.rm=TRUE)] <- NA
 image(swe)
 ```
 
 # Update 
 The above can be repeated over multiple dates one might want to get, for example from three days ago until now
 ```{r, results='hold'}
-datesWanted <- seq(threeDaysBack,Sys.Date(), by = 'days')
+datesWanted <- seq(threeDaysBack, Sys.Date(), by = 'days')
 datesWanted    
 ```
 

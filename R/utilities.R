@@ -87,6 +87,18 @@ RotateCcw <- function(matrix) apply(matrix, 1, rev)
 #' @export
 FlipUD <- function(matrix) apply(matrix,2,rev)
 
+#' Flip a matrix from left to right.
+#' 
+#' \code{FlipLR} Flips a matrix from left to to right.
+#' @param matrix A matrix.
+#' @examples
+#' x <- matrix(1:9,3)
+#' x
+#' FlipLR(x)
+#' @keywords internal
+#' @export
+FlipLR <- function(matrix) t(apply(matrix,1,rev))
+
 #' Translate (i.e. invert) timezones to the so calle Olson names used by
 #' POSIXct.
 #' 
@@ -302,24 +314,50 @@ CalcCOM <- function (x) {
     ts
 }
 
+#' Calculate Richards-Baker Flashiness Index.
+#' 
+#' \code{RBFlash} calculates the Richards-Baker Flashiness Index.
+#' Calculate the Richards-Baker Flashiness Index for vectors
+#' of modelled or observed values.
+#' @param m The vector of values.
+#' @return The Richards-Baker Flashiness Index.
+#' @keywords internal
+#' @export
+RBFlash <- function (m) {
+    sum(abs(diff(m)), na.rm=TRUE)/sum(m, na.rm=TRUE)
+}
+
 #' "Flatten" the output from GetMultiNcdf
 #' 
 #' \code{ReshapeMultiNcdf} flattens the output from GetMultiNcdf.
 #' Take the output dataframe from GetMultiNcdf and reshape the dataframe
 #' for ease of use in other functions.
 #' @param myDf The output dataframe from GetMultiNcdf.
-#' @return The reshaped output dataframe.
+#' @return The reshaped output dataframe(s) (a single dataframe if
+#' only one fileGroup, a list of multiple dataframes if multiple
+#' fileGroups.
 #' @keywords utilities internal
 #' @export
 ReshapeMultiNcdf <- function(myDf) {
-    newDF <- subset(myDf[,c("POSIXct","stat","statArg")], myDf$variableGroup==unique(myDf$variableGroup)[1])
-    for (i in unique(myDf$variableGroup)) {
-        newDF[,i] <- subset(myDf$value, myDf$variableGroup==i)
+  newDfList <- list()
+  for (j in unique(myDf$fileGroup)) {
+    mysubDf <- subset(myDf, myDf$fileGroup==j)
+    newDf <- subset(mysubDf[,c("POSIXct","stat","statArg")], 
+                    mysubDf$variableGroup==unique(mysubDf$variableGroup)[1])
+    for (i in unique(mysubDf$variableGroup)) {
+        newDf[,i] <- subset(mysubDf$value, mysubDf$variableGroup==i)
         }
-    newDF$wy <- ifelse(as.numeric(format(newDF$POSIXct,"%m"))>=10,
-                       as.numeric(format(newDF$POSIXct,"%Y"))+1,
-                       as.numeric(format(newDF$POSIXct,"%Y")))
-    newDF
+    newDf$wy <- ifelse(as.numeric(format(newDf$POSIXct,"%m"))>=10,
+                       as.numeric(format(newDf$POSIXct,"%Y"))+1,
+                       as.numeric(format(newDf$POSIXct,"%Y")))
+    if (length(unique(myDf$fileGroup))==1) {
+      return(newDf)
+    } else {
+      newDfList <- c(newDfList, list(newDf))
+    }
+  } # end for loop in fileGroup
+  names(newDfList) <- unique(myDf$fileGroup)
+  return(newDfList)    
 }
 
 #' Create and or name a list with its entries.
@@ -559,7 +597,8 @@ CalcMonthDays <- function(mo, yr) {
 #' @keywords utilities internal
 #' @export
 CalcDateTrunc <- function(timePOSIXct, timeZone="UTC") {
-  timeDate <- as.Date(trunc(as.POSIXct(format(timePOSIXct, tz=timeZone), tz=timeZone), "days"))
+  timeDate <- as.Date(trunc(as.POSIXct(format(timePOSIXct, tz=timeZone), 
+                                       tz=timeZone), "days"))
   return(timeDate)
 }
 

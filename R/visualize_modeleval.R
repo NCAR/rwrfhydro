@@ -71,7 +71,8 @@ PlotFluxCompare <- function(strDf.obs, strCol.obs="q_cms",
                             strDf.mod1, strCol.mod1="q_cms",
                             strDf.mod2=NULL, strCol.mod2="q_cms",
                             stdate=NULL, enddate=NULL, logy=FALSE,
-                            labelObs="Observed", labelMod1="Model 1", labelMod2="Model 2",
+                            labelObs="Observed", 
+                            labelMod1="Model 1", labelMod2="Model 2",
                             title="Observed and Modelled Fluxes",
                             colorObs="black", colorMod1="green2", colorMod2="blue") {
     # PREP DATA
@@ -83,10 +84,13 @@ PlotFluxCompare <- function(strDf.obs, strCol.obs="q_cms",
       stop("No time/date column (checked: POSIXct or Date). Exiting.")
     }
     if (!is.null(stdate) && !is.null(enddate)) {
-        strDf.obs <- subset(strDf.obs, strDf.obs[,dateCol]>=stdate & strDf.obs[,dateCol]<=enddate)
-        strDf.mod1 <- subset(strDf.mod1, strDf.mod1[,dateCol]>=stdate & strDf.mod1[,dateCol]<=enddate)
+        strDf.obs <- subset(strDf.obs, strDf.obs[,dateCol]>=stdate & 
+                              strDf.obs[,dateCol]<=enddate)
+        strDf.mod1 <- subset(strDf.mod1, strDf.mod1[,dateCol]>=stdate & 
+                               strDf.mod1[,dateCol]<=enddate)
         if (!is.null(strDf.mod2)) {
-            strDf.mod2 <- subset(strDf.mod2, strDf.mod2[,dateCol]>=stdate & strDf.mod2[,dateCol]<=enddate)
+            strDf.mod2 <- subset(strDf.mod2, strDf.mod2[,dateCol]>=stdate & 
+                                   strDf.mod2[,dateCol]<=enddate)
             }
         ttext <- paste0(title, " (", stdate, " to ", enddate, ")")
         }
@@ -98,39 +102,49 @@ PlotFluxCompare <- function(strDf.obs, strCol.obs="q_cms",
     if (!is.null(strDf.mod2)) {
         strDf.mod2$qcomp.mod2 <- strDf.mod2[,strCol.mod2]
     }
-    strDf <- merge(strDf.obs[c(dateCol,"qcomp.obs")], strDf.mod1[c(dateCol,"qcomp.mod1")], by=c(dateCol))
+    strDf <- merge(strDf.obs[c(dateCol,"qcomp.obs")], 
+                   strDf.mod1[c(dateCol,"qcomp.mod1")], by=c(dateCol))
     if (!is.null(strDf.mod2)) {
         strDf <- merge(strDf, strDf.mod2[c(dateCol,"qcomp.mod2")], by<-c(dateCol))
         }
     # STATS
     nseflow1 <- round(Nse(strDf$qcomp.mod1, strDf$qcomp.obs), 2)
-    biasflow1 <- round(sum(strDf$qcomp.mod1-strDf$qcomp.obs, na.rm=TRUE)/sum(strDf$qcomp.obs, na.rm=TRUE) * 100, 1)
+    biasflow1 <- round(sum(strDf$qcomp.mod1-strDf$qcomp.obs, na.rm=TRUE)/
+                         sum(strDf$qcomp.obs, na.rm=TRUE) * 100, 1)
     maxflow <- max(max(strDf$qcomp.obs, na.rm=TRUE), max(strDf$qcomp.mod1, na.rm=TRUE))
     minflow <- min(min(strDf$qcomp.obs, na.rm=TRUE), min(strDf$qcomp.mod1, na.rm=TRUE))
     if (!is.null(strDf.mod2)) {
         maxflow <- max(maxflow, max(strDf$qcomp.mod2, na.rm=TRUE))
         minflow <- min(minflow, min(strDf$qcomp.mod2, na.rm=TRUE))
         nseflow2 <- round(Nse(strDf$qcomp.mod2, strDf$qcomp.obs), 2)
-        biasflow2 <- round(sum(strDf$qcomp.mod2-strDf$qcomp.obs, na.rm=TRUE)/sum(strDf$qcomp.obs, na.rm=TRUE) * 100, 1)
+        biasflow2 <- round(sum(strDf$qcomp.mod2-strDf$qcomp.obs, na.rm=TRUE)/
+                             sum(strDf$qcomp.obs, na.rm=TRUE) * 100, 1)
         }
     # PLOT
     if (logy) {
-        plot(strDf[,dateCol], log10(strDf$qcomp.mod1), typ='l', log='y', col=colorMod1, ylab=paste0(strCol.mod1),
+        plot(strDf[,dateCol], log10(strDf$qcomp.mod1), typ='l', log='y', 
+             col=colorMod1, ylab=paste0(strCol.mod1),
                                 xlab=dateCol, main=ttext, ylim=c(minflow,maxflow))
         }
     else {
-        plot(strDf[,dateCol], strDf$qcomp.mod1, typ='l', col=colorMod1, ylab=paste0(strCol.mod1),
+        plot(strDf[,dateCol], strDf$qcomp.mod1, typ='l', col=colorMod1, 
+             ylab=paste0(strCol.mod1),
                                 xlab=dateCol, main=ttext, ylim=c(minflow,maxflow))
         }
     if (!is.null(strDf.mod2)) { lines(strDf[,dateCol], strDf$qcomp.mod2, col=colorMod2) }
     lines(strDf[,dateCol], strDf$qcomp.obs, col=colorObs)
     if (!is.null(strDf.mod2)) {
-        legend('topright', c(labelMod1, labelMod2, labelObs), col=c(colorMod1,colorMod2,colorObs), lty=c(1,1,1), bg="white")
-        mtext(c(paste0("MODEL1: NSE=", nseflow1, " Bias=", biasflow1, "%  MODEL2: NSE=", nseflow2, " Bias=", biasflow2, "%")), side=3, line=0.0, cex=0.9)
+        legend('topright', c(labelMod1, labelMod2, labelObs), 
+               col=c(colorMod1,colorMod2,colorObs), lty=c(1,1,1), bg="white")
+        mtext(c(paste0("MODEL1: NSE=", nseflow1, " Bias=", biasflow1, 
+                       "%  MODEL2: NSE=", nseflow2, " Bias=", biasflow2, "%")), 
+              side=3, line=0.0, cex=0.9)
         }
     else {
-        legend('topright', c(labelMod1, labelObs), col=c(colorMod1,colorObs), lty=c(1,1), bg="white")
-        mtext(c(paste0("MODEL: NSE=", nseflow1, " Bias=", biasflow1, "%")), side=3, line=0.0, cex=0.9)
+        legend('topright', c(labelMod1, labelObs), col=c(colorMod1,colorObs), 
+               lty=c(1,1), bg="white")
+        mtext(c(paste0("MODEL: NSE=", nseflow1, " Bias=", biasflow1, "%")), 
+              side=3, line=0.0, cex=0.9)
         }
 }
 
@@ -175,15 +189,20 @@ PlotWatBudg <- function(wbDf, plottyp="pie") {
     if (plottyp == "pie") {
         if (wbDf$STOR_FRAC > 0) {
             lbls_pcts[length(lbls_pcts)+1] <- paste0("Change in\nStorage", "\n",
-                                                round( with( wbDf, (LSM_DELSOILM + LSM_DELSWE + LSM_DELCANWAT +
-                                                ifelse(is.na(HYD_DELSFCHEAD), 0.0, HYD_DELSFCHEAD) +
-                                                ifelse(is.na(WB_DELGWSTOR), 0.0, WB_DELGWSTOR)) / LSM_PRCP * 100), 1), "%")
+                                                round( with( wbDf, (LSM_DELSOILM + 
+                                                                      LSM_DELSWE + 
+                                                                      LSM_DELCANWAT +
+                                                ifelse(is.na(HYD_DELSFCHEAD), 0.0, 
+                                                       HYD_DELSFCHEAD) +
+                                                ifelse(is.na(WB_DELGWSTOR), 0.0, WB_DELGWSTOR)) / 
+                                                  LSM_PRCP * 100), 1), "%")
             pie(as.matrix(with(wbDf, c(LSM_ECAN, LSM_ETRAN, LSM_EDIR,
                                         (WB_SFCRNOFF + ifelse(is.na(HYD_QBDRY), 0.0, HYD_QBDRY)),
                                         WB_GWOUT, LSM_DELSOILM + LSM_DELSWE + LSM_DELCANWAT +
                                         ifelse(is.na(HYD_DELSFCHEAD), 0.0, HYD_DELSFCHEAD) +
                                         ifelse(is.na(WB_DELGWSTOR), 0.0, WB_DELGWSTOR)))),
-                col=c("chartreuse3","darkgreen","darkgoldenrod2","cornflowerblue","darkblue","grey30"),
+                col=c("chartreuse3","darkgreen","darkgoldenrod2",
+                      "cornflowerblue","darkblue","grey30"),
                 main=c("Water Budget"), labels=lbls_pcts)
             }
         else {
@@ -209,17 +228,24 @@ PlotWatBudg <- function(wbDf, plottyp="pie") {
                                         ifelse(is.na(HYD_DELSFCHEAD), 0.0, HYD_DELSFCHEAD) +
                                         ifelse(is.na(WB_DELGWSTOR), 0.0, WB_DELGWSTOR),
                                         LSM_ECAN, LSM_ETRAN, LSM_EDIR,
-                                        (WB_SFCRNOFF + ifelse(is.na(HYD_QBDRY), 0.0, HYD_QBDRY)),
+                                        (WB_SFCRNOFF + 
+                                           ifelse(is.na(HYD_QBDRY), 0.0, HYD_QBDRY)),
                                         WB_GWOUT))
         plotDf1 <- abs(plotDf)
         ylabs <- round(c(0,cumsum(plotDf1))-((plotDf1[1]-plotDf[1])/2),0)
         par(mar = c(5.1, 4.1, 5.1, 12.1), xpd = TRUE)
         barplot(as.matrix(plotDf1), axes=FALSE,
             col=c("grey70", "chartreuse", "darkgreen", "orange", "cornflowerblue", "darkblue"),
-            main=c("Water Budget"), xlim=c(0,1), width=0.6, space=0.2, ylab=c("Total Water (mm)"))
+            main=c("Water Budget"), xlim=c(0,1), width=0.6, space=0.2, 
+            ylab=c("Total Water (mm)"))
         axis(2,c(0,cumsum(plotDf1)),labels=ylabs)
-        if (plotDf[1]>=0) { segments(0.0, 0.0, 1.0, 0.0, lty=2) } else { segments(0.0, cumsum(plotDf1)[1], 1.0, cumsum(plotDf1)[1], lty=2) }
-        legend("topright", legend=lbls_pcts,fill=c("chartreuse", "darkgreen", "orange", "cornflowerblue", "darkblue","grey70"),
+        if (plotDf[1]>=0) {
+          segments(0.0, 0.0, 1.0, 0.0, lty=2) 
+        } else { 
+          segments(0.0, cumsum(plotDf1)[1], 1.0, cumsum(plotDf1)[1], lty=2) }
+        legend("topright", legend=lbls_pcts,fill=c("chartreuse", "darkgreen", 
+                                                   "orange", "cornflowerblue", 
+                                                   "darkblue","grey70"),
             inset=c(-0.5, 0), bg=c("white"), yjust=0.5, y.intersp=2)
         } # end bar
 }
