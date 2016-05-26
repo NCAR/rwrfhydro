@@ -172,6 +172,9 @@ RegridNcdf <- function(var,files,latVar,lonVar,wghtFile,geoFile,method){
     }
   }
 
+  # Close NetCDF file
+  ncdf4::nc_close(ncId)
+  
   #Set NA values to ndvSrc as they are not read in by the NetCDF
   #library, but set to NA This is needed for the regridding routine.
   dataIn[which(is.na(dataIn))] <- ndvSrc
