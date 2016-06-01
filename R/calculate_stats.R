@@ -34,6 +34,8 @@ CalcNoahmpFluxes <- function(ldasoutDf, idCol=NULL) {
       ldasoutDf$DEL_ACCETRAN[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACCETRAN) }
     if ("ACCEDIR" %in% colnames(ldasoutDf)) { 
       ldasoutDf$DEL_ACCEDIR[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACCEDIR) }
+    if ("ACCET" %in% colnames(ldasoutDf)) { 
+      ldasoutDf$DEL_ACCET[2:nrow(ldasoutDf)] <- diff(ldasoutDf$ACCET) }
     if ("UGDRNOFF" %in% colnames(ldasoutDf)) { 
       ldasoutDf$DEL_UGDRNOFF[2:nrow(ldasoutDf)] <- diff(ldasoutDf$UGDRNOFF) }
     if ("SFCRNOFF" %in% colnames(ldasoutDf)) { 
@@ -65,6 +67,10 @@ CalcNoahmpFluxes <- function(ldasoutDf, idCol=NULL) {
         tmp <- subset(ldasoutDf$ACCETRAN, ldasoutDf[,idCol]==idList[i])
         tmp <- c(NA, diff(tmp))
         ldasoutDf$DEL_ACCETRAN[ldasoutDf[,idCol]==idList[i]] <- tmp }
+      if ("ACCET" %in% colnames(ldasoutDf)) {
+            tmp <- subset(ldasoutDf$ACCET, ldasoutDf[,idCol]==idList[i])
+            tmp <- c(NA, diff(tmp))
+            ldasoutDf$DEL_ACCET[ldasoutDf[,idCol]==idList[i]] <- tmp }
       if ("SFCRNOFF" %in% colnames(ldasoutDf)) {
         tmp <- subset(ldasoutDf$SFCRNOFF, ldasoutDf[,idCol]==idList[i])
         tmp <- c(NA, diff(tmp))
