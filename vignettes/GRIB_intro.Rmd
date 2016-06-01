@@ -79,7 +79,7 @@ first instance of the variable it encounters. Output will include not only
 the grid, but the missing value, long name, units, model cycle, and 
 additional time stamp information.
 ```{r}
-dataOut <- extractGRIBGrid(fileIn,var,levelType,level,gridMeta$NX,gridMeta$NY,
+dataOut <- ExtractGRIBGrid(fileIn,var,levelType,level,gridMeta$NX,gridMeta$NY,
                            numFTimes=nTimes)
 ```
 

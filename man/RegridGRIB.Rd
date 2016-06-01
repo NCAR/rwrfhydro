@@ -32,10 +32,10 @@ A dataframe containing the regridded stack.
 of a given vertical level to a WRF-Hydro domain.
 }
 \seealso{
-Other regridMultiGRIB: \code{\link{RegridMultiGRIBVar}}
+Other RegridMultiGRIB: \code{\link{RegridMultiGRIBVar}}
 }
 \concept{
-dataRegrid
+DBataRegrid
 }
 \keyword{internal}
 

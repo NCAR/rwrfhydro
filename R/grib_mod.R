@@ -350,7 +350,7 @@ GRIBgeospatialPolar <- function(fileIn){
 }
 #' Extract grid of GRIB data given a variable name and level.
 #' 
-#' \code{extractGRIBGrid} Extract grid of GRIB data.
+#' \code{ExtractGRIBGrid} Extract grid of GRIB data.
 #' 
 #' @param fileIn GRIB file to be opened for reading.
 #' @param var GRIB variable to be extracted.
@@ -364,7 +364,7 @@ GRIBgeospatialPolar <- function(fileIn){
 #' @return dataOut List of metadata and data to user.
 #'  
 #' @examples
-#' datOut <- extractGRIBGrid('rap.t01z.awp130bgrbf16.grib2','acpcp',
+#' datOut <- ExtractGRIBGrid('rap.t01z.awp130bgrbf16.grib2','acpcp',
 #'            'surface',0,451,337)
 #'             
 #' @keywords IO GRIB
@@ -372,7 +372,7 @@ GRIBgeospatialPolar <- function(fileIn){
 #' @family IO
 #' @useDynLib rwrfhydro
 #' @export
-extractGRIBGrid <- function(fileIn,var,levType,level,nx,ny,numFTimes=1){
+ExtractGRIBGrid <- function(fileIn,var,levType,level,nx,ny,numFTimes=1){
   fileIn <- path.expand(fileIn)
   
   #Check for existence of GRIB file

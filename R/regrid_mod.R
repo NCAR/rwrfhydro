@@ -1,6 +1,6 @@
 #' High level call to regrid data to WRF-Hydro domain.
 #' 
-#' \code{regrid} High level call to regrid data.
+#' \code{Regrid} High level call to regrid data.
 #' 
 #' @param dataIn the stack of matrices of data to be regridded.
 #' @param latIn 2D array of latitude values of the center 
@@ -17,7 +17,7 @@
 #' @return dataOut the stack of regridded matrices.
 #' @examples
 #' \dontrun{
-#' dataOut <- regrid(hrrrDSWRF,latIn,lonIn,'geo_em.d01.nc',1,'./wghts_hrrr.Rdata',
+#' dataOut <- Regrid(hrrrDSWRF,latIn,lonIn,'geo_em.d01.nc',1,'./wghts_hrrr.Rdata',
 #'                   9999)
 #' }
 #'
@@ -26,7 +26,7 @@
 #' @family regrid
 #' @useDynLib rwrfhydro
 #' @export
-regrid <- function(dataIn,latIn,lonIn,geoFile,method,wghtFile,ndvSrc){
+Regrid <- function(dataIn,latIn,lonIn,geoFile,method,wghtFile,ndvSrc){
   #Check for existence of geogrid file
   if(!file.exists(geoFile)){
     stop(paste0('ERROR: Geogrid file: ',geoFile,' not found.'))
@@ -96,7 +96,7 @@ regrid <- function(dataIn,latIn,lonIn,geoFile,method,wghtFile,ndvSrc){
   dataOut <- array(ndvSrc,c(nxGeo,nyGeo,nFTimes,nSteps))
   
   #Open weight file and pull out regridding weight arrays
-  weightList <- readWghtFile(wghtFile,nxIn,nyIn,nxGeo,nyGeo)
+  weightList <- ReadWghtFile(wghtFile,nxIn,nyIn,nxGeo,nyGeo)
   fctLen <- as.integer(weightList$fctLen)
   factorList <- as.array(weightList$factorList)
   factorIndexList <- as.array(weightList$factorIndexList)
@@ -136,7 +136,7 @@ regrid <- function(dataIn,latIn,lonIn,geoFile,method,wghtFile,ndvSrc){
 
 #' High level call to generate regridding weight NetCDF file.
 #' 
-#' \code{genWghtFile} High level call to generate regridding 
+#' \code{GenWghtFile} High level call to generate regridding 
 #' weight file.
 #' 
 #' @param geoFile geogrid file of WRF-Hydro domain.
@@ -152,7 +152,7 @@ regrid <- function(dataIn,latIn,lonIn,geoFile,method,wghtFile,ndvSrc){
 #' @param wghtFile Output weight file to be generated.
 #' @examples
 #' \dontrun{
-#' genWghtFile('./geo_em.d02.nc',nxIn,nyIn,latGRIB,lonGRIB,1,dataIn[,,],
+#' GenWghtFile('./geo_em.d02.nc',nxIn,nyIn,latGRIB,lonGRIB,1,dataIn[,,],
 #' 9999,'./wght_hrrr_rio_grande.nc')
 #' }
 #' 
@@ -161,7 +161,7 @@ regrid <- function(dataIn,latIn,lonIn,geoFile,method,wghtFile,ndvSrc){
 #' @family regrid
 #' @useDynLib rwrfhydro
 #' @export
-genWghtFile <- function(geoFile,nxIn,nyIn,latSrc,lonSrc,method,srcDummy,
+GenWghtFile <- function(geoFile,nxIn,nyIn,latSrc,lonSrc,method,srcDummy,
                         ndv,wghtFile){
   
   #Check for existence of geogrid file
@@ -235,7 +235,7 @@ genWghtFile <- function(geoFile,nxIn,nyIn,latSrc,lonSrc,method,srcDummy,
 
 #' Open weight file and extract weight arrays used for ESMF regridding.
 #' 
-#' \code{readWghtFile} Open weight file and extract important weight arrays.
+#' \code{ReadWghtFile} Open weight file and extract important weight arrays.
 #' 
 #' @param wghtFile Weight file opened for extract.
 #' @param nxSrc Integer number of columns of source data.
@@ -252,7 +252,7 @@ genWghtFile <- function(geoFile,nxIn,nyIn,latSrc,lonSrc,method,srcDummy,
 #' @concept regrid, ESMF
 #' @family regrid ESMF
 #' @export
-readWghtFile <- function(wghtFile,nxSrc,nySrc,nxDst,nyDst){
+ReadWghtFile <- function(wghtFile,nxSrc,nySrc,nxDst,nyDst){
   #Check to make sure weight file exists
   if(!file.exists(wghtFile)){
     stop(paste0('ERROR: weight file: ',wghtFile,' not found.'))
