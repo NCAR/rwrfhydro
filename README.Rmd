@@ -1,5 +1,4 @@
-[![Travis-CI Build Status](https://travis-ci.org/mccreigh/rwrfhydro.png?branch=devCompile)](https://travis-ci.org/mccreigh/rwrfhydro)
-Note this will always fail until we are motivated to install ESMF and GRIB API under travis
+[![Travis-CI Build Status](https://travis-ci.org/mccreigh/rwrfhydro.png?branch=devBranch)](https://travis-ci.org/mccreigh/rwrfhydro)
 
 # rwrfhydro
 A community-contributed tool box for managing, analyzing, and visualizing WRF Hydro (and HydroDART) input and output files in R.
@@ -33,14 +32,7 @@ Table of Contents
   * [R Package development resources](#r-package-development-resources)
   * [Introductory R resources](#introductory-r-resources)
 
-# Installing devCompile
-Currently, the ESMF and GRIB API external libraries must be made available in your environment via the following (example using yellowstone paths) exports (in bash):
-
-```
-export LD_LIBRARY_PATH=/glade/u/home/karsten/lib/grib_api_1.14.2_intel/lib:/glade/apps/opt/esmf/6.3.0-ncdfio/intel/12.1.5/lib/libO/Linux.intel.64.mpich2.default:$LD_LIBRARY_PATH
-export PATH=/glade/u/home/karsten/lib/grib_api_1.14.2_intel/bin:/glade/apps/opt/esmf/6.3.0-ncdfio/intel/12.1.5/bin/binO/Linux.intel.64.mpich2.default:$PATH
-```
-
+# Installing
 Installing rwrfhydro (not on [CRAN](http://cran.r-project.org/)) is facilitated by the devtools package (on CRAN),
 so devtools is installed first. The following is done for the initial install or to update the rwrfhydro package.
 ``` R
