@@ -43,7 +43,8 @@ obsFlux30min.usnc2 <-
 }
 }
 \seealso{
-Other obsDataReads: \code{\link{ReadAmerifluxCSV}},
+Other obsDataReads: \code{\link{GetStage4Files}},
+  \code{\link{ReadAmerifluxCSV}},
   \code{\link{ReadCoDwrGage}}, \code{\link{ReadUsgsGage}}
 }
 \concept{
