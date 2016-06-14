@@ -407,31 +407,36 @@ NtwKReExToNcdf <- function(toFile, fromFile) {
   paste0(dir,'/',base,'.reExp.nc')
 }
 
-
-##' ##' \code{GatherStreamInds} gathers upstream or downstream indices and distances from a given starting location.
-##'
-##' A non-recursive function (recusive version runs in to stack overflow problems for large domains. Both are available internally).
-##' @param stream List of stream information containing either from/to and start and end positions, returned from ReExpNetwork.
-##' @param start Indexed location (NOT comID) of where stream starts
-##' @param linkLengths Vector of link lengths for each re-indexed reach, contained in reExp.nc.
-##' @return List containing indices and accumulated distance from start
-##' @examples 
-##' \dontrun{
-##'      PlotRouteLink <- 
-##'          VisualizeRouteLink(file='~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.nc')
-##'      PlotRouteLink()
-##'      PlotRouteLink(comId=TRUE)
-##'      PlotRouteLink(indices=TRUE)
-##'      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reInd.Rdb')
-##'      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reExpFrom.Rdb')
-##'      upstreamInds <- GatherStreamInds(from, 379, linkLengths=reInd$length)
-##'      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reExpTo.Rdb')
-##'      downstreamInds <- GatherStreamInds(to, 91, length=reInd$length)
-##' }
-##' @keywords manip
-##' @concept nudging dataMgmt
-##' @family networkExpression
-##' @export
+#============================================
+#'  Gather upstream or downstream distance from a given starting location
+#'
+#'  A non-recursive function (recusive version runs in to stack overflow problems for large
+#'  domains. Both are available internally).
+#'
+#'  @param stream List of stream information containing either from/to and start and end positions, returned from ReExpNetwork.
+#'  @param start Indexed location (NOT comID) of where stream starts
+#'  @param length Vector of link lengths for each re-indexed reach, contained in reExp.nc.
+#'  @param indDist Optional list of indices and distance to that index. Typically not used externally to the recursion.
+#'  
+#'  @return List containing indices, accumulated distance from start, and
+#'          tip information (0=not a tip, 1=a tip, 2=temporary tip/still solving)
+#'  @examples 
+#'  \dontrun{
+#'      PlotRouteLink <- 
+#'          VisualizeRouteLink(file='~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.nc')
+#'      PlotRouteLink()
+#'      PlotRouteLink(comId=TRUE)
+#'      PlotRouteLink(indices=TRUE)
+#'      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reInd.Rdb')
+#'      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reExpFrom.Rdb')
+#'      upstreamInds <- GatherStreamInds(from, 379, linkLengths=reInd$length)
+#'      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reExpTo.Rdb')
+#'      downstreamInds <- GatherStreamInds(to, 91, length=reInd$length)
+#'  }
+#' @keywords manip
+#' @concept nudging dataMgmt
+#' @family networkExpression nudging
+#'  @export
 GatherStreamInds <- function(stream, start, linkLengths) {
   ## For mo information on tip, see GatherStreamIndsNRInner.
   ## downstream only has one tip
@@ -511,6 +516,7 @@ GatherOrder <- function(stream, start, linkLengths, linkOrder) {
   indDists$orderInds <- setdiff(indDists$ind, as.vector(lowerOrderInds))
   indDists
 }
+
 if(FALSE) {
   ## test the above
 #  rlFile <- '/home/jamesmcc/WRF_Hydro/TESTING/TEST_FILES/CONUS/WORKING/DOMAIN/RouteLink_2016_02_19_no_HI_PR.conusPstActiveNoHiPr_corrLength_chanparms1a.nc'
@@ -518,51 +524,31 @@ if(FALSE) {
   rlOrder <- ncdump(rlFile,'order',q=TRUE)
   rlLink <- ncdump(rlFile,'link',q=TRUE)
   print(load("~/WRF_Hydro/TESTING/TEST_FILES/CONUS/WORKING/DOMAIN/RouteLink_2016_02_19_no_HI_PR_goodlakes1266.reExpFrom.Rdb"))
-
-  
-  some10 <- which(rlOrder == 10)[4]
-  ## WTF 4, 551 -diversions clipped ?
-  ## but what about
-  some10A <- GatherOrder(from, some10, reInd$length, rlOrder) 
-  str(some10A)
-  rlOrder[some10A$orderInds]
-  rlOrder[some10A$lowerOrderInds]
-  ## ?????
-  
-  zz <- 1092788
-  
-  zz ## start index
-  reInd$comId[zz] # start comId
-  rlOrder[zz] # start order
-
-  toInds <- to$to[ to$start[zz]:to$end[zz] ]  ## go down stream
-  toInds
-  reInd$comId[toInds]  ## to Inds
-  rlOrder[toInds]  ## to order
-
-  zz <- toInds
-
-  
-
-  from$from[ from$start[zz] : from$end[zz] ] ## upstream indices from start 
-  rlOrder[from$from[ from$start[zz] : from$end[zz] ]];  ## order upstream for start
-
-  
-  ##[1] 1092788 start
-##[1] 10   
+## test the above
+some10 <- which(rlOrder == 10)[4]
+## WTF 4, 551 -diversions clipped ?
+## but what about
+some10A <- GatherOrder(from, some10, reInd$length, rlOrder) 
+str(some10A)
+rlOrder[some10A$orderInds]
+rlOrder[some10A$lowerOrderInds]
+## ?????
+##> zz <- 1092788
+##> zz; rlOrder[zz]; from$from[ from$start[zz] : from$end[zz] ]; rlOrder[from$from[ from$start[zz] : from$end[zz] ]]; zz <- to$to[ to$start[zz]:to$end[zz] ]
+##[1] 1092788
+##[1] 10
 ##[1] 1092784
 ##[1] 10
- zz; rlOrder[zz]; from$from[ from$start[zz] : from$end[zz] ]; rlOrder[from$from[ from$start[zz] : from$end[zz] ]]; zz <- to$to[ to$start[zz]:to$end[zz] ]
+##> zz; rlOrder[zz]; from$from[ from$start[zz] : from$end[zz] ]; rlOrder[from$from[ from$start[zz] : from$end[zz] ]]; zz <- to$to[ to$start[zz]:to$end[zz] ]
 ##[1] 1092789
 ##[1] 2
 ##[1] 1041293 1092788
 ##[1]  2 10
- zz; rlOrder[zz]; from$from[ from$start[zz] : from$end[zz] ]; rlOrder[from$from[ from$start[zz] : from$end[zz] ]]; zz <- to$to[ to$start[zz]:to$end[zz] ]
+##> zz; rlOrder[zz]; from$from[ from$start[zz] : from$end[zz] ]; rlOrder[from$from[ from$start[zz] : from$end[zz] ]]; zz <- to$to[ to$start[zz]:to$end[zz] ]
 ##[1] 1092792
 ##[1] 2
 ##[1] 1092789
 ##[1] 2
-
   downStreamLinks <- which(from$start > 0)
   CheckOrderUp <- function(ind, rlOrd){
     indOrd <- rlOrd[ind]
@@ -602,7 +588,6 @@ if(FALSE) {
 for(i in 1:nrow(upCheck)) UpCheckInfo(upCheck$V1[i], rlOrder=rlOrder)   
 1092789 %in% upCheck$V1
 }
-
 
 
 GatherStreamIndsNRInner <- function(stream, start, linkLengths=0,

@@ -226,6 +226,15 @@ MkNudgingParams <- function(gageId, R, G, tau,
     names(dimensionList)[c(3,4,5)] <- c('monthInd','threshInd','threshCatInd')
   }
 
+    dimensionList[[5]] <- list(name='threshCatInd',
+                               units='m^3/s', 
+                               values=1:(dim(expCoeff)[3]),
+                               unlimited=FALSE,
+                               create_dimvar=FALSE)
+    
+    names(dimensionList)[c(3,4,5)] <- c('monthInd','threshInd','threshCatInd')
+  }
+
   
   varList = list()
   varList[[1]] <- 
