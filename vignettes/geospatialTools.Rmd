@@ -86,11 +86,11 @@ You can now use the created file in any standard GIS platform. Here we will just
 
 ```{r plot1, fig.show = "hold", fig.width = 8, fig.height = 8, out.width='600', out.height='600'}
 # read the saved tiff file
-r <- raster::raster("geogrid_hgt.tif")
+library(raster)
+r <- raster("geogrid_hgt.tif")
 
 # plot the imported raster from tif file
-library(raster)
-plot(r, main = "HGT_M") #in raster
+plot(r, main = "HGT_M")
 
 # check the raser information and notice taht geographic coordinate information has been added.
 r
@@ -111,7 +111,7 @@ ExportGeogrid(file,
              inLyr=3)
 
 # read the  created tiff file
-r <- raster::raster("20130315_soilm3.tif")
+r <- raster("20130315_soilm3.tif")
 
 # plot the imported raster from tiff file
 plot(r, main = "Soil Temperature") # in raster
