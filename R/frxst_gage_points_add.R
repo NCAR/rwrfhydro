@@ -22,39 +22,37 @@
 #'               )
 #' newCopyId <- 'threeRealGagesTEST'
 ##' AddRouteLinkGage(rlFile, gageIds, comIds, new=identifier)
-
-if(FALSE) {
-library(rwrfhydro)
-rlFile <- '~/RouteLink_2015_12_15.nc'
-p <- ncdump("~/nudgingParams.conusPstActive.nc",'stationId',q=TRUE)
-g <- ncdump(rlFile,'gages',q=TRUE)
-whGAndP <- which(g %in% p)
-whGNotP <- which(!(g %in% p))
-(length(whGAndP)+length(whGNotP))==length(g)
-g[whGNotP] <- formatC('', width=15)
-setdiff(g,p)
-setdiff(p,g)
-comIds <- ncdump(rlFile,'link', q=TRUE)
-newCopyId <- 'conusPstActive'
-gageIds <- g
-
-## NO HI and PR
-library(rwrfhydro)
-#rlFile <- '~/RouteLink_2016_02_19_no_HI_PR.nc'
-rlFile <- '~/WRF_Hydro/TESTING/TEST_FILES/CONUS/WORKING/DOMAIN/RouteLink_2016_02_19_no_HI_PR_goodlakes1260.nc'
-p <- ncdump("~/nudgingParams.conusPstActive.nc",'stationId',q=TRUE)
-g <- ncdump(rlFile,'gages',q=TRUE)
-whGAndP <- which(g %in% p)
-whGNotP <- which(!(g %in% p))
-(length(whGAndP)+length(whGNotP))==length(g)
-g[whGNotP] <- formatC('', width=15)
-setdiff(g,p)
-setdiff(p,g)
-comIds <- ncdump(rlFile,'link', q=TRUE)
-newCopyId <- 'conusPstActive'
-gageIds <- g
-}
-
+##' if(FALSE) {
+##' library(rwrfhydro)
+##' rlFile <- '~/RouteLink_2015_12_15.nc'
+##' p <- ncdump("~/nudgingParams.conusPstActive.nc",'stationId',q=TRUE)
+##' g <- ncdump(rlFile,'gages',q=TRUE)
+##' whGAndP <- which(g %in% p)
+##' whGNotP <- which(!(g %in% p))
+##' (length(whGAndP)+length(whGNotP))==length(g)
+##' g[whGNotP] <- formatC('', width=15)
+##' setdiff(g,p)
+##' setdiff(p,g)
+##' comIds <- ncdump(rlFile,'link', q=TRUE)
+##' newCopyId <- 'conusPstActive'
+##' gageIds <- g
+##'
+##' ## NO HI and PR
+##' library(rwrfhydro)
+##' #rlFile <- '~/RouteLink_2016_02_19_no_HI_PR.nc'
+##' rlFile <- '~/WRF_Hydro/TESTING/TEST_FILES/CONUS/WORKING/DOMAIN/RouteLink_2016_02_19_no_HI_PR_goodlakes1260.nc'
+##' p <- ncdump("~/nudgingParams.conusPstActive.nc",'stationId',q=TRUE)
+##' g <- ncdump(rlFile,'gages',q=TRUE)
+##' whGAndP <- which(g %in% p)
+##' whGNotP <- which(!(g %in% p))
+##' (length(whGAndP)+length(whGNotP))==length(g)
+##' g[whGNotP] <- formatC('', width=15)
+##' setdiff(g,p)
+##' setdiff(p,g)
+##' comIds <- ncdump(rlFile,'link', q=TRUE)
+##' newCopyId <- 'conusPstActive'
+##' gageIds <- g
+##' }
 #' }
 #' @keywords manip IO
 #' @concept nudging dataMgmt

@@ -86,7 +86,7 @@ ReIndexRouteLink <- function(routeLinkFile) {
 #' ReExpress stream networks indexed network traversal.
 #' 
 #' \code{ReExpNetwork} re-expresses topological relationships between three variables, 
-#  [from, to, id] (as used by NHD+v2.1) into separate lists for index based
+#'  [from, to, id] (as used by NHD+v2.1) into separate lists for index based
 #' up- and down- stream traversal, depending on the upstream argument. 
 #' 
 #' @param routeLinkReInd The netcdf routelink file to process.
@@ -238,7 +238,6 @@ CheckConn <- function(ind, upstream=TRUE, printInds=FALSE) {
   if(printInds) print(nhdWay)
   test
 }
-
 
 
 if(FALSE) {
@@ -408,35 +407,36 @@ NtwKReExToNcdf <- function(toFile, fromFile) {
 }
 
 #============================================
-#'  Gather upstream or downstream distance from a given starting location
-#'
-#'  A non-recursive function (recusive version runs in to stack overflow problems for large
-#'  domains. Both are available internally).
-#'
-#'  @param stream List of stream information containing either from/to and start and end positions, returned from ReExpNetwork.
-#'  @param start Indexed location (NOT comID) of where stream starts
-#'  @param length Vector of link lengths for each re-indexed reach, contained in reExp.nc.
-#'  @param indDist Optional list of indices and distance to that index. Typically not used externally to the recursion.
-#'  
-#'  @return List containing indices, accumulated distance from start, and
-#'          tip information (0=not a tip, 1=a tip, 2=temporary tip/still solving)
-#'  @examples 
-#'  \dontrun{
-#'      PlotRouteLink <- 
-#'          VisualizeRouteLink(file='~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.nc')
-#'      PlotRouteLink()
-#'      PlotRouteLink(comId=TRUE)
-#'      PlotRouteLink(indices=TRUE)
-#'      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reInd.Rdb')
-#'      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reExpFrom.Rdb')
-#'      upstreamInds <- GatherStreamInds(from, 379, linkLengths=reInd$length)
-#'      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reExpTo.Rdb')
-#'      downstreamInds <- GatherStreamInds(to, 91, length=reInd$length)
-#'  }
-#' @keywords manip
-#' @concept nudging dataMgmt
-#' @family networkExpression nudging
-#'  @export
+##' @title Gather upstream or downstream distance from a given starting location.
+##'
+##' @description
+##' A non-recursive function (recusive version runs in to stack overflow problems for large
+##' domains. Both are available internally).
+##' 
+##' @param stream List of stream information containing either from/to and start and end positions, returned from ReExpNetwork.
+##' @param start Indexed location (NOT comID) of where stream starts
+##' @param length Vector of link lengths for each re-indexed reach, contained in reExp.nc.
+##' @param indDist Optional list of indices and distance to that index. Typically not used externally to the recursion.
+##'  
+##' @return List containing indices, accumulated distance from start, and
+##'          tip information (0=not a tip, 1=a tip, 2=temporary tip/still solving)
+##' @examples 
+##'  \dontrun{
+##'      PlotRouteLink <- 
+##'          VisualizeRouteLink(file='~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.nc')
+##'      PlotRouteLink()
+##'      PlotRouteLink(comId=TRUE)
+##'      PlotRouteLink(indices=TRUE)
+##'      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reInd.Rdb')
+##'      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reExpFrom.Rdb')
+##'      upstreamInds <- GatherStreamInds(from, 379, linkLengths=reInd$length)
+##'      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reExpTo.Rdb')
+##'      downstreamInds <- GatherStreamInds(to, 91, length=reInd$length)
+##'  }
+##' @keywords manip
+##' @concept nudging dataMgmt
+##' @family networkExpression nudging
+##' @export
 GatherStreamInds <- function(stream, start, linkLengths) {
   ## For mo information on tip, see GatherStreamIndsNRInner.
   ## downstream only has one tip
