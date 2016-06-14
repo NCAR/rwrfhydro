@@ -65,7 +65,6 @@ GetNcdfFile <- function(file, variables, exclude=FALSE, quiet=FALSE, flip2D=TRUE
   if( natts > 0 ) attributes(outList) <- c(attributes(outList), attList)
   
   outList
-  
 }
 
 ##=========================================================================================================
