@@ -83,9 +83,6 @@ ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, inLyr=NA) {
   } else if ("lon" %in% coordvarList & "lat" %in% coordvarList) {
     inNCLon <- ncdf4::ncvar_get(coordNC, "lon")
     inNCLat <- ncdf4::ncvar_get(coordNC, "lat")
-  } else if ("LONGITUDE" %in% coordvarList & "LATITUDE" %in% coordvarList) {
-    inNCLon <- ncdf4::ncvar_get(coordNC, "LONGITUDE")
-    inNCLat <- ncdf4::ncvar_get(coordNC, "LATITUDE")
   } else {
     stop('Error: Latitude and longitude fields not found (tried: XLAT_M/XLONG_M, XLAT/XLONG, lat/lon')
   }
