@@ -358,7 +358,7 @@ GenUgridFile <- function(shpPath,uGridPath){
   dim2 <- ncdf4::ncdim_def('nele','',1:numPoly,unlim=FALSE,create_dimvar=FALSE )
   dim3 <- ncdf4::ncdim_def('max_node','',1:numVert,unlim=FALSE,create_dimvar=FALSE )
   
-  var1 <- ncdf4::ncvar_def('fvcom_mesh','',list(),NULL,prec='integer')
+  var1 <- ncdf4::ncvar_def('fvcomMesh','',list(),NULL,prec='integer')
   var2 <- ncdf4::ncvar_def('nv','',list(dim3,dim2),ndv,prec='integer')
   var3 <- ncdf4::ncvar_def('lon','degrees_east',list(dim1),ndv,prec='float')
   var4 <- ncdf4::ncvar_def('lat','degrees_north',list(dim1),ndv,prec='float')
