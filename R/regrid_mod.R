@@ -331,6 +331,9 @@ GenUgridFile <- function(shpPath,uGridPath){
     nodeSum <- nodeSum + check
   }
   
+  nodeSum <- nodeSum - numPoly
+  numVert <- numVert - 1
+  
   # Establish arrays to hold output data
   latOut <- array(ndv,dim=c(nodeSum))
   lonOut <- array(ndv,dim=c(nodeSum))
@@ -342,12 +345,19 @@ GenUgridFile <- function(shpPath,uGridPath){
   # Loop through and place lat/lon values for each vertex into
   # output array
   count <- 1
+  count2 <- 1
   for (i in 1:numPoly){
     coordTmp <- shpIn@polygons[[i]]@Polygons[[1]]@coords
     lenTmp <- dim(coordTmp)[1]
-    for (j in 1:lenTmp){
-      latOut[count] <- coordTmp[j,2]
-      lonOut[count] <- coordTmp[j,1]
+    print(lenTmp)
+    #Rotate counter-clockwise, instead of clockwise. This is the order
+    #ESMF expects.
+    for (j in lenTmp:2){
+      latOut[count2] <- coordTmp[j,2]
+      lonOut[count2] <- coordTmp[j,1]
+      count2 <- count2 + 1
+    }
+    for (j in 1:(lenTmp-1)){
       conOut[j,i] <- count
       count <- count + 1
     }

@@ -194,7 +194,7 @@ implicit none
   
   !Create an unstructured ESMF mesh using the UGRID file passed in
   dstMesh = ESMF_MeshCreate(filename=trim(uGridPath),&
-                            filetypeflag=ESMF_FILEFORMAT_UGRID,&
+                            fileTypeFlag=ESMF_FILEFORMAT_UGRID,&
                             meshname='fvcomMesh',rc=ier)
   if(ier .ne. 0) return
 

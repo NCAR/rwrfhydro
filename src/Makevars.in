@@ -1,3 +1,3 @@
-PKG_LIBS=@REGRID_PKG_LIBS@
-PKG_FCFLAGS=@REGRID_PKG_FCFLAGS@
-PKG_FFLAGS=@REGRID_PKG_FFLAGS@
+PKG_LIBS=-L/opt/netcdf4-gcc/lib -lnetcdf -lnetcdff @REGRID_PKG_LIBS@ 
+PKG_FCFLAGS=-I/opt/netcdf4-gcc/include @REGRID_PKG_FCFLAGS@ 
+PKG_FFLAGS=-I/opt/netcdf4-gcc/include @REGRID_PKG_FFLAGS@
