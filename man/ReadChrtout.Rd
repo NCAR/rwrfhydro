@@ -5,7 +5,8 @@
 \title{Read WRF-Hydro CHRTOUT data files.}
 \usage{
 ReadChrtout(pathOutdir, idList = NULL, gageList = NULL, rtlinkFile = NULL,
-  parallel = FALSE, useDatatable = TRUE)
+  parallel = FALSE, useDatatable = TRUE,
+  pattern = glob2rx("*.CHRTOUT_DOMAIN*"))
 }
 \arguments{
 \item{pathOutdir}{The full pathname to the output directory containing the 
@@ -26,6 +27,9 @@ backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)}
 
 \item{useDatatable}{Logical for utilizing the data.table package and 
 outputting in data.table format (DEFAULT=TRUE)}
+
+\item{pattern}{The pattern to match for file ingest
+(DEFAULT=glob2rx('*.CHRTOUT_DOMAIN*'))}
 }
 \value{
 A datatable containing a time series of channel fluxes.

@@ -5,7 +5,7 @@
 \title{Read WRF-Hydro RTOUT data files and generate basin-wide mean water fluxes.}
 \usage{
 ReadRtout(pathOutdir, pathDomfile, mskvar = "basn_msk", basid = 1,
-  parallel = FALSE)
+  parallel = FALSE, pattern = glob2rx("*.RTOUT_DOMAIN*"))
 }
 \arguments{
 \item{pathOutdir}{The full pathname to the output directory containing the 
@@ -21,6 +21,9 @@ used in the model run (for grabbing the basin mask).}
 
 \item{parallel}{Logical for running in parallel mode (must have a parallel
 backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)}
+
+\item{pattern}{The pattern to match for file ingest
+(DEFAULT=glob2rx('*.RTOUT_DOMAIN*'))}
 }
 \value{
 A dataframe containing a time series of basin-wide mean water budget 
