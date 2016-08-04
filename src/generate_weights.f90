@@ -133,6 +133,7 @@ implicit none
                         defaultLogFileName='ESMFLog',rc=ier)
    if(ier .ne. 0) return
 
+   print*, "METHOD = ",regridMethod
    !Create source and destination grids
    srcGrid = ESMF_GridCreateNoPeriDim(minIndex=(/1,1/),maxIndex=(/nxSrc,nySrc/),&
                                       regDecomp=(/1,1/),coordSys=ESMF_COORDSYS_SPH_DEG,&
@@ -187,6 +188,7 @@ implicit none
       enddo
    enddo
 
+   print*, srcMskTemp
    !Specify that 0 will be used in masking during regridding
    srcMask(1) = 0
 
