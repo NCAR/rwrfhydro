@@ -710,3 +710,27 @@ AsCharLongInt <- function(vec) {
   format((vec), trim=TRUE, nsmall=0, scientific=0,digits=16)
 }
 
+
+#' Return indices in native matrix dims
+#' 
+#' \code{whichMulti} is same as which but returns indices
+#' in native input dimensions. Blatantly copied from
+#' Mark van der Loo 16.09.2011.
+#' @param A Array of booleans
+#' @return a sum(A) x length(dim(A)) array of multi-indices where A == TRUE
+#' @keywords utilities internal
+#' @export
+whichMulti <- function(A){
+    if ( is.vector(A) ) return(which(A))
+    d <- dim(A)
+    T <- which(A) - 1
+    nd <- length(d)
+    t( sapply(T, function(t){
+        I <- integer(nd)
+        I[1] <- t %% d[1]
+        sapply(2:nd, function(j){
+            I[j] <<- (t %/% prod(d[1:(j-1)])) %% d[j]
+        })
+        I
+    }) + 1 )
+}
