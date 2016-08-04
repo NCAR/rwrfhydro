@@ -217,8 +217,8 @@ implicit none
    srcArrayESMF = ESMF_ArrayCreate(farray=srcDummy,distgrid=srcDistGrid, &
                                    indexflag=ESMF_INDEX_GLOBAL, rc=ier)
    if(ier .ne. 0) return
-   print*, srcDummy
    !Initialize destination array to ndvSrc
+   print*, dstTemp
    dstArrayESMF = ESMF_ArrayCreate(farray=dstTemp,distgrid=dstDistGrid,indexflag=ESMF_INDEX_GLOBAL,&
                                    rc=ier)
    if(ier .ne. 0) return
