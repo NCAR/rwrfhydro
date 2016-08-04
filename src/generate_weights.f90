@@ -133,11 +133,6 @@ implicit none
                         defaultLogFileName='ESMFLog',rc=ier)
    if(ier .ne. 0) return
 
-   print*, "METHOD = ",regridMethod
-   print*, nxSrc
-   print*, nySrc
-   print*, nxDst
-   print*, nyDst
    !Create source and destination grids
    srcGrid = ESMF_GridCreateNoPeriDim(minIndex=(/1,1/),maxIndex=(/nxSrc,nySrc/),&
                                       regDecomp=(/1,1/),coordSys=ESMF_COORDSYS_SPH_DEG,&
@@ -241,11 +236,9 @@ implicit none
                               factorList=factorListTemp,factorIndexList=factorIndexListTemp,&
                               polemethod=ESMF_POLEMETHOD_NONE,&
                               unmappedaction=ESMF_UNMAPPEDACTION_IGNORE,rc=ier)
-   print*, "FINISHED WEIGHTS"
 
    !Calculate weight array dimension
    fctLen = SIZE(factorListTemp,1)
-   print*, "FACTOR LENGTH = ",fctLen
 
    do i=1,fctLen
       factorListOut(i) = factorListTemp(i)
@@ -253,7 +246,6 @@ implicit none
       factorIndexListOut(2,i) = factorIndexListTemp(2,i)
    enddo
 
-   print*, "Finished placing output arrays"
    !Destroy ESMF objects
    call ESMF_DistGridDestroy(srcDistGrid,rc=ier)
    if(ier .ne. 0) return
@@ -281,7 +273,6 @@ implicit none
    if(ier .ne. 0) return
    call ESMF_ArrayDestroy(dstArrayESMF,rc=ier)
    if(ier .ne. 0) return
-   print*, "Finished destroying ESMF objects"
 #else
    ier = -99
    return
