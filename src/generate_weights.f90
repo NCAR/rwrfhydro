@@ -188,7 +188,6 @@ implicit none
       enddo
    enddo
 
-   print*, srcMskTemp
    !Specify that 0 will be used in masking during regridding
    srcMask(1) = 0
 
@@ -218,6 +217,7 @@ implicit none
    srcArrayESMF = ESMF_ArrayCreate(farray=srcDummy,distgrid=srcDistGrid, &
                                    indexflag=ESMF_INDEX_GLOBAL, rc=ier)
    if(ier .ne. 0) return
+   print*, srcDummy
    !Initialize destination array to ndvSrc
    dstArrayESMF = ESMF_ArrayCreate(farray=dstTemp,distgrid=dstDistGrid,indexflag=ESMF_INDEX_GLOBAL,&
                                    rc=ier)
