@@ -134,6 +134,10 @@ implicit none
    if(ier .ne. 0) return
 
    print*, "METHOD = ",regridMethod
+   print*, nxSrc
+   print*, nySrc
+   print*, nxDst
+   print*, nyDst
    !Create source and destination grids
    srcGrid = ESMF_GridCreateNoPeriDim(minIndex=(/1,1/),maxIndex=(/nxSrc,nySrc/),&
                                       regDecomp=(/1,1/),coordSys=ESMF_COORDSYS_SPH_DEG,&
@@ -218,7 +222,6 @@ implicit none
                                    indexflag=ESMF_INDEX_GLOBAL, rc=ier)
    if(ier .ne. 0) return
    !Initialize destination array to ndvSrc
-   print*, dstTemp
    dstArrayESMF = ESMF_ArrayCreate(farray=dstTemp,distgrid=dstDistGrid,indexflag=ESMF_INDEX_GLOBAL,&
                                    rc=ier)
    if(ier .ne. 0) return
