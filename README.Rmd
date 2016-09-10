@@ -112,16 +112,16 @@ at http://www.ral.ucar.edu/projects/wrf_hydro/rwrfhydro.php.</em>
   <td style="vertical-align: top;">Vignettes:</td>
   
   <td style="text-align: left; vertical-align: top;">
-    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/overview.html">An overview of rwrfhydro functionality</a> <br>
-    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/streamflowEval.html">Streamflow Evaluation</a> <br>
-    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/domainChannelVis.html">WRF Hydro Domain and Channel Visualization</a> <br>
-    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/getMultiNetcdf.html">Get data from multiple netcdf files</a> <br>
-    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/usgsObsDb.html">Collect USGS stream observations and build a local database</a> <br>
-    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/waterBudget.html">Water Budget</a> <br>
-    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/evapotranspirationEval.html">ET Evaluation</a> <br>
-    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/streamflowEvalMulti.html">Streamflow Evaluation - Multi-Basin</a> <br>
-    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/modisProcessing.html">MODIS Processing</a> <br>
-    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/snodas.html">Collect the SNODAS product and build a local database</a> <br>
+    <a href="https://www.ral.ucar.edu/sites/default/files/public/projects/wrf_hydro/v3_0/rwrfhydro/vignettes/overview.html">An overview of rwrfhydro functionality</a> <br>
+    <a href="https://www.ral.ucar.edu/sites/default/files/public/projects/wrf_hydro/v3_0/rwrfhydro/vignettes/streamflowEval.html">Streamflow Evaluation</a> <br>
+    <a href="https://www.ral.ucar.edu/sites/default/files/public/projects/wrf_hydro/v3_0/rwrfhydro/vignettes/domainChannelVis.html">WRF Hydro Domain and Channel Visualization</a> <br>
+    <a href="https://www.ral.ucar.edu/sites/default/files/public/projects/wrf_hydro/v3_0/rwrfhydro/vignettes/getMultiNetcdf.html">Get data from multiple netcdf files</a> <br>
+    <a href="https://www.ral.ucar.edu/sites/default/files/public/projects/wrf_hydro/v3_0/rwrfhydro/vignettes/usgsObsDb.html">Collect USGS stream observations and build a local database</a> <br>
+    <a href="https://www.ral.ucar.edu/sites/default/files/public/projects/wrf_hydro/v3_0/rwrfhydro/vignettes/waterBudget.html">Water Budget</a> <br>
+    <a href="https://www.ral.ucar.edu/sites/default/files/public/projects/wrf_hydro/v3_0/rwrfhydro/vignettes/evapotranspirationEval.html">ET Evaluation</a> <br>
+    <a href="https://www.ral.ucar.edu/sites/default/files/public/projects/wrf_hydro/v3_0/rwrfhydro/vignettes/streamflowEvalMulti.html">Streamflow Evaluation - Multi-Basin</a> <br>
+    <a href="https://www.ral.ucar.edu/sites/default/files/public/projects/wrf_hydro/v3_0/rwrfhydro/vignettes/modisProcessing.html">MODIS Processing</a> <br>
+    <a href="https://www.ral.ucar.edu/sites/default/files/public/projects/wrf_hydro/v3_0/rwrfhydro/vignettes/snodas.html">Collect the SNODAS product and build a local database</a> <br>
   </td>
 
 </table>
