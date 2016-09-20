@@ -300,6 +300,12 @@ ReadWghtFile <- function(wghtFile,nxSrc,nySrc,nxDst,nyDst){
 HRAPLatLon <- function(nx,ny,dx,lat1,lon1,lonV){
   latLonOut <- array(-99.0,c(nx,ny,2))
   
+  # For now, impose a strict requirement that only the parent 1121x881 HRAP grid
+  # can be processed. Later patches will make this more flexible to adjust to 
+  # subsetted HRAP domains.
+  if (nx != 1121 | ny != 881){
+    stop('ERROR: Only parent 1121x881 HRAP grid can be processed at this time.')
+  }
   # Specific to HRAP - DO NOT EDIT BELOW THIS LINE
   R <- 6371200.0
   d <- 60.0
