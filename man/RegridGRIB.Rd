@@ -4,7 +4,7 @@
 \alias{RegridGRIB}
 \title{Extraction and regridding of GRIB data for multiple files for a given variable.}
 \usage{
-RegridGRIB(files, var, levType, lev, wghtFile, geoFile, method)
+RegridGRIB(files, var, levType, lev, wghtFile, geoFile, method, hrapFlag = 0)
 }
 \arguments{
 \item{files}{The files vector list}
@@ -23,6 +23,8 @@ be created.}
 
 \item{method}{Method of regridding. Current acceptable values are
 "bilinear"}
+
+\item{hrapFlag}{Optional HRAP flag to handle STAGE IV/II data.}
 }
 \value{
 A dataframe containing the regridded stack.

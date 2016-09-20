@@ -278,3 +278,50 @@ ReadWghtFile <- function(wghtFile,nxSrc,nySrc,nxDst,nyDst){
   return(outList)
   
 }
+#' Calculate a grid of center-stagger latitude/longitude values for the HRAP grid.
+#'
+#' \code{HRAPLatLon} Calculate HRAP lat/lon center pixel values.
+#'
+#' @param nx Integer number of HRAP columns.
+#' @param ny Integer number of HRAP rows.
+#' @param dx Float of HRAP grid cell spacing (in meters).
+#' @param lat1 Float of lower left latitude (degrees).
+#' @param lon1 Float of lower left longitude (degrees).
+#' @param lonV Float of standard parallel HRAP longitude (degrees).
+#' @return A grid of HRAP lat/lon center-stagger latitude/longitude values.
+#' @examples
+#' \dontrun{
+#' stageIVLatLon <- HRAPLatLon(1121,881,4762.5,23.117,-119.023,-105.0)
+#' }
+#' @keywords regrid, geospatial, HRAP
+#' @concept regrid, HRAP
+#' @family regrid HRAP
+#' @export
+HRAPLatLon <- function(nx,ny,dx,lat1,lon1,lonV){
+  latLonOut <- array(-99.0,c(nx,ny,2))
+  
+  # Specific to HRAP - DO NOT EDIT BELOW THIS LINE
+  R <- 6371200.0
+  d <- 60.0
+  lonV <- lonV * 0.0174532925
+  d <- d * 0.0174532925
+  var1 <- sin(d)
+  var2 <- R*(1+var1)
+  
+  # Loop through and calculate lat/lon values for each pixel cell.
+  # Each value is assumed to be the center of the pixel cell.
+  for (i in 1:nx){
+    for (j in 1:ny){
+      xp <- (i - 400.5)*dx
+      yp <- (j - 1600.5)*dx
+      lam <- sqrt(xp**2 + yp**2)
+      lonOut <- lonV + atan(-xp/yp)
+      lonOut <- lonOut*57.298
+      latOut <- pi/2.0 - 2*atan(lam/var2)
+      latOut <- latOut*57.298
+      latLonOut[i,j,1] <- latOut
+      latLonOut[i,j,2] <- lonOut
+    }
+  }
+  return(latLonOut)
+}

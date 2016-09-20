@@ -6,7 +6,7 @@
 WRF-Hydro domain.}
 \usage{
 RegridMultiGRIB(fileList, varList, levTypeList, levList, wghtList, geoFile,
-  method)
+  method, hrapFlag = 0)
 }
 \arguments{
 \item{fileList}{The list of file groups. Names must match those in
@@ -29,6 +29,10 @@ the first iteration.}
 
 \item{method}{Method of regridding. Current acceptable values are
 "bilinear".}
+
+\item{hrapFlag}{Optional flag to handle STAGE IV/II projection
+information. This is a patch due to the ECMWF GRIB API not
+correctly extracting lat/lon information for the grid.}
 }
 \value{
 A dataframe containing regridded data along with meta-data.

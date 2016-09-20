@@ -5,7 +5,7 @@
 \title{The RegridMultiGRIB for individual file groups.}
 \usage{
 RegridMultiGRIBFile(fileInd, fileList, varList, levTypeList, levList, wghtList,
-  geoFile, method)
+  geoFile, method, hrapFlag = 0)
 }
 \arguments{
 \item{fileInd}{The index of the file group.}
@@ -24,6 +24,8 @@ RegridMultiGRIBFile(fileInd, fileList, varList, levTypeList, levList, wghtList,
 
 \item{method}{Method of regridding. Current acceptable values are
 "bilinear".}
+
+\item{hrapFlag}{Optional HRAP flag to handle STAGE IV/II data.}
 }
 \value{
 A dataframe
