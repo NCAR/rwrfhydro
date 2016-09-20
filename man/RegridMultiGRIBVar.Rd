@@ -5,7 +5,7 @@
 \title{The RegridMultiGRIB for getting variables out of individual files.}
 \usage{
 RegridMultiGRIBVar(varInd, varList, levTypeList, levList, files, wghtFile,
-  geoFile, method)
+  geoFile, method, hrapFlag = 0)
 }
 \arguments{
 \item{varInd}{The variable index.}
@@ -24,6 +24,8 @@ RegridMultiGRIBVar(varInd, varList, levTypeList, levList, files, wghtFile,
 
 \item{method}{Method of regridding. Current acceptable values are
 "bilinear"}
+
+\item{hrapFlag}{Optional HRAP flag to handle STAGE IV/II data.}
 }
 \value{
 A dataframe

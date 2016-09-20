@@ -13,12 +13,13 @@
 #' @param geoFile The Geogrid LSM file needed for regridding.
 #' @param method Method of regridding. Current acceptable values are 
 #' "bilinear"
+#' @param hrapFlag Optional HRAP flag to handle STAGE IV/II data.
 #' @return A dataframe containing the regridded stack.
 #' @keywords internal
 #' @concept DBataRegrid
 #' @family RegridMultiGRIB
 #' @export
-RegridGRIB <- function(files,var,levType,lev,wghtFile,geoFile,method){
+RegridGRIB <- function(files,var,levType,lev,wghtFile,geoFile,method,hrapFlag=0){
   #Check for existence of GeoFile
   if(!file.exists(geoFile)){
     stop(paste0('ERROR: ',geoFile,' not found.'))
@@ -50,7 +51,12 @@ RegridGRIB <- function(files,var,levType,lev,wghtFile,geoFile,method){
   #will be 1.
   numFTimes <- GRIBNumForecastTimes(fileInit,var,levType,lev)
   
-  latLonGRIB <- GRIBLatLon(fileInit,geospatialDf$NX,geospatialDf$NY)
+  if (hrapFlag == 1){
+    latLonGRIB <- HRAPLatLon(geospatialDf$NX,geospatialDf$NY,geospatialDf$DX,geospatialDf$LAT1,
+                             geospatialDf$LON1,geospatialDf$LONV)
+  } else {
+    latLonGRIB <- GRIBLatLon(fileInit,geospatialDf$NX,geospatialDf$NY)
+  }
   latGRIB <- latLonGRIB[,,1]
   lonGRIB <- latLonGRIB[,,2]
   
@@ -152,13 +158,14 @@ RegridGRIB <- function(files,var,levType,lev,wghtFile,geoFile,method){
 #' @param geoFile The Geogrid LSM file for regridding.
 #' @param method Method of regridding. Current acceptable values are 
 #' "bilinear"
+#' @param hrapFlag Optional HRAP flag to handle STAGE IV/II data.
 #' @return A dataframe
 #' @keywords internal
 #' @keywords DataRegrid
 #' @family RegridMultiGRIB
 #' @export 
 RegridMultiGRIBVar <- function(varInd, varList, levTypeList, levList, files,
-                               wghtFile,geoFile,method){
+                               wghtFile,geoFile,method,hrapFlag=0){
   #Check for existence of GeoFile
   if(!file.exists(geoFile)){
     stop(paste0('ERROR: ',geoFile,' not found.'))
@@ -179,7 +186,7 @@ RegridMultiGRIBVar <- function(varInd, varList, levTypeList, levList, files,
                          wghtFile = wghtFile,
                          geoFile = geoFile,
                          files = files,
-                         method=method)
+                         method=method,hrapFlag=hrapFlag)
   outList
 }
 
@@ -202,13 +209,15 @@ RegridMultiGRIBVar <- function(varInd, varList, levTypeList, levList, files,
 #' @param geoFile The geofile needed for regridding.
 #' @param method Method of regridding. Current acceptable values are 
 #' "bilinear".
+#' @param hrapFlag Optional HRAP flag to handle STAGE IV/II data.
 #' @return A dataframe
 #' @keywords internal
 #' @keywords DataRegrid
 #' @keywords RegridMultiGRIB
 #' @export
 RegridMultiGRIBFile <- function(fileInd, fileList, varList, levTypeList,
-                                levList,wghtList,geoFile,method){
+                                levList,wghtList,geoFile,method,
+                                hrapFlag=0){
   #Check for existence of GeoFile
   if(!file.exists(geoFile)){
     stop(paste0('ERROR: ',geoFile,' not found.'))
@@ -259,7 +268,7 @@ RegridMultiGRIBFile <- function(fileInd, fileList, varList, levTypeList,
                          files = fileList[[fileInd]],
                          wghtFile = wghtList[[fileInd]][[1]],
                          geoFile = geoFile,
-                         method=method)
+                         method=method,hrapFlag=hrapFlag)
   
   
   names(outList) <- names(varList[[fileInd]])
@@ -295,6 +304,9 @@ RegridMultiGRIBFile <- function(fileInd, fileList, varList, levTypeList,
 #' @param geoFile The path to the Geo LSM file used for regridding.
 #' @param method Method of regridding. Current acceptable values are 
 #' "bilinear".
+#' @param hrapFlag Optional flag to handle STAGE IV/II projection
+#' information. This is a patch due to the ECMWF GRIB API not
+#' correctly extracting lat/lon information for the grid. 
 #' @return A dataframe containing regridded data along with meta-data.
 #' 
 #' @examples
@@ -327,7 +339,7 @@ RegridMultiGRIBFile <- function(fileInd, fileList, varList, levTypeList,
 #' }
 #' @export
 RegridMultiGRIB <- function(fileList,varList,levTypeList,levList,
-                            wghtList,geoFile,method){
+                            wghtList,geoFile,method,hrapFlag=0){
   #Check for existence of GeoFile
   if(!file.exists(geoFile)){
     stop(paste0('ERROR: ',geoFile,' not found.'))
@@ -356,7 +368,8 @@ RegridMultiGRIB <- function(fileList,varList,levTypeList,levList,
                          fileList=fileList,
                          wghtList=wghtList,
                          geoFile=geoFile,
-                         method=method)
+                         method=method,
+                         hrapFlag=hrapFlag)
   
   names(outList) <- names(fileList)
   outList
