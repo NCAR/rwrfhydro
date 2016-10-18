@@ -26,7 +26,7 @@
 #' @export
 ReadFrxstPts <- function(pathOutfile, stIdType='character', adjPosix=FALSE) {
     myobj <- read.table(pathOutfile, header=F, sep=",", 
-                        colClasses=c("character","character",stIdType,"numeric","numeric","numeric","numeric","numeric"), 
+                        colClasses=c("integer","character",stIdType,"numeric","numeric","numeric","numeric","numeric"), 
                         na.strings=c("********","*********","************"))
     colnames(myobj) <- c("secs","timest","st_id","st_lon","st_lat","q_cms","q_cfs","dpth_m")
 
@@ -72,19 +72,24 @@ ReadGwOut <- function(pathOutfile) {
         colnames(myobj) <- c("basin","timest","q_cms")
         myobj$q_cfs <- myobj$q_cms/(0.3048^3)
         }
-    myobj$POSIXct <- as.POSIXct(as.character(myobj$timest), format="%Y-%m-%d_%H:%M:%S",tz="UTC")
-    myobj$wy <- ifelse(as.numeric(format(myobj$POSIXct,"%m"))>=10, as.numeric(format(myobj$POSIXct,"%Y"))+1, as.numeric(format(myobj$POSIXct,"%Y")))
+    myobj$POSIXct <- as.POSIXct(as.character(myobj$timest), 
+                                format="%Y-%m-%d_%H:%M:%S",tz="UTC")
+    myobj$wy <- ifelse(as.numeric(format(myobj$POSIXct,"%m"))>=10, 
+                       as.numeric(format(myobj$POSIXct,"%Y"))+1, 
+                       as.numeric(format(myobj$POSIXct,"%Y")))
     myobj
 }
 
 
-#' Read WRF-Hydro (w/NoahMP) LDASOUT data files and generate basin-wide mean water budget variables.
+#' Read WRF-Hydro (w/NoahMP) LDASOUT data files and generate basin-wide mean water 
+#' budget variables.
 #'
-#' \code{ReadLdasoutWb} reads in WRF-Hydro (w/NoahMP) LDASOUT files and outputs a time series of
-#' basin-wide mean variables for water budget calculations.
+#' \code{ReadLdasoutWb} reads in WRF-Hydro (w/NoahMP) LDASOUT files and outputs a 
+#' time series of basin-wide mean variables for water budget calculations.
 #'
-#' \code{ReadLdasoutWb} reads standard-format WRF-Hydro (w/NoahMP) LDASOUT NetCDF files and calculates
-#' basin-wide mean values for each time step suitable for running basin water budget calculations.
+#' \code{ReadLdasoutWb} reads standard-format WRF-Hydro (w/NoahMP) LDASOUT NetCDF 
+#' files and calculates basin-wide mean values for each time step suitable for running 
+#' basin water budget calculations.
 #'
 #' OUTPUT NoahMP LDASOUT water budget variables:
 #' \itemize{
@@ -94,47 +99,53 @@ ReadGwOut <- function(pathOutfile) {
 #'    \item ACCPRCP: Mean accumulated precipitation (mm)
 #'    \item CANICE: Mean canopy ice storage (mm)
 #'    \item CANLIQ: Mean canopy liquid water storage (mm)
-#'    \item SFCRNOFF: Mean surface runoff from LSM \emph{(meaningful for an LSM-only run)} (mm)
+#'    \item SFCRNOFF: Mean surface runoff from LSM \emph{(meaningful for an 
+#'              LSM-only run)} (mm)
 #'    \item SNEQV: Mean snowpack snow water equivalent (mm)
-#'    \item UGDRNOFF: Mean subsurface runoff from LSM \cr \emph{(meaningful for an LSM-only run)} (mm)
+#'    \item UGDRNOFF: Mean subsurface runoff from LSM \cr \emph{(meaningful 
+#'              for an LSM-only run)} (mm)
 #'    \item SOIL_M1: Mean soil moisture storage in soil layer 1 (top) (mm)
 #'    \item SOIL_M2: Mean soil moisture storage in soil layer 2 (mm)
 #'    \item SOIL_M3: Mean soil moisture storage in soil layer 3 (mm)
 #'    \item SOIL_M4: Mean soil moisture storage in soil layer 4 (bottom) (mm)
 #' }
 #'
-#' @param pathOutdir The full pathname to the output directory containing the LDASOUT files.
-#' @param pathDomfile The full pathname to the high-res hydro domain NetCDF file used in
-#' the model run (for grabbing the basin mask).
-#' @param mskvar The variable name in pathDomfile to use for the mask (DEFAULT="basn_msk").
+#' @param pathOutdir The full pathname to the output directory containing the 
+#' LDASOUT files.
+#' @param pathDomfile The full pathname to the high-res hydro domain NetCDF file 
+#' used in the model run (for grabbing the basin mask).
+#' @param mskvar The variable name in pathDomfile to use for the mask 
+#' (DEFAULT="basn_msk").
 #' @param basid The basin ID to use (DEFAULT=1)
-#' @param aggfact The high-res (hydro) to low-res (LSM) aggregation factor (e.g., for a 100-m
-#' routing grid and a 1-km LSM grid, aggfact = 10)
-#' @param ncores If multi-core processing is available, the number of cores to use (DEFAULT=1).
-#' Must have doMC installed if ncores is more than 1.
-#' @param pattern Pattern to match in the model output (DEFAULT=glob2rx('*LDASOUT_DOMAIN*'))
-#' @return A dataframe containing a time series of basin-wide mean water budget variables.
+#' @param aggfact The high-res (hydro) to low-res (LSM) aggregation factor 
+#' (e.g., for a 100-m routing grid and a 1-km LSM grid, aggfact = 10)
+#' @param pattern Pattern to match in the model output 
+#' (DEFAULT=glob2rx('*LDASOUT_DOMAIN*'))
+#' @param parallel Logical for running in parallel mode (must have a parallel
+#' backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)
+#' @return A dataframe containing a time series of basin-wide mean water 
+#' budget variables.
 #'
 #' @examples
 #' ## Take an OUTPUT directory for a daily LSM timestep model run of Fourmile Creek and
-#' ## create a new dataframe containing the basin-wide mean values for the major water budget
-#' ## components over the time series.
+#' ## create a new dataframe containing the basin-wide mean values for the major water
+#' ## budget components over the time series.
 #'
 #' \dontrun{
+#' library(doMC)
+#' registerDoMC(3)
 #' modLdasoutWb1d.mod1.fc <- 
 #'   ReadLdasoutWb("../RUN.MOD1/OUTPUT", "../DOMAIN/Fulldom_hires_hydrofile_4mile.nc", 
-#'                 ncores=16)
+#'                 parallel=TRUE)
 #' }
 #' @keywords IO univar ts
 #' @concept dataGet
 #' @family modelDataReads
 #' @export
 ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk", 
-                          basid=1, aggfact=10, ncores=1, 
-                          pattern=glob2rx('*LDASOUT_DOMAIN*')) {
-    if (ncores > 1) {
-        doMC::registerDoMC(ncores)
-        }
+                          basid=1, aggfact=10,
+                          pattern=glob2rx('*LDASOUT_DOMAIN*'),
+                          parallel=FALSE) {
     # Setup mask
     mskvar <- CreateBasinMask(pathDomfile, mskvar=mskvar, basid=basid, aggfact=aggfact)
     # Calculate basin area as a cell count
@@ -144,15 +155,24 @@ ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk",
         myvar[which(myvar<minValid)]<-NA
         sum(mskvar*myvar, na.rm=TRUE)/sum(mskvar, na.rm=TRUE)
         }
-    basin.level1 <- list( start=c(1,1,1,1), end=c(dim(mskvar)[1],1,dim(mskvar)[2],1), stat='basin_avg', mskvar, env=environment() )
-    basin.level2 <- list( start=c(1,2,1,1), end=c(dim(mskvar)[1],2,dim(mskvar)[2],1), stat='basin_avg', mskvar, env=environment() )
-    basin.level3 <- list( start=c(1,3,1,1), end=c(dim(mskvar)[1],3,dim(mskvar)[2],1), stat='basin_avg', mskvar, env=environment() )
-    basin.level4 <- list( start=c(1,4,1,1), end=c(dim(mskvar)[1],4,dim(mskvar)[2],1), stat='basin_avg', mskvar, env=environment() )
-    basin.surf <-  list(start=c(1,1,1), end=c(dim(mskvar)[1],dim(mskvar)[2],1), stat='basin_avg', mskvar, env=environment())
+    basin.level1 <- list( start=c(1,1,1,1), end=c(dim(mskvar)[1],1,dim(mskvar)[2],1), 
+                          stat='basin_avg', mskvar, env=environment() )
+    basin.level2 <- list( start=c(1,2,1,1), end=c(dim(mskvar)[1],2,dim(mskvar)[2],1), 
+                          stat='basin_avg', mskvar, env=environment() )
+    basin.level3 <- list( start=c(1,3,1,1), end=c(dim(mskvar)[1],3,dim(mskvar)[2],1), 
+                          stat='basin_avg', mskvar, env=environment() )
+    basin.level4 <- list( start=c(1,4,1,1), end=c(dim(mskvar)[1],4,dim(mskvar)[2],1), 
+                          stat='basin_avg', mskvar, env=environment() )
+    basin.surf <-  list(start=c(1,1,1), end=c(dim(mskvar)[1],dim(mskvar)[2],1), 
+                        stat='basin_avg', mskvar, env=environment())
     # Setup LDASOUT variables to use
-    variableNames <- c('ACCECAN','ACCEDIR','ACCETRAN','ACCPRCP','CANICE','CANLIQ','SFCRNOFF','SNEQV', 'UGDRNOFF', rep('SOIL_M',4))
+    variableNames <- c('ACCECAN','ACCEDIR','ACCETRAN','ACCPRCP','CANICE','CANLIQ',
+                       'SFCRNOFF','SNEQV', 'UGDRNOFF', 
+                       rep('SOIL_M',4))
     ldasoutVars <- as.list( variableNames ) 
-    names(ldasoutVars) <- c('ACCECAN','ACCEDIR','ACCETRAN','ACCPRCP','CANICE','CANLIQ','SFCRNOFF','SNEQV', 'UGDRNOFF', paste0("SOIL_M",1:4))
+    names(ldasoutVars) <- c('ACCECAN','ACCEDIR','ACCETRAN','ACCPRCP','CANICE','CANLIQ',
+                            'SFCRNOFF','SNEQV', 'UGDRNOFF', 
+                            paste0("SOIL_M",1:4))
     ldasoutVariableList <- list( ldasout = ldasoutVars )
     # For each variable, setup relevant areas and levels to do averaging
     cell <-  basin.surf
@@ -160,21 +180,17 @@ ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk",
     level2 <- basin.level2
     level3 <- basin.level3
     level4 <- basin.level4
-    ldasoutInd <- list( cell, cell, cell, cell, cell, cell, cell, cell, cell, level1, level2, level3, level4 )
+    ldasoutInd <- list( cell, cell, cell, cell, cell, cell, 
+                        cell, cell, cell, 
+                        level1, level2, level3, level4 )
     names(ldasoutInd) <- names(ldasoutVars)
     ldasoutIndexList <- list( ldasout = ldasoutInd )
     # Run GetMultiNcdf
-    ldasoutFilesList <- list( ldasout = list.files(path=pathOutdir, pattern=pattern, full.names=TRUE))
-    if (ncores > 1) {
-        ldasoutDF <- GetMultiNcdf(indexList=ldasoutIndexList, 
+    ldasoutFilesList <- list( ldasout = list.files(path=pathOutdir, 
+                                                   pattern=pattern, full.names=TRUE))
+    ldasoutDF <- GetMultiNcdf(indexList=ldasoutIndexList, 
                                   variableList=ldasoutVariableList, 
-                                  filesList=ldasoutFilesList, parallel=TRUE )
-        }
-    else {
-        ldasoutDF <- GetMultiNcdf(indexList=ldasoutIndexList, 
-                                  variableList=ldasoutVariableList, 
-                                  filesList=ldasoutFilesList, parallel=FALSE )
-        }
+                                  filesList=ldasoutFilesList, parallel=parallel )
     outDf <- ReshapeMultiNcdf(ldasoutDF)
     outDf <- CalcNoahmpFluxes(outDf)
     attr(outDf, "area_cellcnt") <- basarea
@@ -182,49 +198,52 @@ ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk",
 }
 
 
-#' Read WRF-Hydro (w/NoahMP) LDASOUT data files and generate basin-wide mean of all variables.
-#'
-#' \code{ReadLdasoutAll} reads in WRF-Hydro (w/NoahMP) LDASOUT files and outputs a time series of
-#' basin-wide mean variables.
-#'
-#' \code{ReadLdasoutAll} reads standard-format WRF-Hydro (w/NoahMP) LDASOUT NetCDF files and calculates
-#' basin-wide mean values for each time step.
-#'
-#' OUTPUT NoahMP LDASOUT variables:
-#' SEE NOAHMP DOCUMENTATION
-#'
-#' @param pathOutdir The full pathname to the output directory containing the LDASOUT files.
-#' @param pathDomfile The full pathname to the high-res hydro domain NetCDF file used in
-#' the model run (for grabbing the basin mask).
-#' @param mskvar The variable name in pathDomfile to use for the mask (DEFAULT="basn_msk").
+#' Read WRF-Hydro (w/NoahMP) LDASOUT data files and generate basin-wide mean of all
+#' variables.
+#' 
+#' \code{ReadLdasoutAll} reads in WRF-Hydro (w/NoahMP) LDASOUT files and outputs a time
+#' series of basin-wide mean variables.
+#' 
+#' \code{ReadLdasoutAll} reads standard-format WRF-Hydro (w/NoahMP) LDASOUT NetCDF files
+#' and calculates basin-wide mean values for each time step.
+#' 
+#' OUTPUT NoahMP LDASOUT variables: SEE NOAHMP DOCUMENTATION
+#' 
+#' @param pathOutdir The full pathname to the output directory containing the LDASOUT
+#'   files.
+#' @param pathDomfile The full pathname to the high-res hydro domain NetCDF file used in 
+#'   the model run (for grabbing the basin mask).
+#' @param mskvar The variable name in pathDomfile to use for the mask
+#'   (DEFAULT="basn_msk").
 #' @param basid The basin ID to use (DEFAULT=1)
-#' @param aggfact The high-res (hydro) to low-res (LSM) aggregation factor (e.g., for a 100-m
-#' routing grid and a 1-km LSM grid, aggfact = 10)
-#' @param ncores If multi-core processing is available, the number of cores to use (DEFAULT=1).
-#' Must have doMC installed if ncores is more than 1.
-#' @param pattern Pattern to match in the model output (DEFAULT=glob2rx('*LDASOUT_DOMAIN*'))
+#' @param aggfact The high-res (hydro) to low-res (LSM) aggregation factor (e.g., for a
+#'   100-m routing grid and a 1-km LSM grid, aggfact = 10)
+#' @param pattern Pattern to match in the model output
+#'   (DEFAULT=glob2rx('*LDASOUT_DOMAIN*'))
+#' @param parallel Logical for running in parallel mode (must have a parallel
+#' backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)
 #' @return A dataframe containing a time series of basin-wide mean water budget variables.
-#'
+#'   
 #' @examples
 #' ## Take an OUTPUT directory for a daily LSM timestep model run of Fourmile Creek and
 #' ## create a new dataframe containing the basin-wide mean values for all variables
 #' ## over the time series.
-#'
+#' 
 #' \dontrun{
+#' library(doMC)
+#' registerDoMC(3)
 #' modLdasout1d.mod1.fc <- 
 #'   ReadLdasoutAll("../RUN.MOD1/OUTPUT", "../DOMAIN/Fulldom_hires_hydrofile_4mile.nc", 
-#'                 ncores=16)
+#'                 parallel=TRUE)
 #' }
 #' @keywords IO univar ts
 #' @concept dataGet
 #' @family modelDataReads
 #' @export
 ReadLdasoutAll <- function(pathOutdir, pathDomfile, mskvar="basn_msk", 
-                          basid=1, aggfact=10, ncores=1, 
-                          pattern=glob2rx('*LDASOUT_DOMAIN*')) {
-  if (ncores > 1) {
-    doMC::registerDoMC(ncores)
-  }
+                          basid=1, aggfact=10,  
+                          pattern=glob2rx('*LDASOUT_DOMAIN*'),
+                          parallel=FALSE) {
   # Setup mask
   mskvar <- CreateBasinMask(pathDomfile, mskvar=mskvar, basid=basid, aggfact=aggfact)
   # Calculate basin area as a cell count
@@ -234,18 +253,29 @@ ReadLdasoutAll <- function(pathOutdir, pathDomfile, mskvar="basn_msk",
     myvar[which(myvar<minValid)]<-NA
     sum(mskvar*myvar, na.rm=TRUE)/sum(mskvar, na.rm=TRUE)
   }
-  basin.level1 <- list( start=c(1,1,1,1), end=c(dim(mskvar)[1],1,dim(mskvar)[2],1), stat='basin_avg', mskvar, env=environment() )
-  basin.level2 <- list( start=c(1,2,1,1), end=c(dim(mskvar)[1],2,dim(mskvar)[2],1), stat='basin_avg', mskvar, env=environment() )
-  basin.level3 <- list( start=c(1,3,1,1), end=c(dim(mskvar)[1],3,dim(mskvar)[2],1), stat='basin_avg', mskvar, env=environment() )
-  basin.level4 <- list( start=c(1,4,1,1), end=c(dim(mskvar)[1],4,dim(mskvar)[2],1), stat='basin_avg', mskvar, env=environment() )
-  basin.surf <-  list(start=c(1,1,1), end=c(dim(mskvar)[1],dim(mskvar)[2],1), stat='basin_avg', mskvar, env=environment())
+  basin.level1 <- list( start=c(1,1,1,1), end=c(dim(mskvar)[1],1,dim(mskvar)[2],1), 
+                        stat='basin_avg', mskvar, env=environment() )
+  basin.level2 <- list( start=c(1,2,1,1), end=c(dim(mskvar)[1],2,dim(mskvar)[2],1), 
+                        stat='basin_avg', mskvar, env=environment() )
+  basin.level3 <- list( start=c(1,3,1,1), end=c(dim(mskvar)[1],3,dim(mskvar)[2],1), 
+                        stat='basin_avg', mskvar, env=environment() )
+  basin.level4 <- list( start=c(1,4,1,1), end=c(dim(mskvar)[1],4,dim(mskvar)[2],1), 
+                        stat='basin_avg', mskvar, env=environment() )
+  basin.surf <-  list(start=c(1,1,1), end=c(dim(mskvar)[1],dim(mskvar)[2],1), 
+                      stat='basin_avg', mskvar, env=environment())
   # Setup LDASOUT variables to use
-  variableNames <- c('ACCECAN', 'ACCEDIR', 'ACCETRAN', 'ACCPRCP', 'ACSNOM', 'ACSNOW', 'ALBEDO', 'APAR', 'CANICE', 'CANLIQ', 
-                     'CH', 'CHB', 'CHB2', 'CHLEAF', 'CHUC', 'CHV', 'CHV2', 'CM', 'COSZ', 'EAH', 
-                     'ECAN', 'EDIR', 'EMISS', 'ETRAN', 'EVB', 'EVC', 'EVG', 'FASTCP', 'FIRA', 'FSA', 
-                     'FSNO', 'FVEG', 'FWET', 'GHB', 'GHV', 'GPP', 'GRDFLX', 'HFX', 'IRB', 'IRC', 
-                     'IRG', 'ISLTYP', 'ISNOW', 'IVGTYP', 'LAI', 'LFMASS', 'LH', 'LWFORC', 'NEE', 'NPP', 
-                     'PSN', 'Q2MB', 'Q2MV', 'QSNOW', 'RAINRATE', 'RTMASS', 'SAG', 'SAI', 'SAV', 'SFCRNOFF', 
+  variableNames <- c('ACCECAN', 'ACCEDIR', 'ACCETRAN', 'ACCPRCP', 'ACSNOM', 
+                     'ACSNOW', 'ALBEDO', 'APAR', 'CANICE', 'CANLIQ', 
+                     'CH', 'CHB', 'CHB2', 'CHLEAF', 'CHUC', 
+                     'CHV', 'CHV2', 'CM', 'COSZ', 'EAH', 
+                     'ECAN', 'EDIR', 'EMISS', 'ETRAN', 'EVB', 
+                     'EVC', 'EVG', 'FASTCP', 'FIRA', 'FSA', 
+                     'FSNO', 'FVEG', 'FWET', 'GHB', 'GHV', 
+                     'GPP', 'GRDFLX', 'HFX', 'IRB', 'IRC', 
+                     'IRG', 'ISLTYP', 'ISNOW', 'IVGTYP', 'LAI', 
+                     'LFMASS', 'LH', 'LWFORC', 'NEE', 'NPP', 
+                     'PSN', 'Q2MB', 'Q2MV', 'QSNOW', 'RAINRATE', 
+                     'RTMASS', 'SAG', 'SAI', 'SAV', 'SFCRNOFF', 
                      'SHB', 'SHC', 'SHG', 'SNEQV',
                      rep('SNICE',3), 
                      rep('SNLIQ',3), 
@@ -254,17 +284,25 @@ ReadLdasoutAll <- function(pathOutdir, pathDomfile, mskvar="basn_msk",
                      rep('SOIL_M',4), 
                      rep('SOIL_T',4), 
                      rep('SOIL_W',4), 
-                     'STBLCP', 'STMASS', 'SWFORC', 'T2MB', 'T2MV', 'TAH', 'TG', 'TGB', 'TGV', 'TR',
-                     'TRAD', 'TV', 'UGDRNOFF', 'WA', 'WOOD', 'WT', 
+                     'STBLCP', 'STMASS', 'SWFORC', 'T2MB', 'T2MV', 
+                     'TAH', 'TG', 'TGB', 'TGV', 'TR',
+                     'TRAD', 'TV', 'UGDRNOFF', 'WA', 'WOOD', 
+                     'WT', 
                      rep('ZSNSO_SN',3), 
                      'ZWT')
   ldasoutVars <- as.list( variableNames ) 
-  names(ldasoutVars) <- c('ACCECAN', 'ACCEDIR', 'ACCETRAN', 'ACCPRCP', 'ACSNOM', 'ACSNOW', 'ALBEDO', 'APAR', 'CANICE', 'CANLIQ', 
-                          'CH', 'CHB', 'CHB2', 'CHLEAF', 'CHUC', 'CHV', 'CHV2', 'CM', 'COSZ', 'EAH', 
-                          'ECAN', 'EDIR', 'EMISS', 'ETRAN', 'EVB', 'EVC', 'EVG', 'FASTCP', 'FIRA', 'FSA', 
-                          'FSNO', 'FVEG', 'FWET', 'GHB', 'GHV', 'GPP', 'GRDFLX', 'HFX', 'IRB', 'IRC', 
-                          'IRG', 'ISLTYP', 'ISNOW', 'IVGTYP', 'LAI', 'LFMASS', 'LH', 'LWFORC', 'NEE', 'NPP', 
-                          'PSN', 'Q2MB', 'Q2MV', 'QSNOW', 'RAINRATE', 'RTMASS', 'SAG', 'SAI', 'SAV', 'SFCRNOFF', 
+  names(ldasoutVars) <- c('ACCECAN', 'ACCEDIR', 'ACCETRAN', 'ACCPRCP', 'ACSNOM', 
+                          'ACSNOW', 'ALBEDO', 'APAR', 'CANICE', 'CANLIQ', 
+                          'CH', 'CHB', 'CHB2', 'CHLEAF', 'CHUC', 
+                          'CHV', 'CHV2', 'CM', 'COSZ', 'EAH', 
+                          'ECAN', 'EDIR', 'EMISS', 'ETRAN', 'EVB', 
+                          'EVC', 'EVG', 'FASTCP', 'FIRA', 'FSA', 
+                          'FSNO', 'FVEG', 'FWET', 'GHB', 'GHV', 
+                          'GPP', 'GRDFLX', 'HFX', 'IRB', 'IRC', 
+                          'IRG', 'ISLTYP', 'ISNOW', 'IVGTYP', 'LAI', 
+                          'LFMASS', 'LH', 'LWFORC', 'NEE', 'NPP', 
+                          'PSN', 'Q2MB', 'Q2MV', 'QSNOW', 'RAINRATE', 
+                          'RTMASS', 'SAG', 'SAI', 'SAV', 'SFCRNOFF', 
                           'SHB', 'SHC', 'SHG', 'SNEQV',
                           paste0('SNICE',1:3), 
                           paste0('SNLIQ',1:3), 
@@ -273,8 +311,10 @@ ReadLdasoutAll <- function(pathOutdir, pathDomfile, mskvar="basn_msk",
                           paste0('SOIL_M',1:4), 
                           paste0('SOIL_T',1:4), 
                           paste0('SOIL_W',1:4), 
-                          'STBLCP', 'STMASS', 'SWFORC', 'T2MB', 'T2MV', 'TAH', 'TG', 'TGB', 'TGV', 'TR', 
-                          'TRAD', 'TV', 'UGDRNOFF', 'WA', 'WOOD', 'WT', 
+                          'STBLCP', 'STMASS', 'SWFORC', 'T2MB', 'T2MV', 
+                          'TAH', 'TG', 'TGB', 'TGV', 'TR', 
+                          'TRAD', 'TV', 'UGDRNOFF', 'WA', 'WOOD', 
+                          'WT', 
                           paste0('ZSNSO_SN',1:3), 
                           'ZWT')
   ldasoutVariableList <- list( ldasout = ldasoutVars )
@@ -284,12 +324,18 @@ ReadLdasoutAll <- function(pathOutdir, pathDomfile, mskvar="basn_msk",
   level2 <- basin.level2
   level3 <- basin.level3
   level4 <- basin.level4
-  ldasoutInd <- list( cell, cell, cell, cell, cell, cell, cell, cell, cell, cell,
-                      cell, cell, cell, cell, cell, cell, cell, cell, cell, cell,
-                      cell, cell, cell, cell, cell, cell, cell, cell, cell, cell,
-                      cell, cell, cell, cell, cell, cell, cell, cell, cell, cell,
-                      cell, cell, cell, cell, cell, cell, cell, cell, cell, cell,
-                      cell, cell, cell, cell, cell, cell, cell, cell, cell, cell,
+  ldasoutInd <- list( cell, cell, cell, cell, cell, 
+                      cell, cell, cell, cell, cell,
+                      cell, cell, cell, cell, cell, 
+                      cell, cell, cell, cell, cell,
+                      cell, cell, cell, cell, cell, 
+                      cell, cell, cell, cell, cell,
+                      cell, cell, cell, cell, cell, 
+                      cell, cell, cell, cell, cell,
+                      cell, cell, cell, cell, cell, 
+                      cell, cell, cell, cell, cell,
+                      cell, cell, cell, cell, cell, 
+                      cell, cell, cell, cell, cell,
                       cell, cell, cell, cell,
                       level1, level2, level3,
                       level1, level2, level3,
@@ -298,24 +344,20 @@ ReadLdasoutAll <- function(pathOutdir, pathDomfile, mskvar="basn_msk",
                       level1, level2, level3, level4,
                       level1, level2, level3, level4,
                       level1, level2, level3, level4,
-                      cell, cell, cell, cell, cell, cell, cell, cell, cell, cell,
-                      cell, cell, cell, cell, cell, cell,
+                      cell, cell, cell, cell, cell, 
+                      cell, cell, cell, cell, cell,
+                      cell, cell, cell, cell, cell, 
+                      cell,
                       level1, level2, level3,
                       cell )
   names(ldasoutInd) <- names(ldasoutVars)
   ldasoutIndexList <- list( ldasout = ldasoutInd )
   # Run GetMultiNcdf
-  ldasoutFilesList <- list( ldasout = list.files(path=pathOutdir, pattern=pattern, full.names=TRUE))
-  if (ncores > 1) {
-    ldasoutDF <- GetMultiNcdf(indexList=ldasoutIndexList, 
+  ldasoutFilesList <- list( ldasout = list.files(path=pathOutdir, 
+                                                 pattern=pattern, full.names=TRUE))
+  ldasoutDF <- GetMultiNcdf(indexList=ldasoutIndexList, 
                               variableList=ldasoutVariableList, 
-                              filesList=ldasoutFilesList, parallel=TRUE )
-  }
-  else {
-    ldasoutDF <- GetMultiNcdf(indexList=ldasoutIndexList, 
-                              variableList=ldasoutVariableList, 
-                              filesList=ldasoutFilesList, parallel=FALSE )
-  }
+                              filesList=ldasoutFilesList, parallel=parallel )
   outDf <- ReshapeMultiNcdf(ldasoutDF)
   outDf <- CalcNoahmpFluxes(outDf)
   attr(outDf, "area_cellcnt") <- basarea
@@ -334,37 +376,42 @@ ReadLdasoutAll <- function(pathOutdir, pathDomfile, mskvar="basn_msk",
 #' \itemize{
 #'    \item QSTRMVOLRT: Mean accumulated depth of stream channel inflow (mm)
 #'    \item SFCHEADSUBRT: Mean depth of ponded water (mm)
-#'    \item QBDRYRT: Mean accumulated flow volume routed outside of the domain from the 
-#'    boundary cells (mm)
+#'    \item QBDRYRT: Mean accumulated flow volume routed outside of the domain 
+#'              from the boundary cells (mm)
 #' }
 #'
-#' @param pathOutdir The full pathname to the output directory containing the RTOUT files.
-#' @param pathDomfile The full pathname to the high-res hydro domain NetCDF file used in
-#' the model run (for grabbing the basin mask).
-#' @param mskvar The variable name in pathDomfile to use for the mask (DEFAULT="basn_msk").
+#' @param pathOutdir The full pathname to the output directory containing the 
+#' RTOUT files.
+#' @param pathDomfile The full pathname to the high-res hydro domain NetCDF file 
+#' used in the model run (for grabbing the basin mask).
+#' @param mskvar The variable name in pathDomfile to use for the mask 
+#' (DEFAULT="basn_msk").
 #' @param basid The basin ID to use (DEFAULT=1)
-#' @param ncores If multi-core processing is available, the number of cores to use (DEFAULT=1).    
-#' Must have doMC installed if ncores is more than 1.
-#' @return A dataframe containing a time series of basin-wide mean water budget variables.
+#' @param parallel Logical for running in parallel mode (must have a parallel
+#' backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)
+#' @return A dataframe containing a time series of basin-wide mean water budget 
+#' variables.
 #'
 #' @examples
-#' ## Take an OUTPUT directory for an hourly routing timestep model run of Fourmile Creek 
-#' ## (Basin ID = 1)and create a new dataframe containing the basin-wide mean values for the 
-#' ## major water budget components over the time series.
+#' ## Take an OUTPUT directory for an hourly routing timestep model run of 
+#' ## Fourmile Creek (Basin ID = 1) and create a new dataframe containing the 
+#' ## basin-wide mean values for the major water budget components over the 
+#' ## time series.
 #'
 #' \dontrun{
+#' library(doMC)
+#' regsiterDoMC(3)
 #' modRtout1h.mod1.fc <- 
 #'   ReadRtout("../RUN.MOD1/OUTPUT", "../DOMAIN/Fulldom_hires_hydrofile_4mile.nc", 
-#'             basid=1, ncores=16)
+#'             basid=1, parallel=TRUE)
 #' }
 #' @keywords IO univar ts
 #' @concept dataGet
 #' @family modelDataReads
 #' @export
-ReadRtout <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, ncores=1) {
-    if (ncores > 1) {
-        doMC::registerDoMC(ncores)
-        }
+ReadRtout <- function(pathOutdir, pathDomfile, 
+                      mskvar="basn_msk", basid=1, 
+                      parallel=FALSE) {
     # Setup mask
     msk <- ncdf4::nc_open(pathDomfile)
     mskvar <- ncdf4::ncvar_get(msk,mskvar)
@@ -380,32 +427,163 @@ ReadRtout <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, ncore
         }
     basin.surf <-  list(start=c(1,1,1), end=c(dim(mskvar)[1],dim(mskvar)[2],1), 
                         stat='basin_avg', mskvar, env=environment())
-    # Setup RTOUT variables to use
-    variableNames <- c('QSTRMVOLRT','SFCHEADSUBRT','QBDRYRT')
-    chrtoutVars <- as.list( variableNames )
-    names(chrtoutVars) <- variableNames
-    chrtoutVariableList <- list( chrtout = chrtoutVars )
-    # For each variable, setup relevant areas and levels to do averaging
-    cell <-  basin.surf
-    chrtoutInd <- list( cell, cell, cell )
-    names(chrtoutInd) <- names(chrtoutVars)
-    chrtoutIndexList <- list( chrtout = chrtoutInd )
-    # Run GetMultiNcdf
-    chrtoutFilesList <- list( chrtout = list.files(path=pathOutdir, 
+    # Get files
+    rtoutFilesList <- list( rtout = list.files(path=pathOutdir, 
                                                    pattern=glob2rx('*.RTOUT_DOMAIN*'), 
                                                    full.names=TRUE))
-    if (ncores > 1) {
-        chrtoutDF <- GetMultiNcdf(indexList=chrtoutIndexList, 
-                                  variableList=chrtoutVariableList, 
-                                  filesList=chrtoutFilesList, parallel=TRUE )
-        }
-    else {
-        chrtoutDF <- GetMultiNcdf(indexList=chrtoutIndexList, 
-                                  variableList=chrtoutVariableList, 
-                                  filesList=chrtoutFilesList, parallel=FALSE )
-        }
-    outDf <- ReshapeMultiNcdf(chrtoutDF)
+    if (length(rtoutFilesList)==0) stop("No matching files in specified directory.")
+    # Setup RTOUT variables to use
+    variableNames <- c('QSTRMVOLRT', 'SFCHEADSUBRT', 'sfcheadsubrt',
+                       'QBDRYRT', 'ZWATTABLRT', 'zwattablrt')
+    fileVars <- names(ncdump(unlist(rtoutFilesList)[1], quiet=TRUE)$var)
+    variableNames <- variableNames[variableNames %in% fileVars]
+    rtoutVars <- as.list( variableNames )
+    names(rtoutVars) <- variableNames
+    rtoutVariableList <- list( rtout = rtoutVars )
+    # For each variable, setup relevant areas and levels to do averaging
+    cell <-  basin.surf
+    rtoutInd <- list( cell, cell, cell, cell )
+    names(rtoutInd) <- names(rtoutVars)
+    rtoutIndexList <- list( rtout = rtoutInd )
+    # Run GetMultiNcdf
+    rtoutDF <- GetMultiNcdf(indexList=rtoutIndexList, 
+                                  variableList=rtoutVariableList, 
+                                  filesList=rtoutFilesList, parallel=parallel )
+    outDf <- ReshapeMultiNcdf(rtoutDF)
+    names(outDf)[names(outDf)=="sfcheadsubrt"] <- 'SFCHEADSUBRT'
+    names(outDf)[names(outDf)=="zwattablrt"] <- 'ZWATTABLRT'
     outDf
+}
+
+#' Read WRF-Hydro CHRTOUT data files.
+#'
+#' \code{ReadChrtout} reads in WRF-Hydro CHRTOUT files and outputs a time series of
+#' channel fluxes.
+#'
+#' \code{ReadChrtout} reads standard-format WRF-Hydro CHRTOUT NetCDF files and 
+#' outputs a time series of channel fluxes.
+#'
+#' @param pathOutdir The full pathname to the output directory containing the 
+#' RTOUT files.
+#' @param idList Optional list of station IDs to import (must be consistent
+#' with IDs as used in the "station_id" variable). 
+#' @param gageList Optional list of gage IDs to import. Must provide a corresponding
+#' route link file (used to map gage IDs to link IDs). Available only for reach-based
+#' channel routing model runs.
+#' @param rtlinkFile Optional path to the route link file. Available only for 
+#' reach-based channel routing model runs.
+#' @param parallel Logical for running in parallel mode (must have a parallel
+#' backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)
+#' @param useDatatable Logical for utilizing the data.table package and 
+#' outputting in data.table format (DEFAULT=TRUE)
+#' @return A datatable containing a time series of channel fluxes.
+#'
+#' @examples
+#' ## Take an OUTPUT directory for an hourly routing timestep model run of 
+#' ## the Front Range domain and create a new dataframe containing the channel
+#' ## fluxes for two USGS gages on Fourmile Creek.
+#'
+#' \dontrun{
+#' ReadChrtout('~/wrfHydroTestCases/FRN.REACH/OUTPUT', 
+#'      gageList=c("06727500", "06730160"), 
+#'      rtlinkFile="~/wrfHydroTestCases/FRN.REACH/DOMAIN/RouteLink.nc")
+#' }
+#' @keywords IO univar ts
+#' @concept dataGet
+#' @family modelDataReads
+#' @export
+ReadChrtout <- function(pathOutdir, 
+                        idList=NULL,
+                        gageList=NULL, rtlinkFile=NULL,
+                        parallel=FALSE,
+                        useDatatable=TRUE) {
+    # Get files
+    filesList <- list.files(path=pathOutdir, 
+                                    pattern=glob2rx('*.CHRTOUT_DOMAIN*'), 
+                                    full.names=TRUE)
+    if (length(filesList)==0) stop("No matching files in specified directory.")
+    # Compile link list
+    if (!is.null(rtlinkFile)) {
+        rtLink <- ReadRouteLink(rtlinkFile)
+        if (useDatatable) rtLink <- data.table(rtLink)
+    }
+    if (is.null(idList)) {
+        if (exists("rtLink")) {
+            if (is.null(gageList)) {
+                if (useDatatable) {
+                    rtLink <- rtLink[site_no != '',]
+                } else {
+                    rtLink <- subset(rtLink, rtLink$site_no != '')
+                    }
+            } else {
+                if (useDatatable) {
+                    rtLink <- rtLink[site_no %in% gageList,]
+                } else {
+                    rtLink <- subset(rtLink, rtLink$site_no %in% gageList)
+                }
+            }
+            idList <- unique(rtLink$link)
+        }
+    }
+    
+    # Single file read function
+    ReadFile4Loop <- function(file., useDatatable.=TRUE) {
+        out <- GetNcdfFile(file., variables=c("time"), exclude=TRUE, quiet=TRUE)
+        dtstr <- basename(file.)
+        dtstr <- unlist(strsplit(dtstr, "[.]"))[1]
+        dtstr <- as.POSIXct(dtstr, format="%Y%m%d%H%M", tz="UTC")
+        out$POSIXct <- dtstr
+        if (useDatatable.) out<-data.table(out)
+        out
+    }
+    
+    # Loop through all files
+    outList <- list()
+    if (parallel) {
+        packageList <- ifelse(useDatatable, c("ncdf4","data.table"), c("ncdf4"))
+        outList <- foreach(file=filesList, .packages = packageList, 
+                           .combine=c) %dopar% {
+            out <- ReadFile4Loop(file)
+            if (!is.null(idList)) {
+                if (useDatatable) {
+                    out <- out[station_id %in% idList,]
+                } else {
+                    out <- subset(out, out$station_id %in% idList)
+                }
+            }
+            list(out)
+        }
+    } else {
+        for (file in filesList) {
+            out <- ReadFile4Loop(file)
+            if (!is.null(idList)) {
+                if (useDatatable) {
+                    out <- out[station_id %in% idList,]
+                } else {
+                    out <- subset(out, out$station_id %in% idList)
+                }
+            }
+            outList <- c(outList, list(out))
+        }
+    }
+    if (useDatatable) {
+        outDT <- data.table::rbindlist(outList)
+    } else {
+        outDT <- do.call("rbind", outList)
+    }
+    names(outDT)[names(outDT)=="streamflow"]<-"q_cms"
+    names(outDT)[names(outDT)=="velocity"]<-"vel_ms"
+    if (exists("rtLink")) {
+        names(outDT)[names(outDT)=="station_id"]<-"link"
+        if (useDatatable) {
+            data.table::setkey(rtLink, "link")
+            data.table::setkey(outDT, "link")
+            outDT <- merge(outDT, rtLink[, c("link", "site_no"), with=FALSE], all.x=TRUE)
+        } else {
+            outDT <- plyr::join(outDT, rtLink[, c("link", "site_no")], by="link", type="left")
+        }
+    }
+    outDT
 }
 
 #' Create a coarse-resolution basin mask grid.
@@ -454,4 +632,19 @@ ReadRtout <- function(pathOutdir, pathDomfile, mskvar="basn_msk", basid=1, ncore
                                                     fact=aggfact, fun=mean))
    }
    basnmsk
+ }
+ 
+ #' Read in WRF-Hydro route link file
+ #' 
+ #' \code{ReadRouteLink} is simply a usage of format.
+ #' @param linkFile Full path to route link file
+ #' @return Dataframe of route link data
+ #' @keywords IO
+ #' @concept dataGet
+ #' @family modelDataReads
+ #' @export
+ ReadRouteLink <- function(linkFile) {
+     rtLinks <- GetNcdfFile(linkFile, variables=c("time"), exclude=TRUE, quiet=TRUE)
+     rtLinks$site_no <- stringr::str_trim(rtLinks$gages)
+     rtLinks
  }

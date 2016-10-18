@@ -27,7 +27,7 @@ Process model CHANOBS to observation timeSlice format for nudging DA.
   sliceResolutionMin <- 12
   outputDir <- '~/WRF_Hydro/testChanobs/timeSliceTest/'
   ChanObsToTimeSlice(files, sliceResolutionMin, outputDir) 
-} 
+}
 }
 \author{
 James McCreight

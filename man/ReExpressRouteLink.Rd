@@ -24,17 +24,10 @@ ReExpressRouteLink() # if there is a Route_Link.nc file in getwd() (the current 
 }
 }
 \seealso{
-<<<<<<< HEAD
 Other networkExpression nudging: \code{\link{GatherStreamInds}},
   \code{\link{NtwKReExToNcdf}}, \code{\link{ReExpNetwork}},
   \code{\link{ReIndexRouteLink}},
   \code{\link{VisualizeRouteLink}},
-=======
-Other networkExpression nudging: \code{\link{NtwKReExToNcdf}};
-  \code{\link{ReExpNetwork}};
-  \code{\link{ReIndexRouteLink}};
-  \code{\link{VisualizeRouteLink}};
->>>>>>> 5fd43922988a528979b189a4ea65340872c07f72
   \code{\link{VisualizeSubsetStream}}
 }
 \concept{

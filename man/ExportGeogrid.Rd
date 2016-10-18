@@ -9,18 +9,18 @@ ExportGeogrid(inFile, inVar, outFile, inCoordFile = NA, inLyr = NA)
 \arguments{
 \item{inFile}{A netcdf file containing the variable to be converted to a TIF.}
 
-\item{inVar}{The name of the variable to be converted, should exists in inFile.}
+\item{inVar}{The name of the variable to be converted, should exist in inFile.}
 
 \item{outFile}{The geoTiff filename to create.}
 
 \item{inCoordFile}{(OPTIONAL) The netcdf file containing the lat/lon
-coordinates if they are not included in the inFile. This is useful,
-for example, when creating a geotiff from an LDASOUT output file which
-does not contain lat/lon coordinates but matches the spatial coordinate
-system of the geogrid input file.}
+coordinates if they are not included in the inFile. This is useful, for
+example, when creating a geotiff from an LDASOUT output file which does not
+contain lat/lon coordinates but matches the spatial coordinate system of
+the geogrid input file.}
 
-\item{inLyr}{(OPTIONAL) The layer number to export if the variable has
-more than 2 dimensions, e.g., for soil or snow layer variables.}
+\item{inLyr}{(OPTIONAL) The layer number to export if the variable has more
+than 2 dimensions, e.g., for soil or snow layer variables.}
 }
 \description{
 \code{ExportGeogrid} takes a NetCDF geogrid and converts the specified

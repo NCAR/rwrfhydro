@@ -4,12 +4,12 @@
 \alias{GetGeogridIndex}
 \title{Get geogrid cell indices from lat/lon (or other) coordinates.}
 \usage{
-GetGeogridIndex(xy, ncfile, x = "lon", y = "lat",
+GetGeogridIndex(xy, ncfile, x = "lon", y = "lat", id = NULL,
   proj4 = "+proj=longlat +datum=WGS84")
 }
 \arguments{
-\item{xy}{The dataframe of lat/lon (or other) coordinates. The dataframe
-must contain one "x" and one "y" column at a minimum.}
+\item{xy}{The dataframe of lat/lon (or other) coordinates. The dataframe must
+contain one "x" and one "y" column at a minimum.}
 
 \item{ncfile}{The full pathname to the WRF-Hydro geogrid domain file.}
 
@@ -17,26 +17,30 @@ must contain one "x" and one "y" column at a minimum.}
 
 \item{y}{The column name for the y coordinate value (DEFAULT="lat")}
 
-\item{proj4}{The proj4 string for the x/y coordinate projection
+\item{id}{The unique ID field value (OPTIONAL)}
+
+\item{proj4}{The proj4 string for the x/y coordinate projection 
 (DEFAULT='+proj=longlat +datum=WGS84')}
 }
 \value{
-A dataframe containing the i, j indices (row, column).
+A dataframe containing the i (we=west->east), j (sn=south->north)
+  indices (row, column).
 }
 \description{
-\code{GetGeogridIndex} reads in a set of lat/lon (or other) coordinates and
+\code{GetGeogridIndex} reads in a set of lat/lon (or other) coordinates and 
 generates a corresponding set of geogrid index pairs.
 }
 \details{
-\code{GetGeogridIndex} reads in a set of lat/lon (or other real-world)
-coordinates and a geogrid file and generates a corresponding set of
-geogrid index pairs.
+\code{GetGeogridIndex} reads in a set of lat/lon (or other real-world) 
+coordinates and a geogrid file and generates a corresponding set of geogrid
+index pairs.
 }
 \examples{
 ## Take the geogrid (low-res) domain for Fourmile and a pair of lat/lon
 ## coordinates for the Niwot Ridge SNOTEL site and get the index values.
 \dontrun{
-GetGeogridIndex(data.frame(lon=-105.54, lat=40.04), "~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/geo_em.d01_1km_nlcd11.nc")
+GetGeogridIndex(data.frame(lon=-105.54, lat=40.04), 
+   "~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/geo_em.d01_1km_nlcd11.nc")
 }
 }
 \seealso{

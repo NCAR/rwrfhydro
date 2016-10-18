@@ -19,6 +19,7 @@ The resulting file which was written to disk, of the form the "infile.reExpTo.nc
 }
 \description{
 \code{ReExpNetwork} re-expresses topological relationships between three variables, 
+ [from, to, id] (as used by NHD+v2.1) into separate lists for index based
 up- and down- stream traversal, depending on the upstream argument.
 }
 \examples{
@@ -30,18 +31,11 @@ up- and down- stream traversal, depending on the upstream argument.
 }
 }
 \seealso{
-<<<<<<< HEAD
 Other networkExpression nudging: \code{\link{GatherStreamInds}},
   \code{\link{NtwKReExToNcdf}},
   \code{\link{ReExpressRouteLink}},
   \code{\link{ReIndexRouteLink}},
   \code{\link{VisualizeRouteLink}},
-=======
-Other networkExpression nudging: \code{\link{NtwKReExToNcdf}};
-  \code{\link{ReExpressRouteLink}};
-  \code{\link{ReIndexRouteLink}};
-  \code{\link{VisualizeRouteLink}};
->>>>>>> 5fd43922988a528979b189a4ea65340872c07f72
   \code{\link{VisualizeSubsetStream}}
 }
 \concept{

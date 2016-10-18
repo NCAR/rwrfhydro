@@ -1,5 +1,5 @@
 #' Creates a georeferenced TIF from a geogrid variable
-#'
+#' 
 #' \code{ExportGeogrid} takes a NetCDF geogrid and converts the specified
 #' variable into a georeferenced TIF file.
 #'
@@ -8,21 +8,21 @@
 #' in standard GIS tools.
 #'
 #' @param inFile A netcdf file containing the variable to be converted to a TIF. 
-#' @param inVar The name of the variable to be converted, should exists in inFile.
+#' @param inVar The name of the variable to be converted, should exist in inFile.
 #' @param outFile The geoTiff filename to create.
 #' @param inCoordFile (OPTIONAL) The netcdf file containing the lat/lon
-#' coordinates if they are not included in the inFile. This is useful,
-#' for example, when creating a geotiff from an LDASOUT output file which
-#' does not contain lat/lon coordinates but matches the spatial coordinate
-#' system of the geogrid input file.
-#' @param inLyr (OPTIONAL) The layer number to export if the variable has
-#' more than 2 dimensions, e.g., for soil or snow layer variables.
+#'   coordinates if they are not included in the inFile. This is useful, for
+#'   example, when creating a geotiff from an LDASOUT output file which does not
+#'   contain lat/lon coordinates but matches the spatial coordinate system of
+#'   the geogrid input file.
+#' @param inLyr (OPTIONAL) The layer number to export if the variable has more
+#'   than 2 dimensions, e.g., for soil or snow layer variables.
 #' @return NULL
-#'
+#'   
 #' @examples
 #' ## Export the HGT_M field from the geogrid file geo_em.d01_1km.nc
 #' ## to a geoTiff called geogrid_hgt.tif.
-#'
+#' 
 #' \dontrun{
 #' ExportGeogrid("~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/geo_em.d01_1km_nlcd11.nc",
 #'              "HGT_M", "geogrid_hgt.tif")
@@ -145,6 +145,7 @@ ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, inLyr=NA) {
   # Prep NC variable
   inNCVarRast <- raster::as.matrix(raster::raster(inNCVar))
   inNCVarRast <- inNCVarRast[,ncol(inNCVarRast):1]
+  inNCVarRast[is.na(inNCVarRast)] <- NaN
   # Insert data and export geotiff
   rgdal::putRasterData(tds.out, as.matrix(inNCVarRast))
   rgdal::saveDataset(tds.out, outFile)
@@ -154,47 +155,52 @@ ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, inLyr=NA) {
 }
 
 #' Get geogrid cell indices from lat/lon (or other) coordinates.
-#'
-#' \code{GetGeogridIndex} reads in a set of lat/lon (or other) coordinates and
+#' 
+#' \code{GetGeogridIndex} reads in a set of lat/lon (or other) coordinates and 
 #' generates a corresponding set of geogrid index pairs.
-#'
-#' \code{GetGeogridIndex} reads in a set of lat/lon (or other real-world)
-#' coordinates and a geogrid file and generates a corresponding set of
-#' geogrid index pairs.
-#'
-#' @param xy The dataframe of lat/lon (or other) coordinates. The dataframe
-#' must contain one "x" and one "y" column at a minimum.
+#' 
+#' \code{GetGeogridIndex} reads in a set of lat/lon (or other real-world) 
+#' coordinates and a geogrid file and generates a corresponding set of geogrid
+#' index pairs.
+#' 
+#' @param xy The dataframe of lat/lon (or other) coordinates. The dataframe must
+#'   contain one "x" and one "y" column at a minimum.
 #' @param ncfile The full pathname to the WRF-Hydro geogrid domain file.
 #' @param x The column name for the x coordinate value (DEFAULT="lon")
 #' @param y The column name for the y coordinate value (DEFAULT="lat")
-#' @param proj4 The proj4 string for the x/y coordinate projection
-#' (DEFAULT='+proj=longlat +datum=WGS84')
-#' @return A dataframe containing the i, j indices (row, column).
-#'
+#' @param id The unique ID field value (OPTIONAL)
+#' @param proj4 The proj4 string for the x/y coordinate projection 
+#'   (DEFAULT='+proj=longlat +datum=WGS84')
+#' @return A dataframe containing the i (we=west->east), j (sn=south->north)
+#'   indices (row, column).
+#'   
 #' @examples
 #' ## Take the geogrid (low-res) domain for Fourmile and a pair of lat/lon
 #' ## coordinates for the Niwot Ridge SNOTEL site and get the index values.
 #' \dontrun{
-#' GetGeogridIndex(data.frame(lon=-105.54, lat=40.04), "~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/geo_em.d01_1km_nlcd11.nc")
+#' GetGeogridIndex(data.frame(lon=-105.54, lat=40.04), 
+#'    "~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/geo_em.d01_1km_nlcd11.nc")
 #' }
 #' @keywords IO
 #' @concept dataGet geospatial
 #' @family geospatial
 #' @export
-GetGeogridIndex <- function(xy, ncfile, x="lon", y="lat", proj4='+proj=longlat +datum=WGS84') {
+GetGeogridIndex <- function(xy, ncfile, x="lon", y="lat", id=NULL,
+                            proj4='+proj=longlat +datum=WGS84') {
   # Create temp geogrid tif
-  randnum <- round(runif(1)*10^8,0)
-  ExportGeogrid(ncfile, "HGT_M", paste0("tmp_", randnum, ".tif"))
-  geohgt <- raster::raster(paste0("tmp_", randnum, ".tif"))
-  file.remove(paste0("tmp_", randnum, ".tif"))
+  tmpfile <- tempfile(fileext=".tif")
+  ExportGeogrid(ncfile, "HGT_M", tmpfile)
+  geohgt <- raster::raster(tmpfile)
+  file.remove(tmpfile)
   # Setup coords
   sp<-sp::SpatialPoints(data.frame(x=xy[,x], y=xy[,y]))
   raster::crs(sp)<-proj4
   sp2 <- sp::spTransform(sp, crs(geohgt))
   outDf <- as.data.frame(raster::rowColFromCell(geohgt, raster::cellFromXY(geohgt, sp2)))
-  outDf$ew <- outDf$col
+  outDf$we <- outDf$col
   # Change row count from N->S to S->N
   outDf$sn <- dim(geohgt)[1] - outDf$row + 1
+  if (!is.null(id)) outDf$id <- xy[,id]
   outDf$row<-NULL
   outDf$col<-NULL
   outDf

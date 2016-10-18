@@ -19,7 +19,7 @@
 #' @export
 GetNcdfFile <- function(file, variables, exclude=FALSE, quiet=FALSE, flip2D=TRUE){
   
-  if(!file.exists(file)) warning(paste0('The file ', file, 'dose not exist.'), immediate. = TRUE)
+  if(!file.exists(file)) warning(paste0('The file ', file, 'does not exist.'), immediate. = TRUE)
 
   if(!quiet) ncdump(file)
     
@@ -41,20 +41,30 @@ GetNcdfFile <- function(file, variables, exclude=FALSE, quiet=FALSE, flip2D=TRUE
   
   doGetVar <- function(theVar) ncdf4::ncvar_get(nc, varid=theVar)
   outList <- plyr::llply(NamedList(returnVars), doGetVar)
+
+  doGetVarAtt <- function(theVar) ncdf4::ncatt_get( nc, varid=theVar )
+  attList <- plyr::llply(NamedList(returnVars), doGetVarAtt)
+  
+  natts <- nc$natts
+  if( natts  > 0 ) attList$global <- ncdf4::ncatt_get( nc, 0 )
+
   ncdf4::nc_close(nc)
   
   nDims <- plyr::laply(outList, function(ll) length(dim(ll)))
   
   if(flip2D & any(nDims==2)){
     wh2D <- which(nDims==2)
-    for(ww in wh2D) outList[[ww]] <- FlipVert(outList[[ww]])
+    for(ww in wh2D) outList[[ww]] <- FlipUD(outList[[ww]])
   }
     
   if( !(all(nDims==nDims[1])) | !(all(nDims==1)) ) return(outList)
   
   vecLen <- plyr::laply(outList[-10], length)
-  if( all(vecLen==vecLen[1]) ) as.data.frame(outList)
-    
+  if( all(vecLen==vecLen[1]) ) outList <- as.data.frame(outList)
+
+  if( natts > 0 ) attributes(outList) <- c(attributes(outList), attList)
+  
+  outList
 }
 
 ##=========================================================================================================

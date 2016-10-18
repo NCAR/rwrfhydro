@@ -48,9 +48,12 @@ GetSnotel <- function(siteIDs,
                       month=NULL, day=NULL,
                       quiet=FALSE) {
   
-  # test: siteIDs="663"; report="STAND"; series="Hourly"; intervaltype="Historic"; current="DAY"; duration="WY"; startYr=NULL; endYr=NULL; month=NULL; day=NULL
-  # test: siteIDs=c("663","922"); report="STAND"; series="Hourly"; intervaltype="Historic"; current="DAY"; duration="WY"; startYr=2005; endYr=2015; month=NULL; day=NULL
-  #"http://www.wcc.nrcs.usda.gov/nwcc/view?intervalType=$INTERVALTYPE+&report=$REPORT&timeseries=$SERIES&format=copy&sitenum=$STATION&year=$YEAR&month=$MONTH&day=$DAY"
+  # test: siteIDs="663"; report="STAND"; series="Hourly"; intervaltype="Historic"; 
+  # current="DAY"; duration="WY"; startYr=NULL; endYr=NULL; month=NULL; day=NULL
+  # test: siteIDs=c("663","922"); report="STAND"; series="Hourly"; intervaltype="Historic"; 
+  # current="DAY"; duration="WY"; startYr=2005; endYr=2015; month=NULL; day=NULL
+  #"http://www.wcc.nrcs.usda.gov/nwcc/view?intervalType=$INTERVALTYPE+&report=$REPORT&
+  #timeseries=$SERIES&format=copy&sitenum=$STATION&year=$YEAR&month=$MONTH&day=$DAY"
   
   # Setup
   server="http://www.wcc.nrcs.usda.gov/nwcc/"
@@ -112,10 +115,12 @@ GetSnotel <- function(siteIDs,
         # which matches SNOTEL PST timestamp, although this is just to get the WY correct
         # so doesn't actually matter as long as we are consistent...
         tmpData$Date <- as.Date(as.character(tmpData$Date), format="%Y-%m-%d")
-        tmpData$wy <- CalcWaterYear(as.POSIXct(format(tmpData$Date, tz="America/Metlakatla"), 
+        tmpData$wy <- CalcWaterYear(as.POSIXct(format(tmpData$Date, 
+                                                      tz="America/Metlakatla"), 
                                                tz="America/Metlakatla"))
         }
-      if ("Site.Id" %in% names(tmpData)) names(tmpData)[which(names(tmpData)=="Site.Id")]<-"site_id"
+      if ("Site.Id" %in% names(tmpData)) {
+        names(tmpData)[which(names(tmpData)=="Site.Id")]<-"site_id"}
       # Do unit conversions where necessary
       if ("WTEQ.I.1..in." %in% names(tmpData)) {
         tmpData$SWE_mm <- sapply(tmpData$WTEQ.I.1..in., FUN=function(x) max(x*25.4, 0.0))
@@ -131,10 +136,14 @@ GetSnotel <- function(siteIDs,
         tmpData$SNWD_mm <- as.numeric(as.character(tmpData$SNWD_mm))
       }
       # Rename temperature fields (already in ok units)
-      if ("TOBS.I.1..degC." %in% names(tmpData)) names(tmpData)[which(names(tmpData)=="TOBS.I.1..degC.")]<-"Tobs_C"
-      if ("TMAX.D.1..degC." %in% names(tmpData)) names(tmpData)[which(names(tmpData)=="TMAX.D.1..degC.")]<-"Tmax_C"
-      if ("TMIN.D.1..degC." %in% names(tmpData)) names(tmpData)[which(names(tmpData)=="TMIN.D.1..degC.")]<-"Tmin_C"
-      if ("TAVG.D.1..degC." %in% names(tmpData)) names(tmpData)[which(names(tmpData)=="TAVG.D.1..degC.")]<-"Tavg_C"
+      if ("TOBS.I.1..degC." %in% names(tmpData)) {
+        names(tmpData)[which(names(tmpData)=="TOBS.I.1..degC.")]<-"Tobs_C"}
+      if ("TMAX.D.1..degC." %in% names(tmpData)) {
+        names(tmpData)[which(names(tmpData)=="TMAX.D.1..degC.")]<-"Tmax_C"}
+      if ("TMIN.D.1..degC." %in% names(tmpData)) {
+        names(tmpData)[which(names(tmpData)=="TMIN.D.1..degC.")]<-"Tmin_C"}
+      if ("TAVG.D.1..degC." %in% names(tmpData)) {
+        names(tmpData)[which(names(tmpData)=="TAVG.D.1..degC.")]<-"Tavg_C"}
       # Tack on to end of master dataset
       data <- plyr::rbind.fill(data, tmpData)
       } # end for years 

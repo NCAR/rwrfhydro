@@ -30,8 +30,10 @@ modGWout1h.mod1.fc <- ReadGwOut("../OUTPUT/GW_outflow.txt")
 }
 \seealso{
 Other modelDataReads: \code{\link{CreateBasinMask}},
-  \code{\link{ReadFrxstPts}}, \code{\link{ReadLdasoutAll}},
-  \code{\link{ReadLdasoutWb}}, \code{\link{ReadRtout}}
+  \code{\link{ReadChrtout}}, \code{\link{ReadFrxstPts}},
+  \code{\link{ReadLdasoutAll}},
+  \code{\link{ReadLdasoutWb}}, \code{\link{ReadRouteLink}},
+  \code{\link{ReadRtout}}
 }
 \concept{
 dataGet

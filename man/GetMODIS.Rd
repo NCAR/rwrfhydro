@@ -4,12 +4,15 @@
 \alias{GetMODIS}
 \title{Get MODIS data and process to match geogrid}
 \usage{
-GetMODIS(geogrdPath, prodName, outDir, begin = NULL, end = NULL,
+GetMODIS(extent, prodName, outDir, begin = NULL, end = NULL,
   collection = NULL, buffer = 0.04, SDSstring = NULL, exclList = NULL,
   resampList = NULL, quiet = FALSE, scriptPath = NULL)
 }
 \arguments{
-\item{geogrdPath}{The pathname to the geogrid file (i.e., geo_em.d01.nc).}
+\item{extent}{The pathname to the geogrid file (i.e., geo_em.d01.nc)
+OR the path to a georeferenced TIF file of the domain OR the path to 
+a shapefile of the desired extent OR a standard country name that can
+be identified in the mapdata package.}
 
 \item{prodName}{The MODIS product name to download/process. Run the 
 \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package 
@@ -95,13 +98,14 @@ structure (see \code{\link[MODIS]{MODISoptions}}). This tool requires a local
 packages.
 
 NOTE: This tool currently only works for geogrid files in Lambert Conformal 
-Conic projection.
+Conic projection OR a GDAL-friendly georeferenced TIF file.
 }
 \examples{
 ## First, specify the target directories for the MODIS package.
 \dontrun{
 MODISoptions(localArcPath="/d1/WRF_Hydro/RS/MODIS_ARC", 
-             outDirPath="/d1/WRF_Hydro/RS/MODIS_ARC/PROCESSED")
+             outDirPath="/d1/WRF_Hydro/RS/MODIS_ARC/PROCESSED",
+             stubbornness="low")
 
 ## Then, use GetMODIS to download the MODIS MOD15A2 (FPAR/LAI) product for 
 ## all tiles that overlap our Fourmile Creek domain (as specified by the 
@@ -110,7 +114,7 @@ MODISoptions(localArcPath="/d1/WRF_Hydro/RS/MODIS_ARC",
 ## /d1/WRF_Hydro/RS/MODIS_ARC/ and the final processed TIF files will be 
 ## stored in /d1/WRF_Hydro/RS/MODIS_ARC/PROCESSED/Fourmile_LAI/.
 
-GetMODIS(geogrdPath="/d1/WRF_Hydro/Fourmile_fire/DOMAIN/geo_em.d01.nc", 
+GetMODIS(extent="/d1/WRF_Hydro/Fourmile_fire/DOMAIN/geo_em.d01.nc", 
          prodName="MOD15A2", outDir="Fourmile_LAI", 
          begin="2011.01.01", end="2011.01.31",
          exclList=list("Fpar_1km"="gt 100", 
@@ -130,8 +134,8 @@ GetMODIS(geogrdPath="/d1/WRF_Hydro/Fourmile_fire/DOMAIN/geo_em.d01.nc",
 \seealso{
 Other MODIS: \code{\link{CalcStatsRS}},
   \code{\link{ConvertRS2Stack}},
-  \code{\link{ConvertStack2NC}}, \code{\link{InsertRS}},
-  \code{\link{SmoothStack}}
+  \code{\link{ConvertStack2NC}}, \code{\link{GapFillRS}},
+  \code{\link{InsertRS}}, \code{\link{SmoothStack}}
 }
 \concept{
 MODIS dataGet

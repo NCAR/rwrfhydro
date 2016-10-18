@@ -85,10 +85,11 @@ the portion of the time series where the observed flux is in the lowest 10\%
 (native time step) }
 }
 \examples{
-## Take forecast point model output for Fourmile Creek (modStrh.mod1.fc) and a corresponding
-## USGS gage observation file (obsStrh.fc), both at an hourly time step, and calculate
-## model performance statistics. The model forecast point data was imported using ReadFrxstPts
-## and the gage observation data was imported using ReadUsgsGage.
+## Take forecast point model output for Fourmile Creek (modStrh.mod1.fc) and a 
+## corresponding USGS gage observation file (obsStrh.fc), both at an hourly time step, 
+## and calculate model performance statistics. The model forecast point data was 
+## imported using ReadFrxstPts and the gage observation data was imported using 
+## ReadUsgsGage.
 
 
 \dontrun{
@@ -106,9 +107,7 @@ min10      12  -385.99   -14.59     0.35     0.1678   538.78   112.4      0.056 
 }
 }
 \seealso{
-Other modelEvaluation: \code{\link{CalcMetContGrid}},
-  \code{\link{CalcMetCont}},
-  \code{\link{CalcModPerfMulti}},
+Other modelEvaluation: \code{\link{CalcModPerfMulti}},
   \code{\link{CalcNoahmpFluxes}},
   \code{\link{CalcNoahmpWatBudg}},
   \code{\link{CalcStatCategorical}},
