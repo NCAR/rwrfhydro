@@ -247,7 +247,7 @@ CalcStatCont <- function(DT, obsCol, modCol, groupBy = NULL,
       psr <- psr + ggplot2::theme_bw() + ggplot2::ggtitle(paste0("Scatter & marginal rug plot: ",title))
       psr <- psr + ggplot2::xlab(modCol) +ggplot2::ylab(obsCol)
       psr <- psr + ggplot2::xlim(limit) + ggplot2::ylim(limit)
-      psr <- psr + ggplot2::geom_smooth(method = "lm", se = FALSE, col = "red")
+      psr <- psr + ggplot2::geom_smooth(method = "lm", se = FALSE, col = "red",fullrange=TRUE)
       psr <-psr + ggplot2::annotate("segment", x = limit[1], xend = limit[1]+(limit[2]-limit[1])*0.05 , y = limit[2], yend = limit[2], colour = "red", size = 1)
       psr <-psr + ggplot2::annotate("text", x = limit[1]+(limit[2]-limit[1])*0.15, y = limit[2], label = "linear Regression line")
       
@@ -266,6 +266,7 @@ CalcStatCont <- function(DT, obsCol, modCol, groupBy = NULL,
       pqq <- pqq + ggplot2::geom_point() + ggplot2::xlab(modCol) +ggplot2::ylab(obsCol)
       pqq <- pqq + ggplot2::geom_abline(slope = slope, intercept = int, colour = "red")
       pqq <- pqq + ggplot2::ggtitle(paste0("Q-Q plot: ",title)) + ggplot2::theme_bw()
+      pqq <- pqq + ggplot2::xlim(limit) + ggplot2::ylim(limit)
       
       plotList[['pqq']]<- pqq
       }
@@ -290,6 +291,7 @@ CalcStatCont <- function(DT, obsCol, modCol, groupBy = NULL,
       pbin <- ggplot2::ggplot(DT, ggplot2::aes(x = mod, y = obs)) + ggplot2::stat_bin2d(bins = bins_stat_bin2d) 
       pbin <- pbin + ggplot2::theme_bw() + ggplot2::scale_fill_gradientn(colours=r) 
       pbin <- pbin + ggplot2::xlab(modCol) + ggplot2::ylab(obsCol) + ggplot2::ggtitle(paste0("Bivariate histogram: ",title))
+      pbin <- pbin + ggplot2::xlim(c(-1,limit[2])) + ggplot2::ylim(c(-1,limit[2]))
       
       plotList[['pbin']] <-  pbin
       }
