@@ -27,9 +27,15 @@
 #' @family flowDurationCurves
 #' @export
 CalcFdc <- function(strDf, strCol="q_cms") {
-    tmp <- rank(-strDf[,strCol],na.last="keep")
-    strDf[,paste0(strCol,".fdc")] <- NA
-    strDf[,paste0(strCol,".fdc")] <- tmp/(sum(!is.na(strDf[,strCol]))+1)
+    if (data.table::is.data.table(strDf)) {
+        tmp <- rank(-strDf[, strCol, with=FALSE], na.last="keep")
+        strDf[, paste0(strCol,".fdc") := NA]
+        strDf[, paste0(strCol,".fdc") := tmp/(sum(!is.na(strDf[,strCol,with=FALSE]))+1)]
+    } else {
+        tmp <- rank(-strDf[,strCol],na.last="keep")
+        strDf[,paste0(strCol,".fdc")] <- NA
+        strDf[,paste0(strCol,".fdc")] <- tmp/(sum(!is.na(strDf[,strCol]))+1)
+    }
     strDf
 }
 

@@ -89,15 +89,15 @@ FlipUD <- function(matrix) apply(matrix,2,rev)
 
 #' Flip a matrix from left to right.
 #' 
-#' \code{flipLR} Flips a matrix from left to to right.
+#' \code{FlipLR} Flips a matrix from left to to right.
 #' @param matrix A matrix.
 #' @examples
-#' x <- matrix[1:9,3]
+#' x <- matrix(1:9,3)
 #' x
-#' flipLR(x)
+#' FlipLR(x)
 #' @keywords internal
 #' @export
-flipLR <- function(matrix) t(apply(matrix,1,rev))
+FlipLR <- function(matrix) t(apply(matrix,1,rev))
 
 #' Translate (i.e. invert) timezones to the so calle Olson names used by
 #' POSIXct.
@@ -263,6 +263,24 @@ NseLog <- function (m, o) {
     ns
 }
 
+#' Calculate Kling-Gupta Efficiency.
+#' 
+#' \code{Kge} calculates the Kling-Gupta Efficiency.
+#' Calculate the Kling-Gupta Efficiency for vectors
+#' of modelled and observed values: http://www.sciencedirect.com/science/article/pii/S0022169409004843
+#' @param m The vector of modelled values.
+#' @param o The vector of observed values.
+#' @return The Kling-Gupta Efficiency.
+#' @keywords internal
+#' @export
+Kge <- function (m, o, na.rm=TRUE, s.r=1, s.alpha=1, s.beta=1) {
+    use <- if(na.rm) 'pairwise.complete.obs' else 'everything'
+    r     <- cor(m, o, use=use)
+    alpha <- sd(m, na.rm=na.rm) / sd(o, na.rm=na.rm)
+    beta  <- mean(m, na.rm=na.rm) / mean(o, na.rm=na.rm)
+    kge = sqrt( (s.r*(1-r))^2 + (s.alpha*(1-alpha))^2 + (s.beta*(1-beta))^2 )
+    kge
+}
 
 #' Calculate root mean squared error.
 #' 

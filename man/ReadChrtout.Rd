@@ -5,7 +5,7 @@
 \title{Read WRF-Hydro CHRTOUT data files.}
 \usage{
 ReadChrtout(pathOutdir, idList = NULL, gageList = NULL, rtlinkFile = NULL,
-  parallel = FALSE, useDatatable = TRUE,
+  parallel = FALSE, useDatatable = TRUE, gageOnly = TRUE,
   pattern = glob2rx("*.CHRTOUT_DOMAIN*"))
 }
 \arguments{
@@ -27,6 +27,9 @@ backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)}
 
 \item{useDatatable}{Logical for utilizing the data.table package and 
 outputting in data.table format (DEFAULT=TRUE)}
+
+\item{gageOnly}{Logical for whether to bring in reaches with associated 
+gage IDs only (vs. all reaches) (DEFAULT=TRUE)}
 
 \item{pattern}{The pattern to match for file ingest
 (DEFAULT=glob2rx('*.CHRTOUT_DOMAIN*'))}

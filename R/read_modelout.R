@@ -513,6 +513,8 @@ ReadRtout <- function(pathOutdir, pathDomfile,
 #' backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)
 #' @param useDatatable Logical for utilizing the data.table package and 
 #' outputting in data.table format (DEFAULT=TRUE)
+#' @param gageOnly Logical for whether to bring in reaches with associated 
+#' gage IDs only (vs. all reaches) (DEFAULT=TRUE)
 #' @param pattern The pattern to match for file ingest
 #' (DEFAULT=glob2rx('*.CHRTOUT_DOMAIN*'))
 #' @return A datatable containing a time series of channel fluxes.
@@ -536,6 +538,7 @@ ReadChrtout <- function(pathOutdir,
                         gageList=NULL, rtlinkFile=NULL,
                         parallel=FALSE,
                         useDatatable=TRUE,
+                        gageOnly=TRUE,
                         pattern=glob2rx('*.CHRTOUT_DOMAIN*')) {
     # Get files
     filesList <- list.files(path=pathOutdir, 
@@ -550,11 +553,13 @@ ReadChrtout <- function(pathOutdir,
     if (is.null(idList)) {
         if (exists("rtLink")) {
             if (is.null(gageList)) {
-                if (useDatatable) {
-                    rtLink <- rtLink[site_no != '',]
-                } else {
-                    rtLink <- subset(rtLink, rtLink$site_no != '')
-                    }
+                if (gageOnly) {
+                   if (useDatatable) {
+                      rtLink <- rtLink[site_no != '',]
+                   } else {
+                      rtLink <- subset(rtLink, rtLink$site_no != '')
+                   }
+                }
             } else {
                 if (useDatatable) {
                     rtLink <- rtLink[site_no %in% gageList,]
