@@ -4,7 +4,7 @@
 \alias{NseLog}
 \title{Calculate Log Nash-Sutcliffe Efficiency.}
 \usage{
-NseLog(m, o)
+NseLog(m, o, nullModel = mean(o, na.rm = na.rm), na.rm = TRUE)
 }
 \arguments{
 \item{m}{The vector of modelled values.}

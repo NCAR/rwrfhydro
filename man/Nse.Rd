@@ -4,7 +4,7 @@
 \alias{Nse}
 \title{Calculate Nash-Sutcliffe Efficiency.}
 \usage{
-Nse(m, o)
+Nse(m, o, nullModel = mean(o, na.rm = na.rm), na.rm = TRUE)
 }
 \arguments{
 \item{m}{The vector of modelled values.}

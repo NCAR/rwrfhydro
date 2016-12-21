@@ -1,18 +1,19 @@
-##=============================================================================
-#' Simplifed loading of rwrfhydro data included with the package.
-#' 
-#' \code{GetPkgRawDataPath} is a simplified wrapper (for system.file) for
-#' loading external rwrfhydro data included with the package.
-#' @param theFile The external data file to load (this is in dirrefent places
-#'   before, rwrfhydro/inst/extdata, and after build, rwrfhydro/).
-#' @return The full path to the file.
-#' @examples
-#' GetPkgRawDataPath('gagesII_all.csv')
-#' @keywords internal
-#' @export
+
+##' Simplifed loading of rwrfhydro data included with the package.
+##' 
+##' \code{GetPkgRawDataPath} is a simplified wrapper (for system.file) for
+##' loading external rwrfhydro data included with the package.
+##' @param theFile The external data file to load (this is in dirrefent places
+##'   before, rwrfhydro/inst/extdata, and after build, rwrfhydro/).
+##' @return The full path to the file.
+##' @examples
+##' GetPkgRawDataPath('gagesII_all.csv')
+##' @keywords internal
+##' @export
 GetPkgRawDataPath <- function(theFile='') system.file("extdata", theFile, package = "rwrfhydro")
 
-##=============================================================================
+
+
 
 #' Standardize lon to (-180,180].
 #' 
@@ -28,6 +29,9 @@ StdLon <- function(x) {
   x[which(x>180.)] <- x[which(x>180.)]-360.
   x
 }
+
+
+
 
 #' Expand limits by some amount or proportionally to their difference.
 #' 
@@ -49,6 +53,8 @@ PadRange <- function(limits, delta=diffMult*diff(limits), diffMult=.05) {
 }
 
 
+
+
 #' Rotate a matrix clock-wise.
 #' 
 #' \code{RotateCw} Rotates a matrix clock-wise. 
@@ -61,6 +67,9 @@ PadRange <- function(limits, delta=diffMult*diff(limits), diffMult=.05) {
 #' @keywords internal
 #' @export
 RotateCw <- function(matrix) t(apply(matrix, 2, rev))
+
+
+
 
 #' Rotate a matrix counter-clock-wise.
 #' 
@@ -75,6 +84,9 @@ RotateCw <- function(matrix) t(apply(matrix, 2, rev))
 #' @export
 RotateCcw <- function(matrix) apply(matrix, 1, rev)
 
+
+
+
 #' Flip a matrix upside down.
 #' 
 #' \code{FlipUD} Flips a matrix upside down.
@@ -87,6 +99,9 @@ RotateCcw <- function(matrix) apply(matrix, 1, rev)
 #' @export
 FlipUD <- function(matrix) apply(matrix,2,rev)
 
+
+
+
 #' Flip a matrix from left to right.
 #' 
 #' \code{FlipLR} Flips a matrix from left to to right.
@@ -98,6 +113,9 @@ FlipUD <- function(matrix) apply(matrix,2,rev)
 #' @keywords internal
 #' @export
 FlipLR <- function(matrix) t(apply(matrix,1,rev))
+
+
+
 
 #' Translate (i.e. invert) timezones to the so calle Olson names used by
 #' POSIXct.
@@ -133,6 +151,9 @@ TransTz <- function(tz) {
   olson
 }  
 
+
+
+
 #' Returns the water year or the day of water year for a given POSIXct.
 #' 
 #' \code{CalcWaterYear} Returns the water year or the day of water year for a
@@ -164,6 +185,9 @@ CalcWaterYear <- function(POSIXct, dayOf=FALSE) {
 }
 
 
+
+
+
 #' Calculate standard date breaks.
 #' 
 #' \code{CalcDates} calculates standard date breaks.
@@ -183,6 +207,9 @@ CalcDates <- function (x) {
 }
 
 
+
+
+
 #' Calculate mean with forced NA removal.
 #' 
 #' \code{CalcMeanNarm} calculates a mean with forced NA removal.
@@ -194,6 +221,9 @@ CalcDates <- function (x) {
 CalcMeanNarm <- function(x) {
     mean(x, na.rm=TRUE)
     }
+
+
+
 
 #' Calculate mean with enforced minimum valid value.
 #' 
@@ -214,6 +244,9 @@ CalcMeanMinrm <- function(x, minValid=-1e+30) {
     mean(x, na.rm=TRUE)
     }
 
+
+
+
 #' Calculate cumulative sum with forced NA=0.
 #' 
 #' \code{CumsumNa} calculates a cumulative sum with NAs converted to 0s.
@@ -227,6 +260,45 @@ CumsumNa <- function(x) {
     return(cumsum(x))
 }
 
+
+
+
+
+#' Calculate Bias
+#' 
+#' \code{Bias} calculates bias (m-o).
+#' Calculate the bias for vectors
+#' of modelled and observed values.
+#' @param m The vector of modelled values.
+#' @param o The vector of observed values.
+#' @return bias
+#' @keywords internal
+#' @export
+Bias <- function (m, o, na.rm=TRUE) {
+  mean(m - o, na.rm=na.rm)
+}
+
+
+
+
+
+#' Calculate Normalized Bias
+#' 
+#' \code{Bias} calculates normalized or percent bias mean(m-o)/mean(o).
+#' Calculate the normalized/percent bias for vectors
+#' of modelled and observed values.
+#' @param m The vector of modelled values.
+#' @param o The vector of observed values.
+#' @return bias
+#' @keywords internal
+#' @export
+BiasNorm <- function (m, o, na.rm=TRUE) {
+  mean(m - o, na.rm=na.rm)/mean(o, na.rm=na.rm) *100
+}
+
+
+
+
 #' Calculate Nash-Sutcliffe Efficiency.
 #' 
 #' \code{Nse} calculates the Nash-Sutcliffe Efficiency.
@@ -237,12 +309,15 @@ CumsumNa <- function(x) {
 #' @return The Nash-Sutcliffe Efficiency.
 #' @keywords internal
 #' @export
-Nse <- function (m, o) {
-    err1 <- sum((m - o)^2, na.rm=T)
-    err2 <- sum((o - mean(o, na.rm=T))^2, na.rm=T)
+Nse <- function (m, o, nullModel=mean(o, na.rm=na.rm), na.rm=TRUE) {
+    err1 <- sum((m - o)^2, na.rm=na.rm)
+    err2 <- sum((o - nullModel)^2, na.rm=na.rm)
     ns <- 1 - (err1/err2)
     ns
 }
+
+
+
 
 #' Calculate Log Nash-Sutcliffe Efficiency.
 #' 
@@ -254,14 +329,38 @@ Nse <- function (m, o) {
 #' @return The Log Nash-Sutcliffe Efficiency.
 #' @keywords internal
 #' @export
-NseLog <- function (m, o) {
+NseLog <- function (m, o, nullModel=mean(o, na.rm=na.rm), na.rm=TRUE) {
     m <- log(m + 1e-04)
     o <- log(o + 1e-04)
-    err1 <- sum((m - o)^2, na.rm=T)
-    err2 <- sum((o - mean(o, na.rm=T))^2, na.rm=T)
+    err1 <- sum((m - o)^2, na.rm=na.rm)
+    err2 <- sum((o - nullModel)^2, na.rm=na.rm)
     ns <- 1 - (err1/err2)
     ns
 }
+
+
+
+
+#' Calculate Kling-Gupta Efficiency.
+#' 
+#' \code{Kge} calculates the Kling-Gupta Efficiency.
+#' Calculate the Kling-Gupta Efficiency for vectors
+#' of modelled and observed values: http://www.sciencedirect.com/science/article/pii/S0022169409004843
+#' @param m The vector of modelled values.
+#' @param o The vector of observed values.
+#' @return The Kling-Gupta Efficiency.
+#' @keywords internal
+#' @export
+Kge <- function (m, o, na.rm=TRUE, s.r=1, s.alpha=1, s.beta=1) {
+  use <- if(na.rm) 'pairwise.complete.obs' else 'everything'
+  r     <- cor(m, o, use=use)
+  alpha <- sd(m, na.rm=na.rm) / sd(o, na.rm=na.rm)
+  beta  <- mean(m, na.rm=na.rm) / mean(o, na.rm=na.rm)
+  kge = sqrt( (s.r*(1-r))^2 + (s.alpha*(1-alpha))^2 + (s.beta*(1-beta))^2 )
+  kge
+}
+
+
 
 
 #' Calculate root mean squared error.
@@ -274,11 +373,14 @@ NseLog <- function (m, o) {
 #' @return The root mean squared error.
 #' @keywords internal
 #' @export
-Rmse <- function (m, o) {
-    err <- sum((m - o)^2, na.rm=T)/(min(sum(!is.na(m)),sum(!is.na(o))))
+Rmse <- function (m, o, na.rm=TRUE) {
+    err <- sum((m - o)^2, na.rm=na.rm)/(min(sum(!is.na(m)),sum(!is.na(o))))
     rmserr <- sqrt(err)
     rmserr
 }
+
+
+
 
 #' Calculate normalized root mean squared error.
 #' 
@@ -290,11 +392,14 @@ Rmse <- function (m, o) {
 #' @return The nrmalized root mean squared error.
 #' @keywords internal
 #' @export
-RmseNorm <- function (m, o) {
-    err <- sum((m - o)^2, na.rm=T)/(min(sum(!is.na(m)),sum(!is.na(o))))
-    rmserr <- sqrt(err) / ( max(o, na.rm=T) - min(o, na.rm=T) ) * 100
+RmseNorm <- function (m, o, na.rm=TRUE) {
+    err <- sum((m - o)^2, na.rm=na.rm)/(min(sum(!is.na(m)),sum(!is.na(o))))
+    rmserr <- sqrt(err) / ( max(o, na.rm=na.rm) - min(o, na.rm=na.rm) ) * 100
     rmserr
 }
+
+
+
 
 #' Calculate center-of-mass.
 #' 
@@ -305,14 +410,17 @@ RmseNorm <- function (m, o) {
 #' @return The center-of-mass time step.
 #' @keywords internal
 #' @export
-CalcCOM <- function (x) {
-    cuml.x <- as.data.frame(CumsumNa(x)/sum(x, na.rm=T))
+CalcCOM <- function (x, na.rm=TRUE) {
+    cuml.x <- as.data.frame(CumsumNa(x)/sum(x, na.rm=na.rm))
     colnames(cuml.x) <- c("x")
     cuml.x$ts <- seq(from = 1, to = length(cuml.x$x))
     tmp <- subset(cuml.x, cuml.x$x > 0.5)
     ts <- tmp$ts[1]
     ts
 }
+
+
+
 
 #' Calculate Richards-Baker Flashiness Index.
 #' 
@@ -323,9 +431,12 @@ CalcCOM <- function (x) {
 #' @return The Richards-Baker Flashiness Index.
 #' @keywords internal
 #' @export
-RBFlash <- function (m) {
-    sum(abs(diff(m)), na.rm=TRUE)/sum(m, na.rm=TRUE)
+RBFlash <- function (m, na.rm=TRUE) {
+    sum(abs(diff(m)), na.rm=na.rm)/sum(m, na.rm=na.rm)
 }
+
+
+
 
 #' "Flatten" the output from GetMultiNcdf
 #' 
@@ -360,6 +471,9 @@ ReshapeMultiNcdf <- function(myDf) {
   return(newDfList)    
 }
 
+
+
+
 #' Create and or name a list with its entries.
 #' 
 #' \code{NamedList} creates a list with names equal to its entries. 
@@ -374,6 +488,8 @@ NamedList <- function(theNames) {
   names(theList)<- theNames
   theList
 }
+
+
 
 
 #' Are all vector entries the same/identical.
@@ -517,6 +633,9 @@ print.pkgMeta  <- function(pkgMeta) {
 }
 
 
+
+
+
 #' Handle vector arguments to functions in a collated fashion.
 #' 
 #' \code{FormalsToDf} is called inside a function where some formal arguments may have
@@ -562,6 +681,9 @@ FormalsToDf <- function(theFunc, envir=parent.frame()) {
   df  
 }
 
+
+
+
 #' Calculate number of days in a month.
 #' 
 #' \code{CalcMonthDays} calculates the number of days in a month.
@@ -585,6 +707,9 @@ CalcMonthDays <- function(mo, yr) {
   return(res)
 }
 
+
+
+
 #' Calculate date object from POSIXct time
 #' 
 #' \code{CalcDateTrunc} takes a POSIXct object and outputs
@@ -601,6 +726,9 @@ CalcDateTrunc <- function(timePOSIXct, timeZone="UTC") {
                                        tz=timeZone), "days"))
   return(timeDate)
 }
+
+
+
 
 #' List objects with more detailed metadata
 #' 
@@ -641,6 +769,9 @@ LsObjects <- function (pos = 1, pattern, order.by,
   out
 }
 
+
+
+
 #' Shorthand call for LsObjects.
 #' 
 #' \code{lsOS} Shorthand call for LsObjects
@@ -651,6 +782,9 @@ LsObjects <- function (pos = 1, pattern, order.by,
 lsOS <- function(..., n=10) {
   LsObjects(..., order.by="Size", decreasing=TRUE, head=TRUE, n=n)
 }
+
+
+
 
 #' Calculate a running mean
 #' 
@@ -671,6 +805,9 @@ CalcRunningMean <- function(x, n, sides=2, ts=FALSE) {
   if (!ts) out <- unclass(out)
   return(out)
 }
+
+
+
 
 #' Fill outliers based on change between steps
 #' 
@@ -711,6 +848,8 @@ AsCharLongInt <- function(vec) {
 }
 
 
+
+
 ##' The standard posix origin 1970-01-01
 ##' 
 ##' \code{PosixOrigin} as either a character string or a POSIXct.
@@ -721,3 +860,134 @@ AsCharLongInt <- function(vec) {
 ##' @export
 PosixOrigin <- function(as.POSIX=FALSE, tz='UTC')
   if(as.POSIX) as.POSIXct('1970-01-01 00:00:00', tz=tz) else '1970-01-01 00:00:00'
+
+
+
+
+##' Translate standard state names, abbreviations, and codes.
+##' 
+##' \code{TranslageStateCodes} particularly translates USGS state_cd to other formats.
+##' Data from:
+##' https://www.census.gov/geo/reference/ansi_statetables.html
+##' and particularly
+##' http://www2.census.gov/geo/docs/reference/state.txt
+##' The returnVal choice determines the format returned. Choices are: 
+##'   "STATE" is the FISP state code in the range of 1-78 (with some missing).
+##'   "STUSAB" is the common or postal 2 letter abreviation.
+##'   "STATE_NAME" is the full name.
+##'   "STATENS" is Geographic Names Information System Identifier (GNISID)
+##' 
+##' See internals of code to get the details of the data frame used for the translation.
+##' 
+##' @param inVector integer or character, a vector of one of the types of to convert. Not case sensitive for strings. 
+##' @param returnVal Character string for the desired output format. Defaults to STUSAB and this choice overrides when the output type is the same as the input type.
+##' @examples
+##' stNums <- c(1,15,25, 5, 50, NA)
+##' ab <- tolower(TranslateStateCodes(stNums)); ab
+##' names <- TranslateStateCodes(ab); names  ## note default for abs in is names out
+##' gnis <- TranslateStateCodes(tolower(names),'STATENS'); gnis
+##' num <- TranslateStateCodes(gnis,'STATE'); num
+##' all(num==stNums, na.rm=TRUE)
+##' @keywords utilities 
+##' @export
+TranslateStateCodes <- function(inVector,
+                                returnVal=c("STATE", "STUSAB", "STATE_NAME", "STATENS")[2]) {
+
+  ## data collected, read, and brough internally via the following two commands
+  ## stateData <- data.table::fread('http://www2.census.gov/geo/docs/reference/state.txt')
+  ## dput(as.data.frame(stateData))
+  stateData <- structure(list(STATE =
+                             c(1L,   2L,  4L,  5L,  6L,  8L,  9L, 10L, 11L, 12L, 13L, 15L, 16L,
+                               17L, 18L, 19L, 20L, 21L, 22L, 23L, 24L, 25L, 26L, 27L, 28L, 29L,
+                               30L, 31L, 32L, 33L, 34L, 35L, 36L, 37L, 38L, 39L, 40L, 41L, 42L,
+                               44L, 45L, 46L, 47L, 48L, 49L, 50L, 51L, 53L, 54L, 55L, 56L, 60L, 66L, 69L, 72L, 74L, 78L),
+                             STUSAB =
+                             c("AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "HI", 
+                               "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN",
+                               "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", 
+                               "VT", "VA", "WA", "WV", "WI", "WY", "AS", "GU", "MP", "PR", "UM", 
+                               "VI"),
+                             STATE_NAME =
+                             c("Alabama", "Alaska", "Arizona", "Arkansas", 
+                               "California", "Colorado", "Connecticut", "Delaware", "District of Columbia", 
+                               "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", 
+                               "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", 
+                               "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", 
+                               "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", 
+                               "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", 
+                               "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", 
+                               "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", 
+                               "Washington", "West Virginia", "Wisconsin", "Wyoming", "American Samoa", 
+                               "Guam", "Northern Mariana Islands", "Puerto Rico", "U.S. Minor Outlying Islands", 
+                               "U.S. Virgin Islands"),
+                             STATENS =
+                             c(1779775L, 1785533L, 1779777L, 
+                               68085L, 1779778L, 1779779L, 1779780L, 1779781L, 1702382L, 294478L, 
+                               1705317L, 1779782L, 1779783L, 1779784L, 448508L, 1779785L, 481813L, 
+                               1779786L, 1629543L, 1779787L, 1714934L, 606926L, 1779789L, 662849L, 
+                               1779790L, 1779791L, 767982L, 1779792L, 1779793L, 1779794L, 1779795L, 
+                               897535L, 1779796L, 1027616L, 1779797L, 1085497L, 1102857L, 1155107L, 
+                               1779798L, 1219835L, 1779799L, 1785534L, 1325873L, 1779801L, 1455989L, 
+                               1779802L, 1779803L, 1779804L, 1779805L, 1779806L, 1779807L, 1802701L, 
+                               1802705L, 1779809L, 1779808L, 1878752L, 1802710L)),
+                        .Names = c("STATE", "STUSAB", "STATE_NAME", "STATENS"),
+                        row.names = c(NA, -57L),
+                        class = "data.frame")
+
+  whNotNa <- which(!is.na(inVector))
+  couldBeInt <- !any(is.na(suppressWarnings(as.integer( inVector[whNotNa] ) )))
+  
+  if(couldBeInt) {
+    ## found all integers
+    if(all(nchar(inVector)<=2)) {
+
+      ## all length=2 integers
+      if(returnVal=='STATE') returnVal <- 'STUSAB'
+      ret <- merge( data.frame(STATE=inVector),
+                    stateData[, c('STATE',returnVal)],
+                    by='STATE', all.x=TRUE, all.y=FALSE, sort=FALSE)[,returnVal]      
+      
+    } else if (all(nchar(inVector[whNotNa]) %in% 5:7, na.rm=TRUE)) {
+
+      ## all length=5,6,7 integers
+      if(returnVal=='STATENS') returnVal <- 'STUSAB'
+      ret <- merge( data.frame(STATENS=inVector),
+                    stateData[, c('STATENS',returnVal)],
+                    by='STATENS', all.x=TRUE, all.y=FALSE, sort=FALSE)[,returnVal]      
+  
+    } else warning("The mixture of apparent integer lenghts supplied does not match expectation")
+
+  } else {
+
+    ## got at least some characters
+    ## test that all are indeed characters??
+    if(all(nchar(inVector)==2)) {
+
+      ## all length=2 integers: state abbreviations
+      if(returnVal=='STUSAB') returnVal <- 'STATE_NAME'
+      mergeDf <- stateData[, c('STUSAB',returnVal)]
+      mergeDf$STUSAB <- tolower(mergeDf$STUSAB)
+      ret <- merge( data.frame(STUSAB=tolower(inVector)),
+                    mergeDf,
+                    by='STUSAB', all.x=TRUE, all.y=FALSE, sort=FALSE)[,returnVal]      
+    } else {
+
+      ## state names spelled out.... deal with case sensitivity via tolower.
+      if(returnVal=='STATE_NAME') returnVal <- 'STUSAB'
+      mergeDf <- stateData[, c('STATE_NAME',returnVal)]
+      mergeDf$STATE_NAME <- tolower(mergeDf$STATE_NAME)
+      ret <- merge( data.frame(STATE_NAME=tolower(inVector), stringsAsFactors=FALSE),
+                   mergeDf, 
+                   by='STATE_NAME', all.x=TRUE, all.y=FALSE, sort=FALSE)[,returnVal]      
+    }
+
+  
+  }
+
+  ret
+}
+
+
+
+
+

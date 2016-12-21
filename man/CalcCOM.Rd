@@ -4,7 +4,7 @@
 \alias{CalcCOM}
 \title{Calculate center-of-mass.}
 \usage{
-CalcCOM(x)
+CalcCOM(x, na.rm = TRUE)
 }
 \arguments{
 \item{x}{The time series vector.}

@@ -102,7 +102,9 @@ MkNcdf <- function( varList, filename,
                     globalAttList=NULL,
                     overwrite=FALSE, 
                     force_v4=TRUE,
-                    compLev=-1) {   
+                    compLev=-1) {
+
+  ClassMapper <- c(numeric='float', integer='integer', character='text')
 
   names(varList) <- plyr::laply(varList,'[[', 'name')
   
@@ -126,6 +128,8 @@ MkNcdf <- function( varList, filename,
       }
       
       dimList <- plyr::llply( var$dimensionList, doDimDef )
+
+      if(!length(var$precision)) var$precision <- ClassMapper[class(var$data[1])]
       
       if (compLev == -1){
         ncdf4::ncvar_def(var$name, var$units, dimList, var$missing,
@@ -143,7 +147,7 @@ MkNcdf <- function( varList, filename,
     ## this manually else get an occasional error.
     if(fileExists) unlink(filename)
     ncid <- ncdf4::nc_create(filename, defVarList, force_v4=force_v4)  
-  
+
   } else {  #above is starting from scratch, below is appending
       
     append <- TRUE
@@ -189,7 +193,23 @@ MkNcdf <- function( varList, filename,
     }
    
   }
-  
+
+  ## variable attributes
+  GetVarAtts <- function(ll) {
+    whStdAtts <- which(names(ll) %in%
+                       c('units', 'dimensionList',  ##keep 'name', dont include here
+                         'missing', 'longname', 'precision', 'data') )
+    ll[-whStdAtts]
+  }
+  varAttList <- plyr::llply(varList, GetVarAtts)
+  for(nn in names(varAttList)) {
+    theAtts <- varAttList[[nn]][-which(names(varAttList[[nn]])=='name')]
+    for(aa in names(theAtts)) {
+      ## cant really differentiate between single and double precision
+      attPrec <- ClassMapper[class(theAtts[[aa]])]
+      ncdf4::ncatt_put( ncid, nn, aa, theAtts[[aa]], prec=attPrec)
+    }
+  } 
   
   ## global attributes
   if(!is.null(globalAttList)) {

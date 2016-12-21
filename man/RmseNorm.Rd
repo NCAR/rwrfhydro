@@ -4,7 +4,7 @@
 \alias{RmseNorm}
 \title{Calculate normalized root mean squared error.}
 \usage{
-RmseNorm(m, o)
+RmseNorm(m, o, na.rm = TRUE)
 }
 \arguments{
 \item{m}{The vector of modelled values.}
