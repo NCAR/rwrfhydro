@@ -4,7 +4,7 @@
 \alias{RBFlash}
 \title{Calculate Richards-Baker Flashiness Index.}
 \usage{
-RBFlash(m)
+RBFlash(m, na.rm = TRUE)
 }
 \arguments{
 \item{m}{The vector of values.}

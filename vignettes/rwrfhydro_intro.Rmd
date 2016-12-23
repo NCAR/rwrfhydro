@@ -1,6 +1,6 @@
 ---
 title: rwrfhydro introduction
-author: James McCreight, Aubrey Dugger, Logan Karsten
+author: James McCreight, Aubrey Dugger, Arezoo RafieeiNasab, Logan Karsten
 ---
 
 
