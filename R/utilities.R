@@ -356,8 +356,8 @@ Kge <- function (m, o, na.rm=TRUE, s.r=1, s.alpha=1, s.beta=1) {
   r     <- cor(m, o, use=use)
   alpha <- sd(m, na.rm=na.rm) / sd(o, na.rm=na.rm)
   beta  <- mean(m, na.rm=na.rm) / mean(o, na.rm=na.rm)
-  kge = sqrt( (s.r*(1-r))^2 + (s.alpha*(1-alpha))^2 + (s.beta*(1-beta))^2 )
-  kge
+  eds = sqrt( (s.r*(r-1))^2 + (s.alpha*(alpha-1))^2 + (s.beta*(beta-1))^2 )
+  kges = 1-eds
 }
 
 
