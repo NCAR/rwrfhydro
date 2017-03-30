@@ -1,6 +1,6 @@
 ##===================================================================
 
-#' Make timeslices from active USGS discharge data files.
+#' Make timeslices from USGS discharge data files gathered using dataRetrieval..
 #' 
 #' @param realTimeFiles Character vector of active RData format files to be
 #'   processed.
@@ -148,6 +148,105 @@ MkUsgsTimeSlice <- function( realTimeFiles, outPath,
   names(outList) <- c('POSIXct', 'file')
   outList  
 }
+
+
+##===================================================================
+## @example
+if(FALSE){
+
+  library(data.table)
+  archive <- '/glade/p/work/jamesmcc/NWM_real_time_archives/ingest_time_slice_archive_2016-09.Rdata'
+  outPath='/glade/scratch/jamesmcc/V1.1.REFORECAST.timeSlicesFromArchive/'
+  devtools::load_all()
+  
+  library(doParallel)
+  cl <- makePSOCKcluster(8)
+  registerDoParallel(cl)
+
+  ##library(doMC)
+  ##registerDoMC(8)
+  
+  options(warn=1)
+  MkUsgsTimeSliceFromNwmArchive(archive, outPath,
+                                startTime=as.POSIXct('2016-09-15 00:00:00', tz='UTC'))
+  ##endTime=as.POSIXct('2016-09-01 01:00:00', tz='UTC'))
+
+  options(warn=2)
+  stopCluster(cl)
+
+  ## in ~/foo/official i copied the timeSlices from NWM. The correct ones come at a 1 day lag (thought
+  ## I believe 6 hour lag would be sufficient?? (maybe 4 hr?) 
+  ## jamesmcc@hydro-c1[567]:/d7/lpan/wcoss/data/para.nomads.ncep.noaa.gov/pub/data/nccf/com/nwm/para/nwm.20161203/usgs_timeslices> scp ./2016-12-02_00* yellowstone:foo/official/.
+  ## Gets the "correct" 2016-12-02 files from the 2016-12-03 directory.
+  ## the check of the files
+  checkFiles <-
+    list.files('/glade/scratch/jamesmcc/V1.1.REFORECAST.checkFiles/usgsTimeSliceCheckReforecast',
+               pattern='09-15',full=TRUE)
+  library(data.table)
+  for(ff in checkFiles) {
+    new=as.data.table(GetNcdfFile(ff,q=TRUE))
+    old=as.data.table(GetNcdfFile(paste0(outPath,basename(ff)), q=TRUE))
+    setorder(new,'stationId')
+    setorder(old,'stationId')
+    print(ff)
+    print( nrow(new)-nrow(old) )
+    j=merge(new, old, all=FALSE, by=c("stationId", "time"))
+    j <- j[, diff:=discharge.x-discharge.y]
+    print(min(j$diff))
+    print(max(j$diff))
+    ##for(vv in names(new)) { print(vv); print(all(new[[vv]] == old[[vv]])) }
+  }
+  ## issue with the queryTime... worth fixing?
+}
+MkUsgsTimeSliceFromNwmArchive <- function(archive, outPath, startTime=NULL, endTime=NULL) {
+
+  if(file.exists(archive)) load(archive) else stop(paste0('No such file: ',archive))
+
+  ## call the variable "timeSlice": could get timeSlice or monthTimeSlice
+  if(!exists('timeSlice')) {
+    timeSlice <- monthTimeSlice
+    rm('monthTimeSlice')
+  }
+  if(!is.null(startTime)) timeSlice <- timeSlice[ time >= startTime, ]
+  if(!is.null(  endTime)) timeSlice <- timeSlice[ time <=   endTime, ]
+
+  if(!nrow(timeSlice)) return(NULL)
+  
+  ## Get 
+  ##Classes 'data.table' and 'data.frame':	26334124 obs. of  6 variables:
+  ## $ stationId        : chr  "       03303300" "       01581500" "       07157740" "       01095220" 
+  ## $ time             : POSIXct, format: "2016-12-01 20:15:00" "2016-12-01 20:15:00" ...
+  ## $ discharge        : num  0.00878 0.3398 0.03964 5.21033 0.00765 ...
+  ## $ discharge_quality: int  100 100 100 100 100 100 100 100 100 100 ...
+  ## $ queryTime        : int  1480623300 1480623300 1480623300 1480623300 1480623300 1480623300 1480623300 1480623300 1480623300 1480623300 ...
+  ## $ sliceTime        : POSIXct, format: "2016-12-01 20:15:00" "2016-12-01 20:15:00" ...
+  
+  ##dfByPosix: Dataframe, a data frame with the following columns:
+  ## 'site_no',
+  ## 'dateTime',
+  ## 'dateTimeRound',
+  ## 'queryTime',
+  ## 'discharge.cms'
+  ## 'discharge.quality'
+  ## ** where dateTimeRound is the same for the entire dataframe **
+
+  setnames(timeSlice, c('stationId', 'time',     'sliceTime',     'discharge',     'discharge_quality'),
+                      c('site_no',   'dateTime', 'dateTimeRound', 'discharge.cms', 'discharge.quality'))
+
+  sliceResolution <- median(as.numeric(diff(sort(unique(timeSlice$dateTimeRound)))))
+
+  outList <- plyr::ddply(timeSlice, plyr::.(dateTimeRound), 
+                         WriteNcTimeSlice, 
+                         outPath,
+                         sliceResolution,
+                         .parallel=(foreach::getDoParWorkers() > 1 ) ) #, .inform=TRUE )
+  
+  
+}
+
+
+
+
 
 ##===================================================================
 

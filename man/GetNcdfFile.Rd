@@ -31,7 +31,8 @@ conn <- GetNcdfFile('~/wrfHydroTestCases/Fourmile_Creek/CHANNEL_CONNECTIVITY.nc'
 }
 }
 \seealso{
-Other ncdf: \code{\link{MkNcdf}}, \code{\link{ncdump}}
+Other ncdf: \code{\link{MkFrcAdjFromLdasin}},
+  \code{\link{MkNcdf}}, \code{\link{ncdump}}
 }
 \concept{
 ncdf

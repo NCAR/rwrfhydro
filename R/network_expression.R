@@ -133,8 +133,10 @@ ReExpNetwork <- function(routeLinkReInd, upstream=TRUE, parallel=FALSE) {
   FindDownstream <- function(ind) unique( reInd$to[ind]  )
   
   FindFunc <- if(upstream) { FindUpstream } else { FindDownstream }
-  
+
+  #cat('Should see parallelization START now \n') ## it may actually take some time?
   theList <- plyr::llply( 1:length(reInd$to), FindFunc, .parallel=parallel)
+  #cat('Should see parallelization STOP now \n')
   
   theLen <- plyr::laply( theList, function(ll) if(ll[1]==0) 0 else length(ll) )
   whLenPos <- which(theLen > 0)
@@ -457,7 +459,7 @@ GatherStreamInds <- function(stream, start, linkLengths) {
 
 
 ## Get the neighboring (next up or down) stream gages
-GatherNeighborStreamGages <- function(stream, start, linkLengths, gageIndices) {
+GatherNeighborStreamGages <- function(stream, start, linkLengths, gageIndices, interveningLinks=FALSE) {
   ## use the plural here: indDists
   indDists <- GatherStreamIndsNRInner(stream, start, linkLengths) 
   while(any(indDists$tip>1)){
@@ -472,10 +474,15 @@ GatherNeighborStreamGages <- function(stream, start, linkLengths, gageIndices) {
     for(ss in tipInds)
       indDists <- GatherStreamIndsNRInner(stream, ss, linkLengths, indDist=indDists) 
   }
+  #stop()
   whGages <- which(indDists$ind %in% gageIndices)
-  if(!length(whGages)) return(NULL)
-  c(plyr::llply(indDists[c('ind','dist','tip')], '[', whGages) ,
-    indDists['startInd'] )
+  if(!length(whGages) & !interveningLinks) return(NULL)
+  out <- list( upGages=plyr::llply(indDists[c('ind','dist','tip')], '[', whGages) ,
+              thisGage=indDists['startInd'] )
+  if(interveningLinks) 
+    out$intervening <- plyr::llply(indDists[c('ind','dist','tip')], '[',
+                                   setdiff(1:length(indDists$ind),whGages))
+  out
 }
 
 
@@ -601,8 +608,11 @@ GatherStreamIndsNRInner <- function(stream, start, linkLengths=0,
   ## 2: a temporary tip (still solving)
   indDist$tip[which(indDist$ind==start)] <- 1
   anyStream <- stream$start[start] > 0
-  if (!anyStream) return(indDist)
-  
+  if(!anyStream) {
+    if(is.na(indDist$startInd)) indDist$startInd=start
+    return(indDist)
+  }
+    
   indDist$tip[which(indDist$ind==start)] <- 0
   
   whGo <- which(!(names(stream) %in% c('start','end')))

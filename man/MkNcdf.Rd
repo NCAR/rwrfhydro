@@ -114,7 +114,8 @@ ncdump(outFile2)
 unlink(outFile2)
 }
 \seealso{
-Other ncdf: \code{\link{GetNcdfFile}}, \code{\link{ncdump}}
+Other ncdf: \code{\link{GetNcdfFile}},
+  \code{\link{MkFrcAdjFromLdasin}}, \code{\link{ncdump}}
 }
 \concept{
 ncdf
