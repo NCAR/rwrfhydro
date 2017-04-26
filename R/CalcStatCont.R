@@ -223,12 +223,12 @@ CalcStatCont <- function(DT, obsCol, modCol, groupBy = NULL,
     E75          =  quantile(error, 0.75),
     E90          =  quantile(error, 0.9),
     IQR          =  quantile(error, 0.75)-quantile(error, 0.25),
-    Kge          =  rwrfhydro::Kge(mod, obs, na.rm=TRUE, s.r=1, s.alpha=1, s.beta=1)
-    Nse          =  rwrfhydro::Nse (mod, obs, nullModel=mean(o, na.rm=na.rm), na.rm=TRUE) 
-    NseLog       =  rwrfhydro::NseLog (mod, obs, nullModel=mean(o, na.rm=na.rm), na.rm=TRUE) 
-    BiasNorm     =  rwrfhydro::BiasNorm (mod, obs, na.rm=TRUE) 
-    Bias         =  rwrfhydro::Bias(mod, obs, na.rm=TRUE) 
-    RmseNorm     =  rwrfhydro::RmseNorm (mod, obs, na.rm=TRUE) 
+    Kge          =  rwrfhydro::Kge(mod, obs, na.rm=TRUE, s.r=1, s.alpha=1, s.beta=1),
+    Nse          =  rwrfhydro::Nse (mod, obs, nullModel=mean(obs)) ,
+    NseLog       =  rwrfhydro::NseLog (mod, obs, nullModel=mean(obs)), 
+    BiasNorm     =  rwrfhydro::BiasNorm (mod, obs) ,
+    Bias         =  rwrfhydro::Bias(mod, obs) ,
+    RmseNorm     =  rwrfhydro::RmseNorm (mod, obs) 
   ))
   
   # choose only those operations which user are interested on
