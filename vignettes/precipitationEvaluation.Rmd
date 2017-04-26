@@ -10,7 +10,7 @@ vignette: >
 ---
 ## Background
 
-Forcing are stored in multiple files, either in input forcing files (such as LDASIN or PRECIP_FORCING files) or in the output files (LDASOUT). LDASOUT files contains the variable ACCPRCP which stores the accumulated precipitation, and one can calculate the rainfall depth by subtracting two consecutive time steps. LDASIN and PRECIP_FORCING store rain rate in RAINRATE and precip_rate variables. This vignette serve as a short explanation of how to grab data and do some basic comparisons.
+Forcing are stored in multiple files, either in input forcing files (such as LDASIN or PRECIP_FORCING files) or in the output files (LDASOUT). LDASOUT files contain the variable ACCPRCP which stores the accumulated precipitation, and one can calculate the rainfall depth by subtracting two consecutive time steps. LDASIN and PRECIP_FORCING store rain rate in RAINRATE and precip_rate variables. This vignette serve as a short explanation of how to grab data and do some basic comparisons.
 
 Load the rwrfhydro package. 
 ```{r  results='hide', message=FALSE, warning=FALSE}
