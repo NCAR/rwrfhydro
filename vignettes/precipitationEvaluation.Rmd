@@ -28,6 +28,7 @@ Data is provided in 4 different temporal resolution (subhourly, hourly, daily an
 
 
 
+
 # GHCN-daily
 Global Historical Climatology Network-Daily (GHCN-D) dataset contains daily data from around 80000 surface station in the world, which about two third of them are precipitation only (Menne et al. 2012). It is the most complete collection of U.S. daily data available (Menne et al. 2012). The dataset undergo an automated quality assurance which the details can be found in Durre et al. 2008; 2010. Data is available on [http://www1.ncdc.noaa.gov/pub/data/ghcn/daily](http://www1.ncdc.noaa.gov/pub/data/ghcn/daily) and is updated frequently. Data is available in two formats either categorized by gauge station or categorized by year. Accordingly, there are two function to pull GHCN-daily data from these two sources called `GetGhcn` and `GetGhcn2`.
 
