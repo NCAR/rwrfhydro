@@ -97,6 +97,7 @@ multiplot <- function(..., plotlist=NULL, cols=1, layout=NULL) {
 #' \item E50:  50 percent of errors
 #' \item E75: 75 percent of errors
 #' \item E90: 90 percent of errors
+#' \item RmseNorm, Kge, Nse, NseLog, BiasNorm and Bias which are rwrfhydro functions
 #' } For more information refer to Model Evaluation Tool (MET) documentation
 #'
 #'
@@ -184,14 +185,18 @@ CalcStatCont <- function(DT, obsCol, modCol, groupBy = NULL,
   
   # We remove all Inf and -Inf from the data if there is any
   DT <- DT[is.finite(obs) & is.finite(mod)]
-  
+ 
+  # remove all the pairs with NA value in either obs or model 
+  DT <- DT[!is.na(obs) & !is.na(mod)]
+
+ 
   # add error to the DT to reduce the number of calculation
   if (any(c("ME", "MSE", "RMSE", "MAE", "MAD", "quantiles", 
             "E10", "E25", "E50", "E75", "E90", "IQR") %in% statList)) {
     DT[ , `:=`(error  = mod - obs)]
   }
   
-  # Define all the operations 
+  # Define all the operations, since all the infinite and NA values have been removed above, no need to remove them individually in each function
   my_exprs = quote(list(
     numPaired    =  length(obs),
     minObs       =  min(obs),
@@ -217,7 +222,13 @@ CalcStatCont <- function(DT, obsCol, modCol, groupBy = NULL,
     E50          =  quantile(error, 0.5),
     E75          =  quantile(error, 0.75),
     E90          =  quantile(error, 0.9),
-    IQR          =  quantile(error, 0.75)-quantile(error, 0.25)
+    IQR          =  quantile(error, 0.75)-quantile(error, 0.25),
+    Kge          =  rwrfhydro::Kge(mod, obs, na.rm=TRUE, s.r=1, s.alpha=1, s.beta=1)
+    Nse          =  rwrfhydro::Nse (mod, obs, nullModel=mean(o, na.rm=na.rm), na.rm=TRUE) 
+    NseLog       =  rwrfhydro::NseLog (mod, obs, nullModel=mean(o, na.rm=na.rm), na.rm=TRUE) 
+    BiasNorm     =  rwrfhydro::BiasNorm (mod, obs, na.rm=TRUE) 
+    Bias         =  rwrfhydro::Bias(mod, obs, na.rm=TRUE) 
+    RmseNorm     =  rwrfhydro::RmseNorm (mod, obs, na.rm=TRUE) 
   ))
   
   # choose only those operations which user are interested on
