@@ -19,15 +19,12 @@ library(rwrfhydro)
 
 # Import observed datasets
 
-Functions to retrieve observation data for several observational network is provided in rwrfhydro.  GHCN-Daily and USCRN networks are used in this vignette. 
+Functions to retrieve observation data for several observational network is provided in rwrfhydro.  GHCN-Daily and USCRN networks are introduced and used in this vignette. 
 
 # USCRN
 The US. Climate Reference Network (USCRN) is a network of monitoring stations equipped with research quality instruments. Beside precipitation, these gauges report temperature, soil moisture and soil temperature. The precipitation is measured every 5 minutes using three independent measurements in a weighing bucket gauge accompanied with a disdrometer reporting the presence or absence of precipitation. These gauges, in the cold climate, are equipped with heating tape around the throat of the weighing gauge to prevent the frozen precipitation from accumulating on the interior walls and capping the gauge. The redundancy in the measurements is to ensure the quality of the measurements. 
 
-Data is provided in 4 different temporal resolution (subhourly, hourly, daily and monthly), and depending on the temporal resolution, the variables provided changes. For more infoamtion on the data and variables, refer to the the man page of `Get_USCRN`.
-
-
-
+Data is provided in 4 different temporal resolution (subhourly, hourly, daily and monthly), and depending on the temporal resolution, the variables provided changes. For more infoamtion on the data and how to retrieve, refer to the the man page of `Get_USCRN`.
 
 # GHCN-daily
 Global Historical Climatology Network-Daily (GHCN-D) dataset contains daily data from around 80000 surface station in the world, which about two third of them are precipitation only (Menne et al. 2012). It is the most complete collection of U.S. daily data available (Menne et al. 2012). The dataset undergo an automated quality assurance which the details can be found in Durre et al. 2008; 2010. Data is available on [http://www1.ncdc.noaa.gov/pub/data/ghcn/daily](http://www1.ncdc.noaa.gov/pub/data/ghcn/daily) and is updated frequently. Data is available in two formats either categorized by gauge station or categorized by year. Accordingly, there are two function to pull GHCN-daily data from these two sources called `GetGhcn` and `GetGhcn2`.
@@ -65,15 +62,7 @@ obsPrcp <- GetGhcn(sg$siteIds, element, startDate, endDate, parallel = FALSE)
 ```
 
 ## GetGhcn2
-NCDC also provides GHCN-daily categorized by year under http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_year/. If the number of the gauges are high, `GetGhcn2` is much faster in retrieving data. 
-
-```{r message=FALSE, warning=FALSE}
-startDate <- "2013/08/01"
-endDate <- "2013/09/30"
-element <- "PRCP"
-obsPrcp <- GetGhcn2(sg$siteIds, element, startDate, endDate, parallel = FALSE)
-head(obsPrcp)
-```
+NCDC also provides GHCN-daily categorized by year under http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_year/. If the number of the gauges are high, `GetGhcn2` is much faster in retrieving data. It has the same arguments as `GetGhcn`.
 
 
 # Import forcing/precipitation data used in WRF-Hydro model  
@@ -123,7 +112,7 @@ head(prcpData)
 `GetMultiNcdf` pulls the time information from the netcdf files, if the data is not prepared properly, and the time info is not available, it will return the name of the file instead. In that case, time should be retrieved from the file name which is save in column `POSIXct`. Since the `obsPrcp` data are converted to mm, we also convert the rainrate to rain depth in an hour.
 
 ```{r}
-prcpData$value<-prcpData$value*3600
+prcpData$value <- prcpData$value*3600
 ```
 
 
@@ -133,7 +122,7 @@ Each GHCN gauge has a unique reporting time which the daily data is been calcula
 
 ```{r}
 sg$reportTime <- obsPrcp$reportTime[match(sg$siteIds, obsPrcp$siteIds)]
-sg$reportTime[which (sg$reportTime=="" | is.na(sg$reportTime))]<-700
+sg$reportTime[which (sg$reportTime=="" | is.na(sg$reportTime))] <-700
 ```
 
 Call the `CalcDailyGhcn` function which takes the following steps: 
@@ -156,14 +145,14 @@ Final step if to find the common data between the two dataset (precipitation tim
 #usind data.table merge
 common <- data.table:::merge.data.table(data.table::as.data.table(dailyData),data.table::as.data.table(obsPrcp),
                                         by.x=c("ghcnDay","statArg"),
-                                        by.y=c("date","siteIds"))
+                                        by.y=c("Date","siteIds"))
 head(common)
 ```
 
 Call the `CalcStatCont` function and it returns all the requested statistics.  The default are `numPaired` (number of paired data), `meanObs` (mean of observation data), `meanMod` (mean of model/forecast data), `pearsonCor` (Pearson correlation coefficient), `RMSE` (root mean square error), and `multiBias` (multiplicative bias). Here we want to get the statistics for each gauge, therefore, we need to group the data for each gauge. This can be done by defining `groupBy` to be the column name having siteIds, here `statArg`.
 
 ```{r plot1, fig.width = 8, fig.height = 8, out.width='600', out.height='600'}
-stat <- CalcStatCont(DT = common, obsCol = "dailyPrcp", modCol = "value" , groupBy = "statArg")
+stat <- CalcStatCont(DT = common, obsCol = "dailyPrcp", modCol = "value" ,  obsMissing = -999.9, groupBy = "statArg")
 
 # CalcStatCont will return a list having two elements of stat and plotList.
 names(stat)
