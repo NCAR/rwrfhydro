@@ -10,7 +10,7 @@ vignette: >
 ---
 # Background
 
-Forcing could be stored in multiple files, either in input forcing files (such as *LDASIN* or *PRECIP_FORCING* files) or in the output files (*LDASOUT*). *LDASOUT* files may contain a variable called *ACCPRCP* storing the accumulated precipitation, and the rainfall depth can be obtained by subtracting two consecutive time steps. LDASIN and PRECIP_FORCING files usually store rain rate in *RAINRATE* and *precip_rate* variables. This vignette serve as a short explanation of how to retrieve data and perform some basic comparisons between two set of data.
+Forcing could be stored in multiple files, either in input forcing files (such as *LDASIN* or *PRECIP_FORCING* files) or in the output files (*LDASOUT*). *LDASOUT* files may contain a variable called *ACCPRCP* storing the accumulated precipitation, and the rainfall depth can be obtained by subtracting two consecutive time steps. *LDASIN* and *PRECIP_FORCING* files usually store rain rate in *RAINRATE* and *precip_rate* variables. This vignette serve as a short explanation of how to retrieve data and perform some basic comparisons between two set of data.
 
 Load the rwrfhydro package. 
 ```{r  results='hide', message=FALSE, warning=FALSE}
@@ -32,7 +32,7 @@ Global Historical Climatology Network-Daily (GHCN-D) dataset contains daily data
 ## Gauge selection
 First step is to select the gauges you want to use for verification based on some criteria. GHCN-daily contains the precipitation data from different sources such as COOP or CoCoRaHS. The selection criteria can be country code, states if country is US, type of rain gauge network (for example CoCoRaHS), or a rectangle domain. 
 
-```{r}
+```{r eval = FALSE}
 #setInternet2(use=FALSE) # If using windows, you may need this.
 
 # Return all the gauges within US from observation network of COOP (C) and CoCoRaHS (1)
@@ -54,11 +54,12 @@ str(sg)
 ## GetGhcn
 GHCN-daily data are archived for each individual gauge in a text file in http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/all/. Precipitating can be downloaded for a single site or multiple ones by setting element to "PRCP" and specifying the desired start and end date. Notice, precipitation values are  converted from 10th of mm to mm.
 
-```{r, eval = FALSE}
+```{r message=FALSE, warning=FALSE}
 startDate <- "2013/01/01"
 endDate <- "2013/09/30"
 element <- "PRCP"
 obsPrcp <- GetGhcn(sg$siteIds, element, startDate, endDate, parallel = FALSE)
+str(obsPrcp)
 ```
 
 ## GetGhcn2
@@ -146,7 +147,8 @@ Final step if to find the common data between the two dataset (precipitation tim
 
 ```{r}
 #usind data.table merge
-common <- data.table:::merge.data.table(data.table::as.data.table(dailyData),data.table::as.data.table(obsPrcp),
+common <- data.table:::merge.data.table(data.table::as.data.table(dailyData),
+                                        data.table::as.data.table(obsPrcp),
                                         by.x=c("ghcnDay","statArg"),
                                         by.y=c("Date","siteIds"))
 head(common)
@@ -155,7 +157,8 @@ head(common)
 Call the `CalcStatCont` function and it returns all the requested statistics.  The default are `numPaired` (number of paired data), `meanObs` (mean of observation data), `meanMod` (mean of model/forecast data), `pearsonCor` (Pearson correlation coefficient), `RMSE` (root mean square error), and `multiBias` (multiplicative bias). Here we want to get the statistics for each gauge, therefore, we need to group the data for each gauge. This can be done by defining `groupBy` to be the column name having siteIds, here `statArg`.
 
 ```{r plot1, fig.width = 8, fig.height = 8, out.width='600', out.height='600'}
-stat <- CalcStatCont(DT = common, obsCol = "dailyPrcp", modCol = "value" ,  obsMissing = -999.9, groupBy = "statArg")
+stat <- CalcStatCont(DT = common, obsCol = "dailyGhcn", modCol = "dailyPrcp" , 
+                     obsMissing = -999.9, groupBy = "statArg")
 
 # CalcStatCont will return a list having two elements of stat and plotList.
 names(stat)
@@ -168,19 +171,19 @@ If the `groupBy` is `NULL` then it will return four informative plots.
 
 ```{r plot2, fig.width = 8, fig.height = 8, out.width='600', out.height='600'}
 common2 <- common[statArg == unique(statArg)[1]]
-stat <- CalcStatCont(DT = common2, obsCol = "dailyPrcp", modCol = "value")
+stat <- CalcStatCont(DT = common2, obsCol = "dailyGhcn", modCol = "dailyPrcp", obsMissing = -999.9, title = common2$statArg)
 ```
 
 You can choose among the four plots by changing the `plot.list` argument. 
 
 ```{r plot3, fig.width = 8, fig.height = 8, out.width='600', out.height='600'}
-stat <- CalcStatCont(DT = common2, obsCol = "dailyPrcp", modCol = "value" , plot.list = "scatterPlot")
+stat <- CalcStatCont(DT = common2, obsCol = "dailyGhcn", modCol = "dailyPrcp" , obsMissing = -999.9, plot.list = "scatterPlot")
 ```
 
 You can also calculate conditional statistics by defining the boundaries you are interested in. For example, here we calculate the statistics conditioned on the observation to be greater than 1 mm. 
 
 ```{r plot4, fig.width = 8, fig.height = 8, out.width='600', out.height='600'}
-stat <- CalcStatCont(DT = common2, obsCol = "dailyPrcp", modCol = "value" , 
+stat <- CalcStatCont(DT = common2, obsCol = "dailyGhcn", modCol = "dailyPrcp" , 
                      obsCondRange = c(1, Inf), plot.list = "scatterPlot")
 ```
 
@@ -205,8 +208,8 @@ common <- data.table:::merge.data.table(common,data.table::as.data.table(sg[, c(
                                         by.y=c("siteIds"))
 
 # calculate statistics using grouping by rfc
-stat <- CalcStatCont(DT = common, obsCol = "dailyPrcp", modCol = "value" , 
-                     groupBy = "rfc", plot.it = FALSE)
+stat <- CalcStatCont(DT = common, obsCol = "dailyGhcn", modCol = "dailyPrcp" , 
+                     groupBy = "rfc", obsMissing = -999.9, plot.it = FALSE)
 
 stat$stat
 ```
@@ -234,8 +237,8 @@ common <- data.table:::merge.data.table(common,data.table::as.data.table(sg[, c(
                                         by.y=c("siteIds"))
 
 # calculate statistics using grouping by HUC12
-stat <- CalcStatCont(DT = common, obsCol = "dailyPrcp", modCol = "value" , 
-                     groupBy = "HUC12", plot.it = FALSE)
+stat <- CalcStatCont(DT = common, obsCol = "dailyGhcn", modCol = "dailyPrcp", 
+                     obsMissing = -999.9, groupBy = "HUC12", plot.it = FALSE)
 stat$stat
 ```
 
@@ -250,7 +253,7 @@ The grouping option is similar to `CalcStatCont`.
 
 ```{r}
 # calculate categorical statistics
-stat <- CalcStatCategorical(DT = common, obsCol = "dailyPrcp", modCol = "value" , 
-                            groupBy = "statArg", threshold = c(1,5))
+stat <- CalcStatCategorical(DT = common, obsCol = "dailyGhcn", modCol = "dailyPrcp", 
+                            obsMissing = -999.9, groupBy = "statArg", threshold = c(1,5))
 stat
 ```
