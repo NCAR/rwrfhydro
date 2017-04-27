@@ -55,7 +55,7 @@ str(sg)
 GHCN-daily data are archived for each individual gauge in a text file in http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/all/. Precipitating can be downloaded for a single site or multiple ones by setting element to "PRCP" and specifying the desired start and end date. Notice, precipitation values are  converted from 10th of mm to mm.
 
 ```{r, eval = FALSE}
-startDate <- "2013/08/01"
+startDate <- "2013/01/01"
 endDate <- "2013/09/30"
 element <- "PRCP"
 obsPrcp <- GetGhcn(sg$siteIds, element, startDate, endDate, parallel = FALSE)
@@ -78,7 +78,7 @@ First make a list of all the forcing files.
 
 ```{r}
 forcingPath <- paste0(fcPath,"/FORCING")
-files <- list.files(path = forcingPath, full.names = TRUE, pattern = glob2rx("2013*LDASIN_DOMAIN1"))
+files <- list.files(path = forcingPath, full.names = TRUE, pattern = glob2rx("201304*LDASIN_DOMAIN1"))
 ```
 
 
@@ -115,14 +115,17 @@ head(prcpData)
 prcpData$value <- prcpData$value*3600
 ```
 
-
 ### Aggregating hourly data into daily.
 
 Each GHCN gauge has a unique reporting time which the daily data is been calculated based on that. The reporting time is archived in the csv files and is retrieved when calling `GetGhcn2` function (you will not get the reporting time using `GetGhcn`). We need to add the reporting time for each point which would be the base for daily aggregation. If there will not be any `reportTime` in `sg` columns, then it uses the default which is 0700 AM. 
 
 ```{r}
-sg$reportTime <- obsPrcp$reportTime[match(sg$siteIds, obsPrcp$siteIds)]
-sg$reportTime[which (sg$reportTime=="" | is.na(sg$reportTime))] <-700
+if ("reportTime" %in% names(prcpData)) {
+  sg$reportTime <- obsPrcp$reportTime[match(sg$siteIds, obsPrcp$siteIds)]
+  sg$reportTime[which (sg$reportTime=="" | is.na(sg$reportTime))] <-700
+}else{
+  sg$reportTime<- 700
+}
 ```
 
 Call the `CalcDailyGhcn` function which takes the following steps: 
