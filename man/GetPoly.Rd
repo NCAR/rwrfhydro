@@ -35,7 +35,8 @@ shapefile, and adds the attribute as a field to the input dataframe.
 }
 \examples{
 \dontrun{
-sg<-GetPoly(sg,  polygonAddress= "/glade/scratch/arezoo/QPF_verification_rwrfhydro/gis/", polygonShapeFile= "huc6", join="HUC6")
+sg<-GetPoly(sg,  polygonAddress= "/glade/scratch/arezoo/QPF_verification_rwrfhydro/gis/",
+polygonShapeFile= "huc6", join="HUC6")
 }
 }
 \seealso{
@@ -49,4 +50,3 @@ Other geospatial: \code{\link{ExportGeogrid}},
 dataMgmt
 }
 \keyword{IO}
-

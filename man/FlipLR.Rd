@@ -18,4 +18,3 @@ x
 FlipLR(x)
 }
 \keyword{internal}
-

@@ -121,33 +121,42 @@
 #' @return A data.table containing the US CRN data.
 #' 
 #' @examples
-#'  example 1: getting the precipition data at the subhourly time steps, for the first three months of 2016
+#' example 1: getting the precipition data at the subhourly time steps, 
+#' for the first three months of 2016
 #' startDate = as.POSIXct("2016-01-01 00:00:00", format= "%Y-%m-%d %H:%M:%S", tz = "UTC")
 #' endDate   = as.POSIXct("2016-04-01 00:00:00", format= "%Y-%m-%d %H:%M:%S", tz = "UTC")
-#' output <- GetCRN(elements = "P_CALC", timestep = "hourly", startDate = startDate, endDate= endDate)
+#' output <- GetCRN(elements = "P_CALC", timestep = "hourly", 
+#' startDate = startDate, endDate= endDate)
 #' 
 #' # choose only gauge in the following domain
 #' domain <- data.frame(minlon = -80, maxlon = -60, minlat = 30, maxlat = 50)
-#' output <- GetCRN(elements = "P_CALC", timestep = "hourly", startDate = startDate, endDate= endDate, domain = domain)
+#' output <- GetCRN(elements = "P_CALC", timestep = "hourly", 
+#' startDate = startDate, endDate= endDate, domain = domain)
 #' 
 #' # choose only gauges in the Colorado 
-#' outputHourly <- GetCRN(gageNames = "CO", elements = "P_CALC", timestep = "hourly", startDate = startDate, endDate= endDate)
+#' outputHourly <- GetCRN(gageNames = "CO", elements = "P_CALC", timestep = "hourly", 
+#' startDate = startDate, endDate= endDate)
 #' 
 #' # get daily data only for basins in colorado
-#' outputDaily <- GetCRN(gageNames = "CO", elements = "P_DAILY_CALC", timestep = "daily", startDate = startDate, endDate= endDate)
+#' outputDaily <- GetCRN(gageNames = "CO", elements = "P_DAILY_CALC", timestep = "daily", 
+#' startDate = startDate, endDate= endDate)
 #' 
 #' # get monthly data only for basins in colorado
-#' outputMonthly <- GetCRN(gageNames = "CO", elements = "P_MONTHLY_CALC", timestep = "monthly", startDate = startDate, endDate= endDate)
+#' outputMonthly <- GetCRN(gageNames = "CO", elements = "P_MONTHLY_CALC", timestep = "monthly", 
+#' startDate = startDate, endDate= endDate)
 #' 
 #' # get subhourly data only for basins in colorado
-#' outputsubhourly <- GetCRN(gageNames = "CO", elements = "PRECIPITATION", timestep = "subhourly", startDate = startDate, endDate= endDate)
+#' outputsubhourly <- GetCRN(gageNames = "CO", elements = "PRECIPITATION", 
+#' timestep = "subhourly", startDate = startDate, endDate= endDate)
 #' 
 #' # get hourly soik moisure data
-#' outputHourly <- GetCRN(gageNames = "CO", elements = c("SOIL_MOISTURE_5", "SOIL_MOISTURE_10", "SOIL_MOISTURE_20", "SOIL_MOISTURE_50", "SOIL_MOISTURE_100"), timestep = "hourly")
+#' outputHourly <- GetCRN(gageNames = "CO", elements = c("SOIL_MOISTURE_5", 
+#' "SOIL_MOISTURE_10", "SOIL_MOISTURE_20", "SOIL_MOISTURE_50", "SOIL_MOISTURE_100"), 
+#' timestep = "hourly")
 
-#' @keywords 
-#' @concept 
-#' @family 
+#' @keywords IO
+#' @concept USCRN
+#' @family USCRN
 #' @export
 
 GetCRN <- function(gageNames = NULL, siteIds= NULL, elements = NULL, timestep = "hourly", domain = NULL, 
@@ -163,7 +172,7 @@ GetCRN <- function(gageNames = NULL, siteIds= NULL, elements = NULL, timestep = 
   years <- seq(lubridate::year(startDate), lubridate::year(endDate))
   
   # reading the hear information which is distributed in a separate file
-  headerInfo <- read.table(paste0(url_uscrn,"/HEADERS.txt"), stringsAsFactors = FALSE) 
+  headerInfo <- utils::read.table(paste0(url_uscrn,"/HEADERS.txt"), stringsAsFactors = FALSE) 
   
   if (timestep == "monthly") {
     urlPaths <- paste0(url_uscrn)

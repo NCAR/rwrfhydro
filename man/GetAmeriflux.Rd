@@ -63,4 +63,3 @@ Other Ameriflux: \code{\link{amfMeta}},
 Ameriflux
 }
 \keyword{IO}
-

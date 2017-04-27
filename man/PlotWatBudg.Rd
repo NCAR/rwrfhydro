@@ -36,4 +36,3 @@ PlotWatBudg(wb.allrt.fc)
 PlotWatBudg(wb.allrt.fc, "bar")
 }
 }
-

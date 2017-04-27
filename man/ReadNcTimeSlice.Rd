@@ -20,4 +20,3 @@ ReadNcTimeSlice(tail(sliceFiles,1))
 }
 }
 \keyword{internal}
-
