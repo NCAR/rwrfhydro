@@ -146,10 +146,21 @@ ReadLdasoutWb <- function(pathOutdir, pathDomfile, mskvar="basn_msk",
                           basid=1, aggfact=10,
                           pattern=glob2rx('*LDASOUT_DOMAIN*'),
                           parallel=FALSE) {
-    # Setup mask
-    mskvar <- CreateBasinMask(pathDomfile, mskvar=mskvar, basid=basid, aggfact=aggfact)
-    # Calculate basin area as a cell count
-    basarea <- sum(mskvar)
+    if (!is.null(pathDomfile)) {
+       # Setup mask
+       mskvar <- CreateBasinMask(pathDomfile, mskvar=mskvar, basid=basid, aggfact=aggfact)
+       # Calculate basin area as a cell count
+       basarea <- sum(mskvar)
+    } else {
+       # Create dummy mask of ones
+       firstFile <- list.files(path=pathOutdir, pattern=pattern, full.names=TRUE)[1]
+       ncid <- ncdf4::nc_open(firstFile)
+       ylength <- ncid$dim[["south_north"]]$len
+       xlength <- ncid$dim[["west_east"]]$len
+       ncdf4::nc_close(ncid)
+       mskvar <- matrix(1, xlength, ylength)
+       basarea <- sum(mskvar)
+    }
     # Setup basin mean function
     basin_avg <- function(myvar, minValid=-1e+30) {
         myvar[which(myvar<minValid)]<-NA
@@ -244,10 +255,21 @@ ReadLdasoutAll <- function(pathOutdir, pathDomfile, mskvar="basn_msk",
                           basid=1, aggfact=10,  
                           pattern=glob2rx('*LDASOUT_DOMAIN*'),
                           parallel=FALSE) {
-  # Setup mask
-  mskvar <- CreateBasinMask(pathDomfile, mskvar=mskvar, basid=basid, aggfact=aggfact)
-  # Calculate basin area as a cell count
-  basarea <- sum(mskvar)
+    if (!is.null(pathDomfile)) {
+        # Setup mask
+        mskvar <- CreateBasinMask(pathDomfile, mskvar=mskvar, basid=basid, aggfact=aggfact)
+        # Calculate basin area as a cell count
+        basarea <- sum(mskvar)
+    } else {
+        # Create dummy mask of ones
+        firstFile <- list.files(path=pathOutdir, pattern=pattern, full.names=TRUE)[1]
+        ncid <- ncdf4::nc_open(firstFile)
+        ylength <- ncid$dim[["south_north"]]$len
+        xlength <- ncid$dim[["west_east"]]$len
+        ncdf4::nc_close(ncid)
+        mskvar <- matrix(1, xlength, ylength)
+        basarea <- sum(mskvar)
+    }
   # Setup basin mean function
   basin_avg <- function(myvar, minValid=-1e+30) {
     myvar[which(myvar<minValid)]<-NA
@@ -389,6 +411,8 @@ ReadLdasoutAll <- function(pathOutdir, pathDomfile, mskvar="basn_msk",
 #' @param basid The basin ID to use (DEFAULT=1)
 #' @param parallel Logical for running in parallel mode (must have a parallel
 #' backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)
+#' @param pattern The pattern to match for file ingest
+#' (DEFAULT=glob2rx('*.RTOUT_DOMAIN*'))
 #' @return A dataframe containing a time series of basin-wide mean water budget 
 #' variables.
 #'
@@ -411,15 +435,28 @@ ReadLdasoutAll <- function(pathOutdir, pathDomfile, mskvar="basn_msk",
 #' @export
 ReadRtout <- function(pathOutdir, pathDomfile, 
                       mskvar="basn_msk", basid=1, 
-                      parallel=FALSE) {
-    # Setup mask
-    msk <- ncdf4::nc_open(pathDomfile)
-    mskvar <- ncdf4::ncvar_get(msk,mskvar)
-    # Subset to basinID
-    mskvar[which(mskvar != basid)] <- 0.0
-    mskvar[which(mskvar == basid)] <- 1.0
-    # Reverse y-direction for N->S hydro grids to S->N
-    mskvar <- mskvar[,order(ncol(mskvar):1)]
+                      parallel=FALSE,
+                      pattern=glob2rx('*.RTOUT_DOMAIN*')) {
+    if (!is.null(pathDomfile)) {
+        # Setup mask
+        msk <- ncdf4::nc_open(pathDomfile)
+        mskvar <- ncdf4::ncvar_get(msk,mskvar)
+        # Subset to basinID
+        mskvar[which(mskvar != basid)] <- 0.0
+        mskvar[which(mskvar == basid)] <- 1.0
+        # Reverse y-direction for N->S hydro grids to S->N
+        mskvar <- mskvar[,order(ncol(mskvar):1)]
+    } else {
+        # Create dummy mask of ones
+        firstFile <- list.files(path=pathOutdir, pattern=pattern, 
+                                full.names=TRUE)[1]
+        ncid <- ncdf4::nc_open(firstFile)
+        ylength <- ncid$dim[["y"]]$len
+        xlength <- ncid$dim[["x"]]$len
+        ncdf4::nc_close(ncid)
+        mskvar <- matrix(1, xlength, ylength)
+    }
+    
     # Setup mean functions
     basin_avg <- function(myvar, minValid=-1e+30) {
         myvar[which(myvar<minValid)]<-NA
@@ -476,6 +513,10 @@ ReadRtout <- function(pathOutdir, pathDomfile,
 #' backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)
 #' @param useDatatable Logical for utilizing the data.table package and 
 #' outputting in data.table format (DEFAULT=TRUE)
+#' @param gageOnly Logical for whether to bring in reaches with associated 
+#' gage IDs only (vs. all reaches) (DEFAULT=TRUE)
+#' @param pattern The pattern to match for file ingest
+#' (DEFAULT=glob2rx('*.CHRTOUT_DOMAIN*'))
 #' @return A datatable containing a time series of channel fluxes.
 #'
 #' @examples
@@ -496,10 +537,12 @@ ReadChrtout <- function(pathOutdir,
                         idList=NULL,
                         gageList=NULL, rtlinkFile=NULL,
                         parallel=FALSE,
-                        useDatatable=TRUE) {
+                        useDatatable=TRUE,
+                        gageOnly=TRUE,
+                        pattern=glob2rx('*.CHRTOUT_DOMAIN*')) {
     # Get files
     filesList <- list.files(path=pathOutdir, 
-                                    pattern=glob2rx('*.CHRTOUT_DOMAIN*'), 
+                                    pattern=pattern, 
                                     full.names=TRUE)
     if (length(filesList)==0) stop("No matching files in specified directory.")
     # Compile link list
@@ -510,11 +553,13 @@ ReadChrtout <- function(pathOutdir,
     if (is.null(idList)) {
         if (exists("rtLink")) {
             if (is.null(gageList)) {
-                if (useDatatable) {
-                    rtLink <- rtLink[site_no != '',]
-                } else {
-                    rtLink <- subset(rtLink, rtLink$site_no != '')
-                    }
+                if (gageOnly) {
+                   if (useDatatable) {
+                      rtLink <- rtLink[site_no != '',]
+                   } else {
+                      rtLink <- subset(rtLink, rtLink$site_no != '')
+                   }
+                }
             } else {
                 if (useDatatable) {
                     rtLink <- rtLink[site_no %in% gageList,]

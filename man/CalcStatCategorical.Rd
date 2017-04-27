@@ -99,9 +99,7 @@ threshold = c(60,70,80,90,100,110, 120, 130, 140), groupBy = "Experiment")
 
 }
 \seealso{
-Other modelEvaluation: \code{\link{CalcMetContGrid}},
-  \code{\link{CalcMetCont}},
-  \code{\link{CalcModPerfMulti}},
+Other modelEvaluation: \code{\link{CalcModPerfMulti}},
   \code{\link{CalcModPerf}},
   \code{\link{CalcNoahmpFluxes}},
   \code{\link{CalcNoahmpWatBudg}},

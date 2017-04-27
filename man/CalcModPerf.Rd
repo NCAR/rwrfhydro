@@ -107,9 +107,7 @@ min10      12  -385.99   -14.59     0.35     0.1678   538.78   112.4      0.056 
 }
 }
 \seealso{
-Other modelEvaluation: \code{\link{CalcMetContGrid}},
-  \code{\link{CalcMetCont}},
-  \code{\link{CalcModPerfMulti}},
+Other modelEvaluation: \code{\link{CalcModPerfMulti}},
   \code{\link{CalcNoahmpFluxes}},
   \code{\link{CalcNoahmpWatBudg}},
   \code{\link{CalcStatCategorical}},

@@ -1,6 +1,10 @@
 # For the next release 
 Add your new features and bug fixes to the top of the following list:
 
+* Add new utility functions for manipulating user-defined mapping files.
+
+* ReadChrtout: New functionality to better tailor data pulls by links/gages.
+
 * CalcModPerf: option to output pair data frame to an R binary file in a directory.
 
 * GatherStreamInds: removed recusion, some improvements.

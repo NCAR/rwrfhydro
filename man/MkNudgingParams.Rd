@@ -4,7 +4,7 @@
 \alias{MkNudgingParams}
 \title{Create a parameter file for nudging.}
 \usage{
-MkNudgingParams(gageId, R, G, tau, qThresh = NULL, acf = NULL, outFile,
+MkNudgingParams(gageId, R, G, tau, qThresh = NULL, expCoeff = NULL, outFile,
   overwrite = FALSE, rmBlankGages = TRUE)
 }
 \arguments{
@@ -18,7 +18,7 @@ MkNudgingParams(gageId, R, G, tau, qThresh = NULL, acf = NULL, outFile,
 
 \item{qThresh}{Numeric [length(gageId), 12, nThresh] threshhold of flow for acf selection.}
 
-\item{acf}{Numeric [length(gageId), 12, nThresh+1] actually the denominator in exp(-y/b).}
+\item{expCoeff}{Numeric [length(gageId), 12, nThresh+1] actually the denominator in exp(-y/b).}
 
 \item{outFile}{Character path/file to the desired output file}
 
@@ -44,8 +44,10 @@ Create a parameter file for nudging.
                   G=gageParams$G, tau=gageParams$tau, 
                   outFile='~/WRF_Hydro/Col_Bldr_Creek/PMO/nudgingParams.PMOallGages.nc', 
                   overwrite=TRUE)
-## FRNG example
+# FRNG example
 ## The existing params file
+if(FALSE) {
+devtools::load_all()
 ## existing parameter file to change/extend
 paramPath <- '~/WRF_Hydro/FRNG_NHD/RUN/prstTestFeb2016/DOMAIN/'
 frnParams <- paste0(paramPath,'nudgingParams.rwValid5.nc')
@@ -54,6 +56,83 @@ gageParamR <- ncdump(frnParams,'R',q=TRUE)
 gageParamG <- ncdump(frnParams,'G',q=TRUE)
 gageParamTau <- ncdump(frnParams,'tau',q=TRUE)
 nGages=length(gageParamId)
+
+## the existing parameter file had blanks, remove them.
+options(warn=1)
+MkNudgingParams(gageId=gageParamId, R=gageParamR,
+G=gageParamG, tau=gageParamTau,
+outFile=paste0(paramPath,'nudgingParams.rwValid5.rmBlanks.nc'),
+overwrite=TRUE, rmBlankGages=TRUE)
+
+
+## Uniform tiny coefficient, simulate not having these parameters.
+nGages <- length(gageParamId)
+gageParamQThresh1 <- array(rep(c(1000000),each=nGages*12),dim=c(nGages,12,1))
+gageExpCoeff1 <- array(rep(c(1e-38),each=nGages*12),dim=c(nGages,12,2))
+print(
+MkNudgingParams(gageId=gageParamId, R=gageParamR,
+G=gageParamG, tau=gageParamTau,
+qThresh=gageParamQThresh1,
+expCoeff=gageExpCoeff1,
+outFile=paste0(paramPath,'nudgingParams.rwValid5.rmBlanksPrstTinyExp.nc'),
+overwrite=TRUE, rmBlankGages=TRUE)
+)
+
+## In this example the exponent only depends on threshold, not location nor month.
+## The first threshold is negative, so only coefficients for the second threshold index should be
+## applied and in this case will be tiny, so again have no effect.
+nGages <- length(whGages <- which(trimws(gageParamId) != '' ))
+#nGages <- length(gageParamId)
+gageParamQThresh1 <- array(c(-100),dim=c(nGages,12,1))
+## *** THIS IS THE CORRECT WAY OF FILLING THE ARRAY : KISS ***
+gageExpCoeff1 <- array(c(1e-38,120),dim=c(nGages,12,2))
+print(
+MkNudgingParams(gageId=gageParamId[whGages], R=gageParamR[whGages],
+G=gageParamG[whGages], tau=gageParamTau[whGages],
+qThresh=gageParamQThresh1,
+expCoeff=gageExpCoeff1,
+outFile=paste0(paramPath,'nudgingParams.rwValid5.rmBlanksPrst1ThreshMed.nc'),
+overwrite=TRUE, rmBlankGages=TRUE)
+)
+## CONUS
+## In this example the exponent only depends on threshold, not location nor month.
+## The first threshold is negative, so only coefficients for the second threshold index should be
+## applied and in this case will be tiny, so again have no effect.
+paramPath <- '~/WRF_Hydro/TESTING/TEST_FILES/CONUS/2015-12-04_20:08:06.b8e1e01c4cc2/STD/NUDGING/'
+frnParams <- paste0(paramPath,'nudgingParams.nc')
+gageParamId <- ncdump(frnParams,'stationId',q=TRUE)
+gageParamR <- ncdump(frnParams,'R',q=TRUE)
+gageParamG <- ncdump(frnParams,'G',q=TRUE)
+gageParamTau <- ncdump(frnParams,'tau',q=TRUE)
+nGages=length(gageParamId)
+
+rmGages <- c("       05059500", "       05054000", "       05082500", "       10108400",
+"       09183600", "       08387550", "       08158930", "       06470500",
+"       06768000", "       05427943", "       05551675", "       03298135",
+"       03352953", "       07083200", "       07358284", "       02458450",
+"       02310678", "       02302010", "       02237700", "       02299472",
+"     0212467595", "     0214676115", "       02011460", "       01446776",
+"       12306500", "       11119750", "       10257549", "       11122010",
+"       11276600", formatC('', width=15) )
+
+nGages <- length(whGages <- which(!(gageParamId \%in\% rmGages)))
+#nGages <- length(gageParamId)
+gageParamQThresh1 <- array(c(-100),dim=c(nGages,12,1))
+
+## *** THIS IS THE CORRECT WAY OF FILLING THE ARRAY : KISS ***
+gageExpCoeff1 <- array(c(1e-38,120),dim=c(nGages,12,2))
+print(
+MkNudgingParams(gageId=gageParamId[whGages], R=gageParamR[whGages],
+G=gageParamG[whGages], tau=gageParamTau[whGages],
+qThresh=gageParamQThresh1,
+expCoeff=gageExpCoeff1,
+outFile=paste0(paramPath,'nudgingParams.conusPstActive.nc'),
+overwrite=TRUE, rmBlankGages=TRUE)
+)
+
+
+#array(rep(c(.5,.8),each=4*12),dim=c(4,12,2))
+}
 
 ## the existing parameter file had blanks, remove them.
 options(warn=1)

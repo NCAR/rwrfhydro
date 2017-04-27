@@ -2,7 +2,7 @@
 % Please edit documentation in R/network_expression.R
 \name{GatherStreamInds}
 \alias{GatherStreamInds}
-\title{\code{GatherStreamInds} gathers upstream or downstream indices and distances from a given starting location.}
+\title{Gather upstream or downstream distance from a given starting location.}
 \usage{
 GatherStreamInds(stream, start, linkLengths)
 }
@@ -11,16 +11,20 @@ GatherStreamInds(stream, start, linkLengths)
 
 \item{start}{Indexed location (NOT comID) of where stream starts}
 
-\item{linkLengths}{Vector of link lengths for each re-indexed reach, contained in reExp.nc.}
+\item{length}{Vector of link lengths for each re-indexed reach, contained in reExp.nc.}
+
+\item{indDist}{Optional list of indices and distance to that index. Typically not used externally to the recursion.}
 }
 \value{
-List containing indices and accumulated distance from start
+List containing indices, accumulated distance from start, and
+         tip information (0=not a tip, 1=a tip, 2=temporary tip/still solving)
 }
 \description{
-A non-recursive function (recusive version runs in to stack overflow problems for large domains. Both are available internally).
+A non-recursive function (recusive version runs in to stack overflow problems for large
+domains. Both are available internally).
 }
 \examples{
-\dontrun{
+ \dontrun{
      PlotRouteLink <- 
          VisualizeRouteLink(file='~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.nc')
      PlotRouteLink()
@@ -31,7 +35,15 @@ A non-recursive function (recusive version runs in to stack overflow problems fo
      upstreamInds <- GatherStreamInds(from, 379, linkLengths=reInd$length)
      load('~/WRF_Hydro/DOMAIN_library/Boulder_Creek_100m_1km_2sqkm_full_2015_09_03/Route_Link.reExpTo.Rdb')
      downstreamInds <- GatherStreamInds(to, 91, length=reInd$length)
+ }
 }
+\seealso{
+Other networkExpression nudging: \code{\link{NtwKReExToNcdf}},
+  \code{\link{ReExpNetwork}},
+  \code{\link{ReExpressRouteLink}},
+  \code{\link{ReIndexRouteLink}},
+  \code{\link{VisualizeRouteLink}},
+  \code{\link{VisualizeSubsetStream}}
 }
 \concept{
 nudging dataMgmt
