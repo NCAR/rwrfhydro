@@ -49,4 +49,3 @@ Other networkExpression nudging: \code{\link{NtwKReExToNcdf}},
 nudging dataMgmt
 }
 \keyword{manip}
-

@@ -18,4 +18,3 @@ Calculate the Richards-Baker Flashiness Index for vectors
 of modelled or observed values.
 }
 \keyword{internal}
-

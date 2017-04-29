@@ -79,7 +79,8 @@ The calculated statistics are the following: \itemize{
 
 # for categorical data
 ExampleDF <- data.frame(obs=c(rep("YES",25), rep("NO", 25)), mod=rep(c("YES","NO"),25))
-stat <- CalcStatCategorical(DT = ExampleDF, obsCol = "obs", modCol = "mod", category = c("YES","NO"))
+stat <- CalcStatCategorical(DT = ExampleDF, obsCol = "obs", 
+modCol = "mod", category = c("YES","NO"))
 
 # for categorical data with more than one experiment
 ExampleDF <- data.frame(obs=c(rep("YES",25), rep("NO", 25)), mod=rep(c("YES","NO"),25), 
@@ -110,4 +111,3 @@ modelEval
 }
 \keyword{ts}
 \keyword{univar}
-

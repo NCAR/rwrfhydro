@@ -44,4 +44,3 @@ Other MODIS: \code{\link{ConvertRS2Stack}},
 MODIS dataAnalysis
 }
 \keyword{univar}
-

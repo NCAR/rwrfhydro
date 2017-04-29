@@ -3,6 +3,7 @@
 #' ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
 #' This code has been borrowed from \url{http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_(ggplot2)/}
 #' 
+#' @param ... : other arguments.
 #' @param cols Numeric: Number of columns in layout
 #' @param layout Matrix: specifying the layout. If present, 'cols' is ignored.
 #' If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
@@ -13,9 +14,12 @@
 #' @examples 
 #' \dontrun{
 #' df <- data.frame(colA = seq(1:1000), colB = seq(1000,1))
-#' p1 <- ggplot2::ggplot(df, ggplot2::aes(x = colA, y = colB)) + ggplot2::geom_point(ggplot2::aes(size = colA))
-#' p2 <- ggplot2::ggplot(df, ggplot2::aes(x = colA, y = colB)) + ggplot2::geom_point(col = "red")
-#' p3 <- ggplot2::ggplot(df, ggplot2::aes(x = colA, y = colB)) + ggplot2::geom_line()
+#' p1 <- ggplot2::ggplot(df, ggplot2::aes(x = colA, y = colB)) + 
+#' ggplot2::geom_point(ggplot2::aes(size = colA))
+#' p2 <- ggplot2::ggplot(df, ggplot2::aes(x = colA, y = colB)) + 
+#' ggplot2::geom_point(col = "red")
+#' p3 <- ggplot2::ggplot(df, ggplot2::aes(x = colA, y = colB)) + 
+#' ggplot2::geom_line()
 #' multiplot(p1,p2,p3, cols =2)
 #' multiplot(plotlist = list(p1,p2,p3), cols =2)
 #' multiplot(plotlist = list(p1,p2,p3), layout = matrix(c(1,2,3,3), nrow =2))
@@ -27,7 +31,7 @@
 #' @export
 #' 
 multiplot <- function(..., plotlist=NULL, cols=1, layout=NULL) {
-
+  
   # Make a list from the ... arguments and plotlist
   plots <- c(list(...), plotlist)
   
@@ -56,7 +60,7 @@ multiplot <- function(..., plotlist=NULL, cols=1, layout=NULL) {
       matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
       
       print(plots[[i]], vp = grid::viewport(layout.pos.row = matchidx$row,
-                                      layout.pos.col = matchidx$col))
+                                            layout.pos.col = matchidx$col))
     }
   }
 }
@@ -97,6 +101,7 @@ multiplot <- function(..., plotlist=NULL, cols=1, layout=NULL) {
 #' \item E50:  50 percent of errors
 #' \item E75: 75 percent of errors
 #' \item E90: 90 percent of errors
+#' \item RmseNorm, Kge, Nse, NseLog, BiasNorm and Bias which are rwrfhydro functions
 #' } For more information refer to Model Evaluation Tool (MET) documentation
 #'
 #'
@@ -138,12 +143,15 @@ multiplot <- function(..., plotlist=NULL, cols=1, layout=NULL) {
 #' ExampleDF <- data.frame(obs=rnorm(10000000), mod=rnorm(10000000), stringsAsFactors=FALSE)
 #' stat <- CalcStatCont(DT = ExampleDF, obsCol = "obs", modCol = "mod", plot.it = FALSE)
 #' 
-#' ExampleDF <- data.frame(siteId = rep(1:100, 10), obs=seq(1,1000), mod=seq(1000,1), stringsAsFactors=FALSE)
+#' ExampleDF <- data.frame(siteId = rep(1:100, 10), obs=seq(1,1000), 
+#' mod=seq(1000,1), stringsAsFactors=FALSE)
 #' stat <- CalcStatCont(DT = ExampleDF, obsCol = "obs", modCol = "mod", groupBy = "siteId")
 #' 
-  #'  ExampleDF <- data.frame(siteId = rep(1:10, 6), RFC = rep(c("ABRFC", "WGRFC", "MARFC"),each = 20), obs=seq(1,60), mod=seq(60,1))
-  #' stat <- CalcStatCont(DT = ExampleDF, obsCol = "obs", modCol = "mod", groupBy = c("siteId", "RFC"))
-  #' 
+#' ExampleDF <- data.frame(siteId = rep(1:10, 6), RFC = rep(c("ABRFC", "WGRFC", "MARFC"),each = 20), 
+#' obs=seq(1,60), mod=seq(60,1))
+#' stat <- CalcStatCont(DT = ExampleDF, obsCol = "obs", 
+#' modCol = "mod", groupBy = c("siteId", "RFC"))
+#' 
 #' 
 #' @keywords univar ts
 #' @concept modelEval
@@ -185,13 +193,17 @@ CalcStatCont <- function(DT, obsCol, modCol, groupBy = NULL,
   # We remove all Inf and -Inf from the data if there is any
   DT <- DT[is.finite(obs) & is.finite(mod)]
   
+  # remove all the pairs with NA value in either obs or model 
+  DT <- DT[!is.na(obs) & !is.na(mod)]
+  
+  
   # add error to the DT to reduce the number of calculation
   if (any(c("ME", "MSE", "RMSE", "MAE", "MAD", "quantiles", 
             "E10", "E25", "E50", "E75", "E90", "IQR") %in% statList)) {
     DT[ , `:=`(error  = mod - obs)]
   }
   
-  # Define all the operations 
+  # Define all the operations, since all the infinite and NA values have been removed above, no need to remove them individually in each function
   my_exprs = quote(list(
     numPaired    =  length(obs),
     minObs       =  min(obs),
@@ -200,24 +212,36 @@ CalcStatCont <- function(DT, obsCol, modCol, groupBy = NULL,
     maxMod       =  max(mod),
     meanObs      =  mean(obs),
     meanMod      =  mean(mod),
-    stdObs       =  sd(obs),
-    stdMod       =  sd(mod),
-    pearsonCor   =  if (!is.na(sd(obs)) & !is.na(sd(mod)) & sd(obs) > 0 & sd(mod) > 0 ) cor(obs, mod, method = "pearson") else NA_real_,
-    spearmanCor  =  if (!is.na(sd(obs)) & !is.na(sd(mod)) & sd(obs) > 0 & sd(mod) > 0 ) cor(obs, mod, method = "spearman") else NA_real_,
-    kendallCor   =  if (!is.na(sd(obs)) & !is.na(sd(mod)) & sd(obs) > 0 & sd(mod) > 0 ) cor(obs, mod, method = "kendall") else NA_real_,
+    stdObs       =  stats::sd(obs),
+    stdMod       =  stats::sd(mod),
+    pearsonCor   =  if (!is.na(sd(obs)) & !is.na(stats::sd(mod)) & 
+                        sd(stats::obs) > 0 & sd(stats::mod) > 0 ) 
+      stats::cor(obs, mod, method = "pearson") else NA_real_,
+    spearmanCor  =  if (!is.na(sd(obs)) & !is.na(stats::sd(mod)) & 
+                        sd(stats::obs) > 0 & sd(stats::mod) > 0 ) 
+      stats::cor(obs, mod, method = "spearman") else NA_real_,
+    kendallCor   =  if (!is.na(sd(obs)) & !is.na(stats::sd(mod)) & 
+                        sd(stats::obs) > 0 & sd(stats::mod) > 0 ) 
+      stats::cor(obs, mod, method = "kendall") else NA_real_,
     ME           =  mean(error),              
     MSE          =  mean((error)^2),         
     RMSE         =  sqrt(mean((error)^2)),           
     MAE          =  mean(abs(error)),
-    MAD          =  median(abs(error)),     
+    MAD          =  stats::median(abs(error)),     
     multiBias    =  mean(mod)/mean(obs),
-    quantiles    =  list(quantile(error, probs)),
-    E10          =  quantile(error, 0.1),
-    E25          =  quantile(error, 0.25),
-    E50          =  quantile(error, 0.5),
-    E75          =  quantile(error, 0.75),
-    E90          =  quantile(error, 0.9),
-    IQR          =  quantile(error, 0.75)-quantile(error, 0.25)
+    quantiles    =  list(stats::quantile(error, probs)),
+    E10          =  stats::quantile(error, 0.1),
+    E25          =  stats::quantile(error, 0.25),
+    E50          =  stats::quantile(error, 0.5),
+    E75          =  stats::quantile(error, 0.75),
+    E90          =  stats::quantile(error, 0.9),
+    IQR          =  stats::quantile(error, 0.75)- stats::quantile(error, 0.25),
+    Kge          =  rwrfhydro::Kge(mod, obs, na.rm=TRUE, s.r=1, s.alpha=1, s.beta=1),
+    Nse          =  rwrfhydro::Nse (mod, obs, nullModel=mean(obs)) ,
+    NseLog       =  rwrfhydro::NseLog (mod, obs, nullModel=mean(obs)), 
+    BiasNorm     =  rwrfhydro::BiasNorm (mod, obs) ,
+    Bias         =  rwrfhydro::Bias(mod, obs) ,
+    RmseNorm     =  rwrfhydro::RmseNorm (mod, obs) 
   ))
   
   # choose only those operations which user are interested on
@@ -238,60 +262,69 @@ CalcStatCont <- function(DT, obsCol, modCol, groupBy = NULL,
                  max(max(DT$obs), max(DT$mod)))
       
       if ("scatterPlot" %in% plot.list){
-      # Scatter plot and the rug 
-      psr <- ggplot2::ggplot(data = DT, ggplot2::aes(x = mod, y = obs))
-      psr <- psr + ggplot2::geom_point() 
-      psr <- psr + ggplot2::geom_rug(sides="t", size=0.05, col=rgb(.8,0,0,alpha=.3))
-      psr <- psr + ggplot2::geom_rug(sides="r", size=0.05, col=rgb(0,0,.8,alpha=.3))
-      #  psr <- psr + ggplot2::stat_ellipse(level = 0.95, size = 1, color="green")
-      psr <- psr + ggplot2::theme_bw() + ggplot2::ggtitle(paste0("Scatter & marginal rug plot: ",title))
-      psr <- psr + ggplot2::xlab(modCol) +ggplot2::ylab(obsCol)
-      psr <- psr + ggplot2::xlim(limit) + ggplot2::ylim(limit)
-      psr <- psr + ggplot2::geom_smooth(method = "lm", se = FALSE, col = "red")
-      psr <-psr + ggplot2::annotate("segment", x = limit[1], xend = limit[1]+(limit[2]-limit[1])*0.05 , y = limit[2], yend = limit[2], colour = "red", size = 1)
-      psr <-psr + ggplot2::annotate("text", x = limit[1]+(limit[2]-limit[1])*0.15, y = limit[2], label = "linear Regression line")
-      
-      plotList[['psr']]<- psr
+        # Scatter plot and the rug 
+        psr <- ggplot2::ggplot(data = DT, ggplot2::aes(x = mod, y = obs))
+        psr <- psr + ggplot2::geom_point() 
+        psr <- psr + ggplot2::geom_rug(sides="t", size=0.05, col=grDevices::rgb(.8,0,0,alpha=.3))
+        psr <- psr + ggplot2::geom_rug(sides="r", size=0.05, col=grDevices::rgb(0,0,.8,alpha=.3))
+        #  psr <- psr + ggplot2::stat_ellipse(level = 0.95, size = 1, color="green")
+        psr <- psr + ggplot2::theme_bw() + ggplot2::ggtitle(paste0("Scatter & marginal rug plot: ",title))
+        psr <- psr + ggplot2::xlab(modCol) +ggplot2::ylab(obsCol)
+        psr <- psr + ggplot2::xlim(limit) + ggplot2::ylim(limit)
+        psr <- psr + ggplot2::geom_smooth(method = "lm", se = FALSE, col = "red",fullrange=TRUE)
+        psr <-psr + ggplot2::annotate("segment", x = limit[1], xend = limit[1]+(limit[2]-limit[1])*0.05 ,
+                                      y = limit[2], yend = limit[2], colour = "red", size = 1)
+        psr <-psr + ggplot2::annotate("text", x = limit[1]+(limit[2]-limit[1])*0.15, 
+                                      y = limit[2], label = "linear Regression line")
+        
+        plotList[['psr']]<- psr
       }
       
       if ("qqPlot" %in% plot.list){
-      # plot Q-Q plots
-      # This line is to find the intercept and slope used in qqline 
-      y <- quantile(DT$obs, c(0.25,0.75), names = FALSE, type = 7, na.rm = TRUE)
-      x <- qnorm(c(0.25,0.75))
-      slope <- diff(y)/diff(x)
-      int <- y[1L] - slope * x[1L]
-      
-      pqq <- ggplot2::ggplot(data = DT, ggplot2::aes(x = sort(mod), y = sort(obs)))  
-      pqq <- pqq + ggplot2::geom_point() + ggplot2::xlab(modCol) +ggplot2::ylab(obsCol)
-      pqq <- pqq + ggplot2::geom_abline(slope = slope, intercept = int, colour = "red")
-      pqq <- pqq + ggplot2::ggtitle(paste0("Q-Q plot: ",title)) + ggplot2::theme_bw()
-      
-      plotList[['pqq']]<- pqq
+        # plot Q-Q plots
+        # This line is to find the intercept and slope used in qqline 
+        y <- stats::quantile(DT$obs, c(0.25,0.75), names = FALSE, type = 7, na.rm = TRUE)
+        x <- stats::qnorm(c(0.25,0.75))
+        slope <- diff(y)/diff(x)
+        int <- y[1L] - slope * x[1L]
+        
+        pqq <- ggplot2::ggplot(data = DT, ggplot2::aes(x = sort(mod), y = sort(obs)))  
+        pqq <- pqq + ggplot2::geom_point() + ggplot2::xlab(modCol) +ggplot2::ylab(obsCol)
+        pqq <- pqq + ggplot2::geom_abline(slope = slope, intercept = int, colour = "red")
+        pqq <- pqq + ggplot2::ggtitle(paste0("Q-Q plot: ",title)) + ggplot2::theme_bw()
+        pqq <- pqq + ggplot2::xlim(limit) + ggplot2::ylim(limit)
+        
+        plotList[['pqq']]<- pqq
       }
       
       if("boxPlot" %in% plot.list){
-      # box plot
-      DF <- rbind.data.frame(cbind.data.frame(dataI = DT$obs, Legend= obsCol), 
-                             cbind.data.frame(dataI = DT$mod, Legend= modCol))
-      pbox <- ggplot2::ggplot(DF, ggplot2::aes(factor(Legend), dataI , fill = factor(Legend))) 
-      pbox <- pbox + ggplot2::geom_boxplot() 
-      pbox <- pbox + ggplot2::scale_fill_manual(name = "Legend", values = c(rgb(0,0,.8,alpha=0.3),rgb(.8,0,0,alpha=0.3)))
-      pbox <- pbox + ggplot2::theme_bw()+ ggplot2::ggtitle(paste0("Box Plot:",title))
-      pbox <- pbox + ggplot2::xlab(modCol) +ggplot2::ylab(obsCol)
-      
-      plotList[['pbox']] <- pbox
+        # box plot
+        DF <- rbind.data.frame(cbind.data.frame(dataI = DT$obs, Legend= obsCol), 
+                               cbind.data.frame(dataI = DT$mod, Legend= modCol))
+        pbox <- ggplot2::ggplot(DF, ggplot2::aes(factor(Legend), dataI , fill = factor(Legend))) 
+        pbox <- pbox + ggplot2::geom_boxplot() 
+        pbox <- pbox + ggplot2::scale_fill_manual(name = "Legend", 
+                                                  values = c(grDevices::rgb(0,0,.8,alpha=0.3),grDevices::rgb(.8,0,0,alpha=0.3)))
+        pbox <- pbox + ggplot2::theme_bw()+ ggplot2::ggtitle(paste0("Box Plot:",title))
+        pbox <- pbox + ggplot2::xlab(modCol) +ggplot2::ylab(obsCol)
+        
+        plotList[['pbox']] <- pbox
       }
       
       if ("bivarHist" %in% plot.list) {
-      # Bivariate histogram of model versus obseved
-      rf <- colorRampPalette(rev(RColorBrewer::brewer.pal(11,'Spectral')))
-      r <- rf(32)
-      pbin <- ggplot2::ggplot(DT, ggplot2::aes(x = mod, y = obs)) + ggplot2::stat_bin2d(bins = bins_stat_bin2d) 
-      pbin <- pbin + ggplot2::theme_bw() + ggplot2::scale_fill_gradientn(colours=r) 
-      pbin <- pbin + ggplot2::xlab(modCol) + ggplot2::ylab(obsCol) + ggplot2::ggtitle(paste0("Bivariate histogram: ",title))
-      
-      plotList[['pbin']] <-  pbin
+        # Bivariate histogram of model versus obseved
+        rf <- grDevices::colorRampPalette(rev(RColorBrewer::brewer.pal(11,'Spectral')))
+        r <- rf(32)
+        pbin <- ggplot2::ggplot(DT, ggplot2::aes(x = mod, y = obs)) 
+        pbin <- pbin + ggplot2::stat_bin2d(bins = bins_stat_bin2d) 
+        pbin <- pbin + ggplot2::theme_bw() 
+        pbin <- pbin + ggplot2::scale_fill_gradientn(colours=r) 
+        pbin <- pbin + ggplot2::xlab(modCol) + ggplot2::ylab(obsCol) 
+        pbin <- pbin + ggplot2::ggtitle(paste0("Bivariate histogram: ",title))
+        pbin <- pbin + ggplot2::xlim(c(-1,limit[2])) 
+        pbin <- pbin + ggplot2::ylim(c(-1,limit[2]))
+        
+        plotList[['pbin']] <-  pbin
       }
       
       # plot on screen
@@ -300,7 +333,9 @@ CalcStatCont <- function(DT, obsCol, modCol, groupBy = NULL,
       
       # If there are a lot of groups (more than 1)
       for (i in statList){
-        plotList[[i]] <- ggplot2::ggplot(stat, ggplot2::aes_string(i)) + ggplot2::geom_histogram(colour = "blue", fill = "gray95", bins =  bins_histogram) + ggplot2::theme_bw()
+        plotList[[i]] <- ggplot2::ggplot(stat, ggplot2::aes_string(i)) + 
+          ggplot2::geom_histogram(colour = "blue", fill = "gray95", bins =  bins_histogram) + 
+          ggplot2::theme_bw()
       } 
       p <- multiplot(plotlist = plotList, cols = ceiling(sqrt(length(statList))))
       

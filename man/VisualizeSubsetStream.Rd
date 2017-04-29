@@ -45,4 +45,3 @@ Other networkExpression nudging: \code{\link{GatherStreamInds}},
 nudging plot
 }
 \keyword{hplot}
-

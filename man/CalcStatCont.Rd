@@ -91,6 +91,7 @@ The calculated statistics are the following: \itemize{
 \item E50:  50 percent of errors
 \item E75: 75 percent of errors
 \item E90: 90 percent of errors
+\item RmseNorm, Kge, Nse, NseLog, BiasNorm and Bias which are rwrfhydro functions
 } For more information refer to Model Evaluation Tool (MET) documentation
 }
 \examples{
@@ -100,11 +101,14 @@ stat <- CalcStatCont(DT = ExampleDF, obsCol = "obs", modCol = "mod")
 ExampleDF <- data.frame(obs=rnorm(10000000), mod=rnorm(10000000), stringsAsFactors=FALSE)
 stat <- CalcStatCont(DT = ExampleDF, obsCol = "obs", modCol = "mod", plot.it = FALSE)
 
-ExampleDF <- data.frame(siteId = rep(1:100, 10), obs=seq(1,1000), mod=seq(1000,1), stringsAsFactors=FALSE)
+ExampleDF <- data.frame(siteId = rep(1:100, 10), obs=seq(1,1000), 
+mod=seq(1000,1), stringsAsFactors=FALSE)
 stat <- CalcStatCont(DT = ExampleDF, obsCol = "obs", modCol = "mod", groupBy = "siteId")
 
- ExampleDF <- data.frame(siteId = rep(1:10, 6), RFC = rep(c("ABRFC", "WGRFC", "MARFC"),each = 20), obs=seq(1,60), mod=seq(60,1))
-stat <- CalcStatCont(DT = ExampleDF, obsCol = "obs", modCol = "mod", groupBy = c("siteId", "RFC"))
+ExampleDF <- data.frame(siteId = rep(1:10, 6), RFC = rep(c("ABRFC", "WGRFC", "MARFC"),each = 20), 
+obs=seq(1,60), mod=seq(60,1))
+stat <- CalcStatCont(DT = ExampleDF, obsCol = "obs", 
+modCol = "mod", groupBy = c("siteId", "RFC"))
 
 
 }
@@ -120,4 +124,3 @@ modelEval
 }
 \keyword{ts}
 \keyword{univar}
-

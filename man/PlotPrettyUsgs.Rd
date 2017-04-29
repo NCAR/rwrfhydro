@@ -43,4 +43,3 @@ Other streamObs: \code{\link{FindUsgsStns}},
 plot usgsStreamObs
 }
 \keyword{hplot}
-
