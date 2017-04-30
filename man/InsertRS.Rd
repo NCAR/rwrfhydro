@@ -74,3 +74,4 @@ Other MODIS: \code{\link{CalcStatsRS}},
 MODIS dataMgmt
 }
 \keyword{IO}
+

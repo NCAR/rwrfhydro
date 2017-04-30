@@ -26,3 +26,4 @@ Other SNODAS: \code{\link{GetSnodasDepthSweDate}},
 SNODAS
 }
 \keyword{manip}
+

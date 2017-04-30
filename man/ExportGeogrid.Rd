@@ -56,3 +56,4 @@ Other geospatial: \code{\link{GetGeogridIndex}},
 dataMgmt geospatial
 }
 \keyword{IO}
+

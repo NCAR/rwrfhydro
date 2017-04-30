@@ -53,7 +53,9 @@ Ameriflux download tool:
 khufkens/ameriflux-download-tool}
 }
 \examples{
+\dontrun{
 amf.An <- GetAmeriflux(c("US-An1","US-An2","US-An3"), startYr=2009, endYr=2010)
+}
 }
 \seealso{
 Other Ameriflux: \code{\link{amfMeta}},
@@ -63,3 +65,4 @@ Other Ameriflux: \code{\link{amfMeta}},
 Ameriflux
 }
 \keyword{IO}
+

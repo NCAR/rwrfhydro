@@ -20,3 +20,4 @@ Calculate the root mean squared error for vectors
 of modelled and observed values.
 }
 \keyword{internal}
+

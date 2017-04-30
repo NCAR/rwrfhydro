@@ -67,76 +67,80 @@ multiplot <- function(..., plotlist=NULL, cols=1, layout=NULL) {
 
 
 #' Calculate some verification measures for continuous variables.
-#'
+#' 
 #' \code{CalcStatCont} inputs a data.table or data.frame having two columns of 
-#' observation and model/forecast and computes some verification measures 
-#' of continous variables. It also produce some plots based on how many statistics 
-#' have been calculated. If there is only one group, then scatter plot, qq_plot, box_plot
-#' will be produce, desplayed on screen and returned in the output under plotList.
-#' If there is more than one group, then histogram of all the calculated statistics
-#' will be plotted and returned under plotList.
-#'
-#' The calculated statistics are the following: \itemize{
-#' \item numPaired: number of paired datapoint
-#' \item minObs: min of observation time series
-#' \item minMod: min of model simulation/forecast time series
-#' \item maxObs: max of observation time series
-#' \item maxMod: max of model simulation/forecast time series
-#' \item meanObs: mean of observation time series
-#' \item meanMod: mean of model simulation/forecast time series
-#' \item stdObs: standard deviation of observation time series
-#' \item stdMod: standard deviation of model simulation/forecast time series
-#' \item pearsonCor: Pearson correlation coefficient
-#' \item spearmanCor: spearman correlation coefficient
-#' \item kendallCor: kendall tau correlation coefficient (tau-b)
-#' \item ME:mean error
-#' \item multiBias: mutliplicative bias
-#' \item MSE: mean square error
-#' \item RMSE: root mean square error
-#' \item MAE: mean absolute error
-#' \item MAD: median absolute deviation
-#' \item IQR: inter quantile range of the errors
-#' \item E10: 10 percent of errors
-#' \item E25: 25 percent of errors
-#' \item E50:  50 percent of errors
-#' \item E75: 75 percent of errors
-#' \item E90: 90 percent of errors
-#' \item RmseNorm, Kge, Nse, NseLog, BiasNorm and Bias which are rwrfhydro functions
-#' } For more information refer to Model Evaluation Tool (MET) documentation
-#'
-#'
-#' @param DT A data.table or dataframe: containing two columns of observation (truth) and the model
-#' @param obsCol Character: name of the observation column. 
+#' observation and model/forecast and computes some verification measures of
+#' continous variables. It also produce some plots based on how many statistics 
+#' have been calculated. If there is only one group, then scatter plot, qq_plot,
+#' box_plot will be produce, desplayed on screen and returned in the output
+#' under plotList. If there is more than one group, then histogram of all the
+#' calculated statistics will be plotted and returned under plotList.
+#' 
+#' The calculated statistics are the following: \itemize{ \item numPaired:
+#' number of paired datapoint \item minObs: min of observation time series \item
+#' minMod: min of model simulation/forecast time series \item maxObs: max of
+#' observation time series \item maxMod: max of model simulation/forecast time
+#' series \item meanObs: mean of observation time series \item meanMod: mean of
+#' model simulation/forecast time series \item stdObs: standard deviation of
+#' observation time series \item stdMod: standard deviation of model
+#' simulation/forecast time series \item pearsonCor: Pearson correlation
+#' coefficient \item spearmanCor: spearman correlation coefficient \item
+#' kendallCor: kendall tau correlation coefficient (tau-b) \item ME:mean error 
+#' \item multiBias: mutliplicative bias \item MSE: mean square error \item RMSE:
+#' root mean square error \item MAE: mean absolute error \item MAD: median
+#' absolute deviation \item IQR: inter quantile range of the errors \item E10:
+#' 10 percent of errors \item E25: 25 percent of errors \item E50:  50 percent
+#' of errors \item E75: 75 percent of errors \item E90: 90 percent of errors 
+#' \item RmseNorm, Kge, Nse, NseLog, BiasNorm and Bias which are rwrfhydro
+#' functions } For more information refer to Model Evaluation Tool (MET)
+#' documentation
+#' 
+#' 
+#' @param DT A data.table or dataframe: containing two columns of observation
+#'   (truth) and the model
+#' @param obsCol Character: name of the observation column.
 #' @param modCol Character: name of the model/forecast column.
-#' @param groupBy Character vector: Name of all the columns in \code{DT} which the statistics should be classified based on.
-#' @param obsMissing Numeric/Character vector: defining all the missing values in the observation
-#' @param modMissing Numeric/Character vector: defining all the missing values in the model/forecats 
-#' 
-#' @param obsCondRange Numeric vector: containing two elements (DEFAULT = c(-Inf,Inf)).
-#' Values are used as the lower and upper boundary for observation in calculating conditional statistics.
-#' If conditioning only at one tail, leave the second value as -Inf or Inf. For eaxmple, if interested on 
-#' only values greater than 2, then obsCondRange = c(2, Inf)
-#' 
-#' @param modCondRange Numeric vector: containing two elements (DEFAULT = c(-Inf,Inf)).
-#' Values are used as the lower and upper boundary for model/forecast in calculating conditional statistics.
-#' If conditioning only at one tail, leave the second value as -Inf or Inf. For eaxmple, if interested on 
-#' only values greater than 2, then obsCondRange = c(2, Inf)
-#' 
-#' @param statList Character vector: list of all the statistics you are interested. 
-#' @param probs Numeric vector: probabilities with values in [0,1]. 
-#' Only required if "quantiles" is one of the requested statistics.
-#' In that case, quantiles would be one column of the return data.frame, 
-#' which will be contain a list of quantiles. 
-#' @param plot.it Logical(DEFAULT = TRUE), define as FALSE if you do not need any plot.
-#' @param plot.list Vector: list of desired plot. It can plot scatter plot, Q-Q plot, boxPlot and Bivariate Histograms.
-#' By default, all will be plotted and returned in the output under plotList.
-#' @param bins_histogram Numeric: specifing the number of bins to be used in histograms
-#' @param bins_stat_bin2d Numeric: specifing the number of bins to be used in ggplot::stat_bin2d
-#' @param title Character: title to be used for plots. 
-#' @return list containing two elements: 1) stat: A data.frame containing all the requested verification measures.
-#' 2) plotList: A list of all plots produced
-#'
+#' @param groupBy Character vector: Name of all the columns in \code{DT} which
+#'   the statistics should be classified based on.
+#' @param obsMissing Numeric/Character vector: defining all the missing values
+#'   in the observation
+#' @param modMissing Numeric/Character vector: defining all the missing values
+#'   in the model/forecats
+#'   
+#' @param obsCondRange Numeric vector: containing two elements (DEFAULT =
+#'   c(-Inf,Inf)). Values are used as the lower and upper boundary for
+#'   observation in calculating conditional statistics. If conditioning only at
+#'   one tail, leave the second value as -Inf or Inf. For eaxmple, if interested
+#'   on only values greater than 2, then obsCondRange = c(2, Inf)
+#'   
+#' @param modCondRange Numeric vector: containing two elements (DEFAULT =
+#'   c(-Inf,Inf)). Values are used as the lower and upper boundary for
+#'   model/forecast in calculating conditional statistics. If conditioning only
+#'   at one tail, leave the second value as -Inf or Inf. For eaxmple, if
+#'   interested on only values greater than 2, then obsCondRange = c(2, Inf)
+#'   
+#' @param statList Character vector: list of all the statistics you are
+#'   interested.
+#' @param probs Numeric vector: probabilities with values in [0,1]. Only
+#'   required if "quantiles" is one of the requested statistics. In that case,
+#'   quantiles would be one column of the return data.frame, which will be
+#'   contain a list of quantiles.
+#' @param plot.it Logical(DEFAULT = TRUE), define as FALSE if you do not need
+#'   any plot.
+#' @param plot.list Vector: list of desired plot. It can plot scatter plot, Q-Q
+#'   plot, boxPlot and Bivariate Histograms. By default, all will be plotted and
+#'   returned in the output under plotList.
+#' @param bins_histogram Numeric: specifing the number of bins to be used in
+#'   histograms
+#' @param bins_stat_bin2d Numeric: specifing the number of bins to be used in
+#'   ggplot::stat_bin2d
+#' @param title Character: title to be used for plots.
+#' @return list containing two elements: 1) stat: A data.frame containing all
+#'   the requested verification measures. 2) plotList: A list of all plots
+#'   produced
+#'   
 #' @examples
+#' \dontrun{
 #' ExampleDF <- data.frame(obs=rnorm(1000), mod=rnorm(1000), stringsAsFactors=FALSE)
 #' stat <- CalcStatCont(DT = ExampleDF, obsCol = "obs", modCol = "mod")
 #' 
@@ -151,7 +155,7 @@ multiplot <- function(..., plotlist=NULL, cols=1, layout=NULL) {
 #' obs=seq(1,60), mod=seq(60,1))
 #' stat <- CalcStatCont(DT = ExampleDF, obsCol = "obs", 
 #' modCol = "mod", groupBy = c("siteId", "RFC"))
-#' 
+#' }
 #' 
 #' @keywords univar ts
 #' @concept modelEval

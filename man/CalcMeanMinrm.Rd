@@ -25,3 +25,4 @@ mean(x) # yields -2.5e+19
 CalcMeanMinrm(x, 0) # yields 2
 }
 \keyword{internal}
+

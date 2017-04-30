@@ -121,8 +121,7 @@ ReadGwOut <- function(pathOutfile) {
 #' (e.g., for a 100-m routing grid and a 1-km LSM grid, aggfact = 10)
 #' @param pattern Pattern to match in the model output 
 #' (DEFAULT=glob2rx('*LDASOUT_DOMAIN*'))
-#' @param 
-parallel Logical for running in parallel mode (must have a parallel
+#' @param parallel Logical for running in parallel mode (must have a parallel
 #' backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)
 #' @return A dataframe containing a time series of basin-wide mean water 
 #' budget variables.
@@ -707,9 +706,10 @@ CreateBasinMask <- function(ncfile, mskvar="basn_msk", basid=1, aggfact=1) {
 #' @param pattern Pattern to match in the model output (e.g. *LAKEOUT_DOMAIN1*)
 
 #' @examples
-#' This function loops through LAKEOUT files in the pathOutdir and creates a data frame or data table to store inflow, outflow,
-#' elevation and the station_id (lakeid).  The lakeids correspond to the lakes in the LAKEGRID, LAKEPARM and lakes.shp files that are
-#' created in the routing files from the ArcGIS pre-processing tools.
+#' # This function loops through LAKEOUT files in the pathOutdir and creates a data frame or 
+#' # data table to store inflow, outflow, elevation and the station_id (lakeid).  The lakeids 
+#' # correspond to the lakes in the LAKEGRID, LAKEPARM and lakes.shp files that are
+#' # created in the routing files from the ArcGIS pre-processing tools.
 
 #' \dontrun{
 #' ReadLakeout('~/wrfHydroTestCases/FRN.REACH/OUTPUT',

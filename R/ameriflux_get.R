@@ -1,4 +1,4 @@
-#' Get Ameriflux data for specified sites.
+#' Get Ameriflux data for specified sites. 
 #' 
 #' \code{GetAmeriflux} downloads Ameriflux data tables (Level 2 standardized CSV
 #' files) and creates a dataframe. Based on Koen Hufkens's Ameriflux download tool.
@@ -35,7 +35,9 @@
 #' @param endYr (OPTIONAL) The last year to download files for.
 #' @return dataframe
 #' @examples
+#' \dontrun{
 #' amf.An <- GetAmeriflux(c("US-An1","US-An2","US-An3"), startYr=2009, endYr=2010)
+#' }
 #' @keywords IO
 #' @concept Ameriflux
 #' @family Ameriflux

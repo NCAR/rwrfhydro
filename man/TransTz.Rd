@@ -24,3 +24,4 @@ lubridate::with_tz(as.POSIXct('2012-01-01'),
                    TransTz(format(as.POSIXct('2012-01-01', tz='US/Pacific'),'\%Z')))
 }
 \keyword{internal}
+

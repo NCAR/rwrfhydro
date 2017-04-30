@@ -121,8 +121,9 @@
 #' @return A data.table containing the US CRN data.
 #' 
 #' @examples
-#' example 1: getting the precipition data at the subhourly time steps, 
-#' for the first three months of 2016
+#' \dontrun{
+#' # example 1: getting the precipition data at the subhourly time steps, 
+#' # for the first three months of 2016
 #' startDate = as.POSIXct("2016-01-01 00:00:00", format= "%Y-%m-%d %H:%M:%S", tz = "UTC")
 #' endDate   = as.POSIXct("2016-04-01 00:00:00", format= "%Y-%m-%d %H:%M:%S", tz = "UTC")
 #' output <- GetCRN(elements = "P_CALC", timestep = "hourly", 
@@ -153,7 +154,7 @@
 #' outputHourly <- GetCRN(gageNames = "CO", elements = c("SOIL_MOISTURE_5", 
 #' "SOIL_MOISTURE_10", "SOIL_MOISTURE_20", "SOIL_MOISTURE_50", "SOIL_MOISTURE_100"), 
 #' timestep = "hourly")
-
+#' }
 #' @keywords IO
 #' @concept USCRN
 #' @family USCRN

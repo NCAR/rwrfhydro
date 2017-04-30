@@ -47,3 +47,4 @@ Other SNODAS: \code{\link{CalcSnodasCoords}},
 SNODAS
 }
 \keyword{IO}
+

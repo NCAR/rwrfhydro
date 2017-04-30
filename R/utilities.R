@@ -887,32 +887,33 @@ PosixOrigin <- function(as.POSIX=FALSE, tz='UTC')
 
 
 
-##' Translate standard state names, abbreviations, and codes.
-##' 
-##' \code{TranslageStateCodes} particularly translates USGS state_cd to other formats.
-##' Data from:
-##' https://www.census.gov/geo/reference/ansi_statetables.html
-##' and particularly
-##' http://www2.census.gov/geo/docs/reference/state.txt
-##' The returnVal choice determines the format returned. Choices are: 
-##'   "STATE" is the FISP state code in the range of 1-78 (with some missing).
-##'   "STUSAB" is the common or postal 2 letter abreviation.
-##'   "STATE_NAME" is the full name.
-##'   "STATENS" is Geographic Names Information System Identifier (GNISID)
-##' 
-##' See internals of code to get the details of the data frame used for the translation.
-##' 
-##' @param inVector integer or character, a vector of one of the types of to convert. Not case sensitive for strings. 
-##' @param returnVal Character string for the desired output format. Defaults to STUSAB and this choice overrides when the output type is the same as the input type.
-##' @examples
-##' stNums <- c(1,15,25, 5, 50, NA)
-##' ab <- tolower(TranslateStateCodes(stNums)); ab
-##' names <- TranslateStateCodes(ab); names  ## note default for abs in is names out
-##' gnis <- TranslateStateCodes(tolower(names),'STATENS'); gnis
-##' num <- TranslateStateCodes(gnis,'STATE'); num
-##' all(num==stNums, na.rm=TRUE)
-##' @keywords utilities 
-##' @export
+#' Translate standard state names, abbreviations, and codes.
+#' 
+#' \code{TranslageStateCodes} particularly translates USGS state_cd to other formats.
+#' Data from:
+#' https://www.census.gov/geo/reference/ansi_statetables.html
+#' and particularly
+#' http://www2.census.gov/geo/docs/reference/state.txt
+#' The returnVal choice determines the format returned. Choices are: 
+#'   "STATE" is the FISP state code in the range of 1-78 (with some missing).
+#'   "STUSAB" is the common or postal 2 letter abreviation.
+#'   "STATE_NAME" is the full name.
+#'   "STATENS" is Geographic Names Information System Identifier (GNISID)
+#' 
+#' See internals of code to get the details of the data frame used for the translation.
+#' 
+#' @param inVector integer or character, a vector of one of the types of to convert. Not case sensitive for strings. 
+#' @param returnVal Character string for the desired output format. Defaults to STUSAB and this choice overrides when the output type is the same as the input type.
+#' @examples
+#' stNums <- c(1,15,25, 5, 50, NA)
+#' ab <- tolower(TranslateStateCodes(stNums))
+#' ab
+#' names <- TranslateStateCodes(ab); names  ## note default for abs in is names out
+#' gnis <- TranslateStateCodes(tolower(names),'STATENS'); gnis
+#' num <- TranslateStateCodes(gnis,'STATE'); num
+#' all(num==stNums, na.rm=TRUE)
+#' @keywords utilities 
+#' @export
 TranslateStateCodes <- function(inVector,
                                 returnVal=c("STATE", "STUSAB", "STATE_NAME", "STATENS")[2]) {
 
@@ -962,7 +963,7 @@ TranslateStateCodes <- function(inVector,
   
   if(couldBeInt) {
     ## found all integers
-    if(all(nchar(inVector)<=2)) {
+    if(all(nchar(inVector)<=2, na.rm = TRUE)) {
 
       ## all length=2 integers
       if(returnVal=='STATE') returnVal <- 'STUSAB'
@@ -984,7 +985,7 @@ TranslateStateCodes <- function(inVector,
 
     ## got at least some characters
     ## test that all are indeed characters??
-    if(all(nchar(inVector)==2)) {
+    if(all(nchar(inVector)==2, na.rm=TRUE)) {
 
       ## all length=2 integers: state abbreviations
       if(returnVal=='STUSAB') returnVal <- 'STATE_NAME'

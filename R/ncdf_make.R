@@ -46,7 +46,7 @@
 #' globalAttList[[2]] <- list(name='Some reall atts',value='#$%^!!', precision="text" )
 #' 
 #' outFile1 <- path.expand('~/test1.nc')
-#' dum <- MkNcdf( varList, globalAttList=globalAttList, filename=outFile1 )
+#' dum <- MkNcdf( varList, globalAttList=globalAttList, filename=outFile1, overwrite=TRUE )
 #' ncdump(outFile1)
 #' unlink(outFile1)
 #' 
@@ -89,7 +89,7 @@
 #' globalAttList[[1]] <- list(name='Some reall atts',value='#$%^!!', precision="text" )
 #' outFile2 <- path.expand('~/test2.nc')
 #' MkNcdf( varList1, globalAttList=globalAttList, 
-#'         filename=outFile2)
+#'         filename=outFile2, overwrite=TRUE)
 #' ncdump(outFile2)
 #' MkNcdf( varList2, globalAttList=globalAttList, 
 #'         filename=outFile2 )
