@@ -4,7 +4,8 @@
 \alias{ExportGeogrid}
 \title{Creates a georeferenced TIF from a geogrid variable}
 \usage{
-ExportGeogrid(inFile, inVar, outFile, inCoordFile = NA, inLyr = NA)
+ExportGeogrid(inFile, inVar, outFile, inCoordFile = NA, inLyr = NA,
+  inLyrPos = 2, inProj4 = NA)
 }
 \arguments{
 \item{inFile}{A netcdf file containing the variable to be converted to a TIF.}
@@ -19,8 +20,14 @@ example, when creating a geotiff from an LDASOUT output file which does not
 contain lat/lon coordinates but matches the spatial coordinate system of
 the geogrid input file.}
 
-\item{inLyr}{(OPTIONAL) The layer number to export if the variable has more
-than 2 dimensions, e.g., for soil or snow layer variables.}
+\item{inLyr}{(OPTIONAL, default=NA) The layer number to export if the variable 
+has more than 2 dimensions, e.g., for soil or snow layer variables.}
+
+\item{inLyrPos}{(OPTIONAL, default=2) The position of the dimension to export
+if the variable has more than 2 dimensions, e.g., for soil or snow layer variables.}
+
+\item{inProj4}{(OPTIONAL, default=NA) If your data does not follow default WRF 
+lambert conformal conic specifications, specify the proj4 string.}
 }
 \description{
 \code{ExportGeogrid} takes a NetCDF geogrid and converts the specified

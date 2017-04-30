@@ -35,7 +35,9 @@
 #' @param endYr (OPTIONAL) The last year to download files for.
 #' @return dataframe
 #' @examples
+#' \dontrun{
 #' amf.An <- GetAmeriflux(c("US-An1","US-An2","US-An3"), startYr=2009, endYr=2010)
+#' }
 #' @keywords IO
 #' @concept Ameriflux
 #' @family Ameriflux

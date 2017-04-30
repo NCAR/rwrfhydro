@@ -15,8 +15,12 @@
 #'   example, when creating a geotiff from an LDASOUT output file which does not
 #'   contain lat/lon coordinates but matches the spatial coordinate system of
 #'   the geogrid input file.
-#' @param inLyr (OPTIONAL) The layer number to export if the variable has more
-#'   than 2 dimensions, e.g., for soil or snow layer variables.
+#' @param inLyr (OPTIONAL, default=NA) The layer number to export if the variable 
+#'   has more than 2 dimensions, e.g., for soil or snow layer variables.
+#' @param inLyrPos (OPTIONAL, default=2) The position of the dimension to export  
+#'   if the variable has more than 2 dimensions, e.g., for soil or snow layer variables.
+#' @param inProj4 (OPTIONAL, default=NA) If your data does not follow default WRF 
+#'   lambert conformal conic specifications, specify the proj4 string.
 #' @return NULL
 #'   
 #' @examples
@@ -36,7 +40,8 @@
 #' @concept dataMgmt geospatial
 #' @family geospatial
 #' @export
-ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, inLyr=NA) {
+ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, 
+                          inLyr=NA, inLyrPos=2, inProj4=NA) {
   # Check packages
   if (!(require("rgdal") & require("raster") & require("ncdf4") )) {
     stop("Required packages not found. Must have R packages: rgdal (requires GDAL system install), raster, ncdf4")
@@ -47,9 +52,17 @@ ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, inLyr=NA) {
   
   if (!all(is.na(inNC))){
     inNCVar <- ncdf4::ncvar_get(inNC, inVar)
-    if (!is.na(inLyr)) inNCVar <- inNCVar[,inLyr,]
+    if (!is.na(inLyr)) {
+        if (inLyrPos == 2) {
+            inNCVar <- inNCVar[,inLyr,]
+        } else if (inLyrPos == 1) {
+                inNCVar <- inNCVar[inLyr,,]
+        } else if (inLyrPos == 3) {
+                inNCVar <- inNCVar[,,inLyr]
+        }
+    }
     varList <- names(inNC$var)
-  }else{
+  } else {
     inNCVar<-inFile
   }
   # Data types
@@ -98,14 +111,18 @@ ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, inLyr=NA) {
   cen_lon <- ncdf4::ncatt_get(coordNC, varid=0, attname="STAND_LON")$value
   truelat1 <- ncdf4::ncatt_get(coordNC, varid=0, attname="TRUELAT1")$value
   truelat2 <- ncdf4::ncatt_get(coordNC, varid=0, attname="TRUELAT2")$value
-  if (map_proj==1) {
-    geogrd.proj <- paste0("+proj=lcc +lat_1=",
+  if (is.na(inProj4)) {
+    if (map_proj==1) {
+      geogrd.proj <- paste0("+proj=lcc +lat_1=",
                           truelat1, " +lat_2=", truelat2, " +lat_0=",
                           cen_lat, " +lon_0=", cen_lon,
                           " +x_0=0 +y_0=0 +a=6370000 +b=6370000 +units=m +no_defs")
-    #geogrd.crs <- CRS(geogrd.proj)
+      #geogrd.crs <- CRS(geogrd.proj)
+    } else {
+      stop('Error: Projection type not supported (currently this tool only works for Lambert Conformal Conic projections).')
+    }
   } else {
-    stop('Error: Projection type not supported (currently this tool only works for Lambert Conformal Conic projections).')
+      geogrd.proj <- inProj4
   }
   dx <- ncdf4::ncatt_get(coordNC, varid=0, attname="DX")$value
   dy <- ncdf4::ncatt_get(coordNC, varid=0, attname="DY")$value
