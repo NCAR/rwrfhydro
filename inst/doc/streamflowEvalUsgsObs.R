@@ -230,13 +230,11 @@ pander::pandoc.table(CalcModPerf(modStrd.allrt.fc, obsStr5min.fc), split.table=I
 #' 
 #' Help on CalcModPerf gives details on the individual statistics returned.
 ## ---- results='hide'-----------------------------------------------------
-
 help(CalcModPerf)
 
 #' 
 #' <div style="border:1px solid; border-radius: 25px; padding: 12px 25px;">
 ## ---- echo=FALSE---------------------------------------------------------
-
 help(CalcModPerf)
 
 #' </div>
@@ -258,11 +256,12 @@ help(CalcFdcPerf)
 ## ---- echo=FALSE---------------------------------------------------------
 help(CalcFdcPerf)
 
+#' </div>
 #' 
 #' # GagesII Attributes
 #' We've imported the gages-II atributes to be directly available in R.
-#' <div style="border:1px solid; border-radius: 25px; padding: 12px 25px;">
 ## ------------------------------------------------------------------------
+head(gages2Attr)
 ?gages2Attr
 
-#' </div>
+#' 

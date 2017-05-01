@@ -1,168 +1,176 @@
-#' Get Ameriflux data for specified sites. 
+#' Read Ameriflux data into R dataframe.
 #' 
-#' \code{GetAmeriflux} downloads Ameriflux data tables (Level 2 standardized CSV
-#' files) and creates a dataframe. Based on Koen Hufkens's Ameriflux download tool.
+#' \code{ReadAmeriflux} reads pre-downloaded Ameriflux BASE data table (BASE data 
+#' product CSV file) and creates a dataframe.
 #' 
-#' \code{GetAmeriflux} downloads Ameriflux Level 2 standardized CSV files for
-#' specified sites and outputs a dataframe with consistent date and data columns 
-#' for use with other rwrfhydro tools. Borrowed generously from Koen Hufkens's
-#' Ameriflux download tool: 
-#' \link[https://bitbucket.org/khufkens/ameriflux-download-tool]{https://bitbucket.org/
-#' khufkens/ameriflux-download-tool}
+#' \code{ReadAmeriflux} reads Ameriflux BASE data product CSV file and outputs a 
+#' dataframe with consistent date and data columns for use with other rwrfhydro tools.
 #' 
-#' @param siteIDs A single site ID or vector of site IDs to download and process. Site 
-#' IDs should match the standardized AmerifluxIDs (e.g., "US-NR1" for Niwot Ridge). 
-#' See amfMeta$id_txt for a list of site IDs (as of June 2015).
-#' @param gaps (DEFAULT=TRUE) Boolean flag whether to download data with gaps 
-#' (TRUE) or with gaps filled (FALSE). Gap-filled data is not available for all 
-#' sites.
-#' @param timeZones (OPTIONAL) A single time zone or vector of time zones for each  
-#' site provided in the siteIDs. Note that Ameriflux timestamps are (allegedly!)
-#' in local time WITHOUT daylight savings time adjustments. If neither timeZones nor
-#' utcOffsets are provided, the tool will attempt to lookup the site in the master
-#' database (amfMeta) and get a UTC adjustment from there. These offsets were
-#' estimated based on site lat/lon coordinates and are provided with a 
-#' use-at-your-own-risk(!) caveat.
-#' @param utcOffsets (OPTIONAL) A single UTC offset or vector of UTC offsets for each 
-#' site provided in the siteIDs. These should be in positive or negative hours 
-#' (e.g., -7 for "America/Denver" with no DST shift). These values will supercede 
-#' any provided time zones. See tzLookup for a list of time zone UTC offsets. If 
-#' neither timeZones nor utcOffsets are provided, the tool will attempt to lookup the 
-#' site in the master database (amfMeta) and get a UTC adjustment from there. These 
-#' offsets were estimated based on site lat/lon coordinates and are provided with a 
-#' use-at-your-own-risk(!) caveat.
-#' @param startYr (OPTIONAL) The first year to download files for.
-#' @param endYr (OPTIONAL) The last year to download files for.
+#' @param inFile Path to the CSV file (e.g., "AMF_US-NR1_BASE_HH_9-1.csv").
+#' @param tz The time zone for the site (generally Ameriflux data is in local time).
+#' @param useEndTime By default, a POSIXct column will be defined based on the 
+#' "TIMESTAMP_START" column. If you prefer to use "TIMESTAMP_END", set this to TRUE.
 #' @return dataframe
 #' @examples
 #' \dontrun{
-#' amf.An <- GetAmeriflux(c("US-An1","US-An2","US-An3"), startYr=2009, endYr=2010)
+#' amf.NR <- ReadAmeriflux('~/wrfhydroTestCases/Fourmile_Creek_testcase_v2.0/OBS/AMF_US-NR1_BASE_HH_9-1.csv',
+#'                         tz='America/Denver')
 #' }
 #' @keywords IO
 #' @concept Ameriflux
 #' @family Ameriflux
 #' @export
-
-GetAmeriflux <- function(siteIDs, gaps=TRUE, 
-                         timeZones=NULL, utcOffsets=NULL, 
-                         startYr=NULL, endYr=NULL) {
-
-  server="ftp://cdiac.ornl.gov/pub/ameriflux/data/Level2/Sites_ByID/"
-  server_unix="ftp://cdiac.ornl.gov/pub/ameriflux/data/Level2/"
-  
-  # initialize dataframe
-  data <- data.frame()
-  
-  # download file directory
-  tmp <- RCurl::getURL(server)
-  tmp <- read.table(textConnection(tmp), sep = ",", stringsAsFactors=FALSE)
-  tmp <- tmp$V1
-  tmp[grep(".txt",tmp)] <- NA
-  tmp[grep(".doc",tmp)] <- NA
-  tmp <- na.omit(tmp)
-  # tease out site names and correct link locations
-  # use server_unix as download.file() doesn't handle symlinks!
-  fileLocs <- paste(server_unix, unlist(lapply(tmp, function(x) substring(x,70,200))), 
-                    sep="") 
-  siteNames <- unlist(lapply(tmp, function(x) substring(x,57,62)))
-      
-  # download a list of all files to download
-  for (i in 1:length(siteIDs)) {
-    siteID <- siteIDs[i]
-    print(paste("Site:", siteID))
-    siteLoc <- which(siteIDs[i] == siteNames)  
-    if (gaps==TRUE) {
-      siteDir <- paste(fileLocs[siteLoc],"/with_gaps/",sep='')    
-    } else {
-      siteDir <- paste(fileLocs[siteLoc],"/gap_filled/",sep='')
-    }
-    # Lookup timezone
-    tz <- NULL
-    uo <- NULL
-    if (!(is.null(utcOffsets[i]))) {
-      uo <- utcOffsets[i]
-    } else if (!(is.null(timeZones[i]))) {
-      tz <- timeZones[i]
-    } else {
-      uo <- amfMeta$UTC_offset_int[amfMeta$id_txt==siteID]
-      if (length(uo)==0) {
-        print("No time zone provided and site not included in existing database. Please determine the site's local (no DST) time zone and re-run the tool.")
-        next
-        }
-    }
-    print(paste("Time zone: tz=", ifelse(is.null(tz), "NA", tz), ", UTC offset=", 
-                ifelse(is.null(uo), "NA", uo))) 
-    # Query for files
-    fluxFiles <- tryCatch(suppressWarnings(RCurl::getURL(siteDir)), 
-                          error=function(cond) {message(cond); return(NA)}) 
-    if (is.na(fluxFiles)) {
-      print(paste("No files found for site", siteID))
-      next
-    }
-    # Process file list
-    fluxFiles <- read.table(textConnection(fluxFiles), sep = ",", stringsAsFactors=FALSE)
-    fluxFiles <- fluxFiles$V1
-    fluxFiles <- fluxFiles[grep('*.csv',fluxFiles)]
-    if (length(fluxFiles)==0) {
-      print("No csv files found. Check directory structure for this site.")
-      next
-    }      
-    fluxFiles <- unlist(lapply(fluxFiles, function(x,...) substring(x,57,300)))
-    fluxFiles <- data.frame(file=fluxFiles, yr=0, stringsAsFactors=FALSE)
-    for (j in 1:nrow(fluxFiles)) {
-      fluxFiles$yr[j]<-as.integer(unlist(strsplit(fluxFiles$file[j], split="_"))[3])
-    }
-    if (!(is.null(startYr)) & !(is.null(endYr))) {
-      fluxFiles <- subset(fluxFiles, fluxFiles$yr>=startYr & fluxFiles$yr<=endYr)
-    }
-    if (nrow(fluxFiles)==0) {
-      print(paste("No files found for site", siteID, "within the year range", 
-                  startYr, "to", endYr))
-      next
-    }
-    for (f in 1:nrow(fluxFiles)) {
-      print(paste("  - processing year:", fluxFiles$yr[f]))
-      # compile filename to download
-      fluxFileLoc <- paste(siteDir, fluxFiles$file[f], sep="")
-      # download and process data
-      tmp <- RCurl::getURL(fluxFileLoc)
-      tmpData <- read.table(textConnection(tmp), sep = ",", skip=20, 
-                            na.strings=c(-6999,-9999), strip.white=T, 
-                            stringsAsFactors=FALSE)
-      tmpHead <- read.table(textConnection(tmp), sep = ",", skip=17, nrows=1, 
-                            strip.white=T, stringsAsFactors=FALSE)
-      colnames(tmpData)<-as.matrix(tmpHead)[1,]
-      if (is.null(uo)) {
-        tmpData$POSIXct <- as.POSIXct( paste(as.character(tmpData$YEAR), 
-                                             as.character(tmpData$DOY),
-                                  as.character(ifelse(substr(tmpData$HRMIN, 1, 
-                                                             nchar(tmpData$HRMIN)-2)=='', "00", 
-                                                      substr(tmpData$HRMIN,1,
-                                                             nchar(tmpData$HRMIN)-2))),
-                                  as.character(substr(tmpData$HRMIN,
-                                                      nchar(tmpData$HRMIN)-1,
-                                                      nchar(tmpData$HRMIN))), sep="-"),
-                                  format="%Y-%j-%H-%M", tz=tz )
-      } else {
-        tmpData$POSIXct <- as.POSIXct( paste(as.character(tmpData$YEAR), 
-                                             as.character(tmpData$DOY),
-                                  as.character(ifelse(substr(tmpData$HRMIN,1,
-                                                             nchar(tmpData$HRMIN)-2)=='', "00", 
-                                                      substr(tmpData$HRMIN,1,
-                                                             nchar(tmpData$HRMIN)-2))),
-                                  as.character(substr(tmpData$HRMIN,
-                                                      nchar(tmpData$HRMIN)-1,
-                                                      nchar(tmpData$HRMIN))), sep="-"),
-                                  format="%Y-%j-%H-%M", tz="UTC" ) - (uo*3600)
-      }
-      tmpData$wy <- CalcWaterYear(tmpData$POSIXct)
-      tmpData$site_id <- siteID
-      data <- plyr::rbind.fill(data, tmpData)
-    } # end for flux files 
-  } # end for sites
-  return(data)
+ReadAmeriflux <- function(inFile, tz, useEndTime=FALSE) {
+    
+    tmpData <- read.table(inFile, sep = ",", skip=2, header=TRUE,
+                          na.strings=c(-6999,-9999), strip.white=T, 
+                          stringsAsFactors=FALSE)
+    tmpData$POSIXct <- as.POSIXct(as.character(tmpData$TIMESTAMP_START),
+                                  format="%Y%m%d%H%M", tz=tz)
+    tmpData$wy <- CalcWaterYear(tmpData$POSIXct)
+    return(tmpData)
+    
 }
 
+#' Read standard-format NetCDF data downloaded from Ameriflux
+#' 
+#' \code{ReadAmerifluxNCOldFormat} reads Ameriflux data table (Level 2 standardized
+#' NetCDF file) and creates a dataframe. OLDER FORMAT ONLY - NO LONGER SUPPORTED. 
+#' 
+#' \code{ReadAmerifluxNCOldFormat} reads an Ameriflux Level 2 standardized NetCDF file
+#' and outputs a dataframe with consistent date and data columns for use with
+#' other rwrfhydro tools. OLDER FORMAT ONLY - NO LONGER SUPPORTED. Please use 
+#' ReadAmeriflux for the latest BASE format support.
+#' 
+#' @param pathFluxData The full pathname to the flux time series NetCDF file as
+#'   downloaded from an Ameriflux data server (OLD FORMAT).
+#' @param timeZone The time zone for the flux site. Time zone name must be
+#'   R-friendly for your current OS. See:
+#'   \url{http://stat.ethz.ch/R-manual/R-devel/library/base/html/timezones.html}. 
+#'   Provide this OR a UTC offset. Note that Ameriflux data is (allegedly!) in local
+#'   time without daylight savings. 
+#' @param utcOffset The UTC offset for the flux site's local time. These should be in 
+#' positive or negative hours (e.g., -7 for "America/Denver" with no DST shift). 
+#' These values will supercede any provided time zones. See tzLookup for a list of 
+#' time zone UTC offsets.
+#' @return A dataframe containing the Ameriflux data.
+#'   
+#' @examples
+#' ## Takes a NetCDF file downloaded from the ORNL Amerifux website for US-NC2
+#' ## (North Carolina Loblolly Pine) and returns a dataframe.
+#' 
+#' \dontrun{
+#' obsFlux30min.usnc2 <- 
+#'   ReadAmerifluxNCOldFormat("../OBS/FLUX/AMF_USNC2_2005_L2_WG_V003.nc", utcOffset=-5)
+#' }
+#' @keywords IO
+#' @concept dataGet
+#' @family obsDataReads
+#' @export
+ReadAmerifluxNCOldFormat <- function(pathFluxData, timeZone=NULL, utcOffset=NULL) {
+    if ((is.null(utcOffset)) & (is.null(timeZone))) {
+        stop("No time zone or UTC offset provided. Please determine the site's local time zone and re-run the tool.")
+    }
+    ncFile <- ncdf4::nc_open(pathFluxData)
+    nc <- ncFile$nvars
+    nr <- ncFile$var[[1]]$varsize
+    outDf <- as.data.frame(matrix(nrow=nr, ncol=nc))
+    ncVarList <- list()
+    for (i in 1:nc ) {
+        ncVar <- ncFile$var[[i]]
+        ncVarList[i] <- ncVar$name
+        outDf[,i] <- ncdf4::ncvar_get( ncFile, ncVar )
+    }
+    colnames(outDf) <- ncVarList
+    ncdf4::nc_close(ncFile)
+    if (is.null(utcOffset)) {
+        outDf$POSIXct <- as.POSIXct( paste(as.character(outDf$YEAR), as.character(outDf$DOY),
+                                           as.character(ifelse(substr(outDf$HRMIN,1,
+                                                                      nchar(outDf$HRMIN)-2)=='', 
+                                                               "00", substr(outDf$HRMIN,1,
+                                                                            nchar(outDf$HRMIN)-2))),
+                                           as.character(substr(outDf$HRMIN,
+                                                               nchar(outDf$HRMIN)-1,
+                                                               nchar(outDf$HRMIN))), sep="-"),
+                                     format="%Y-%j-%H-%M", tz=timeZone )
+    } else {
+        outDf$POSIXct <- as.POSIXct( paste(as.character(outDf$YEAR), as.character(outDf$DOY),
+                                           as.character(ifelse(substr(outDf$HRMIN,1,
+                                                                      nchar(outDf$HRMIN)-2)=='', 
+                                                               "00", substr(outDf$HRMIN,1,
+                                                                            nchar(outDf$HRMIN)-2))),
+                                           as.character(substr(outDf$HRMIN,
+                                                               nchar(outDf$HRMIN)-1,
+                                                               nchar(outDf$HRMIN))), sep="-"),
+                                     format="%Y-%j-%H-%M", tz="UTC" ) - (utcOffset*3600)
+    }
+    outDf$wy <- CalcWaterYear(outDf$POSIXct)
+    outDf
+}
+
+#' Read standard-format CSV data downloaded from Ameriflux
+#' 
+#' \code{ReadAmerifluxCSVOldFormat} reads Ameriflux data table (Level 2 standardized CSV
+#' file) and creates a dataframe. OLDER FORMAT ONLY - NO LONGER SUPPORTED.
+#' 
+#' \code{ReadAmerifluxCSVOldFormat} reads an Ameriflux Level 2 standardized CSV file and
+#' outputs a dataframe with consistent date and data columns for use with other
+#' rwrfhydro tools. OLDER FORMAT ONLY - NO LONGER SUPPORTED. Please use 
+#' ReadAmeriflux for the latest BASE format support.
+#' 
+#' @param pathFluxData The full pathname to the flux time series CSV file as
+#'   downloaded from an Ameriflux data server. (OLD FORMAT)
+#' @param timeZone The time zone for the flux site. Time zone name must be
+#'   R-friendly for your current OS. See:
+#'   \url{http://stat.ethz.ch/R-manual/R-devel/library/base/html/timezones.html}. 
+#'   Provide this OR a UTC offset. Note that Ameriflux data is (allegedly!) in local
+#'   time without daylight savings. 
+#' @param utcOffset The UTC offset for the flux site's local time. These should be in 
+#' positive or negative hours (e.g., -7 for "America/Denver" with no DST shift). 
+#' These values will supercede any provided time zones. See tzLookup for a list of 
+#' time zone UTC offsets.
+#' @return A dataframe containing the Ameriflux data.
+#'   
+#' @examples
+#' ## Takes a CSV file downloaded from the ORNL Amerifux website for US-NR1 (Niwot Ridge)
+#' ## and returns a dataframe.
+#' 
+#' \dontrun{
+#' obsFlux30min.usnr1 <- 
+#'   ReadAmerifluxCSV("../OBS/FLUX/AMF_USNR1_2013_L2_GF_V008.csv", utcOffset=-7)
+#' }
+#' @keywords IO
+#' @concept dataGet
+#' @family obsDataReads
+#' @export
+ReadAmerifluxCSVOldFormat <- function(pathFluxData, timeZone=NULL, utcOffset=NULL) {
+    if ((is.null(utcOffset)) & (is.null(timeZone))) {
+        stop("No time zone or UTC offset provided. Please determine the site's local time zone and re-run the tool.")
+    }
+    outDf <- read.table(pathFluxData, sep=",", skip=20, na.strings=c(-6999,-9999), 
+                        strip.white=T)
+    outDf.head <- read.table(pathFluxData, sep=",", skip=17, nrows=1, strip.white=T)
+    colnames(outDf) <- as.matrix(outDf.head)[1,]
+    if (is.null(utcOffset)) {
+        outDf$POSIXct <- as.POSIXct( paste(as.character(outDf$YEAR), as.character(outDf$DOY),
+                                           as.character(ifelse(substr(outDf$HRMIN,1,nchar(outDf$HRMIN)-2)=='', 
+                                                               "00", substr(outDf$HRMIN,1,nchar(outDf$HRMIN)-2))),
+                                           as.character(substr(outDf$HRMIN,nchar(outDf$HRMIN)-1,
+                                                               nchar(outDf$HRMIN))), sep="-"),
+                                     format="%Y-%j-%H-%M", tz=timeZone )
+    } else {
+        outDf$POSIXct <- as.POSIXct( paste(as.character(outDf$YEAR), as.character(outDf$DOY),
+                                           as.character(ifelse(substr(outDf$HRMIN,1,
+                                                                      nchar(outDf$HRMIN)-2)=='', 
+                                                               "00", substr(outDf$HRMIN,1,
+                                                                            nchar(outDf$HRMIN)-2))),
+                                           as.character(substr(outDf$HRMIN,nchar(outDf$HRMIN)-1,
+                                                               nchar(outDf$HRMIN))), sep="-"),
+                                     format="%Y-%j-%H-%M", tz="UTC" ) - (utcOffset*3600)
+    }
+    outDf$wy <- CalcWaterYear(outDf$POSIXct)
+    outDf
+}
 
 #' Ameriflux site metadata
 #' 
@@ -220,5 +228,5 @@ GetAmeriflux <- function(siteIDs, gaps=TRUE,
 #' @concept data
 #' @keywords data
 "tzLookup"
-  
+
 

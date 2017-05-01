@@ -29,15 +29,16 @@ Process model CHANOBS to observation timeSlice format for nudging DA.
   ChanObsToTimeSlice(files, sliceResolutionMin, outputDir) 
 }
 }
+\author{
+James McCreight
+}
 \seealso{
 Other nudging: \code{\link{AddRouteLinkGage}},
   \code{\link{EditFrxstPts}}, \code{\link{MkNudgingParams}}
-}
-\author{
-James McCreight
 }
 \concept{
 nudging
 }
 \keyword{IO}
 \keyword{manip}
+

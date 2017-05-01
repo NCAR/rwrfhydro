@@ -67,3 +67,4 @@ Other SNOTEL: \code{\link{snotelMeta}}
 SNOTEL
 }
 \keyword{IO}
+

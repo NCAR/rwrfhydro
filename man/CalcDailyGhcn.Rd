@@ -55,3 +55,4 @@ Other GHCN: \code{\link{GetGhcn2}}, \code{\link{GetGhcn}},
 GHCN
 }
 \keyword{manip}
+

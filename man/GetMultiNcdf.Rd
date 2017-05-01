@@ -96,3 +96,4 @@ ggplot( fileData, aes(x=POSIXct, y=value, color=fileGroup)) +
   scale_x_datetime(breaks = date_breaks("5 days")) + theme_bw()
 }
 }
+

@@ -30,7 +30,7 @@ dataframe
 \code{GetCoDwrData} downloads and processes CO DWR data from web feed.
 }
 \details{
-\code{GetAmeriflux} downloads Colorado Department of Water Resources data for
+\code{GetCoDwrData} downloads Colorado Department of Water Resources data for
 specified sites and outputs a dataframe with consistent date and data columns 
 for use with other rwrfhydro tools.
 }
@@ -43,3 +43,4 @@ str.RIO <- GetCoDwrData(c("RIOSFKCO", "RIOWAGCO","RIODELCO"),
 Streamflow
 }
 \keyword{IO}
+

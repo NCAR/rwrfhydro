@@ -17,3 +17,4 @@ Vector of characters.
 }
 \keyword{internal}
 \keyword{utilities}
+

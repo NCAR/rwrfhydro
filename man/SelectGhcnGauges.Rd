@@ -75,7 +75,6 @@ siteIds=[country,ntework,stationID]
   \item Based on a domain. If domain is true, then you need min and max 
   latitude and logitude for the enclosing rectangle. }
 }
-
 \examples{
 \dontrun{
 countryCodeList=c("US")
@@ -94,3 +93,4 @@ Other GHCN: \code{\link{CalcDailyGhcn}},
 GHCN
 }
 \keyword{IO}
+

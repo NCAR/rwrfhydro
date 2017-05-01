@@ -31,14 +31,14 @@ library(doMC)
 registerDoMC(3)
 modLdasoutWb1h.allrt.fc <- ReadLdasoutWb(paste0(dataPath, '/run.FullRouting'), 
                                          paste0(dataPath, '/DOMAIN/Fulldom_hires_hydrofile.Fourmile100m.nc'), 
-                                         mskvar="basn_msk", basid=1, aggfact=10, ncores=3)
+                                         mskvar="basn_msk", basid=1, aggfact=10, parallel=TRUE)
 
 #' 
 #' Calculate basin-averaged routing water fluxes. 
 ## ------------------------------------------------------------------------
 modRtout1h.allrt.fc <- ReadRtout(paste0(dataPath, '/run.FullRouting'), 
                                  paste0(dataPath, '/DOMAIN/Fulldom_hires_hydrofile.Fourmile100m.nc'), 
-                                 mskvar="basn_msk", basid=1, ncores=3)
+                                 mskvar="basn_msk", basid=1, parallel=TRUE)
 
 #' 
 #' Import groundwater outflow model output.
@@ -56,11 +56,11 @@ wb.allrt.fc <- CalcNoahmpWatBudg(modLdasoutWb1h.allrt.fc, rtoutDf=modRtout1h.all
 
 #' 
 #' Take a look at the results. All output values are in mm.
-## ----, results='hide'----------------------------------------------------
+## ---- results='hide'-----------------------------------------------------
 wb.allrt.fc
 
 #' 
-## ----, results = "asis", echo=FALSE--------------------------------------
+## ---- results = "asis", echo=FALSE---------------------------------------
 suppressPackageStartupMessages(library(pander))
 pander::pandoc.table(wb.allrt.fc, justify="left", caption="")
 

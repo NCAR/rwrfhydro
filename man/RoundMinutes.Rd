@@ -24,3 +24,4 @@ print(time <- Sys.time()+lubridate::minutes(1:10))
 RoundMinutes(time, nearest=5)
 }
 \keyword{internal}
+

@@ -86,3 +86,4 @@ dataMgmt plot
 }
 \keyword{hplot}
 \keyword{manip}
+

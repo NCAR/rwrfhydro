@@ -52,3 +52,4 @@ Other streamObs: \code{\link{FindUsgsStns}},
 dataMgmt usgsStreamObs
 }
 \keyword{database}
+

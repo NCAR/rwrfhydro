@@ -26,10 +26,11 @@ amfMeta
 Metadata for the Ameriflux sites (as of June 2015) including lat/lon and timezone.
 }
 \seealso{
-Other Ameriflux: \code{\link{GetAmeriflux}},
+Other Ameriflux: \code{\link{ReadAmeriflux}},
   \code{\link{tzLookup}}
 }
 \concept{
 data
 }
 \keyword{data}
+
