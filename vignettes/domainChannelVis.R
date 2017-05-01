@@ -38,12 +38,32 @@ options(width = 120, warn=1)
 #' To properly display the spatial information, R currently requires the use of the `rgdal` and `sp` packages though these are not required for general installation and use of rwrfhydro. We hope to relax this assumption in the near future. An underlying function `GetDomainCoordsProj` does the work of obtaining and transforming the projection and/or datum of the spatial data to render it a lat-lon WGS84 map. 
 #' 
 #' ### Land surface model pixels
-#' We begin by taking a look at the spatial information file for the LSM. First we specify the path to the 'Fourmile_Creek' test
+#' We begin by taking a look at the spatial information file for the LSM. First we specify the path to the 'Fourmile_Creek' test case.
 #' We pick the "geo" file, which holds the geospatial information for the LSM. The following commands plot the topographic height for each cell over a map. 
-## ---- fig.width = 12, fig.height = 6, out.width='700', out.height='350'----
+## ------------------------------------------------------------------------
 geoFile <- paste0(fcPath,'/run.ChannelRouting/DOMAIN/geo_em_d01.Fourmile1km.nlcd11.nc')
 coordsProj <- GetDomainCoordsProj(geoFile)
 ClosureGeo <- VisualizeDomain(geoFile, plotVar='HGT_M', plot=FALSE, plotDf=coordsProj)
+
+#' The step of getting coordsProj could be done internally to VisualizeDomain but in some cases (e.g. plotting many variables for a big domain) can speed up the visualization.
+#' 
+#' For illustration purposes, we  set plot=FALSE in the call to VisualizeDomain to skip the default plot output. Typically this first, default plot serves as a basis for tweaking the options to the returned function, named ClosureGeo in this example, which help achieve the desired graphic representation.
+#' 
+#' Note carefully that VisualizeDomain returns a function. A returned function is termed a closure: a function with data inside it. (Because our style convention is first-letter capitals for functions, ClosureGeo begins with a capital letter.) The returned function can also return objects (perhpas another closure even). The arguments to this closure allow most of the main plot attributes to be tweaked when called. Because the graphics in this function are handled using the ggplot2 package, which has a signifcant learning curve, we design these closures to give the user the 90% solution without th need to learn ggplot2. The return values of the closures give the data and the ggplot objects which can befurther manipulated as necessary, which can be useful if you do know ggplot2.
+#' 
+#' Let's examine the structure and the arguments of ClosureGeo and it's return value, so we know what we have to work with. 
+#' 
+## ---- fig.width = 12, fig.height = 6, out.width='700', out.height='350'----
+class(ClosureGeo)
+args(ClosureGeo)
+closureReturnGeo <- ClosureGeo(plot=FALSE)
+class(closureReturnGeo)
+names(closureReturnGeo)
+
+#' 
+#' We see `ClosureGeo` is a function and all its arguments. The `closureRreturnGeo` object is a list (the output of `str` was much too long to put here) and it has two top-level objects. Note below, we can reference some of these objects in calls to `ClosureGeo`. In calling `ClosureGeo` to tweak the plot, zoom and pointsize depend on our domain and on the size of the graphics device. These were adjusted to get the output in the vignette and may not match well to own graphics device.
+#' 
+## ---- fig.width = 12, fig.height = 6, out.width='700', out.height='350'----
 mapMargin <- .05*c(-1,1)
 closureRtnGeo <-
   ClosureGeo(zoom=11, pointsize=9, 
@@ -52,13 +72,7 @@ closureRtnGeo <-
              xlim=range(plotDf$long)+mapMargin*1.5,
              ylim = range(plotDf$lat)+mapMargin)
 
-#' The step of getting coordsProj could be done internally to VisualizeDomain but in some cases (e.g. plotting many variables for a big domain) can speed up the visualization.
-#' 
-#' For illustration purposes, we  set plot=FALSE in the call to VisualizeDomain to skip the default plot output. Typically this first, default plot serves as a basis for tweaking the options to the returned function, named ClosureGeo in this example, which help achieve the desired graphic representation.
-#' 
-#' Note carefully that VisualizeDomain returns a function, such a returned function is termed a closure: a function with data inside it. (Because our style convention is first-letter capitals for functions, ClosureGeo begins with a capital letter.) The arguments to this function allow most of its main attributes to be tweaked when called. Because the graphics in this function are handled using the ggplot2 package, which has a signifcant learning curve, we design these closures to give the user the 90% solution without th need to learn ggplot2. The return values of the closures give the data and the ggplot objects which can befurther manipulated as necessary.
-#' 
-#' Critically, zoom and pointsize depend on our domain and even the size of the graphics device. To work more directly with the data and the plot object, see the closureRtnGeo object. The returnComponents argument to the closure function gives even more fine grained output. We'll illustrate working with the return object below. 
+#' We could work directly with the data and the plot object from `closureRtnGeo` instead of using `ClosureReturn`. The returnComponents argument to the closure function gives even more fine grained output. We'll illustrate working with the return object below.
 #' 
 #' ### Routing pixels
 #' A similar set of function calls allows visualization of the hydrologic grids. We look at the gridded channel network file. This time we skip the call to GetDomainCoordsProj. 
@@ -72,7 +86,7 @@ closureRtnHydro <-
                grad=c('white','blue'), maptype='terrain')
 
 #' 
-#' We highlight use of several of the available arguments to the closure. To see the full set of arguments to the closure, simply invoke the print method on the closure: call the function without paraentheses. This will return the entire code and the arguments are shown at the top with their default values (e.g. argument=default). Reading the coode will reveal two variables which actually come from the VisualizeDomain function: bbox and plotDf. (Because the returned function encloses this data, it is refered to as a closure). Several of the arguments to the closure can reference these variables: location, xlim, ylim, subsetRange.
+#' We highlight use of several of the available arguments to the closure. To see the full set of arguments to the closure, we could use the `args` function or the print (default) method on the closure by "calling" the function without its paraentheses. Printing the closure will return the entire code and the arguments are shown at the top with their default values (e.g. argument=default). Reading the coode will reveal two variables which actually come from the VisualizeDomain function: bbox and plotDf. (Because the returned function encloses this data, it is refered to as a closure). Several of the arguments to the closure can reference these variables: location, xlim, ylim, subsetRange.
 #' 
 #' While the above command shows all the hydrologic grid pixels, many of them are missing values (-9999) because they are not on the gridded channel network. We use the subsetRange keyword to limit the range of values represented in the plot. We again use the xlim and ylim keywords to zoom in. We also limit the color scale to blue. 
 #' 
@@ -97,7 +111,7 @@ closureRtnGeo$ggObj +
              aes(x=long, y=lat), size=.5, shape=21, fill='white', color='darkblue') +
                ggtitle('Fourmile Creek, CO - Elevation and Stream Channel')
 
-#' The returnComponents argument to the closures will return more fine-grained objects from the plot in caseu those are useful. 
+#' The returnComponents argument to the closures will return more fine-grained objects from the plot in case those are useful. 
 #' 
 #' #`VisualizeChanNtwk()`
 #' Let's use look at simulated flows to also see that the flow at the basin outlet is zero. Setup the path to a "CHRTOUT" data file.
@@ -115,7 +129,7 @@ LocLinkFun<- VisualizeChanNtwk(chrtFile)
 args(LocLinkFun)
 
 #' 
-#' A main issue is knowing/finding the index of a given point.  The click option to the closure lets you click and get the inded. Clicking at the outlet point to see that it has (q=) 0 flow and its index is 350. (We can't show the interaction in a static document, so you have to try it yourself.)
+#' A main issue is knowing/finding the index of a given point.  The click option to the closure lets you click and get the index. Clicking at the outlet point shows that it has (q=) 0 flow and its index is 350. (We can't show the interaction in a static document, so you have to try it yourself.) 
 ## ---- eval=FALSE---------------------------------------------------------
 ## LocLinkFun(click=TRUE)
 ## ## Please click on plot to select nearest point to your click...
@@ -124,7 +138,7 @@ args(LocLinkFun)
 ## ##  350 -105.325675964 40.0182723999 0
 
 #'  
-#' Using the original function, any set of valid indices can be excluded from the data. After excluding the lowest point and getting a new LocLinkFun, clicking on the lowest point reveals that that index is 1.
+#' We'll like to exclude that point since there is no valid flow at the most downstream pixel in gridded routing. Using the original function, any set of valid indices can be excluded from the data. After excluding the lowest point and getting a new LocLinkFun, clicking on the lowest point reveals that that index is 1.
 ## ---- eval=FALSE---------------------------------------------------------
 ## LocLinkFun<-VisualizeChanNtwk(chrtFile, exclude=350)
 ## LocLinkFun(click=TRUE)

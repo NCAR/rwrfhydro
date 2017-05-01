@@ -12,7 +12,7 @@
 
 <meta name="author" content="Aubrey Dugger, James McCreight, Alyssa Hendricks" />
 
-<meta name="date" content="2017-04-28" />
+<meta name="date" content="2017-05-01" />
 
 <title>Collect USGS stream observations to evaluate streamflow simulation</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Collect USGS stream observations to evaluate streamflow simulation</h1>
 <h4 class="author"><em>Aubrey Dugger, James McCreight, Alyssa Hendricks</em></h4>
-<h4 class="date"><em>2017-04-28</em></h4>
+<h4 class="date"><em>2017-05-01</em></h4>
 
 
 
@@ -113,9 +113,9 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ##  $ dec_lat_va   : num 40
 ##  $ dec_long_va  : num -105
 ##  $ colocated    : logi FALSE
-##  $ queryTime    : POSIXct, format: &quot;2017-04-28 15:47:13&quot;</code></pre>
+##  $ queryTime    : POSIXct, format: &quot;2017-05-01 11:25:55&quot;</code></pre>
 <p>Now you have the site_no or station ID number, “06727500”. You could have also used <code>FindUsgsStns()</code> to reveal the gages in the HUC8, if you knew the HUC8 code. Because we organize the database by HUC8, we have a function to get HUC8 from station id. Then we get the above information for all locations in the HUC8.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">huc8 &lt;-<span class="st"> </span><span class="kw">GetSiteHuc</span>(stnDf$site_no)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">huc8 &lt;-<span class="st"> </span><span class="kw">GetSiteHuc</span>(stnDf<span class="op">$</span>site_no)
 <span class="kw">str</span>(<span class="kw">FindUsgsStns</span>(<span class="dt">huc=</span>huc8))</code></pre></div>
 <pre><code>## 'data.frame':    8 obs. of  11 variables:
 ##  $ huc8         : Factor w/ 1 level &quot;10190005&quot;: 1 1 1 1 1 1 1 1
@@ -128,7 +128,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ##  $ dec_lat_va   : num  40 40.1 40 40.1 40.1 ...
 ##  $ dec_long_va  : num  -105 -105 -105 -105 -105 ...
 ##  $ colocated    : logi  FALSE FALSE FALSE FALSE FALSE FALSE ...
-##  $ queryTime    : POSIXct, format: &quot;2017-04-28 15:47:13&quot; &quot;2017-04-28 15:47:13&quot; &quot;2017-04-28 15:47:13&quot; &quot;2017-04-28 15:47:13&quot; ...</code></pre>
+##  $ queryTime    : POSIXct, format: &quot;2017-05-01 11:25:55&quot; &quot;2017-05-01 11:25:55&quot; &quot;2017-05-01 11:25:55&quot; &quot;2017-05-01 11:25:55&quot; ...</code></pre>
 <p>FindUsgsStns is a wrapper on dataRetrieval::whatNWISsites which has been written to focus on instantaneous values. (It is worth noting the flexibility and generality of the underlying function.)</p>
 <p>Now pull the data for this HUC8. Currently, this grabs all available products for the HUC. Note that the HUC data are organized by product code (e.g. <code>00060</code>) then by <code>data</code> and <code>meta</code> in the returned list. (Also note that this command sometimes fails on the remote end and may need to be rerun.) In <code>meta</code>, siteInfo is the meta that we use in querying the local data base in commands shown below.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">coData &lt;-<span class="st"> </span><span class="kw">GetUsgsHucData</span>(<span class="dt">huc=</span>huc8)  ## this can take a little while...
@@ -615,8 +615,8 @@ coFiles</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">modStrd.allrt.fc &lt;-<span class="st"> </span><span class="kw">ReadFrxstPts</span>(<span class="kw">paste0</span>(dataPath, <span class="st">'/run.FullRouting/frxst_pts_out.txt'</span>))</code></pre></div>
 <p>USGS gage observed data at 5-minute intervals. Find the nearest gage to the forecast point in the above files. (The following approach can be used when multiple forecast points are output by the model. The ddply function essentially performs a loop over unique st_id passing the corresponding subset of the data frame modStrd.chrt.fc to the function which just returns the first row’s lon and lat.)</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(plyr)
-fcLocation &lt;-<span class="st"> </span><span class="kw">ddply</span>(modStrd.chrt.fc, .(st_id), function(df) df[<span class="dv">1</span>,<span class="kw">c</span>(<span class="st">'st_lon'</span>,<span class="st">'st_lat'</span>)])
-near &lt;-<span class="st"> </span><span class="kw">FindUsgsStns</span>(<span class="dt">stnLon=</span><span class="kw">c</span>(fcLocation$st_lon), <span class="dt">stnLat=</span><span class="kw">c</span>(fcLocation$st_lat), <span class="dt">within=</span>.<span class="dv">005</span>)
+fcLocation &lt;-<span class="st"> </span><span class="kw">ddply</span>(modStrd.chrt.fc, .(st_id), <span class="cf">function</span>(df) df[<span class="dv">1</span>,<span class="kw">c</span>(<span class="st">'st_lon'</span>,<span class="st">'st_lat'</span>)])
+near &lt;-<span class="st"> </span><span class="kw">FindUsgsStns</span>(<span class="dt">stnLon=</span><span class="kw">c</span>(fcLocation<span class="op">$</span>st_lon), <span class="dt">stnLat=</span><span class="kw">c</span>(fcLocation<span class="op">$</span>st_lat), <span class="dt">within=</span>.<span class="dv">005</span>)
 near</code></pre></div>
 <table>
 <thead>
@@ -650,15 +650,15 @@ near</code></pre></div>
 <td align="right">40.01867</td>
 <td align="right">-105.3263</td>
 <td align="left">FALSE</td>
-<td align="left">2017-04-28 15:47:22</td>
+<td align="left">2017-05-01 11:26:05</td>
 </tr>
 </tbody>
 </table>
 <p>The following checks to see if the data are local and gets them if not. The ‘00060’ product (streamflow) is returned and then made pretty, including conversion to metric.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dbPath &lt;-<span class="st"> '~/wrfHydroTestCases/usgsDb/'</span>
 obsStr5min.fc &lt;-<span class="st"> </span>
-<span class="st">  </span><span class="kw">PrettyUsgs</span>(<span class="kw">QueryHaveSite</span>(near$site_no, <span class="dt">path=</span>dbPath, <span class="dt">ret=</span><span class="st">'00060'</span>, <span class="dt">get=</span><span class="ot">TRUE</span>))
-obsStr5min.fc &lt;-<span class="st"> </span>plyr::<span class="kw">rename</span>(obsStr5min.fc, <span class="kw">c</span>(<span class="dt">value=</span><span class="st">'q_cms'</span>))</code></pre></div>
+<span class="st">  </span><span class="kw">PrettyUsgs</span>(<span class="kw">QueryHaveSite</span>(near<span class="op">$</span>site_no, <span class="dt">path=</span>dbPath, <span class="dt">ret=</span><span class="st">'00060'</span>, <span class="dt">get=</span><span class="ot">TRUE</span>))
+obsStr5min.fc &lt;-<span class="st"> </span>plyr<span class="op">::</span><span class="kw">rename</span>(obsStr5min.fc, <span class="kw">c</span>(<span class="dt">value=</span><span class="st">'q_cms'</span>))</code></pre></div>
 </div>
 <div id="plot-hydrographs" class="section level1">
 <h1>Plot hydrographs</h1>
@@ -681,9 +681,9 @@ obsStr5min.fc &lt;-<span class="st"> </span>plyr::<span class="kw">rename</span>
 <h1>Review flow duration curves</h1>
 <p><b>NOTE</b>: You generally evaluate flow duration curves and staistics over much longer time periods (e.g., multiple years) than what we demo here. To make the test case more portable, we are only evaluating once-a-day model output over 5 months.</p>
 <p>Calculate percent exceedances for flow duration curves. Note that we need to subset the observations to match our model run output times, and vice versa.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">obsStr5min.comp.fc &lt;-<span class="st"> </span><span class="kw">CalcFdc</span>(<span class="kw">subset</span>(obsStr5min.fc, POSIXct %in%<span class="st"> </span><span class="kw">c</span>(modStrd.chrt.fc$POSIXct)))
-modStrd.chrt.comp.fc &lt;-<span class="st"> </span><span class="kw">CalcFdc</span>(<span class="kw">subset</span>(modStrd.chrt.fc, POSIXct %in%<span class="st"> </span><span class="kw">c</span>(obsStr5min.comp.fc$POSIXct)))
-modStrd.allrt.comp.fc &lt;-<span class="st"> </span><span class="kw">CalcFdc</span>(<span class="kw">subset</span>(modStrd.allrt.fc, POSIXct %in%<span class="st"> </span><span class="kw">c</span>(obsStr5min.comp.fc$POSIXct)))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">obsStr5min.comp.fc &lt;-<span class="st"> </span><span class="kw">CalcFdc</span>(<span class="kw">subset</span>(obsStr5min.fc, POSIXct <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(modStrd.chrt.fc<span class="op">$</span>POSIXct)))
+modStrd.chrt.comp.fc &lt;-<span class="st"> </span><span class="kw">CalcFdc</span>(<span class="kw">subset</span>(modStrd.chrt.fc, POSIXct <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(obsStr5min.comp.fc<span class="op">$</span>POSIXct)))
+modStrd.allrt.comp.fc &lt;-<span class="st"> </span><span class="kw">CalcFdc</span>(<span class="kw">subset</span>(modStrd.allrt.fc, POSIXct <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(obsStr5min.comp.fc<span class="op">$</span>POSIXct)))</code></pre></div>
 <p>Compare how the models are doing predicting flow values that will be exceeded 20% of the time. First, calculate the fitted spline functions.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fdc.obsStr5min.comp.fc &lt;-<span class="st"> </span><span class="kw">CalcFdcSpline</span>(obsStr5min.comp.fc)
 fdc.modStrd.chrt.comp.fc &lt;-<span class="st"> </span><span class="kw">CalcFdcSpline</span>(modStrd.chrt.comp.fc)
