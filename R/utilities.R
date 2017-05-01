@@ -889,7 +889,7 @@ PosixOrigin <- function(as.POSIX=FALSE, tz='UTC')
 
 #' Translate standard state names, abbreviations, and codes.
 #' 
-#' \code{TranslageStateCodes} particularly translates USGS state_cd to other formats.
+#' \code{TranslateStateCodes} particularly translates USGS state_cd to other formats.
 #' Data from:
 #' https://www.census.gov/geo/reference/ansi_statetables.html
 #' and particularly
