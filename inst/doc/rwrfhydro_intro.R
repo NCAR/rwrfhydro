@@ -1,6 +1,6 @@
 #' ---
 #' title: rwrfhydro introduction
-#' author: James McCreight, Aubrey Dugger, Logan Karsten
+#' author: James McCreight, Aubrey Dugger, Arezoo RafieeiNasab, Logan Karsten
 #' ---
 #' 
 #' 
@@ -36,6 +36,8 @@
 #' GetMultiNcdf                        [ [html](getMultiNetcdf.html) - [R](getMultiNetcdf.R) ]
 #' 
 #' ET                                  [ [html](evapotranspirationEval.html) - [R](evapotranspirationEval.R) ]
+#' 
+#' SNODAS retrieval                    [ [html](snodas.html) - [R](snodas.R) ]
 #' 
 #' **-The following require optional**  **libraries or compiled code.-** 
 #' 
@@ -89,7 +91,7 @@
 ## library(rwrfhydro) ## for each new R session where you want to use rwrfhydro.s
 
 #' 
-#' Several of the `rwrfhydro` vignettes depend on external testcase data to run. This data is external because WRF-Hydro output is voluminous! These test cases will be available separately on our website at some time inthe near future. They should be downloaded and unzipped in a folder `~/wrfHydroTestCases/`, or the unzipped tar balls can be symlinked into this directory. For the examples included here we will need both `~/wrfHydroTestCases/Fourmile_Creek` and `~/wrfHydroTestCases/usgsDB`. The `usgsDB` directory is included in the class tar ball and can be symlinked by `cd ~/wrfHydroTestCases ; ln -s ~/pathTo/rwrfhydro_class/usgsDB .`.
+#' Several of the `rwrfhydro` vignettes depend on external testcase data to run. This data is external because WRF-Hydro output is voluminous! These test cases will be available separately on our website at some time inthe near future. They should be downloaded and unzipped in a folder `~/wrfHydroTestCases/`, or the unzipped tar balls can be symlinked into this directory. For the examples included here we will need both `~/wrfHydroTestCases/Fourmile_Creek_testcase_v2.0` and `~/wrfHydroTestCases/usgsDB`. The `usgsDB` directory is included in the class tar ball and can be symlinked by `cd ~/wrfHydroTestCases ; ln -s ~/pathTo/rwrfhydro_class/usgsDB .`.
 #' 
 #' ***
 #' <a id="RBasics"></a>
@@ -224,7 +226,7 @@ mtcars$names <- NULL                       ## remove a column
 #' ## Serious list example
 #' One example of a very complicated list is all the netcdf meta data. 
 ## ------------------------------------------------------------------------
-ncFile <- '~/wrfHydroTestCases/Fourmile_Creek/RUN.RTTESTS/OUTPUT_CHRT_DAILY/2013051600.LDASOUT_DOMAIN1'
+ncFile <- '~/wrfHydroTestCases/Fourmile_Creek_testcase_v2.0/run.FullRouting/201305160000.LDASOUT_DOMAIN1'
 library(ncdf4)
 ncid <- nc_open(ncFile)
 

@@ -70,3 +70,4 @@ Other GHCN: \code{\link{CalcDailyGhcn}},
 GHCN
 }
 \keyword{IO}
+

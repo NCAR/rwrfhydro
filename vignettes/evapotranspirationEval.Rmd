@@ -41,7 +41,20 @@ names(lsmVars) <- lsmVars
 varList <- list( lsm = lsmVars )
 ```
 
-Setup the cell you want to extract and the stat you want to calculate. We are only running a single cell (i=2, j=3, time=1) so we specify the same start and end cell and use "CalcMeanMinrm" as the stat. "CalcMeanMinrm" is a utility function that calculates a mean with an enforced minimum valid value (-1e+30). This is useful to remove intended "no data" values that were not caught by NetCDF checks.
+We need to figure out where in the domain the Niwot tower sits. We have the Ameriflux site metadata (amfMeta) built into rwrfhydro, so we can look for the site by querying that metadata.
+```{r}
+head(amfMeta)
+nrMeta <- subset(amfMeta, amfMeta$id_txt=="US-NR1")
+nrMeta
+```
+
+Now we know the site lat/lon coordinates, so we can use the GetGeogridIndex function to calculate which coarse grid (LSM) cell that point sits in.
+```{r}
+geoFile <- paste0(dataPath, "/DOMAIN/geo_em_d01.Fourmile1km.nlcd11.nc")
+GetGeogridIndex(xy=nrMeta[,c("lat","lon")], ncfile=geoFile)
+```
+
+Based on those indices, we can now setup the cell we want to extract and the stat we want to calculate. We are only running a single cell (i=2, j=3, time=1) so we specify the same start and end cell and use "CalcMeanMinrm" as the stat. "CalcMeanMinrm" is a utility function that calculates a mean with an enforced minimum valid value (-1e+30). This is useful to remove intended "no data" values that were not caught by NetCDF checks.
 ```{r}
 niw <- list(start=c(2,3,1), end=c(2,3,1), stat='CalcMeanMinrm')
 ```
@@ -79,14 +92,15 @@ modLsm.allrt.niw$LE <- with(modLsm.allrt.niw, ET_mm * 2.5106e+6 / 86400)
 
 # Import observed datasets
 
-Import Ameriflux station data for Niwot Ridge (US-NR1). The GetAmeriflux function will download the data from the ORNL server (Ameriflux Level 2 standardized CSV files) and convert to an R dataframe with POSIXct timestamps. We first check to make sure the "US-NR1" station ID is in the master database (amfMeta, included with the rwrfhydro release) and we agree with the specified UTC offset (should be local station time, no daylight savings).
+Import Ameriflux station data for Niwot Ridge (US-NR1). We have already downloaded the BASE format data for this site from the Ameriflux website (note that data download now requires login/form access, so Ameriflux data is no longer supported as an automatic download within rwrfhydro). To properly format the timestamp within R, we need to know the local timezone (most Ameriflux data uses local timestamps). We can get this from the Ameriflux metadata record that we queried above.
 ```{r}
-subset(amfMeta, amfMeta$id_txt=="US-NR1")
+nrMeta
 ```
 
-Then we use this ID to download the data for 2013.
+We plug this timezone into the ReadAmeriflux function along with the downloaded file (BASE format).
 ```{r}
-obsFlux30min.usnr1 <- GetAmeriflux("US-NR1", gaps=TRUE, startYr=2013, endYr=2013)
+obsFlux30min.usnr1 <- ReadAmeriflux('~/wrfhydroTestCases/Fourmile_Creek_testcase_v2.0/OBS/AMF_US-NR1_BASE_HH_9-1.csv',
+                                    tz='America/Denver')
 ```
 
 Our LDASOUT time step was 1 day, so we need to aggregate the observations to a UTC daily time step for comparison. We apply the aggregations only to numeric variables to avoid a bunch of R warnings.
@@ -101,7 +115,7 @@ names(obsFlux1d.usnr1)[1] <- "POSIXct"
 
 # Plot & compare the time series of ET fluxes
 
-```{r compFluxes, fig.width = 12, fig.height = 6, out.width='700', out.height='350'}
+```{r compFluxes, fig.width = 12, fig.height = 6, out.width='700', out.height='350', warning=FALSE}
 PlotFluxCompare(obsFlux1d.usnr1, "LE", modLsm.allrt.niw, "LE", 
      labelObs="Observed Niwot Ameriflux", 
      labelMod1="All Routing", title="ET: Niwot Ridge")
@@ -110,7 +124,7 @@ PlotFluxCompare(obsFlux1d.usnr1, "LE", modLsm.allrt.niw, "LE",
 
 # Review model performance statistics
 
-```{r, results='hide'}
+```{r, results='hide', warning=FALSE}
 CalcModPerf(modLsm.allrt.niw, obsFlux1d.usnr1, flxCol.mod="LE", flxCol.obs="LE")
 ```
 
@@ -168,14 +182,14 @@ rm(modDf)
 # Plot & compare the time series of energy fluxes.
 
 Latent heat:
-```{r mayLatFluxes, fig.width = 12, fig.height = 6, out.width='700', out.height='350'}
+```{r mayLatFluxes, fig.width = 12, fig.height = 6, out.width='700', out.height='350', warning=FALSE}
 PlotFluxCompare(obsFlux30min.usnr1, "LE", modLsm.allrt.may.niw, "LH", 
      labelObs="Observed Niwot Ameriflux", 
      labelMod1="All Routing", title="Latent Heat: Niwot Ridge (+ to atmosphere)")
 ```
 
 Sensible heat:
-```{r maySensFluxes, fig.width = 12, fig.height = 6, out.width='700', out.height='350'}
+```{r maySensFluxes, fig.width = 12, fig.height = 6, out.width='700', out.height='350', warning=FALSE}
 PlotFluxCompare(obsFlux30min.usnr1, "H", modLsm.allrt.may.niw, "HFX", 
      labelObs="Observed Niwot Ameriflux", 
      labelMod1="All Routing", title="Sensible Heat: Niwot Ridge (+ to atmosphere)")
@@ -188,7 +202,7 @@ modLsm.allrt.may.niw$LE_H <- with(modLsm.allrt.may.niw, LH + HFX)
 ```
 
 
-```{r mayLatSensFluxes, fig.width = 12, fig.height = 6, out.width='700', out.height='350'}
+```{r mayLatSensFluxes, fig.width = 12, fig.height = 6, out.width='700', out.height='350', warning=FALSE}
 PlotFluxCompare(obsFlux30min.usnr1, "LE_H", modLsm.allrt.may.niw, "LE_H", 
      labelObs="Observed Niwot Ameriflux", 
      labelMod1="All Routing", title="Net Latent & Sensible Heat: Niwot Ridge (+ to atmosphere)")
@@ -202,47 +216,47 @@ We do a few calculations to get net radiation and the overall energy balance.
 modLsm.allrt.may.niw$LWnet <- with(modLsm.allrt.may.niw, -FIRA)
 modLsm.allrt.may.niw$Rnet <- with(modLsm.allrt.may.niw, FSA - FIRA)
 modLsm.allrt.may.niw$EnResid <- with(modLsm.allrt.may.niw, Rnet - LE_H - GRDFLX)
-obsFlux30min.usnr1$RgNet <- with(obsFlux30min.usnr1, Rg - RgOut)
-obsFlux30min.usnr1$RglNet <- with(obsFlux30min.usnr1, Rgl - RglOut)
+obsFlux30min.usnr1$SWnet <- with(obsFlux30min.usnr1, SW_IN - SW_OUT)
+obsFlux30min.usnr1$LWnet <- with(obsFlux30min.usnr1, LW_IN - LW_OUT)
 obsFlux30min.usnr1$EnResid <- with(obsFlux30min.usnr1, 
-     (Rg - RgOut) + (Rgl - RglOut) - LE - H - FG)
+     SWnet + LWnet - LE - H - G)
 ```
 
 Plot & compare the time series of incoming shortwave radiation
 
-```{r maySWdwnFluxes, fig.width = 12, fig.height = 6, out.width='700', out.height='350'}
-PlotFluxCompare(obsFlux30min.usnr1, "Rg", modLsm.allrt.may.niw, "SWFORC", 
+```{r maySWdwnFluxes, fig.width = 12, fig.height = 6, out.width='700', out.height='350', warning=FALSE}
+PlotFluxCompare(obsFlux30min.usnr1, "SW_IN", modLsm.allrt.may.niw, "SWFORC", 
      labelObs="Observed Niwot Ameriflux", 
      labelMod1="All Routing", title="Incoming Shortwave Radiation: Niwot Ridge (+ to surface)")
 ```
 
 Plot & compare the time series of net shortwave radiation
 
-```{r maySWnetFluxes, fig.width = 12, fig.height = 6, out.width='700', out.height='350'}
-PlotFluxCompare(obsFlux30min.usnr1, "RgNet", modLsm.allrt.may.niw, "FSA", 
+```{r maySWnetFluxes, fig.width = 12, fig.height = 6, out.width='700', out.height='350', warning=FALSE}
+PlotFluxCompare(obsFlux30min.usnr1, "SWnet", modLsm.allrt.may.niw, "FSA", 
      labelObs="Observed Niwot Ameriflux", 
      labelMod1="All Routing", title="Net Shortwave Radiation: Niwot Ridge (+ to surface)")
 ```
 
 Plot & compare the time series of net longwave radiation
 
-```{r mayLWnetFluxes, fig.width = 12, fig.height = 6, out.width='700', out.height='350'}
-PlotFluxCompare(obsFlux30min.usnr1, "RglNet", modLsm.allrt.may.niw, "LWnet", 
+```{r mayLWnetFluxes, fig.width = 12, fig.height = 6, out.width='700', out.height='350', warning=FALSE}
+PlotFluxCompare(obsFlux30min.usnr1, "LWnet", modLsm.allrt.may.niw, "LWnet", 
      labelObs="Observed Niwot Ameriflux", 
      labelMod1="All Routing", title="Net Longwave Radiation: Niwot Ridge (+ to surface)")
 ```
 
 Plot & compare the time series of total net radiation
 
-```{r mayRnetFluxes, fig.width = 12, fig.height = 6, out.width='700', out.height='350'}
-PlotFluxCompare(obsFlux30min.usnr1, "Rn", modLsm.allrt.may.niw, "Rnet", 
+```{r mayRnetFluxes, fig.width = 12, fig.height = 6, out.width='700', out.height='350', warning=FALSE}
+PlotFluxCompare(obsFlux30min.usnr1, "NETRAD", modLsm.allrt.may.niw, "Rnet", 
      labelObs="Observed Niwot Ameriflux", 
      labelMod1="All Routing", title="Total Net Radiation: Niwot Ridge (+ to surface)")
 ```
 
 Plot & compare the time series of energy residuals. The Ameriflux observations for ground heat flux do not cover this period, so we compare the observation residuals against the modelled ground heat flux.
 
-```{r mayResidsFluxes, fig.width = 12, fig.height = 6, out.width='700', out.height='350'}
+```{r mayResidsFluxes, fig.width = 12, fig.height = 6, out.width='700', out.height='350', warning=FALSE}
 PlotFluxCompare(obsFlux30min.usnr1, "EnResid", modLsm.allrt.may.niw, "GRDFLX", 
      labelObs="Observed Niwot Ameriflux", 
      labelMod1="All Routing", title="Energy Residual: Niwot Ridge (+ to surface)")
@@ -258,7 +272,7 @@ modForc.allrt.may.niw$Wind <- with(modForc.allrt.may.niw, sqrt(U2D^2 + V2D^2))
 
 Plot & compare the time series of wind speeds. (This throws a warning, however the POSIXct timezones are handled correctly.)
 
-```{r mayWindFluxes, fig.width = 12, fig.height = 6, out.width='700', out.height='350'}
+```{r mayWindFluxes, fig.width = 12, fig.height = 6, out.width='700', out.height='350', warning=FALSE}
 PlotFluxCompare(subset(obsFlux30min.usnr1, 
                 POSIXct >= as.POSIXct("2013-05-01 00:00:00", format="%Y-%m-%d %H:%M:%S", tz="UTC") & 
                 POSIXct < as.POSIXct("2013-06-01 00:00:00", format="%Y-%m-%d %H:%M:%S", tz="UTC")), 
@@ -276,7 +290,7 @@ modForc.allrt.may.niw$RH <- with(modForc.allrt.may.niw,
 
 Plot & compare the time series of relative humidity. (Again, timzones are correctly handled.)
 
-```{r mayRelHum, fig.width = 12, fig.height = 6, out.width='700', out.height='350'}
+```{r mayRelHum, fig.width = 12, fig.height = 6, out.width='700', out.height='350', warning=FALSE}
 PlotFluxCompare(subset(obsFlux30min.usnr1, 
                 POSIXct >= as.POSIXct("2013-05-01 00:00:00", format="%Y-%m-%d %H:%M:%S", tz="UTC") &
                 POSIXct<as.POSIXct("2013-06-01 00:00:00", format="%Y-%m-%d %H:%M:%S", tz="UTC")), 

@@ -41,3 +41,4 @@ oroPlot <- PlotPrettyData(prettyO)
 DART dataMgmt
 }
 \keyword{manip}
+

@@ -18,3 +18,4 @@ Calculate the time step when the center-of-mass of
 a time series of values occurs.
 }
 \keyword{internal}
+

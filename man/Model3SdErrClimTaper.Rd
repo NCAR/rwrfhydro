@@ -27,3 +27,4 @@ some maximum percent error (\code{pctErr}). This is expressed by \cr
 \code{quantile(data, qntlIncpt) + pmin( pctErr*data,
 pctErr*abs(data-quantile(data, qntlClim)) )}
 }
+

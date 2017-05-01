@@ -22,3 +22,4 @@ Write a USGS discharge timeslice to a netcdf file.
 \examples{
 ## See \\link{MkUsgsTimeSlice}.
 }
+

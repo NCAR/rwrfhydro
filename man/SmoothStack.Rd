@@ -94,3 +94,4 @@ Other MODIS: \code{\link{CalcStatsRS}},
 MODIS dataAnalysis
 }
 \keyword{smooth}
+

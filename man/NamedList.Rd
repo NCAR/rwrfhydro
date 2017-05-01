@@ -19,3 +19,4 @@ List with names equal to entries.
 NamedList(1:5)
 }
 \keyword{manip}
+

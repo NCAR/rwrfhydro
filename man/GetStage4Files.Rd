@@ -43,15 +43,16 @@ GetStage4Files(startDate="2015050100", endDate="2015050500",
                  runParallel=FALSE)
 }
 }
-\seealso{
-Other obsDataReads: \code{\link{ReadAmerifluxCSV}},
-  \code{\link{ReadAmerifluxNC}},
-  \code{\link{ReadCoDwrGage}}, \code{\link{ReadUsgsGage}}
-}
 \author{
 Yuqiong.Liu@noaa.gov (updated by aubreyd)
+}
+\seealso{
+Other obsDataReads: \code{\link{ReadAmerifluxCSVOldFormat}},
+  \code{\link{ReadAmerifluxNCOldFormat}},
+  \code{\link{ReadCoDwrGage}}, \code{\link{ReadUsgsGage}}
 }
 \concept{
 dataGet
 }
 \keyword{IO}
+

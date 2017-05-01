@@ -31,14 +31,14 @@ library(doMC)
 registerDoMC(3)
 modLdasoutWb1h.allrt.fc <- ReadLdasoutWb(paste0(dataPath, '/run.FullRouting'), 
                                          paste0(dataPath, '/DOMAIN/Fulldom_hires_hydrofile.Fourmile100m.nc'), 
-                                         mskvar="basn_msk", basid=1, aggfact=10, ncores=3)
+                                         mskvar="basn_msk", basid=1, aggfact=10, parallel=TRUE)
 ```
 
 Calculate basin-averaged routing water fluxes. 
 ```{r}
 modRtout1h.allrt.fc <- ReadRtout(paste0(dataPath, '/run.FullRouting'), 
                                  paste0(dataPath, '/DOMAIN/Fulldom_hires_hydrofile.Fourmile100m.nc'), 
-                                 mskvar="basn_msk", basid=1, ncores=3)
+                                 mskvar="basn_msk", basid=1, parallel=TRUE)
 ```
 
 Import groundwater outflow model output.
