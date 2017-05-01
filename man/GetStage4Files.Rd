@@ -47,8 +47,8 @@ GetStage4Files(startDate="2015050100", endDate="2015050500",
 Yuqiong.Liu@noaa.gov (updated by aubreyd)
 }
 \seealso{
-Other obsDataReads: \code{\link{ReadAmerifluxCSV}},
-  \code{\link{ReadAmerifluxNC}},
+Other obsDataReads: \code{\link{ReadAmerifluxCSVOldFormat}},
+  \code{\link{ReadAmerifluxNCOldFormat}},
   \code{\link{ReadCoDwrGage}}, \code{\link{ReadUsgsGage}}
 }
 \concept{

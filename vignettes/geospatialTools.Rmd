@@ -21,26 +21,20 @@ For most of the postprocessing, there is a need to create spatial maps, aggregat
 - PolygonToRaster
 
 ## General Info
-The case study data should be placed at the home directory in order to use the following vignette without changing any line. Otherwise, change the addresses accordingly. To find out the address to the home directory use the following commnad.
-
-```{r}
-path.expand("~")
-```
-
-Load teh rwrfhydro package.
+Load the rwrfhydro package.
 
 ```{r}
 library(rwrfhydro)
 options(warn=1)
 ```
 
-Set a data path to Fourmile Creek test case.
+Set a data path to the Fourmile Creek test case.
 
 ```{r}
 fcPath <- '~/wrfHydroTestCases/Fourmile_Creek_testcase_v2.0'
 ```
 
-Geogrid file is the main file containing all the base geographic information on the model domain such as the geographic coordinate system, latitude, longitude of each pixel and so on. We use this file frequently. Set a path to geogrid file.
+The geogrid file is the main coarse-grid (LSM) parameter file containing base geographic information on the model domain such as the geographic coordinate system and latitude/longitude coordinates. We use this file frequently. Set a path to geogrid file.
 
 ```{r}
 geoFile <- paste0(fcPath,'/DOMAIN/geo_em_d01.Fourmile1km.nlcd11.nc')
@@ -49,7 +43,7 @@ geoFile <- paste0(fcPath,'/DOMAIN/geo_em_d01.Fourmile1km.nlcd11.nc')
 
 ## GetProj
 
-To be able to use any of the spatial tools in R, projection information of the model domain is required. All the model input and output file are based on geogrid file domain. `GetProj` pull projection information of WRF-Hydro modeling domain from geogrid file. It takes only `geoFile` and return the projection information as a character.
+To be able to use any of the spatial tools in R, projection information of the model domain is required. All the coarse-resolution (LSM) model input and output files are based on geogrid file domain. `GetProj` will pull projection information from the geogrid file. You will see the specs for the Lambert Conformal Conic projection on the WRF standard sphere.
 
 ```{r}
 proj4 <- GetProj(geoFile)
@@ -58,8 +52,7 @@ proj4
 
 ## GetGeogridSpatialInfo
 
-It pull necessary geospatial information about WRF-Hydro modeling domain from geogrid file used for regridding and deprojection.
-It only requires the address to the geogrid file and return a data frame containing geospatial information such as the projection information, number of rows and columns and size of the grids.
+`GetGeogridSpatialInfo` will pull geospatial information about the coarse-res (LSM) model domain from geogrid file.
 
 ```{r}
 geoInfo <- GetGeogridSpatialInfo(geoFile)
@@ -69,61 +62,61 @@ geoInfo
 
 ## ExportGeogrid
 
-If you need to create a georeferenced TIF file from any variable in a netcdf file, then you need to use `ExportGeogrid` function. It takes a NetCDF file having lat/lon information and converts the specified variable into a georeferenced TIF file for use in standard GIS tools.
-Now, let's export one of the variable from the geogrid file. You can get a list of all available variables in the `geoFile` using `ncdump` function in rwrfhydro.
+If you need to create a georeferenced TIF file from any variable in an LSM-related netcdf file (input or output), then you can use the `ExportGeogrid` function. It takes a NetCDF file and converts the specified variable into a georeferenced TIF file for use in standard GIS tools. You can use ExportGeogrid directly on a file that contains lat/lon coordinates or you can use it on a file that does not contain lat/lon coords by providing a separate coordinate file.
+
+Now, let's export one of the variables from the geogrid file. You can get a list of all available variables in the `geoFile` using `ncdump` function in rwrfhydro.
 
 ```{r, eval = FALSE}
 head(ncdump(geoFile))
 ```
 
-Now we will create a georeferenced TIF file from HGT_M field. You only need to provide the address to geogrid file (`geoFile`), the name of the variable (`HGT_M`) and the name of the output file (`geogrid_hgt.tif`).
+Now we will create a georeferenced TIF file from HGT_M field (elevation). The geogrid contains lat/long coordinates, so you only need to provide the address to the file (`geoFile`), the name of the variable (`HGT_M`), and the name of the output file (`geogrid_hgt.tif`).
 
 ```{r, results='hide', message=FALSE, warning=FALSE}
 ExportGeogrid(geoFile,"HGT_M", "geogrid_hgt.tif")
 ```
 
-You can now use the created file in any standard GIS platform. Here we will just read it into memory as a raster and dispaly it.
+You can now use the geotiff in any standard GIS platform. Here we will just read it into memory as a raster and display it.
 
 ```{r plot1, fig.show = "hold", fig.width = 8, fig.height = 8, out.width='600', out.height='600'}
-# read the saved tiff file
+# Read the newly created tiff file
 library(raster)
 r <- raster("geogrid_hgt.tif")
 
-# plot the imported raster from tif file
-plot(r, main = "HGT_M")
+# Plot the imported raster from tiff file
+plot(r, main = "HGT_M", col=terrain.colors(100))
 
-# check the raser information and notice taht geographic coordinate information has been added.
+# Check the raser information and notice that geographic coordinate information has been added.
 r
 ```
 
-
-Many of the input and output files such as LDASOUT output file does not contain lat/lon coordinates but matches the spatial coordinate system of the geogrid input file. In that case, you could feed the geogrid file `geoFile` which the lat/lon information will be taken from that file. 
+Many of the output files (such as LDASOUT, RESTARTS) do not contain lat/lon coordinates but match the spatial coordinate system of the geogrid input file. In that case, you can provide a supplemental 'inCoordFile' which contains the lat/lon information. 
 
 ```{r plot2, fig.width = 8, fig.height = 8, out.width='600', out.height='600'}
-file = paste0(fcPath,"/run.FluxEval/RESTART.2013060100_DOMAIN1")
+file <- paste0(fcPath,"/run.FluxEval/RESTART.2013060100_DOMAIN1")
 # ncdump(file) # check if the SOIL_T exist in the file
 
-# we will read the third layer of soil temperature
+# Export the 3rd layer of the 4-layer soil temperature variable
 ExportGeogrid(file,
              inVar="SOIL_T",
              outFile="20130315_soilm3.tif",
              inCoordFile=geoFile,
              inLyr=3)
 
-# read the  created tiff file
+# Read the newly created tiff file
 r <- raster("20130315_soilm3.tif")
 
-# plot the imported raster from tiff file
-plot(r, main = "Soil Temperature") # in raster
+# Plot the imported raster from tiff file
+plot(r, main = "Soil Temperature", col=rev(heat.colors(100))) # in raster
 
-# check the raster information and notice geographic coordinate information has been added
+# Check the raster information and notice that geographic coordinate information has been added
 r
 ```
 
 
 ## GetGeogridIndex
 
-To be able to use a bunch of tools such as `GetMultiNcdf`, one needs to have the indices (x,y) or the location of each cell within the domain. `GetGeogridIndex` get geogrid cell indices from lat/lon (or other) coordinates. `GetGeogridIndex` reads in a set of lat/lon (or other) coordinates and generates a corresponding set of geogrid index pairs. Yo can assign a projection to the points using `proj4` argument which will be used to transform the point to the `geoFile` coordinate system. Ckeck the vignette on precipitation for usage.
+To be able to use tools such as `GetMultiNcdf` to pull data from gridded output, we need to know the indices (i,j) of the area of interest within the domain. `GetGeogridIndex` calculates cell indices from lat/lon (or other) coordinates. It reads in a set of lat/lon (or other) coordinates and generates a corresponding set of geogrid index pairs. You can assign a projection to the points using the `proj4` argument, which will be used to transform the point to the `geoFile` coordinate system. Check ?GetGeogridIndex or the vignette on precipitation evaluation for full usage.
 
 ```{r}
 sg <- data.frame(lon = seq(-105.562, -105.323, length.out = 10), 
@@ -134,7 +127,7 @@ GetGeogridIndex(sg, geoFile)
 
 ## GetTimeZone
 
-Many of the point observation are reported in local time and needs to be converted to UTC time to be comparable with WRF-Hydro input and outputs. `GetTimeZone` return the time zone for any point having longitude and latitude. It simply takes a dataframe containing at least two fields of `latitude` and `longitude`, overlays the `points` with a timezone shapefile (can be downloded from <http://efele.net/maps/tz/world/>). The shapefile is provided in rwrfhydro data and it is called `timeZone`.
+Many station observations are reported in local time and need to be converted to UTC time to be comparable with WRF-Hydro input and outputs. `GetTimeZone` returns the time zone for any point having latitude and longitude. It simply takes a dataframe containing at least two fields of `latitude` and `longitude` and overlays the `points` with a timezone shapefile (can be downloded from <http://efele.net/maps/tz/world/>). The shapefile is provided in rwrfhydro data and is called `timeZone`.
 
 ```{r}
 # timeZone has been provided by rwrfhydro as a SpatialPolygonDataFrame
@@ -144,13 +137,13 @@ class(timeZone)
 head(timeZone@data)
 ```
 
-Function has three arguments. 
+`GetTimeZone` has three arguments. 
 
 - `points`: A dataframe of the points. The dataframe should contain at least two fields called `latitude` and `longitude`.
 - `proj4`: Projection of the `points` to be used in transforming the `points` projection to `timeZone` projection. Default is `+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0` which is the same as the `timezone` projection.
 - `parallel`: If the number of points are high you can parallelize the process.
 
-It will return the `points` dataframe with an added column called `timeZone`. It will return NA in case the point is not in any polygon. Now let's generate some random points and find their time zone information.
+`GetTimeZone` will return the `points` dataframe with an added column called `timeZone`. It will return NA if a point is not in any polygon. Now let's generate some points and find their time zone information.
 
 ```{r}
 # Provide a dataframe of 10 points having longitude and latitude as column name.
@@ -164,7 +157,7 @@ sg
 
 ## GetRfc
 
-US has 13 offices of the River Forecast Center (RFC) which issue daily river forecasts using hydrologic models based on rainfall, soil characteristics, precipitation forecasts, and several other variables. Many of the statistics are desired to be grouped into River Forecast Center level so it would be easier to compare with the performance of the RFC models in the past. The RFC boundary shapefile is provided in rwrfhydro data and is called `rfc`.
+The US has 13 River Forecast Centers (RFCs) which issue daily river forecasts using hydrologic models based on rainfall, soil characteristics, precipitation forecasts, and several other variables. The RFC boundary shapefile is provided in rwrfhydro data and is called `rfc`.
 
 ```{r}
 class(rfc)
@@ -173,13 +166,13 @@ class(rfc)
 head(rfc@data)
 ```
 
-`GetRfc` return the RFC name for any point having `longitude` and `latitude`. It takes a dataframe containing at least two fields of `latitude` and `longitude`, overlays the points with a `rfc` SpatialPolygonDataFrame and return the rfc's BASIN_ID. Function has three arguments. 
+`GetRfc` return the RFC name for any point having `latitude` and `longitude`. It takes a dataframe containing at least two fields of `latitude` and `longitude`, overlays the points with the `rfc` SpatialPolygonDataFrame, and return the RFC's BASIN_ID. This function has three arguments. 
 
 - `points`: A dataframe of the points. The dataframe should contain at least two fields called "latitude" and "longitude".
 - `proj4`: Projection of the `points` to be used in transforming the `points` projection to `rfc` projection. Default is `+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0`.
 - `parallel`: If the number of points are high you can parallelize the process.
 
-It will return the points dataframe with an added column called `rfc`. It will return NA in case the point is not in any polygon.
+`GetRfc` will return the points dataframe with an added column called `rfc`. It will return NA if the point is not in any polygon.
 
 ```{r}
 # Provide a dataframe of 10 points having longitude and latitude as column name.
@@ -193,9 +186,9 @@ sg
 
 ## GetPoly
 
-`Getpoly` is similar to `GetRfc`, it is a wrapper for function `sp::over`. It takes a dataframe containing at least two fields of `latitude` and `longitude`, overlays the points with a `SpatialPolygonDataFrame` and return the requested attribute from the polygon. One could use the available `SpatialPolygon*` loaded into memory or provide the address to the location of a polygon shapefile and the name of the shapefile and it will read the polygon using `rgdal::readOGR` function.
+`GetPoly` is similar to `GetRfc`; it is a wrapper for the function `sp::over`. It takes a dataframe containing at least two fields of `latitude` and `longitude`, overlays the points with a `SpatialPolygonDataFrame`, and returns the requested attribute from the polygon. You could use any available `SpatialPolygon*` loaded into memory or provide the address to the location of a polygon shapefile and it will read the polygon using the `rgdal::readOGR` function.
 
-Let's get the RFC information from `GetPoly` instead of `GetRfc`. Here we provide the name of the `SpatialPolygon*` and using argument `join` request one of the attributes of the polygon. For example, here we have requested the `BASIN_ID`, `RFC_NAME` and `RFC_CITY`. 
+Let's get the RFC information from `GetPoly` instead of `GetRfc`. Here we provide the name of the `SpatialPolygon*` and using the argument `join` request one of the attributes of the polygon. For example, here we request the `BASIN_ID`, `RFC_NAME` and `RFC_CITY` attributes. 
 
 ```{r}
 # Provide a dataframe of 10 points having longitude and latitude
@@ -213,7 +206,7 @@ sg <- GetPoly(points = sg, polygon = rfc, join = "RFC_CITY")
 sg
 ```
 
-Now let's provide the address to a shapefile on the disk as well as the name of the shapefile and perform the same process. We have clipped the `HUC12` shapefile and provided in the case study as a sample. The northeast of the clipped polygon covers partially the Fourmile Creek domain.
+Now let's provide the address to a shapefile on the disk as well as the name of the shapefile and perform the same process. We have clipped the `HUC12` shapefile and provided it in the case study as a sample. The northeast portion of the clipped polygon partially covers the Fourmile Creek domain.
  
 ```{r}
 # Provide a dataframe of 10 points within the Fourmile Creek domain having longitude and latitude
@@ -221,8 +214,8 @@ sg <- data.frame(longitude = seq(-105.562, -105.323, length.out = 10),
                  latitude = seq(40.0125, 40.0682, length.out = 10))
 
 
-# rgdal::readOG` has been used in the GetPoly function and it does not interpret the character/symbol `~`, 
-# therefore, we need to use path.expand to get the full address to the case study location on your system. 
+# We use `rgdal::readOG` in the GetPoly function and it does not interpret the character/symbol `~`. 
+# Therefore, we need to use path.expand to get the full address to the case study location on your system. 
 polygonAddress <- paste0(path.expand(fcPath), "/polygons")
 
 
@@ -236,10 +229,10 @@ sg
 
 ## PolyToRaster
 
-If one wants to create a mask in the model domain (geogrid file), then needs to use `PolyToRaster`. It first picks up the required geographic information (like `proj4`) from the geogrid file (`geoFile`) and then use `raster::rasterize` function to grab the mask or attibute values from the `SpatialPolygonDataFrame`. This function is basically wrapping the `raster::rasterize` fucntion to serve our purpose. Below is a few different way one could use this function.
+If you want to create an area mask in the coarse-resolution (LSM) model domain, you can use `PolyToRaster`. It first picks up the required geographic information (like `proj4`) from the geogrid file (`geoFile`) and then uses the `raster::rasterize` function to grab the mask or attibute values from the `SpatialPolygonDataFrame`. This function is basically wrapping the `raster::rasterize` function to serve our purpose. Below are a few different ways we can use this function.
 
 Example 1 : 
-Let's get the RFC's ID for each pixel within the Fourmile Creek domain. This is equivalent to rasterizing the `rfc` `SpatialPolygonDataFrame` based on the `BASIN_ID`.
+Let's get the RFC ID for each pixel within the Fourmile Creek domain. This is equivalent to rasterizing the `rfc` `SpatialPolygonDataFrame` based on the `BASIN_ID`.
 
 ```{r plot3, fig.width = 8, fig.height = 8, out.width='600', out.height='600'}
 r <- PolyToRaster(geoFile = geoFile,
@@ -247,22 +240,22 @@ r <- PolyToRaster(geoFile = geoFile,
                   field ="BASIN_ID")
 ```
 
-To know what are the corresponding values to the integer values used in rasterized output, you need to use the following command.
+To get the string (RFC ID) associated with the gridded ID value, you can check the attributes.
 
 ```{r}
 r@data@attributes 
 ```
-As the result shows all the case study domain falls into one RFC. 
+As the results show, the full domain falls into one RFC (MBRFC). 
 
 
 Example 2 : 
-rasterize the HUC12 `SpatialPolygonDataFrame` based on the `HUC12` field. The clipped HUC12 shapefile is provided with the test case which is quite larger than the model domain. You could read the shapefile and plot it as below.
+Rasterize the HUC12 `SpatialPolygonDataFrame` based on the `HUC12` field. The clipped HUC12 shapefile is provided with the test case. You can read the shapefile and plot it as below.
 ```{r results="hide", plot4, fig.width = 8, fig.height = 8, out.width='600', out.height='600'}
 polyg <- rgdal::readOGR(paste0(path.expand(fcPath), "/polygons"), "clipped_huc12")
 plot(polyg, main = "Clipped HUC12") ## in raster
 ```
 
-Our study domain partially covers a few basins at northeast of this shapefile.
+Our study domain partially covers a few basins in the northeast portion of this shapefile.
 
 ```{r results="hide", plot5, fig.width = 8, fig.height = 8, out.width='600', out.height='600'}
 polygonAddress <- paste0(path.expand(fcPath), "/polygons")
@@ -278,7 +271,7 @@ To get the `HUC12` actual values:
 r@data@attributes
 ```
 
-Example 3: You can get a unified mask over the study domain as follows:
+Example 3: You can create masks over the study domain using PolyToRaster. To create a unified mask over the study domain:
 
 ```{r results="hide", plot6, fig.width = 8, fig.height = 8, out.width='600', out.height='600'}
 r <- PolyToRaster(geoFile = geoFile,
@@ -287,8 +280,7 @@ r <- PolyToRaster(geoFile = geoFile,
                   mask =TRUE)
 ```
 
-Example 4: You could also get a separate mask for each subbasin (HUC12 in this case) with the fraction of each grid cell that is covered by each polygon. The fraction covered is estimated by dividing each cell into 100 subcells and determining presence/absence of the polygon in the center of each subcell. 
-
+You can also create a separate mask for each subbasin (HUC12 in this case) with the fraction of each grid cell that is covered by each polygon. The fraction covered is estimated by dividing each cell into 100 subcells and determining presence/absence of the polygon in the center of each subcell. 
 
 ```{r results="hide", plot7, fig.width = 8, fig.height = 8, out.width='600', out.height='600'}
 r <- PolyToRaster(geoFile = geoFile,

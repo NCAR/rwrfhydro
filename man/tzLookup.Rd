@@ -27,7 +27,7 @@ http://en.wikipedia.org/wiki/List_of_tz_database_time_zones} \cr
 Online_Linkage: \link[http://www.iana.org/time-zones]{http://www.iana.org/time-zones} \cr
 }
 \seealso{
-Other Ameriflux: \code{\link{GetAmeriflux}},
+Other Ameriflux: \code{\link{ReadAmeriflux}},
   \code{\link{amfMeta}}
 }
 \concept{
