@@ -94,7 +94,7 @@ GetFileStat <- function(theFile, variable, index, env=parent.frame(), parallel=F
     return(NULL)
   }
   ncid <- ncdf4::nc_open(theFile)
-  
+
   if(!(variable %in% names(ncid$var))) {
     ncdf4::nc_close(ncid)
     warning('No such variable ',variable,' in ',theFile,'.')
