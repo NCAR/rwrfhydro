@@ -20,4 +20,3 @@ Calculate the Kling-Gupta Efficiency for vectors
 of modelled and observed values: http://www.sciencedirect.com/science/article/pii/S0022169409004843
 }
 \keyword{internal}
-

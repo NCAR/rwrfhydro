@@ -20,4 +20,3 @@ Calculate the Nash-Sutcliffe Efficiency for vectors
 of log-transformed modelled and observed values.
 }
 \keyword{internal}
-

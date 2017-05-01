@@ -24,4 +24,3 @@ PadRange(c(0,100), delta=.1)
 PadRange(c(0,100), diffMult=.1)
 }
 \keyword{internal}
-

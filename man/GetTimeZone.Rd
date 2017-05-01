@@ -43,4 +43,3 @@ Other geospatial: \code{\link{ExportGeogrid}},
 dataMgmt
 }
 \keyword{IO}
-

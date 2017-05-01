@@ -35,4 +35,3 @@ Other SNODAS: \code{\link{CalcSnodasCoords}},
 SNODAS
 }
 \keyword{manip}
-

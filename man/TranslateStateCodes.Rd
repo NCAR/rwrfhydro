@@ -37,4 +37,3 @@ num <- TranslateStateCodes(gnis,'STATE'); num
 all(num==stNums, na.rm=TRUE)
 }
 \keyword{utilities}
-
