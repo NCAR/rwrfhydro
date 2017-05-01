@@ -13,7 +13,7 @@ TranslateStateCodes(inVector, returnVal = c("STATE", "STUSAB", "STATE_NAME",
 \item{returnVal}{Character string for the desired output format. Defaults to STUSAB and this choice overrides when the output type is the same as the input type.}
 }
 \description{
-\code{TranslageStateCodes} particularly translates USGS state_cd to other formats.
+\code{TranslateStateCodes} particularly translates USGS state_cd to other formats.
 Data from:
 https://www.census.gov/geo/reference/ansi_statetables.html
 and particularly
