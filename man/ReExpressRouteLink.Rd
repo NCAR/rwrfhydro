@@ -34,4 +34,3 @@ Other networkExpression nudging: \code{\link{GatherStreamInds}},
 dataMgmt nudging
 }
 \keyword{manip}
-

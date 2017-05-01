@@ -79,7 +79,7 @@ SelectGhcnGauges <- function(countryCode = NULL,networkCode = NULL,
   if (is.null(fileAdd)){
     fileAdd <- "ftp://ftp.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt"
   }
-  selectedGauges <- read.fwf(fileAdd,
+  selectedGauges <- utils::read.fwf(fileAdd,
                              widths = c(2,1,8,-1,8,-1,9,-1,6,-1,2,-1,30,-1,3,-1,3,-1,4),
                              colClasses = c(rep("character",3),rep("numeric",3),
                                             rep("character",5)),
@@ -176,7 +176,7 @@ GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
   getSite <- function(siteId) {
     urlAdd=paste0(fileAdd,siteId,'.dly') 
     
-    if (is.element('readr', installed.packages()[,1])){
+    if (is.element('readr', utils::installed.packages()[,1])){
       
       # We are using readr::read_fwf which is quite faster than base read.fwf if readr is available
       tmp <- tryCatch(readr::read_fwf(urlAdd, 
@@ -186,7 +186,7 @@ GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
       
     }else{
       warning("This function would be faster if package \"readr\" is installed")
-      tmp <- tryCatch(suppressWarnings(read.fwf(urlAdd,widths=c(11,4,2,4,rep(c(5,1,1,1),31)),
+      tmp <- tryCatch(suppressWarnings(utils::read.fwf(urlAdd,widths=c(11,4,2,4,rep(c(5,1,1,1),31)),
                                                 colClass=c("character","integer","integer","factor",
                                                            rep(c("integer","factor","factor","factor"),31)))),
                       error=function(cond) {message(cond); return(NA)})
@@ -211,7 +211,7 @@ GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
       names(dayMeltDf)[5]<-'dayOfMonth'
       dayMeltDf$dayOfMonth <- changeDayName[dayMeltDf$dayOfMonth]
       dayMeltDf$datetime <- as.Date(paste0(dayMeltDf$year,'/', dayMeltDf$month,'/', dayMeltDf$dayOfMonth)) # add a date class column to the datafarme
-      dayMeltDf<-dayMeltDf[complete.cases(dayMeltDf$datetime),] #Removes the null dates like 31 day of feb does not exist
+      dayMeltDf<-dayMeltDf[stats::complete.cases(dayMeltDf$datetime),] #Removes the null dates like 31 day of feb does not exist
       dayMeltDf<-subset(dayMeltDf,select=c("datetime","value","qFlag","element"))
       
       #Subset based on the provided date here to avoid reading lengthy observation into memory
@@ -249,7 +249,7 @@ GetGhcn <- function(siteIds,elements,startDate=NULL,endDate=NULL,parallel=FALSE,
 #' you have many sites.
 #' 
 #' 
-#' @param siteIds A single siteId or vector of siteIds. SiteIds should match the
+#' @param siteIDs A single siteId or vector of siteIds. SiteIds should match the
 #'   standardized GHCN-D IDs (for example : ACW00011604). See
 #'   \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt} for
 #'   a list of siteIds.
@@ -310,7 +310,7 @@ GetGhcn2 <- function(siteIDs, elements, startDate, endDate, parallel = FALSE,
   
   dataOut <- plyr::ldply(years, function(year) {
     
-    if (is.element('readr', installed.packages()[,1])){
+    if (is.element('readr', utils::installed.packages()[,1])){
     # we are using readr::read_csv which is quite faster of read.csv
     dat <- tryCatch(readr::read_csv(paste0(fileAdd,year,".csv.gz"),
                                     col_types = "cccdcccc",
@@ -320,8 +320,8 @@ GetGhcn2 <- function(siteIDs, elements, startDate, endDate, parallel = FALSE,
     }else{
       warning("This function would be faster if package \"readr\" is installed")
       temp <- tempfile()
-      download.file(paste0(fileAdd,year,".csv.gz"),temp, mode="wb")
-      dat <- tryCatch(read.csv(gzfile(temp), header = FALSE,
+      utils::download.file(paste0(fileAdd,year,".csv.gz"),temp, mode="wb")
+      dat <- tryCatch(utils::read.csv(gzfile(temp), header = FALSE,
                       col.names = c("siteIds","date","element","value","mFlag","qFlag","sFlag","reportTime"),
                       colClasses = c(rep("character",3),"numeric",rep("character",4))),
                       error=function(cond) {message(cond); return(NA)})

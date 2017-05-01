@@ -63,7 +63,7 @@ globalAttList[[1]] <- list(name='Restart_Time',value='2012-07-05_00:00:00', prec
 globalAttList[[2]] <- list(name='Some reall atts',value='#$\%^!!', precision="text" )
 
 outFile1 <- path.expand('~/test1.nc')
-dum <- MkNcdf( varList, globalAttList=globalAttList, filename=outFile1 )
+dum <- MkNcdf( varList, globalAttList=globalAttList, filename=outFile1, overwrite=TRUE )
 ncdump(outFile1)
 unlink(outFile1)
 
@@ -106,7 +106,7 @@ globalAttList <- list()
 globalAttList[[1]] <- list(name='Some reall atts',value='#$\%^!!', precision="text" )
 outFile2 <- path.expand('~/test2.nc')
 MkNcdf( varList1, globalAttList=globalAttList, 
-        filename=outFile2)
+        filename=outFile2, overwrite=TRUE)
 ncdump(outFile2)
 MkNcdf( varList2, globalAttList=globalAttList, 
         filename=outFile2 )
@@ -120,4 +120,3 @@ Other ncdf: \code{\link{GetNcdfFile}},
 \concept{
 ncdf
 }
-

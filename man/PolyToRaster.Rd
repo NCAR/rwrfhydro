@@ -65,26 +65,25 @@ and return the attribute requested from polygon as a raster file.
 \examples{
 \dontrun{
 
-##Example 1:
-## To rasterize the rfc SpatialPolygonsDataFrame :
+#Example 1:
+# To rasterize the rfc SpatialPolygonsDataFrame :
 
 r <- PolyToRaster(geoFile = "/glade/scratch/arezoo/IOC/ESMF/geo_em.d01.nc.conus_1km",
                  useRfc = TRUE, 
                  field ="BASIN_ID")
                  
-You can get the numbres assign to each BAISN_ID like :
+# You can get the numbres assign to each BAISN_ID like :
 
-
-## Example 2: 
-## To return a mask with default value of 1 inside the polygons and NA outside
+# Example 2: 
+# To return a mask with default value of 1 inside the polygons and NA outside
 
 r1 <- PolyToRaster(geoFile = "/glade/scratch/arezoo/IOC/ESMF/geo_em.d01.nc.conus_1km",
                   useRfc = TRUE, 
                   field ="BASIN_ID", 
                   mask = TRUE)
 
-##Example 3:
-## To return a mask with value of 5 inside the polygons and NA outside
+# Example 3:
+# To return a mask with value of 5 inside the polygons and NA outside
 
 r2 <- PolyToRaster(geoFile = "/glade/scratch/arezoo/IOC/ESMF/geo_em.d01.nc.conus_1km",
                               useRfc = TRUE, 
@@ -92,9 +91,9 @@ r2 <- PolyToRaster(geoFile = "/glade/scratch/arezoo/IOC/ESMF/geo_em.d01.nc.conus
                               mask = TRUE,
                               maskValue = 5)
 
-##Example 4:
-## To return a raster with values to be the BASIN_ID (convert character to integer numbers)
-## with fraction of each grid cell that is covered by the polygons
+# Example 4:
+# To return a raster with values to be the BASIN_ID (convert character to integer numbers)
+# with fraction of each grid cell that is covered by the polygons
 
 r3 <- PolyToRaster(geoFile = "/glade/scratch/arezoo/IOC/ESMF/geo_em.d01.nc.conus_1km",
                               useRfc = TRUE, 
@@ -103,10 +102,10 @@ r3 <- PolyToRaster(geoFile = "/glade/scratch/arezoo/IOC/ESMF/geo_em.d01.nc.conus
                               parallel = TRUE))
 plot(r3)
 
-## Example 5:
-## To read a shapefile (polygon) from disk and 
-## return a raster with values of field 
-## with fraction of each grid cell that is covered by the polygons
+# Example 5:
+# To read a shapefile (polygon) from disk and 
+# return a raster with values of field 
+# with fraction of each grid cell that is covered by the polygons
 
 r4 <- PolyToRaster(geoFile = "/glade/scratch/arezoo/IOC/ESMF/geo_em.d01.nc.conus_1km",
                   polygonAddress= "/glade/scratch/arezoo/QPF_verification_rwrfhydro/gis",
@@ -126,4 +125,3 @@ Other geospatial: \code{\link{ExportGeogrid}},
 dataMgmt geospatial
 }
 \keyword{IO}
-

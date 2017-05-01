@@ -37,4 +37,3 @@ Other geospatial: \code{\link{ExportGeogrid}},
 geospatial getData
 }
 \keyword{IO}
-

@@ -26,12 +26,13 @@ Imports:
     reshape2 (>= 1.4.1),
     foreach (>= 1.4.2),
     curl (>= 0.5),
-    RCurl (>= 1.95),  
+    RCurl (>= 1.95),
     dataRetrieval (>= 2.1.2),
     raster (>= 2.3),
     httr (>= 0.6.1),
     devtools (>= 1.7.0),
-    jsonlite (>= 0.9.14)
+    jsonlite (>= 0.9.14),
+    methods
 LazyData: true
 Suggests:
     testthat,
@@ -44,4 +45,4 @@ Suggests:
     rmarkdown
 BuildVignettes: false
 VignetteBuilder: knitr
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1

@@ -697,7 +697,7 @@ CalcModPerf <- function (flxDf.mod, flxDf.obs, flxCol.mod="q_cms", flxCol.obs="q
 #' @param writeOutPairDf character path/name for file to output the data frame constructed
 #'   before calculating the statistics and various aggregations. NULL by default gives
 #'   no output. 
-#  @param fileTag 
+#' @param fileTag A to be inserted in the file name, just before the file extension.
 #' @return A new dataframe containing the model performance statistics.
 #'   
 #' @examples

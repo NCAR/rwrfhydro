@@ -8,6 +8,11 @@ GetGhcn2(siteIDs, elements, startDate, endDate, parallel = FALSE,
   fileAdd = NULL)
 }
 \arguments{
+\item{siteIDs}{A single siteId or vector of siteIds. SiteIds should match the
+standardized GHCN-D IDs (for example : ACW00011604). See
+\url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt} for
+a list of siteIds.}
+
 \item{elements}{A character vector defining what type of observation you are
 interested in. There are five core elements as well as a number of 
 additional elements. The five core elements are: \describe{ \item{PRCP}{ =
@@ -25,11 +30,6 @@ temperature (tenths of degrees C)} \item{TMIN}{ = Minimum temperature
 \item{fileAdd}{Address to the url containg the csv files of daily GHCN by
 year. default is
 \url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_year/}}
-
-\item{siteIds}{A single siteId or vector of siteIds. SiteIds should match the
-standardized GHCN-D IDs (for example : ACW00011604). See
-\url{http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt} for
-a list of siteIds.}
 }
 \value{
 A dataframe containing the siteIds, date, daily GHCN-D, element,
@@ -73,4 +73,3 @@ Other GHCN: \code{\link{CalcDailyGhcn}},
 GHCN
 }
 \keyword{IO}
-

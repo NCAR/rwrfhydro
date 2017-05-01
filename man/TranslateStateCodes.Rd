@@ -29,11 +29,11 @@ See internals of code to get the details of the data frame used for the translat
 }
 \examples{
 stNums <- c(1,15,25, 5, 50, NA)
-ab <- tolower(TranslateStateCodes(stNums)); ab
+ab <- tolower(TranslateStateCodes(stNums))
+ab
 names <- TranslateStateCodes(ab); names  ## note default for abs in is names out
 gnis <- TranslateStateCodes(tolower(names),'STATENS'); gnis
 num <- TranslateStateCodes(gnis,'STATE'); num
 all(num==stNums, na.rm=TRUE)
 }
 \keyword{utilities}
-

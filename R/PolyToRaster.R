@@ -40,26 +40,25 @@
 #' @examples
 #' \dontrun{
 #' 
-#' ##Example 1:
-#' ## To rasterize the rfc SpatialPolygonsDataFrame :
+#' #Example 1:
+#' # To rasterize the rfc SpatialPolygonsDataFrame :
 #'
 #' r <- PolyToRaster(geoFile = "/glade/scratch/arezoo/IOC/ESMF/geo_em.d01.nc.conus_1km",
 #'                  useRfc = TRUE, 
 #'                  field ="BASIN_ID")
 #'                  
-#' You can get the numbres assign to each BAISN_ID like :
+#'# You can get the numbres assign to each BAISN_ID like :
 #' 
-#'
-#' ## Example 2: 
-#' ## To return a mask with default value of 1 inside the polygons and NA outside
+#' # Example 2: 
+#' # To return a mask with default value of 1 inside the polygons and NA outside
 #' 
 #' r1 <- PolyToRaster(geoFile = "/glade/scratch/arezoo/IOC/ESMF/geo_em.d01.nc.conus_1km",
 #'                   useRfc = TRUE, 
 #'                   field ="BASIN_ID", 
 #'                   mask = TRUE)
 #' 
-#' ##Example 3:
-#' ## To return a mask with value of 5 inside the polygons and NA outside
+#' # Example 3:
+#' # To return a mask with value of 5 inside the polygons and NA outside
 #'
 #' r2 <- PolyToRaster(geoFile = "/glade/scratch/arezoo/IOC/ESMF/geo_em.d01.nc.conus_1km",
 #'                               useRfc = TRUE, 
@@ -67,9 +66,9 @@
 #'                               mask = TRUE,
 #'                               maskValue = 5)
 #'
-#' ##Example 4:
-#' ## To return a raster with values to be the BASIN_ID (convert character to integer numbers)
-#' ## with fraction of each grid cell that is covered by the polygons
+#' # Example 4:
+#' # To return a raster with values to be the BASIN_ID (convert character to integer numbers)
+#' # with fraction of each grid cell that is covered by the polygons
 #'
 #' r3 <- PolyToRaster(geoFile = "/glade/scratch/arezoo/IOC/ESMF/geo_em.d01.nc.conus_1km",
 #'                               useRfc = TRUE, 
@@ -78,10 +77,10 @@
 #'                               parallel = TRUE))
 #' plot(r3)
 #'
-#' ## Example 5:
-#' ## To read a shapefile (polygon) from disk and 
-#' ## return a raster with values of field 
-#' ## with fraction of each grid cell that is covered by the polygons
+#' # Example 5:
+#' # To read a shapefile (polygon) from disk and 
+#' # return a raster with values of field 
+#' # with fraction of each grid cell that is covered by the polygons
 #'
 #' r4 <- PolyToRaster(geoFile = "/glade/scratch/arezoo/IOC/ESMF/geo_em.d01.nc.conus_1km",
 #'                   polygonAddress= "/glade/scratch/arezoo/QPF_verification_rwrfhydro/gis",
@@ -184,7 +183,7 @@ PolyToRaster <- function(geoFile = NULL,
   }
   
   ##################################################################################
-  #                  Get the polyon and trnasform the projection                   #
+  #                  Get the polyon and transform the projection                   #
   #                  perform rasterization                                         #
   ##################################################################################
   
@@ -192,7 +191,7 @@ PolyToRaster <- function(geoFile = NULL,
   # It has been already loaded with rwrfhydro package
   if (useRfc){
     
-    polyg <- rfc
+    polyg <- rwrfhydro::rfc
     
   }else if (!is.null(polygon)){
     
@@ -228,10 +227,10 @@ PolyToRaster <- function(geoFile = NULL,
     if (parallel){
       # Perform the parallel with foreach
       if (sum(is.element(search(), "package:foreach")) == 0){
-        stop("foreach package is not loaded, not parallel job is submitted")
+        stop("foreach package is not loaded, no parallel job is submitted")
       }else{
         namesStack <- unique(polyg[[field]])
-        st <- foreach::foreach (i = namesStack, .combine = function(...) raster::stack(...)) %dopar% {
+        st <- foreach::"%dopar%"(foreach::foreach(i = namesStack, .combine = function(...) raster::stack(...)), {
           
           # First choose only one polygon (maybe more than having the same name) 
           x <- polyg[polyg[[field]] == i,]
@@ -246,7 +245,7 @@ PolyToRaster <- function(geoFile = NULL,
                                     getCover = getCover)
           # change the extent to actual extent of geoFile 
           rnew <- raster::extend(rnew, extr)
-        }
+        })
         names(st) <- namesStack
         return(st)
       }

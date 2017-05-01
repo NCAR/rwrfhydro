@@ -40,13 +40,13 @@ GetTimeZone<-function(points,
       # transform the points to polygon shapefile projections
       # Projection of time zone is the following
       # "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
-      points <- sp::spTransform(points, sp::CRS(sp::proj4string(timeZone)))
+      points <- sp::spTransform(points, sp::CRS(sp::proj4string(rwrfhydro::timeZone)))
       
       # use 'over' this time with timeZone polygon as a SpatialPolygonsDataFrame
       # object, to determine which timeZone (if any) contains each point, and
       # store the timeZone name as an attribute of the point data
       
-      points[["timeZone"]] <- sp::over(points, timeZone)[["TZID"]]
+      points[["timeZone"]] <- sp::over(points, rwrfhydro::timeZone)[["TZID"]]
       return(as.data.frame(points))
     }else{
       stop("Input should be a dataframe having two columns named 
@@ -107,13 +107,13 @@ GetRfc<-function(points,
       # transform the points to polygon shapefile projections
       # Projection of time zone is the following
       # "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
-      points <- sp::spTransform(points, sp::CRS(sp::proj4string(rfc)))
+      points <- sp::spTransform(points, sp::CRS(sp::proj4string(rwrfhydro::rfc)))
       
       
       # use 'over' with rfc polygon as a SpatialPolygonsDataFrame
       # object, to determine which rfc (if any) contains each point, and
       # store the rfc name as an attribute of the point data
-      points$rfc <- sp::over(points, rfc)$BASIN_ID
+      points$rfc <- sp::over(points, rwrfhydro::rfc)$BASIN_ID
       return(as.data.frame(points))
     }else{
       stop("Input should be a dataframe having two columns named 
@@ -153,7 +153,8 @@ GetRfc<-function(points,
 #' 
 #' @examples
 #' \dontrun{
-#' sg<-GetPoly(sg,  polygonAddress= "/glade/scratch/arezoo/QPF_verification_rwrfhydro/gis/", polygonShapeFile= "huc6", join="HUC6")
+#' sg<-GetPoly(sg,  polygonAddress= "/glade/scratch/arezoo/QPF_verification_rwrfhydro/gis/",
+#' polygonShapeFile= "huc6", join="HUC6")
 #' }
 #' @keywords IO
 #' @concept dataMgmt

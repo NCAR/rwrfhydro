@@ -11,9 +11,7 @@ GatherStreamInds(stream, start, linkLengths)
 
 \item{start}{Indexed location (NOT comID) of where stream starts}
 
-\item{length}{Vector of link lengths for each re-indexed reach, contained in reExp.nc.}
-
-\item{indDist}{Optional list of indices and distance to that index. Typically not used externally to the recursion.}
+\item{linkLengths}{Vector of link lengths for each re-indexed reach, contained in reExp.nc.}
 }
 \value{
 List containing indices, accumulated distance from start, and
@@ -49,4 +47,3 @@ Other networkExpression nudging: \code{\link{NtwKReExToNcdf}},
 nudging dataMgmt
 }
 \keyword{manip}
-
