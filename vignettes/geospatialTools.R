@@ -8,7 +8,7 @@
 #'   %\VignetteEngine{knitr::rmarkdown}
 #'   %\VignetteEncoding{UTF-8}
 #' ---
-#' For most of the postprocessing, there is a need to create spatial maps, aggregate over spatial units and also produce georeference raster and shapefiles. Many of the existing functions in available spatial libraries such as SP, RGDAL, RGEOS and Raster has been wrapped in rwrfhydro to serve our purpose. Here we explain these spatial functions, their application as well as some examples.
+#' For model analysis and evaluation, we often need to create spatial maps, aggregate over spatial units, or produce georeferenced rasters and shapefiles. We have adapted existing functionality from spatial libraries such as SP, RGDAL, RGEOS, and Raster into rwrfhydro. In this vignette, we describe some of these spatial functions and give examples of their application to model evaluation.
 #' 
 #' ## List of the available functions
 #' - GetProj
@@ -34,7 +34,7 @@ options(warn=1)
 fcPath <- '~/wrfHydroTestCases/Fourmile_Creek_testcase_v2.0'
 
 #' 
-#' The geogrid file is the main coarse-grid (LSM) parameter file containing base geographic information on the model domain such as the geographic coordinate system and latitude/longitude coordinates. We use this file frequently. Set a path to geogrid file.
+#' The geogrid file is the main coarse-grid (LSM) parameter file and contains base geographic information on the model domain such as the geographic coordinate system and latitude/longitude coordinates. We use this file frequently. Set a path to geogrid file.
 #' 
 ## ------------------------------------------------------------------------
 geoFile <- paste0(fcPath,'/DOMAIN/geo_em_d01.Fourmile1km.nlcd11.nc')
@@ -43,7 +43,7 @@ geoFile <- paste0(fcPath,'/DOMAIN/geo_em_d01.Fourmile1km.nlcd11.nc')
 #' 
 #' ## GetProj
 #' 
-#' To be able to use any of the spatial tools in R, projection information of the model domain is required. All the coarse-resolution (LSM) model input and output files are based on geogrid file domain. `GetProj` will pull projection information from the geogrid file. You will see the specs for the Lambert Conformal Conic projection on the WRF standard sphere.
+#' To be able to use spatial tools in R, we need to know the projection information for the domain. All the coarse-resolution (LSM) model input and output files are based on the geogrid domain. `GetProj` will pull projection information from the geogrid file. You will see the specs for the Lambert Conformal Conic projection on the WRF standard sphere.
 #' 
 ## ------------------------------------------------------------------------
 proj4 <- GetProj(geoFile)
@@ -52,7 +52,7 @@ proj4
 #' 
 #' ## GetGeogridSpatialInfo
 #' 
-#' `GetGeogridSpatialInfo` will pull geospatial information about the coarse-res (LSM) model domain from geogrid file.
+#' `GetGeogridSpatialInfo` will pull geospatial information about the coarse-resolution (LSM) model domain from the geogrid file.
 #' 
 ## ------------------------------------------------------------------------
 geoInfo <- GetGeogridSpatialInfo(geoFile)
@@ -62,15 +62,15 @@ geoInfo
 #' 
 #' ## ExportGeogrid
 #' 
-#' If you need to create a georeferenced TIF file from any variable in an LSM-related netcdf file (input or output), then you can use the `ExportGeogrid` function. It takes a NetCDF file and converts the specified variable into a georeferenced TIF file for use in standard GIS tools. You can use ExportGeogrid directly on a file that contains lat/lon coordinates or you can use it on a file that does not contain lat/lon coords by providing a separate coordinate file.
+#' If you need to create a georeferenced TIF file from any variable in an LSM-related netcdf file (input or output), then you can use the `ExportGeogrid` function. It takes a NetCDF file and converts the specified variable into a georeferenced TIF file for use in standard GIS tools. You can use `ExportGeogrid` directly on a file that contains lat/lon coordinates or you can use it on a file that does not contain lat/lon coords by providing a separate coordinate file.
 #' 
-#' Now, let's export one of the variables from the geogrid file. You can get a list of all available variables in the `geoFile` using `ncdump` function in rwrfhydro.
+#' Let's export a variable from the geogrid file. You can get a list of all available variables in the `geoFile` using the `ncdump` function in rwrfhydro.
 #' 
 ## ---- eval = FALSE-------------------------------------------------------
 ## head(ncdump(geoFile))
 
 #' 
-#' Now we will create a georeferenced TIF file from HGT_M field (elevation). The geogrid contains lat/long coordinates, so you only need to provide the address to the file (`geoFile`), the name of the variable (`HGT_M`), and the name of the output file (`geogrid_hgt.tif`).
+#' Now we will create a georeferenced TIF file from the elevation field. The geogrid contains lat/long coordinates, so you only need to provide the address to the file (`geoFile`), the name of the variable (`HGT_M`), and the name of the output file (`geogrid_hgt.tif`).
 #' 
 ## ---- results='hide', message=FALSE, warning=FALSE-----------------------
 ExportGeogrid(geoFile,"HGT_M", "geogrid_hgt.tif")
@@ -90,7 +90,7 @@ plot(r, main = "HGT_M", col=terrain.colors(100))
 r
 
 #' 
-#' Many of the output files (such as LDASOUT, RESTARTS) do not contain lat/lon coordinates but match the spatial coordinate system of the geogrid input file. In that case, you can provide a supplemental 'inCoordFile' which contains the lat/lon information. 
+#' Many of the output files (such as LDASOUT, RESTARTS) do not contain lat/lon coordinates but match the spatial coordinate system of the geogrid input file. In that case, you can provide a supplemental `inCoordFile` which contains the lat/lon information. 
 #' 
 ## ----plot2, fig.width = 8, fig.height = 8, out.width='600', out.height='600'----
 file <- paste0(fcPath,"/run.FluxEval/RESTART.2013060100_DOMAIN1")
@@ -116,7 +116,7 @@ r
 #' 
 #' ## GetGeogridIndex
 #' 
-#' To be able to use tools such as `GetMultiNcdf` to pull data from gridded output, we need to know the indices (i,j) of the area of interest within the domain. `GetGeogridIndex` calculates cell indices from lat/lon (or other) coordinates. It reads in a set of lat/lon (or other) coordinates and generates a corresponding set of geogrid index pairs. You can assign a projection to the points using the `proj4` argument, which will be used to transform the point to the `geoFile` coordinate system. Check ?GetGeogridIndex or the vignette on precipitation evaluation for full usage.
+#' To be able to use tools such as `GetMultiNcdf` to pull data from gridded output, we need to know the indices (i,j) of the area of interest within the domain. `GetGeogridIndex` calculates cell indices from lat/lon (or other) coordinates. It reads in a set of lat/lon (or other) coordinates and generates a corresponding set of geogrid index pairs. You can assign a projection to the points using the `proj4` argument, which will be used to transform the points to the `geoFile` coordinate system. Check `?GetGeogridIndex` or the Precipitation Evaluation vignette for full usage.
 #' 
 ## ------------------------------------------------------------------------
 sg <- data.frame(lon = seq(-105.562, -105.323, length.out = 10), 
@@ -127,7 +127,7 @@ GetGeogridIndex(sg, geoFile)
 #' 
 #' ## GetTimeZone
 #' 
-#' Many station observations are reported in local time and need to be converted to UTC time to be comparable with WRF-Hydro input and outputs. `GetTimeZone` returns the time zone for any point having latitude and longitude. It simply takes a dataframe containing at least two fields of `latitude` and `longitude` and overlays the `points` with a timezone shapefile (can be downloded from <http://efele.net/maps/tz/world/>). The shapefile is provided in rwrfhydro data and is called `timeZone`.
+#' Many station observations are reported in local time and need to be converted to UTC time to be comparable with WRF-Hydro inputs and outputs. `GetTimeZone` returns the time zone for any lat/lon coordinates. It simply takes a dataframe containing at least two fields of `latitude` and `longitude` and overlays the `points` with a timezone shapefile (can be downloded from <http://efele.net/maps/tz/world/>). The shapefile is provided in rwrfhydro data and is called `timeZone`.
 #' 
 ## ------------------------------------------------------------------------
 # timeZone has been provided by rwrfhydro as a SpatialPolygonDataFrame
@@ -140,8 +140,8 @@ head(timeZone@data)
 #' `GetTimeZone` has three arguments. 
 #' 
 #' - `points`: A dataframe of the points. The dataframe should contain at least two fields called `latitude` and `longitude`.
-#' - `proj4`: Projection of the `points` to be used in transforming the `points` projection to `timeZone` projection. Default is `+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0` which is the same as the `timezone` projection.
-#' - `parallel`: If the number of points are high you can parallelize the process.
+#' - `proj4`: Projection of the `points` to be used in transforming the `points` projection to the `timeZone` projection. Default is `+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0` which is the same as the `timezone` projection.
+#' - `parallel`: If the number of points is high you can parallelize the process.
 #' 
 #' `GetTimeZone` will return the `points` dataframe with an added column called `timeZone`. It will return NA if a point is not in any polygon. Now let's generate some points and find their time zone information.
 #' 
@@ -166,11 +166,11 @@ class(rfc)
 head(rfc@data)
 
 #' 
-#' `GetRfc` return the RFC name for any point having `latitude` and `longitude`. It takes a dataframe containing at least two fields of `latitude` and `longitude`, overlays the points with the `rfc` SpatialPolygonDataFrame, and return the RFC's BASIN_ID. This function has three arguments. 
+#' `GetRfc` return the RFC name for any point having `latitude` and `longitude`. It takes a dataframe containing at least two fields of `latitude` and `longitude`, overlays the points with the `rfc` SpatialPolygonDataFrame, and return the RFC's BASIN_ID. This function has three arguments:
 #' 
 #' - `points`: A dataframe of the points. The dataframe should contain at least two fields called "latitude" and "longitude".
-#' - `proj4`: Projection of the `points` to be used in transforming the `points` projection to `rfc` projection. Default is `+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0`.
-#' - `parallel`: If the number of points are high you can parallelize the process.
+#' - `proj4`: Projection of the `points` to be used in transforming the `points` projection to the `rfc` projection. Default is `+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0`.
+#' - `parallel`: If the number of points is high you can parallelize the process.
 #' 
 #' `GetRfc` will return the points dataframe with an added column called `rfc`. It will return NA if the point is not in any polygon.
 #' 
@@ -186,9 +186,9 @@ sg
 #' 
 #' ## GetPoly
 #' 
-#' `GetPoly` is similar to `GetRfc`; it is a wrapper for the function `sp::over`. It takes a dataframe containing at least two fields of `latitude` and `longitude`, overlays the points with a `SpatialPolygonDataFrame`, and returns the requested attribute from the polygon. You could use any available `SpatialPolygon*` loaded into memory or provide the address to the location of a polygon shapefile and it will read the polygon using the `rgdal::readOGR` function.
+#' `GetPoly` is similar to `GetRfc`; it is a wrapper for the function `sp::over`. It takes a dataframe containing at least two fields of `latitude` and `longitude`, overlays the points with a `SpatialPolygonDataFrame`, and returns the requested attribute from the polygon. You could use any available `SpatialPolygon*` loaded into memory or provide the address to the location of a polygon shapefile and it will read the shapefile using the `rgdal::readOGR` function.
 #' 
-#' Let's get the RFC information from `GetPoly` instead of `GetRfc`. Here we provide the name of the `SpatialPolygon*` and using the argument `join` request one of the attributes of the polygon. For example, here we request the `BASIN_ID`, `RFC_NAME` and `RFC_CITY` attributes. 
+#' Let's get the RFC information from `GetPoly` instead of `GetRfc`. Here we provide the name of the `SpatialPolygon*` and, using the argument `join`, request one of the polygon attributes. For example, here we request the `BASIN_ID`, `RFC_NAME` and `RFC_CITY` attributes. 
 #' 
 ## ------------------------------------------------------------------------
 # Provide a dataframe of 10 points having longitude and latitude

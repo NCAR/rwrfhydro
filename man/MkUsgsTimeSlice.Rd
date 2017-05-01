@@ -2,7 +2,7 @@
 % Please edit documentation in R/usgs_time_slice.R
 \name{MkUsgsTimeSlice}
 \alias{MkUsgsTimeSlice}
-\title{Make timeslices from active USGS discharge data files.}
+\title{Make timeslices from USGS discharge data files gathered using dataRetrieval..}
 \usage{
 MkUsgsTimeSlice(realTimeFiles, outPath, nearestMin = 5, oldestTime = NULL,
   qcFunction, varianceFunction)
@@ -35,7 +35,7 @@ A dataframe with two columns: \code{POSIXct} and \code{filename}
   full path.
 }
 \description{
-Make timeslices from active USGS discharge data files.
+Make timeslices from USGS discharge data files gathered using dataRetrieval..
 }
 \examples{
 \dontrun{

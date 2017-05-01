@@ -64,19 +64,18 @@ WriteNcPrettyUsgs <- function(prettyDf, outPath='.') {
 #' Write a USGS discharge timeslice to a netcdf file.
 #' 
 #' @param dfByPosix Dataframe, a data frame with the following columns: 
-#'   \code{site_no}, \code{dateTime}, \code{dateTimeRound}, \code{code},
-#'   \code{queryTime}, \code{discharge.cms}, and \code{variance} where dateTime
+#'   \code{site_no}, \code{dateTime}, \code{dateTimeRound},
+#'   \code{queryTime}, \code{discharge.cms}, and \code{discharge.quality} where dateTimeRound
 #'   is the same for the entire dataframe.
 #' @param outPath     Character, the path for the output netcdf file.
 #' @param sliceResolution The Temporal resolution.
 #' @examples
 #' ## See \link{MkUsgsTimeSlice}.
-#' @keywords internal
 #' @export
 
 WriteNcTimeSlice <- function(dfByPosix, outPath, sliceResolution) {
     
-    dateTimeRound <- dfByPosix$dateTimeRound   ## this is a string
+    dateTimeRound <- format(dfByPosix$dateTimeRound,'%Y-%m-%d_%H:%M:%S')
     dfByPosix$dateTimeRound <- NULL
     fileName <- TimeSliceFileName(dateTimeRound[1], sliceResolution)
     outFileName <- paste0(outPath,'/',fileName)
@@ -133,12 +132,6 @@ WriteNcTimeSlice <- function(dfByPosix, outPath, sliceResolution) {
                        unlimited=FALSE,
                        create_dimvar=FALSE),
        
-       codeStrLen=list(name='codeStrLen',
-                       units='', 
-                       values=1:4,
-                       unlimited=FALSE,
-                       create_dimvar=FALSE),
-       
        timeStrLen=list(name='timeStrLen',
                        units='', 
                        values=1:19,
@@ -183,7 +176,7 @@ WriteNcTimeSlice <- function(dfByPosix, outPath, sliceResolution) {
             multfactor='.01',
             #missing = ,
             dimensionList=dimensionList[c('stationIdInd')],
-            data = as.integer(dfByPosix$discharge.cms*0+100) )
+            data = as.integer(dfByPosix$discharge.quality) )
     
     varList[[5]] <- 
       list( name='queryTime',
@@ -210,7 +203,7 @@ WriteNcTimeSlice <- function(dfByPosix, outPath, sliceResolution) {
 ##====================================================================================
 TimeSliceFileName <- function(POSIXctOrChr, sliceResolution) {
   if(class(POSIXctOrChr)[1] == 'POSIXct') {
-      paste0(format(POSIXct,'%Y-%m-%d_%H:%M:%S'), 
+      paste0(format(POSIXctOrChr,'%Y-%m-%d_%H:%M:%S'), 
              '.', formatC(sliceResolution, width=2, flag='0'),'min', 
              '.usgsTimeSlice.ncdf')
   } else paste0(POSIXctOrChr,

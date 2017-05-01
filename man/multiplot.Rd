@@ -7,6 +7,8 @@
 multiplot(..., plotlist = NULL, cols = 1, layout = NULL)
 }
 \arguments{
+\item{...}{: other arguments.}
+
 \item{plotlist}{List: A list of all plots}
 
 \item{cols}{Numeric: Number of columns in layout}
@@ -23,9 +25,12 @@ This code has been borrowed from \url{http://www.cookbook-r.com/Graphs/Multiple_
 \examples{
 \dontrun{
 df <- data.frame(colA = seq(1:1000), colB = seq(1000,1))
-p1 <- ggplot2::ggplot(df, ggplot2::aes(x = colA, y = colB)) + ggplot2::geom_point(ggplot2::aes(size = colA))
-p2 <- ggplot2::ggplot(df, ggplot2::aes(x = colA, y = colB)) + ggplot2::geom_point(col = "red")
-p3 <- ggplot2::ggplot(df, ggplot2::aes(x = colA, y = colB)) + ggplot2::geom_line()
+p1 <- ggplot2::ggplot(df, ggplot2::aes(x = colA, y = colB)) + 
+ggplot2::geom_point(ggplot2::aes(size = colA))
+p2 <- ggplot2::ggplot(df, ggplot2::aes(x = colA, y = colB)) + 
+ggplot2::geom_point(col = "red")
+p3 <- ggplot2::ggplot(df, ggplot2::aes(x = colA, y = colB)) + 
+ggplot2::geom_line()
 multiplot(p1,p2,p3, cols =2)
 multiplot(plotlist = list(p1,p2,p3), cols =2)
 multiplot(plotlist = list(p1,p2,p3), layout = matrix(c(1,2,3,3), nrow =2))

@@ -8,24 +8,31 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
-## Background
+# Background
 
-Forcing are stored in multiple files, either in input forcing files (such as LDASIN or PRECIP_FORCING files) or in the output files (LDASOUT). LDASOUT files contains the variable ACCPRCP which stores the accumulated precipitation, and one can calculate the rainfall depth by subtracting two consecutive time steps. LDASIN and PRECIP_FORCING store rain rate in RAINRATE and precip_rate variables. This vignette serve as a short explanation of how to grab data and do some basic comparisons.
+Forcing could be stored in multiple files, either in input forcing files (such as *LDASIN* or *PRECIP_FORCING* files) or in the output files (*LDASOUT*). *LDASOUT* files may contain a variable called *ACCPRCP* storing the accumulated precipitation, and the rainfall depth can be obtained by subtracting two consecutive time steps. *LDASIN* and *PRECIP_FORCING* files usually store rain rate in *RAINRATE* and *precip_rate* variables. This vignette serve as a short explanation of how to retrieve data and perform some basic comparisons between two set of data.
 
 Load the rwrfhydro package. 
 ```{r  results='hide', message=FALSE, warning=FALSE}
 library(rwrfhydro)
 ```
 
-## Import observed datasets
+# Import observed datasets
 
-## GHCN-daily
-Global Historical Climatology Network-Daily (GHCN-D) dataset contains daily data from around 80000 surface station in the world, which about two third of them are precipitation only (Menne et al. 2012). It is the most complete collection of U.S. daily data available (Menne et al. 2012). The dataset undergo an automated quality assurance which the details can be found in Durre et al. 2008; 2010. Data is available on http://www1.ncdc.noaa.gov/pub/data/ghcn/daily and is updated frequently. Data is available in two formats either categorized by gauge station or categorized by year. Accordingly, there are two function to pull GHCN-daily data from these two sources called `GetGhcn` and `GetGhcn2`.
+Functions to retrieve observation data for several observational network is provided in rwrfhydro.  GHCN-Daily and USCRN networks are introduced and used in this vignette. 
 
-### Gauge selection
+# USCRN
+The US. Climate Reference Network (USCRN) is a network of monitoring stations equipped with research quality instruments. Beside precipitation, these gauges report temperature, soil moisture and soil temperature. The precipitation is measured every 5 minutes using three independent measurements in a weighing bucket gauge accompanied with a disdrometer reporting the presence or absence of precipitation. These gauges, in the cold climate, are equipped with heating tape around the throat of the weighing gauge to prevent the frozen precipitation from accumulating on the interior walls and capping the gauge. The redundancy in the measurements is to ensure the quality of the measurements. 
+
+Data is provided in 4 different temporal resolution (subhourly, hourly, daily and monthly), and depending on the temporal resolution, the variables provided changes. For more infoamtion on the data and how to retrieve, refer to the the man page of `Get_USCRN`.
+
+# GHCN-daily
+Global Historical Climatology Network-Daily (GHCN-D) dataset contains daily data from around 80000 surface station in the world, which about two third of them are precipitation only (Menne et al. 2012). It is the most complete collection of U.S. daily data available (Menne et al. 2012). The dataset undergo an automated quality assurance which the details can be found in Durre et al. 2008; 2010. Data is available on [http://www1.ncdc.noaa.gov/pub/data/ghcn/daily](http://www1.ncdc.noaa.gov/pub/data/ghcn/daily) and is updated frequently. Data is available in two formats either categorized by gauge station or categorized by year. Accordingly, there are two function to pull GHCN-daily data from these two sources called `GetGhcn` and `GetGhcn2`.
+
+## Gauge selection
 First step is to select the gauges you want to use for verification based on some criteria. GHCN-daily contains the precipitation data from different sources such as COOP or CoCoRaHS. The selection criteria can be country code, states if country is US, type of rain gauge network (for example CoCoRaHS), or a rectangle domain. 
 
-```{r}
+```{r eval = FALSE}
 #setInternet2(use=FALSE) # If using windows, you may need this.
 
 # Return all the gauges within US from observation network of COOP (C) and CoCoRaHS (1)
@@ -44,29 +51,22 @@ sg <- SelectGhcnGauges(domain = TRUE, minLat = 40.0125, maxLat = 40.0682,
 str(sg)
 ```
 
-### GetGhcn
+## GetGhcn
 GHCN-daily data are archived for each individual gauge in a text file in http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/all/. Precipitating can be downloaded for a single site or multiple ones by setting element to "PRCP" and specifying the desired start and end date. Notice, precipitation values are  converted from 10th of mm to mm.
 
-```{r, eval = FALSE}
-startDate <- "2013/08/01"
+```{r message=FALSE, warning=FALSE}
+startDate <- "2013/01/01"
 endDate <- "2013/09/30"
 element <- "PRCP"
 obsPrcp <- GetGhcn(sg$siteIds, element, startDate, endDate, parallel = FALSE)
+str(obsPrcp)
 ```
 
-### GetGhcn2
-NCDC also provides GHCN-daily categorized by year under http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_year/. If the number of the gauges are high, `GetGhcn2` is much faster in retrieving data. 
-
-```{r message=FALSE, warning=FALSE}
-startDate <- "2013/08/01"
-endDate <- "2013/09/30"
-element <- "PRCP"
-obsPrcp <- GetGhcn2(sg$siteIds, element, startDate, endDate, parallel = FALSE)
-head(obsPrcp)
-```
+## GetGhcn2
+NCDC also provides GHCN-daily categorized by year under http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/by_year/. If the number of the gauges are high, `GetGhcn2` is much faster in retrieving data. It has the same arguments as `GetGhcn`.
 
 
-### Import forcing/precipitation data used in WRF-Hydro model  
+# Import forcing/precipitation data used in WRF-Hydro model  
 Forcing data used in WRF-Hydro modeling are usually stored in forcing files (such as LDASIN or PRECIP_FORCING files). Here we are going to use the data provided under "Fourmile_Creek" dataset.
 
 Set a data path to the Fourmile Creek test case.
@@ -79,7 +79,7 @@ First make a list of all the forcing files.
 
 ```{r}
 forcingPath <- paste0(fcPath,"/FORCING")
-files <- list.files(path = forcingPath, full.names = TRUE, pattern = glob2rx("2013*LDASIN_DOMAIN1"))
+files <- list.files(path = forcingPath, full.names = TRUE, pattern = glob2rx("201304*LDASIN_DOMAIN1"))
 ```
 
 
@@ -113,17 +113,20 @@ head(prcpData)
 `GetMultiNcdf` pulls the time information from the netcdf files, if the data is not prepared properly, and the time info is not available, it will return the name of the file instead. In that case, time should be retrieved from the file name which is save in column `POSIXct`. Since the `obsPrcp` data are converted to mm, we also convert the rainrate to rain depth in an hour.
 
 ```{r}
-prcpData$value<-prcpData$value*3600
+prcpData$value <- prcpData$value*3600
 ```
-
 
 ### Aggregating hourly data into daily.
 
 Each GHCN gauge has a unique reporting time which the daily data is been calculated based on that. The reporting time is archived in the csv files and is retrieved when calling `GetGhcn2` function (you will not get the reporting time using `GetGhcn`). We need to add the reporting time for each point which would be the base for daily aggregation. If there will not be any `reportTime` in `sg` columns, then it uses the default which is 0700 AM. 
 
 ```{r}
-sg$reportTime <- obsPrcp$reportTime[match(sg$siteIds, obsPrcp$siteIds)]
-sg$reportTime[which (sg$reportTime=="" | is.na(sg$reportTime))]<-700
+if ("reportTime" %in% names(prcpData)) {
+  sg$reportTime <- obsPrcp$reportTime[match(sg$siteIds, obsPrcp$siteIds)]
+  sg$reportTime[which (sg$reportTime=="" | is.na(sg$reportTime))] <-700
+}else{
+  sg$reportTime<- 700
+}
 ```
 
 Call the `CalcDailyGhcn` function which takes the following steps: 
@@ -144,16 +147,18 @@ Final step if to find the common data between the two dataset (precipitation tim
 
 ```{r}
 #usind data.table merge
-common <- data.table:::merge.data.table(data.table::as.data.table(dailyData),data.table::as.data.table(obsPrcp),
+common <- data.table:::merge.data.table(data.table::as.data.table(dailyData),
+                                        data.table::as.data.table(obsPrcp),
                                         by.x=c("ghcnDay","statArg"),
-                                        by.y=c("date","siteIds"))
+                                        by.y=c("Date","siteIds"))
 head(common)
 ```
 
 Call the `CalcStatCont` function and it returns all the requested statistics.  The default are `numPaired` (number of paired data), `meanObs` (mean of observation data), `meanMod` (mean of model/forecast data), `pearsonCor` (Pearson correlation coefficient), `RMSE` (root mean square error), and `multiBias` (multiplicative bias). Here we want to get the statistics for each gauge, therefore, we need to group the data for each gauge. This can be done by defining `groupBy` to be the column name having siteIds, here `statArg`.
 
 ```{r plot1, fig.width = 8, fig.height = 8, out.width='600', out.height='600'}
-stat <- CalcStatCont(DT = common, obsCol = "dailyPrcp", modCol = "value" , groupBy = "statArg")
+stat <- CalcStatCont(DT = common, obsCol = "dailyGhcn", modCol = "dailyPrcp" , 
+                     obsMissing = -999.9, groupBy = "statArg")
 
 # CalcStatCont will return a list having two elements of stat and plotList.
 names(stat)
@@ -166,19 +171,19 @@ If the `groupBy` is `NULL` then it will return four informative plots.
 
 ```{r plot2, fig.width = 8, fig.height = 8, out.width='600', out.height='600'}
 common2 <- common[statArg == unique(statArg)[1]]
-stat <- CalcStatCont(DT = common2, obsCol = "dailyPrcp", modCol = "value")
+stat <- CalcStatCont(DT = common2, obsCol = "dailyGhcn", modCol = "dailyPrcp", obsMissing = -999.9, title = common2$statArg)
 ```
 
 You can choose among the four plots by changing the `plot.list` argument. 
 
 ```{r plot3, fig.width = 8, fig.height = 8, out.width='600', out.height='600'}
-stat <- CalcStatCont(DT = common2, obsCol = "dailyPrcp", modCol = "value" , plot.list = "scatterPlot")
+stat <- CalcStatCont(DT = common2, obsCol = "dailyGhcn", modCol = "dailyPrcp" , obsMissing = -999.9, plot.list = "scatterPlot")
 ```
 
 You can also calculate conditional statistics by defining the boundaries you are interested in. For example, here we calculate the statistics conditioned on the observation to be greater than 1 mm. 
 
 ```{r plot4, fig.width = 8, fig.height = 8, out.width='600', out.height='600'}
-stat <- CalcStatCont(DT = common2, obsCol = "dailyPrcp", modCol = "value" , 
+stat <- CalcStatCont(DT = common2, obsCol = "dailyGhcn", modCol = "dailyPrcp" , 
                      obsCondRange = c(1, Inf), plot.list = "scatterPlot")
 ```
 
@@ -203,8 +208,8 @@ common <- data.table:::merge.data.table(common,data.table::as.data.table(sg[, c(
                                         by.y=c("siteIds"))
 
 # calculate statistics using grouping by rfc
-stat <- CalcStatCont(DT = common, obsCol = "dailyPrcp", modCol = "value" , 
-                     groupBy = "rfc", plot.it = FALSE)
+stat <- CalcStatCont(DT = common, obsCol = "dailyGhcn", modCol = "dailyPrcp" , 
+                     groupBy = "rfc", obsMissing = -999.9, plot.it = FALSE)
 
 stat$stat
 ```
@@ -232,8 +237,8 @@ common <- data.table:::merge.data.table(common,data.table::as.data.table(sg[, c(
                                         by.y=c("siteIds"))
 
 # calculate statistics using grouping by HUC12
-stat <- CalcStatCont(DT = common, obsCol = "dailyPrcp", modCol = "value" , 
-                     groupBy = "HUC12", plot.it = FALSE)
+stat <- CalcStatCont(DT = common, obsCol = "dailyGhcn", modCol = "dailyPrcp", 
+                     obsMissing = -999.9, groupBy = "HUC12", plot.it = FALSE)
 stat$stat
 ```
 
@@ -248,7 +253,7 @@ The grouping option is similar to `CalcStatCont`.
 
 ```{r}
 # calculate categorical statistics
-stat <- CalcStatCategorical(DT = common, obsCol = "dailyPrcp", modCol = "value" , 
-                            groupBy = "statArg", threshold = c(1,5))
+stat <- CalcStatCategorical(DT = common, obsCol = "dailyGhcn", modCol = "dailyPrcp", 
+                            obsMissing = -999.9, groupBy = "statArg", threshold = c(1,5))
 stat
 ```

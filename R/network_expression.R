@@ -417,8 +417,7 @@ NtwKReExToNcdf <- function(toFile, fromFile) {
 ##' 
 ##' @param stream List of stream information containing either from/to and start and end positions, returned from ReExpNetwork.
 ##' @param start Indexed location (NOT comID) of where stream starts
-##' @param length Vector of link lengths for each re-indexed reach, contained in reExp.nc.
-##' @param indDist Optional list of indices and distance to that index. Typically not used externally to the recursion.
+##' @param linkLengths Vector of link lengths for each re-indexed reach, contained in reExp.nc.
 ##'  
 ##' @return List containing indices, accumulated distance from start, and
 ##'          tip information (0=not a tip, 1=a tip, 2=temporary tip/still solving)

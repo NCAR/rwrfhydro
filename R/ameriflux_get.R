@@ -20,7 +20,6 @@
 #' @concept Ameriflux
 #' @family Ameriflux
 #' @export
-
 ReadAmeriflux <- function(inFile, tz, useEndTime=FALSE) {
     
     tmpData <- read.table(inFile, sep = ",", skip=2, header=TRUE,

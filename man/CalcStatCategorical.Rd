@@ -76,10 +76,12 @@ The calculated statistics are the following: \itemize{
 } For more information refer to Forecast Verification, A Practitioner Guide in Atmospheric Science. Jollife and Stephenson, 2012.
 }
 \examples{
+\dontrun{
 
 # for categorical data
 ExampleDF <- data.frame(obs=c(rep("YES",25), rep("NO", 25)), mod=rep(c("YES","NO"),25))
-stat <- CalcStatCategorical(DT = ExampleDF, obsCol = "obs", modCol = "mod", category = c("YES","NO"))
+stat <- CalcStatCategorical(DT = ExampleDF, obsCol = "obs", 
+modCol = "mod", category = c("YES","NO"))
 
 # for categorical data with more than one experiment
 ExampleDF <- data.frame(obs=c(rep("YES",25), rep("NO", 25)), mod=rep(c("YES","NO"),25), 
@@ -88,14 +90,15 @@ stat <- CalcStatCategorical(DT = ExampleDF, obsCol = "obs", modCol = "mod",
 category = c("YES","NO"), groupBy="Experiment")
 
 # for continuous data with different threshold values
-ExampleDF <- data.frame(obs=rnorm(10000000, 100, 10), mod=rnorm(10000000, 100, 10))
+ExampleDF <- data.frame(obs=rnorm(10000, 100, 10), mod=rnorm(10000, 100, 10))
 stat <- CalcStatCategorical(DT = ExampleDF, obsCol = "obs", modCol = "mod", 
 threshold = c(60,70,80,90,100,110, 120, 130, 140))
 
-ExampleDF <- data.frame(obs=rnorm(10000000, 100, 10), mod=rnorm(10000000, 100, 10), 
-Experiment=rep(c("Model1","Model2"),5000000))
+ExampleDF <- data.frame(obs=rnorm(10000, 100, 10), mod=rnorm(10000, 100, 10), 
+Experiment=rep(c("Model1","Model2"),5000))
 stat <- CalcStatCategorical(DT = ExampleDF, obsCol = "obs", modCol = "mod", 
 threshold = c(60,70,80,90,100,110, 120, 130, 140), groupBy = "Experiment")
+}
 
 }
 \seealso{

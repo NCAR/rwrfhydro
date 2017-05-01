@@ -79,7 +79,7 @@ CalcDailyGhcn <- function(sg, prcp, reportTime = 700, parallel = FALSE){
   
   # Find the time difference between the UTC and the Local Standard Time using Time Zone
   offset1 <- lapply(timeZoneList, function(timeZoneX) {
-    offset1 <- tzLookup$UTC_offset[tzLookup$TZ == timeZoneX]
+    offset1 <- rwrfhydro::tzLookup$UTC_offset[rwrfhydro::tzLookup$TZ == timeZoneX]
   })
   diffTime <-as.difftime(gsub("[+-]","", offset1), format = "%H:%M") *ifelse(grepl("^-", offset1),-1, 1)
   names(diffTime) <- names(offset1)
@@ -121,7 +121,7 @@ CalcDailyGhcn <- function(sg, prcp, reportTime = 700, parallel = FALSE){
   # Convert the dataframe to data.table to do the daily aggregation faster
   # We keep the number of hours used to calculate the daily data (summation)
   
-  if (is.element('data.table', installed.packages()[,1])){
+  if (is.element('data.table', utils::installed.packages()[,1])){
     prcp <- data.table::as.data.table(prcp)
    dailyData <-data.table:::`[.data.table`(prcp, ,.(dailyPrcp = sum(DEL_ACCPRCP),numberOfDataPoints = .N), by = .(ghcnDay,statArg))
     return(as.data.frame(dailyData))

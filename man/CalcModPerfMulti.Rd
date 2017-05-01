@@ -39,6 +39,8 @@ tz="UTC"))}
 \item{writeOutPairDf}{character path/name for file to output the data frame constructed
 before calculating the statistics and various aggregations. NULL by default gives
 no output.}
+
+\item{fileTag}{A to be inserted in the file name, just before the file extension.}
 }
 \value{
 A new dataframe containing the model performance statistics.
