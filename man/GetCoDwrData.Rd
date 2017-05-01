@@ -43,4 +43,3 @@ str.RIO <- GetCoDwrData(c("RIOSFKCO", "RIOWAGCO","RIODELCO"),
 Streamflow
 }
 \keyword{IO}
-

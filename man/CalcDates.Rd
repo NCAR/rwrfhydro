@@ -17,4 +17,3 @@ The input dataframe with date columns added.
 Calculate standard date breaks.
 }
 \keyword{internal}
-

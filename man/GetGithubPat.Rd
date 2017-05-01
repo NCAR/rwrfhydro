@@ -12,4 +12,3 @@ Retrieve Github personal access token.
 Looks in env var \code{GetGithubPat}.
 }
 \keyword{internal}
-
