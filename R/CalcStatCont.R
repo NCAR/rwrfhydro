@@ -218,14 +218,14 @@ CalcStatCont <- function(DT, obsCol, modCol, groupBy = NULL,
     meanMod      =  mean(mod),
     stdObs       =  stats::sd(obs),
     stdMod       =  stats::sd(mod),
-    pearsonCor   =  if (!is.na(sd(obs)) & !is.na(stats::sd(mod)) & 
-                        sd(stats::obs) > 0 & sd(stats::mod) > 0 ) 
+    pearsonCor   =  if (!is.na(stats::sd(obs)) & !is.na(stats::sd(mod)) & 
+                        stats::sd(obs) > 0 & stats::sd(mod) > 0 ) 
       stats::cor(obs, mod, method = "pearson") else NA_real_,
-    spearmanCor  =  if (!is.na(sd(obs)) & !is.na(stats::sd(mod)) & 
-                        sd(stats::obs) > 0 & sd(stats::mod) > 0 ) 
+    spearmanCor  =  if (!is.na(stats::sd(obs)) & !is.na(stats::sd(mod)) & 
+                        stats::sd(obs) > 0 & stats::sd(mod) > 0 ) 
       stats::cor(obs, mod, method = "spearman") else NA_real_,
     kendallCor   =  if (!is.na(sd(obs)) & !is.na(stats::sd(mod)) & 
-                        sd(stats::obs) > 0 & sd(stats::mod) > 0 ) 
+                        stats::sd(obs) > 0 & stats::sd(mod) > 0 ) 
       stats::cor(obs, mod, method = "kendall") else NA_real_,
     ME           =  mean(error),              
     MSE          =  mean((error)^2),         
