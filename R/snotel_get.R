@@ -56,7 +56,7 @@ GetSnotel <- function(siteIDs,
   #timeseries=$SERIES&format=copy&sitenum=$STATION&year=$YEAR&month=$MONTH&day=$DAY"
   
   # Setup
-  server="http://www.wcc.nrcs.usda.gov/nwcc/"
+  server="https://wcc.sc.egov.usda.gov/nwcc/"
   # initialize dataframe
   data <- data.frame()
   years <- c()
