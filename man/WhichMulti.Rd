@@ -19,4 +19,3 @@ Mark van der Loo 16.09.2011.
 }
 \keyword{internal}
 \keyword{utilities}
-

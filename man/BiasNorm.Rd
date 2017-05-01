@@ -20,4 +20,3 @@ Calculate the normalized/percent bias for vectors
 of modelled and observed values.
 }
 \keyword{internal}
-

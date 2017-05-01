@@ -20,4 +20,3 @@ as minimum error.}
 errors (same units as input) as percent of observed plus some quantile of
 historical record.
 }
-
