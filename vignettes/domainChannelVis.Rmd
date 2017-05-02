@@ -16,6 +16,7 @@ When setting up a domain and forecast points, it can be useful to quickly visula
 Load the rwrfhydro package. 
 ```{r, results='hide'}
 library("rwrfhydro")
+library(rgdal) ## on some linux machines this appears needed
 ```
 
 Set the path to the directory of WRF Hydro test cases.

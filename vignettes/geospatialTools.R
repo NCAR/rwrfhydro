@@ -25,6 +25,7 @@
 #' 
 ## ------------------------------------------------------------------------
 library(rwrfhydro)
+library(rgdal) ## on some linux machines this appears needed
 options(warn=1)
 
 #' 

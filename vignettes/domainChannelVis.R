@@ -16,6 +16,7 @@
 #' Load the rwrfhydro package. 
 ## ---- results='hide'-----------------------------------------------------
 library("rwrfhydro")
+library(rgdal) ## on some linux machines this appears needed
 
 #' 
 #' Set the path to the directory of WRF Hydro test cases.
