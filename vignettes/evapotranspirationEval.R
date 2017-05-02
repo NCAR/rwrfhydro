@@ -99,8 +99,8 @@ nrMeta
 #' 
 #' We plug this timezone into the ReadAmeriflux function along with the downloaded file (BASE format).
 ## ------------------------------------------------------------------------
-obsFlux30min.usnr1 <- ReadAmeriflux('~/wrfhydroTestCases/Fourmile_Creek_testcase_v2.0/OBS/AMF_US-NR1_BASE_HH_9-1.csv',
-                                    tz='America/Denver')
+obsFlux30min.usnr1 <- ReadAmeriflux('~/wrfHydroTestCases/Fourmile_Creek_testcase_v2.0/OBS/AMF_US-NR1_BASE_HH_9-1.csv',
+                                     tz='America/Denver')
 
 #' 
 #' Our LDASOUT time step was 1 day, so we need to aggregate the observations to a UTC daily time step for comparison. We apply the aggregations only to numeric variables to avoid a bunch of R warnings.
