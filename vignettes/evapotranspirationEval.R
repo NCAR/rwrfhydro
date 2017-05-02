@@ -17,6 +17,10 @@
 library("rwrfhydro")
 
 #' 
+## ---- echo=FALSE---------------------------------------------------------
+options(warn=1)
+
+#' 
 #' Set a data path to the Fourmile Creek test case.
 ## ------------------------------------------------------------------------
 dataPath <- '~/wrfHydroTestCases/Fourmile_Creek_testcase_v2.0/'
@@ -70,7 +74,7 @@ indList <- list( lsm=lsmInds )
 ## ------------------------------------------------------------------------
 library(doMC)
 registerDoMC(3)
-modDf <- GetMultiNcdf(file=flList,var=varList, ind=indList, parallel=TRUE)
+modDf <- GetMultiNcdf(file=flList,var=varList, ind=indList, parallel=FALSE)
 
 #' 
 #' Now we can "flatten" the output to make it work better with certain tools.

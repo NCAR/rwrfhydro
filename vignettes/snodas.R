@@ -25,7 +25,8 @@ options(width = 120)
 #' This is the path to the directory where you want your database to be built (it should exist and be empty for the purposes of this example):
 ## ------------------------------------------------------------------------
 snodasPath <- '~/wrfHydroTestCases/snodas/' 
-if(!dir.exists(snodasPath)) dir.create(snodasPath)
+if(dir.exists(snodasPath)) file.remove(list.files(snodasPath,'.', full.names=TRUE))
+dir.create(snodasPath)
 
 #' 
 #' 

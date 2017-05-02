@@ -83,7 +83,11 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>Load the rwrfhydro package.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;rwrfhydro&quot;</span>)</code></pre></div>
 <p>This is the path to the directory where you want your database to be built (it should exist and be empty for the purposes of this example):</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">snodasPath &lt;-<span class="st"> '~/wrfHydroTestCases/snodas/'</span> </code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">snodasPath &lt;-<span class="st"> '~/wrfHydroTestCases/snodas/'</span> 
+<span class="cf">if</span>(<span class="kw">dir.exists</span>(snodasPath)) <span class="kw">file.remove</span>(<span class="kw">list.files</span>(snodasPath,<span class="st">'.'</span>, <span class="dt">full.names=</span><span class="ot">TRUE</span>))</code></pre></div>
+<pre><code>##  [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dir.create</span>(snodasPath)</code></pre></div>
+<pre><code>## Warning in dir.create(snodasPath): '/Users/james/wrfHydroTestCases/snodas' already exists</code></pre>
 </div>
 <div id="get-some-data" class="section level1">
 <h1>Get some data</h1>
