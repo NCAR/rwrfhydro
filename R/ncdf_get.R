@@ -17,7 +17,7 @@
 #' @concept ncdf 
 #' @family ncdf 
 #' @export
-GetNcdfFile <- function(file, variables, exclude=FALSE, quiet=FALSE, flip2D=TRUE){
+GetNcdfFile <- function(file, variables=NULL, exclude=FALSE, quiet=FALSE, flip2D=TRUE){
   
   if(!file.exists(file)) warning(paste0('The file ', file, 'does not exist.'), immediate. = TRUE)
 
@@ -32,7 +32,7 @@ GetNcdfFile <- function(file, variables, exclude=FALSE, quiet=FALSE, flip2D=TRUE
   if(any(whDimVarsVals)) varsInFile <- c(dimVarsInFile[whDimVarsVals], varsInFile)
   
   returnVars <- 
-  if(!missing(variables)) {
+  if(!is.null(variables)) {
     varsNotInFile <- setdiff(variables, varsInFile)
     if(length(varsNotInFile)) 
       warning(paste0('The following variables were not found in the file', paste(varsNotInFile, collapse=', ')))
