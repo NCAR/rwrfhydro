@@ -40,7 +40,6 @@ Suggests:
     rgdal,
     sp,
     pander,
-    doMC,
     ptw,
     rmarkdown
 BuildVignettes: false
