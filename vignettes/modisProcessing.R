@@ -1,0 +1,165 @@
+#' ---
+#' title: "Download and process MODIS LAI images"
+#' author: "Aubrey Dugger"
+#' date: "`r Sys.Date()`"
+#' output: rmarkdown::html_vignette
+#' vignette: >
+#'   %\VignetteIndexEntry{MODIS Processing}
+#'   %\VignetteEngine{knitr::rmarkdown}
+#'   \usepackage[utf8]{inputenc}
+#' ---
+#' 
+#' # Background
+#' We are using WRF-Hydro to predict streamflow for Fourmile Creek at the Orodell USGS gage for the 2013 snowmelt period. We want to obtain MODIS LAI images for our region of interest and insert the processed images into our forcing time series so we can use dynamic LAI in future WRF-Hydro model runs.
+#' 
+#' Load the rwrfhydro package. 
+## ------------------------------------------------------------------------
+library("rwrfhydro")
+
+#' 
+#' Set a data path to the Fourmile Creek test case.
+## ------------------------------------------------------------------------
+dataPath <- '~/wrfHydroTestCases/Fourmile_Creek_testcase_v2.0/'
+
+#' 
+#' # Setup the MODIS-R tool.
+#' 
+#' NOTE: These tools rely heavily on the R-Forge <a href="https://r-forge.r-project.org/projects/modis/">MODIS-R</a> package, so please see their development page and R help pages for more on the package tools and options. Currently, we are making some edits to the MODIS tool to add some capacity specific to WRF-Hydro applications. So please install the rwrfhydro version of MODIS from github (`devtools::install_github("aubreyd/modis4rwrfhydro")`). A local system <a href="http://www.gdal.org/">GDAL</a> install is also required.
+#' 
+#' To start, we need to load a few libraries and then tell MODIS-R where our working directories are. If this is the first time using MODIS-R, we will also need to tell it where the local GDAL libraries live. Your GDAL pathname may vary; type "which gdalinfo" in a terminal window to find the appropriate path for your system. If gdalinfo is not found, make sure you have GDAL installed on your local system. 
+## ------------------------------------------------------------------------
+library(rgeos)
+library(rgdal)
+library(raster)
+library(MODIS)
+library(ncdf4)
+
+## if gdalPath returns 1=error, then try these two lines, substiting your shell profile script as appropriate.
+# bashPath <- system('. ~/.bash_profile; echo $PATH', intern = TRUE)
+# Sys.setenv(PATH=bashPath)
+gdalPath <- sub("gdalinfo", replacement="", system("which gdalinfo", intern=TRUE))
+MODISoptions(localArcPath="~/wrfHydroTestCases/MODIS_ARC", 
+             outDirPath="~/wrfHydroTestCases/MODIS_ARC/PROCESSED", gdalPath=gdalPath,
+             stubbornness="low")
+
+#' 
+#' 
+#' # Download and process MODIS tiles
+#' 
+#' Here we download the relevant MODIS tiles and resample to the Fourmile Creek geogrid. The GetMODIS tool calls the MODIS-R runGdal tool to identify the required MODIS tiles to cover the domain, download the appropriate product tiles, mosaic them, and clip/resample (nearest neighbor) to the geogrid extent and resolution. The result will be a directory of processed TIF images in the outDirPath specified in MODISoptions. We specify the geogrid, a start and end date, and the MOD15A2 (FPAR/LAI) MODIS product name.
+#' 
+## ------------------------------------------------------------------------
+GetMODIS(extent=paste0(dataPath, '/DOMAIN/geo_em_d01.Fourmile1km.nlcd11.nc'), prodName="MOD15A2",  
+         outDir="FOURMILE_LAI", begin="2013.03.01", end="2013.07.31",
+         exclList=list("Fpar_1km"="gt 100", 
+                       "Lai_1km"="gt 100", 
+                       "FparLai_QC"="255", 
+                       "FparExtra_QC"="255", 
+                       "FparStdDev_1km"="gt 100", 
+                       "LaiStdDev_1km"="gt 100"), 
+         resampList=list("Fpar_1km"="bilinear", 
+                       "Lai_1km"="bilinear", 
+                       "FparLai_QC"="mode", 
+                       "FparExtra_QC"="mode", 
+                       "FparStdDev_1km"="bilinear", 
+                       "LaiStdDev_1km"="bilinear"),
+         quiet=TRUE)
+
+#' 
+#' Create a raster stack of the downloaded and processed MODIS LAI images. This tool does some additional processing of the images to get them into a more usable format. Specifically, it can remove "no data" values (in this case, we already excluded those before reasmpling in the step above) and can apply product-specific scale factors (in this case, 0.1). See the <a href="https://lpdaac.usgs.gov/products/modis_products_table">MODIS data page</a> for specifics on valid value ranges and scale factors.
+## ------------------------------------------------------------------------
+lai.b <- ConvertRS2Stack(paste0(options("MODIS_outDirPath"), '/FOURMILE_LAI'), "*Lai_1km.tif$", 
+                         begin="2013.03.01", end="2013.07.31", 
+                         valScale=0.1, valAdd=0)
+
+#' 
+#' See the help on ConvertRS2Stack for more details on the processing options.
+## ----, results='hide'----------------------------------------------------
+
+?ConvertRS2Stack
+
+#' 
+#' <div style="border:1px solid; border-radius: 25px; padding: 12px 25px;">
+## ----, echo=FALSE--------------------------------------------------------
+
+library(printr)
+?ConvertRS2Stack
+
+#' </div>
+#' 
+#' <br>
+#' We can export the processed raster stack to a NetCDF file for use outside of R.
+## ------------------------------------------------------------------------
+ConvertStack2NC(lai.b, outFile=paste0(dataPath, '/DOMAIN/FOURMILE_LAI_SUM13.nc'), 
+                varName="LAI", varUnit="(m^2)/(m^2)", varLong="Leaf area index", varNA=-1.e+36)
+
+#' 
+#' Let's take a look at the raster stack we created. List the available layers (labelled by date).
+## ------------------------------------------------------------------------
+names(lai.b)
+
+#' 
+#' Plot a few of the images in the LAI raster stack. We can choose which layer to plot by index or name.
+## ----rastLAI1, fig.width = 12, fig.height = 6, out.width='700', out.height='350'----
+plot(lai.b, 1)
+
+#' 
+## ----rastLAI2, fig.width = 12, fig.height = 6, out.width='700', out.height='350'----
+plot(lai.b, "DT2013.07.12")
+
+#' 
+#' 
+#' # Apply smoothing filters
+#' 
+#' Apply a whittaker filter to smooth the LAI time series. This is generally not necessary for a derived product like LAI, but may be useful for products like NDVI, snow cover fraction, vegetated fraction, etc.
+#' 
+#' Try a highly smoothed filter.
+## ------------------------------------------------------------------------
+lai.b.sm1 <- SmoothStack(lai.b, 
+                         outDirPath=paste0(options("MODIS_outDirPath"), '/FOURMILE_LAI_SMOOTH1'), 
+                         outputAs="one", removeOutlier=TRUE, outlierThreshold=0.5, 
+                         lambda=2000, overwrite=TRUE)
+
+#' 
+#' Try a less aggressive filter.
+## ------------------------------------------------------------------------
+lai.b.sm2 <- SmoothStack(lai.b, 
+                         outDirPath=paste0(options("MODIS_outDirPath"), '/FOURMILE_LAI_SMOOTH2'), 
+                         outputAs="one", lambda=100, overwrite=TRUE)
+
+#' 
+#' Calculate statistics and plot the domain means over time.
+## ------------------------------------------------------------------------
+stats.lai.b <- CalcStatsRS(lai.b)
+stats.lai.b.sm1 <- CalcStatsRS(lai.b.sm1)
+stats.lai.b.sm2 <- CalcStatsRS(lai.b.sm2)
+
+#' 
+## ----, results = "hide"--------------------------------------------------
+head(stats.lai.b)
+
+#' 
+## ----, , results = "asis", echo=FALSE------------------------------------
+library(pander)
+pander::pandoc.table(head(stats.lai.b))
+
+#' 
+## ----compSmoothLAI, fig.width = 12, fig.height = 6, out.width='700', out.height='350'----
+with(stats.lai.b, plot(POSIXct, mean, typ='l'))
+with(stats.lai.b.sm1, lines(POSIXct, mean, col='red'))
+with(stats.lai.b.sm2, lines(POSIXct, mean, col='blue'))
+legend("topleft", c("MODIS Raw", "Smooth Filter 1", "Smooth Filter 2"), 
+       col=c("black", "red", "blue"), lty=c(1,1,1))
+
+#' 
+#' 
+#' # Export to forcing
+#' 
+#' Export the second smoothed time series to the forcing data for use in future model runs. This requires a local NCO installation.
+## ------------------------------------------------------------------------
+InsertRS(lai.b.sm2, forcPath=paste0(dataPath, '/FORCING'), forcName="LDASIN_DOMAIN1", 
+         varName="LAI", varUnit="(m^2)/(m^2)", varLong="Leaf area index", overwrite=TRUE)
+
+#' <br><br>
+#' 
+#' 

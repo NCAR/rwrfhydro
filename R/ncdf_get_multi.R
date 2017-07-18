@@ -1,5 +1,5 @@
 #=====================================================================
-ParseIndexArg <- function( index, dimSize ) {
+ParseIndexArg <- function( index, dimSize, ncid ) {
 
   ## Deal with various index possibilities. 
   ## Dont accept functions/closures, i want their names so I can use that information.
@@ -30,17 +30,21 @@ ParseIndexArg <- function( index, dimSize ) {
   dataEnd=NULL
   statFunc=NULL
   statChar=NULL
+  statArg=NULL
   
   if(is.list(index)) {
     if(!all(c('start','end','stat') %in% names(index))) {
       ncdf4::nc_close(ncid)
-      warning('List index has inapproprite names.')
+      warning('List index has inappropriate names.')
       return(NULL)
     }
     dataStart <- index[['start']]
     dataEnd <- index[['end']]
     statFunc <- CharToFunction(index[['stat']])
     statChar <- index[['stat']]
+    if ('arg' %in% names(index)) {
+      statArg <- index[['arg']]
+    }
   } else if(is.character(index)) {
     statFunc <- CharToFunction(index)
     statChar <- index
@@ -48,17 +52,17 @@ ParseIndexArg <- function( index, dimSize ) {
     dataStart <- dataEnd*0+1
   } else if(is.function(index)) {    
     statFunc <- CharToFunction(index)  ## this will throw error
-  } else if(class(index)=='numeric') {
+  } else if(class(index)=='numeric' | class(index)=='integer') {
     dataStart <- dataEnd <- index
   } else {
     ncdf4::nc_close(ncid)
-    warning('Inapproriate type (',typeof(index),
+    warning('Inappropriate type (',typeof(index),
             ') for argument index or could not find a function with that name.')
     return(NULL)
   }
   
   list(dataStart=dataStart, dataEnd=dataEnd,
-       statFunc=statFunc, statChar=statChar )
+       statFunc=statFunc, statChar=statChar, statArg=statArg )
 }
 
 
@@ -83,14 +87,14 @@ ParseIndexArg <- function( index, dimSize ) {
 #' @concept dataGet
 #' @family getMultiNcdf
 #' @export
-GetFileStat <- function(theFile, variable, index, env=parent.frame(), ...) {
+GetFileStat <- function(theFile, variable, index, env=parent.frame(), parallel=FALSE, ...) {
 
   if(!file.exists(theFile)) {
     warning('No such file: ',theFile)
     return(NULL)
   }
   ncid <- ncdf4::nc_open(theFile)
-  
+
   if(!(variable %in% names(ncid$var))) {
     ncdf4::nc_close(ncid)
     warning('No such variable ',variable,' in ',theFile,'.')
@@ -111,42 +115,71 @@ GetFileStat <- function(theFile, variable, index, env=parent.frame(), ...) {
     time <- ncdf4::ncatt_get( ncid, 0 )[possibleTimeNames[whTimeName]]
     time <- as.POSIXct(sub('_',' ',time), tz='UTC') ## wrf hydro is UTC
   } 
-  if(is.function(time)) stop('Time dimension not found in file')
+
+  possibleTimeNames <- c('model_output_valid_time')
+  whTimeName <- which(possibleTimeNames %in% names(ncdf4::ncatt_get( ncid, 0)))
+  if(length(whTimeName)) {
+    time <- ncdf4::ncatt_get( ncid, 0)[possibleTimeNames[whTimeName]]
+    time <- as.POSIXct(sub('_',' ',time), tz='UTC')
+  }
+  if(is.function(time)) warning('Time dimension not found in file, therefore the file name is returned in POSIXct')
   
   dimSize <- ncid$var[[variable]]$size
 
-  ## Deal with various index possibilities. 
-  ## Dont accept functions/closures, i want their names so I can use that information.
-  ## Convert character strings to the associated closure/function, or die trying.
-  indexList <- ParseIndexArg(index, dimSize)
-  dataStart <- indexList$dataStart
-  dataEnd <- indexList$dataEnd
-  statFunc <- indexList$statFunc
-  statChar <- indexList$statChar
+  ApplyIndex <- function(i=NULL, index, label="-") {
+    ## Deal with various index possibilities. 
+    ## Dont accept functions/closures, i want their names so I can use that information.
+    ## Convert character strings to the associated closure/function, or die trying.
+    if (!is.null(i)) {
+      index <- index[[i]]
+      label <- label[i]
+    }
+    indexList <- ParseIndexArg(index, dimSize)
+    dataStart <- indexList$dataStart
+    dataEnd <- indexList$dataEnd
+    statFunc <- indexList$statFunc
+    statChar <- indexList$statChar
+    statArg <- indexList$statArg
+    ## sanity check the dimensions
+    #print(paste("i=", i, "label=", label, "dataStart=", length(dataStart), "dataEnd=", length(dataEnd), "dimSize=", length(dimSize)))
+    if( length(dataStart)!=length(dataEnd) | length(dataStart)!=length(dimSize) |
+        any(dataStart < 1) | any(dataStart > dimSize) |
+        any(dataEnd   < 1) | any(dataEnd   > dimSize) |
+        any(dataStart > dataEnd) ) {
+          ncdf4::nc_close(ncid)
+          stop("Error in passed index or its dimensions, variable has dimensions: ",
+              paste(dimSize,collapse=', '))
+        return(NULL)
+        }
   
-  ## sanity check the dimensions
-  if( length(dataStart)!=length(dataEnd) | length(dataStart)!=length(dimSize) |
-  any(dataStart < 1) | any(dataStart > dimSize) |
-     any(dataEnd   < 1) | any(dataEnd   > dimSize) |
-     any(dataStart > dataEnd) ) {
-    ncdf4::nc_close(ncid)
-    stop("Error in passed index or its dimensions, variable has dimensions: ",
-            paste(dimSize,collapse=', '))
-    return(NULL)
+    dataCount <- dataEnd-dataStart+1
+    data <- ncdf4::ncvar_get(ncid, variable, start=dataStart, count=dataCount)
+    outDf <- if(!is.null(statFunc))
+              data.frame( do.call(statFunc, append(list(data), statArg), envir=env) ) else data.frame(data)
+  
+    names(outDf) <- c(variable)
+    if (!is.function(time)) {
+            outDf$POSIXct <- time
+            } else {
+                tmpDate <- as.POSIXct(unlist(strsplit(basename(theFile), split="[.]"))[1], 
+                        format="%Y%m%d%H%M", tz="UTC")
+                outDf$POSIXct <- tmpDate
+            }
+    outDf$inds <-paste( paste(dataStart,dataEnd,sep=':'), collapse=',' )
+    if(is.null(statChar)) statChar <- '-'
+    outDf$stat <- statChar
+    outDf$statArg <- label
+    outDf
+    } # end: ApplyIndex
+  
+  if (is.list(index[[1]])) {
+    i <- 1:length(index)
+    outDf <- plyr::ldply(i, ApplyIndex, index, label=names(index),
+                         .parallel=parallel)
+  } else {
+    outDf <- ApplyIndex(i=NULL, index)
   }
-  
-  dataCount <- dataEnd-dataStart+1
-  data <- ncdf4::ncvar_get(ncid, variable, start=dataStart, count=dataCount)
   ncdf4::nc_close(ncid)
-
-  outDf <- if(!is.null(statFunc))
-              data.frame( do.call(statFunc, list(data, ...), envir=env) ) else data.frame(data)
-  
-  names(outDf) <- c(variable)
-  outDf$POSIXct <- time
-  outDf$inds <-paste( paste(dataStart,dataEnd,sep=':'), collapse=',' )
-  if(is.null(statChar)) statChar <- '-'
-  outDf$stat <- statChar
   outDf
 }
 # end: getFileStat
@@ -175,7 +208,7 @@ GetMultiNcdfVariable <- function(varInd, indexList,
   outDf <- plyr::ldply(files, GetFileStat,
                        variableList[[varInd]], indexList[[varInd]],
                        env=env, .parallel=parallel) 
-  outDf <- reshape2::melt(outDf, c('POSIXct','inds','stat') )
+  outDf <- reshape2::melt(outDf, c('POSIXct','inds','stat','statArg') )
   outDf$variableGroup <- names(variableList)[varInd]
   outDf
 }
@@ -315,6 +348,7 @@ GetMultiNcdf <- function(filesList, variableList, indexList, env=parent.frame(),
     stop("The input lists must be collated: their names do not match.")
   ## Due to some internal "deficiencies" of plyr, I find it's better to loop
   ## on index. This results in more coherent output.
+  #print("Starting")
   fileInd <- 1:length(filesList)
   outDf <- plyr::ldply(fileInd, GetMultiNcdfFile,
                        variableList=variableList,
