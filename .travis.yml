@@ -1,8 +1,5 @@
 language: r
 sudo: required
-dist: trusty
-cache: packages
-
 os:
 - linux
 env:
@@ -14,12 +11,7 @@ env:
 before_install:
 - sudo apt-get update -qq
 - sudo apt-get install -qq netcdf-bin libnetcdf-dev
-
-addons:
-  apt:
-    packages:
-      - libgdal-dev
-      - libproj-dev
+- sudo apt-get install r-cran-rgdal ## this is 0.8.6, i believe.
 
 r_github_packages:
   - yihui/printr

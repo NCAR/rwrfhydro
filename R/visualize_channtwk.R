@@ -216,11 +216,25 @@ VisualizeChanNtwk <- function(file, gaugePts=NULL, excludeInds=NULL,
     
     if(clickSelect) {
       print(thePlot + ggplot2::ggtitle('Please click to get info about the channel link'))
-      clickPt <- ggmap::gglocator(n=1)
-      locX <- clickPt$lon
-      locY <- clickPt$lat
+      gridNames <- grid::grid.ls(print=FALSE)[['name']]
+      x <- gridNames[grep("panel.[1-9]-", gridNames)] #locate the panel
+      grid::seekViewport(x)
+      cat("Please click on plot to select nearest point to your click...",sep='\n')
+      clickPt <-  grid::grid.locator("npc")
+      clickPt <- as.numeric(substring(clickPt, 1, nchar(clickPt)-3))
+      
+      mapMinMax <- attributes(theMap)$bb
+      locX <- as.numeric(mapMinMax['ll.lon'] + 
+                         clickPt[1] * diff(as.numeric(mapMinMax[c('ll.lon','ur.lon')])))
+      locY <- as.numeric(mapMinMax['ll.lat'] + 
+                         clickPt[2] * diff(as.numeric(mapMinMax[c('ll.lat','ur.lat')])))
+      
+      locX <- min(plotLimX) + clickPt[1] * diff(range(plotLimX))
+      locY <- min(plotLimY) + clickPt[2] * diff(range(plotLimY))
+      
       whClosest <- which.min( sqrt((linkDf$lon-as.numeric(locX))^2 +
-                                   (linkDf$lat-locY)^2))      
+                                   (linkDf$lat-locY)^2))
+      
       thePlot <- 
         thePlot +
         ggplot2::geom_point(data=data.frame(lon=linkDf$lon[whClosest],
@@ -234,8 +248,6 @@ VisualizeChanNtwk <- function(file, gaugePts=NULL, excludeInds=NULL,
       print(thePlot)
     } else print(thePlot)
    
-    ## The return value of the closure  
-    invisible(list(linkDf=linkDf, ggplot=thePlot))
   }
   
   if(plot) GetChanPoint() 

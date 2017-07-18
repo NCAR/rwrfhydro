@@ -1,0 +1,141 @@
+---
+title: "Collect USGS stream observations and build a local database."
+author: "James McCreight"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Collect USGS stream observations and build a local database}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+# Background
+USGS streamflow observations are a primary source of hydrologic information and often used for 
+validation and calibration of hydrlogic models. Recently, web services have been developed 
+at [*NWIS*](http://waterdata.usgs.gov/nwis) and the [*dataRetrieval*](http://cran.r-project.org/web/packages/dataRetrieval/index.html) R package have emerged to make it easy to get USGS data into R. 
+
+This vignette demonstrates some rwrfhydro tools to collect, store, and manipulate USGS data. These
+are built ontop of the dataRetrieval package. As with the rest of the rwrfhydro package, 
+development is on-going. Currently, we focus on instantaneous stream data observations from NWIS.
+The tools build a local database which has not yet been developed to allow appending (i.e. only grabbing and 
+adding) observations beyond those existing locally. But there is enough existing functionality to make its 
+exposition worthwhile. Check for updates to this vignette. 
+
+The fundamental layout of the local database is simply a directory containing:
+
+* Metadata data base (metaDB): Organized hierarchically by HUC8 -> product id -> siteInfo, variableInfo, statisticInfo
+  where the last three are information fields returned by dataRetrieval::readNWISuv. The information in this file is
+  simply the aggregation of the metadata from all the data files also contained in the same directory.
+* Individual data files collected by HUC8: These contain both the meta data for the HUC8 (aggregated in the metadata DB)
+  and all the previously retrieved data for the HUC8. 
+
+Generally, there are two basic kinds of functions: "Get" and "Query". Get functions use dataRetrieval functions to actually go out to NWIS and "get" data and metadata. Query functions query the local database. There are exceptions to this.
+
+# Setup
+Load the rwrfhydro package. 
+```{r, results='hide'}
+library("rwrfhydro")
+```
+
+```{r, echo=FALSE}
+options(width = 120)
+library(printr)
+```
+
+This is the path to the directory where you want your database to be built:
+```{r}
+dbPath <- '~/wrfHydroTestCases/usgsDb/' 
+```
+
+
+# Discover gage locations, get data, and save to local database.
+
+Perhaps you know the lat/lon of a gage (e.g. from frxst_pts_out.txt) and you need the HUC8. The `within` argument is 
+taken to be in decimal degrees. 
+```{r, results='hold'}
+stnDf <- FindUsgsStns(stnLon=254.67374999999998408, 
+                      stnLat=40.018666670000001773,
+                      within=.001)
+str(stnDf)
+```
+
+Now you have the site_no or station ID number, "06727500". You could have also used `FindUsgsStns()` to reveal the gages in the HUC8, if you knew the HUC8 code. Because we organize the database by HUC8, we have a function to get HUC8 from station id. Then we get the above information for all locations in the HUC8. 
+```{r, results='hold'}
+huc8 <- GetSiteHuc(stnDf$site_no)
+str(FindUsgsStns(huc=huc8))
+```
+
+FindUsgsStns is a wrapper on dataRetrieval::whatNWISsites which has been written to focus on instantaneous values. (It is worth noting the flexibility and generality of the underlying function.)
+
+Now pull the data for this HUC8. Currently, this grabs all available products for the HUC. Note that the HUC data are organized by product code (e.g. `00060`) then by `data` and `meta` in the returned list. (Also note that this command sometimes fails on the remote end and may need to be rerun.) In `meta`, siteInfo is the meta that we use in querying the local data base in commands shown below.
+```{r, results='hold'}
+coData <- GetUsgsHucData(huc=huc8)
+str(coData)
+```
+
+Now save this data to the local database. Note that this also could have been achieved by specifying the `outPath` argument to `GetUsgsHucData`.
+```{r, results='hold'}
+coFiles <- SaveHucData(coData, outPath=dbPath)
+coFiles
+```
+
+For a little more variety of HUCs in the database, let's also grab the following HUC. 
+```{r}
+filesAL <- GetUsgsHucData(huc='03160203', outPath=dbPath) ## Satilpa, AL
+```
+
+
+# Query the local data
+Now we work entirely locally, having grabbed the data of interest. For all HUC8 and products, any of the siteInfo metadata can be retrieved from the local DB. Note that the same site is repeated for multiple products.
+```{r}
+QuerySiteInfo(c('station_nm','site_no','dec_lat_va','dec_long_va'), path=dbPath)
+```
+
+Say you just want Orodell and you want your code to be readable: translate the name to the code with QuerySiteName (which translates both ways).
+```{r, results='hold'}
+dataOrodell <- QuerySiteData(QuerySiteName("FOURMILE CREEK AT ORODELL, CO", path=dbPath), 
+                             product='00060', path=dbPath)
+str(dataOrodell)
+```
+
+Now make it "pretty". The main difference here is meaningful column names and identification of variables and codes in the attributes. We have defined "prettyUsgs" as an S3 class. 
+```{r}
+prettyOrodell <- PrettyUsgs(dataOrodell, metric=TRUE)
+str(prettyOrodell)
+class(prettyOrodell)
+```
+
+Plot the "pretty"" data. 
+```{r PlotPrettyOrodell, fig.width = 12, fig.height = 6, out.width='700', out.height='350'}
+oroPlot <- PlotPrettyUsgs(prettyOrodell)
+```
+
+Do this same as above, but for all sites in the HUC8. We restrict the plotting to just 3 locations so it's legible
+for output here.
+```{r PlotPrettyCO, fig.width = 12, fig.height = 6, out.width='700', out.height='350'}
+siteInfo<-QuerySiteInfo(c('station_nm','site_no','state_cd'), path=dbPath)
+dataCO <- PrettyUsgs(QuerySiteData(subset(siteInfo, state_cd=='08' & product=='00060')$site_no, 
+                                       product='00060', path=dbPath))
+## 1:3 just to make the plot legible
+coPlot <- PlotPrettyUsgs(subset(dataCO, site_no %in% unique(dataCO$site_no)[1:3]), plot=FALSE) 
+coPlot(yLog=TRUE)
+```
+
+We can also retrieve data from sites in different HUC8s. 
+```{r}
+dataMultiHuc <- PrettyUsgs(QuerySiteData(c('06730500','02469800'), product='00060', path=dbPath))
+str(dataMultiHuc)
+```
+
+# GagesII Attributes 
+We've imported the gages-II atributes to be directly available in R.
+<div style="border:1px solid; border-radius: 25px; padding: 12px 25px;">
+```{r}
+?gages2Attr
+```
+</div>
+
+More specifically:
+```{r}
+str(gages2Attr)
+```

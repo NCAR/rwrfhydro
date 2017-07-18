@@ -27,15 +27,9 @@
 #' @family flowDurationCurves
 #' @export
 CalcFdc <- function(strDf, strCol="q_cms") {
-    if (data.table::is.data.table(strDf)) {
-        tmp <- rank(-strDf[, strCol, with=FALSE], na.last="keep")
-        strDf[, paste0(strCol,".fdc") := NA]
-        strDf[, paste0(strCol,".fdc") := tmp/(sum(!is.na(strDf[,strCol,with=FALSE]))+1)]
-    } else {
-        tmp <- rank(-strDf[,strCol],na.last="keep")
-        strDf[,paste0(strCol,".fdc")] <- NA
-        strDf[,paste0(strCol,".fdc")] <- tmp/(sum(!is.na(strDf[,strCol]))+1)
-    }
+    tmp <- rank(-strDf[,strCol],na.last="keep")
+    strDf[,paste0(strCol,".fdc")] <- NA
+    strDf[,paste0(strCol,".fdc")] <- tmp/(sum(!is.na(strDf[,strCol]))+1)
     strDf
 }
 
@@ -78,8 +72,7 @@ CalcFdc <- function(strDf, strCol="q_cms") {
 #' @family flowDurationCurves
 #' @export
 CalcFdcSpline <- function(strDf, strCol="q_cms") {
-    strflowSpline <- splinefun(strDf[,paste0(strCol,".fdc")], strDf[,strCol], 
-                               method='natural')
+    strflowSpline <- splinefun(strDf[,paste0(strCol,".fdc")], strDf[,strCol], method='natural')
     strflowSpline
 }
 
@@ -125,8 +118,7 @@ PlotFdc <- function(strDf, strCol="q_cms", spline=TRUE, fdcProb=NULL) {
          main=c(paste("Flow Duration Curve: ", deparse(substitute(strDf)), ":", 
                       deparse(substitute(strCol)), ", n=", sum(!is.na(strDf[,strCol])))))
     if (spline | !is.null(fdcProb)) {
-        fdcSplineFun <- splinefun(strDf[,paste0(strCol,".fdc")], strDf[,strCol], 
-                                  method='natural')
+        fdcSplineFun <- splinefun(strDf[,paste0(strCol,".fdc")], strDf[,strCol], method='natural')
         if (spline) {
             curve(fdcSplineFun(x), col='red', lwd=2, lty=1, add=T)
             }
@@ -201,20 +193,17 @@ PlotFdcCompare <- function(strDf.obs, strCol.obs="q_cms",
                             strDf.mod1, strCol.mod1="q_cms",
                             strDf.mod2=NULL, strCol.mod2="q_cms",
                             spline=TRUE, logy=TRUE,
-                            labelObs="Observed", 
-                           labelMod1="Model 1", labelMod2="Model 2") {
+                            labelObs="Observed", labelMod1="Model 1", labelMod2="Model 2") {
     # Prepare data
     strDf.obs$qcomp.obs <- strDf.obs[,strCol.obs]
     strDf.mod1$qcomp.mod1 <- strDf.mod1[,strCol.mod1]
     if (!is.null(strDf.mod2)) {
         strDf.mod2$qcomp.mod2 <- strDf.mod2[,strCol.mod2]
         }
-    stroutDf <- merge(strDf.obs[c("POSIXct","qcomp.obs")], 
-                      strDf.mod1[c("POSIXct","qcomp.mod1")], by<-c("POSIXct"))
+    stroutDf <- merge(strDf.obs[c("POSIXct","qcomp.obs")], strDf.mod1[c("POSIXct","qcomp.mod1")], by<-c("POSIXct"))
     stroutDf <- subset(stroutDf, !is.na(stroutDf$qcomp.obs) & !is.na(stroutDf$qcomp.mod1))
     if (!is.null(strDf.mod2)) {
-        stroutDf <- merge(stroutDf, strDf.mod2[c("POSIXct","qcomp.mod2")], 
-                          by<-c("POSIXct"))
+        stroutDf <- merge(stroutDf, strDf.mod2[c("POSIXct","qcomp.mod2")], by<-c("POSIXct"))
         stroutDf <- subset(stroutDf, !is.na(stroutDf$qcomp.mod2))
         }
     stroutDf <- CalcFdc(stroutDf, "qcomp.obs")
@@ -224,13 +213,10 @@ PlotFdcCompare <- function(strDf.obs, strCol.obs="q_cms",
         }
     # Calculate splines if needed
     if (spline) {
-        fdcSplineFun.obs <- splinefun(stroutDf[,"qcomp.obs.fdc"], 
-                                      stroutDf[,"qcomp.obs"], method='natural')
-        fdcSplineFun.mod1 <- splinefun(stroutDf[,"qcomp.mod1.fdc"], 
-                                       stroutDf[,"qcomp.mod1"], method='natural')
+        fdcSplineFun.obs <- splinefun(stroutDf[,"qcomp.obs.fdc"], stroutDf[,"qcomp.obs"], method='natural')
+        fdcSplineFun.mod1 <- splinefun(stroutDf[,"qcomp.mod1.fdc"], stroutDf[,"qcomp.mod1"], method='natural')
         if (!is.null(strDf.mod2)) {
-            fdcSplineFun.mod2 <- splinefun(stroutDf[,"qcomp.mod2.fdc"], 
-                                           stroutDf[,"qcomp.mod2"], method='natural')
+            fdcSplineFun.mod2 <- splinefun(stroutDf[,"qcomp.mod2.fdc"], stroutDf[,"qcomp.mod2"], method='natural')
             }
         }
     if (!is.null(strDf.mod2)) {
@@ -244,11 +230,9 @@ PlotFdcCompare <- function(strDf.obs, strCol.obs="q_cms",
         print(paste("Combined max flow for y-axis:",combmax))
         }
     else {
-        combmin <- max(0.001,min(min(stroutDf[,"qcomp.obs"],na.rm=T), 
-                                 min(stroutDf[,"qcomp.mod1"],na.rm=T)))
+        combmin <- max(0.001,min(min(stroutDf[,"qcomp.obs"],na.rm=T), min(stroutDf[,"qcomp.mod1"],na.rm=T)))
         print(paste("Combined min flow for y-axis (capped at 0.001):",combmin))
-        combmax <- max(max(stroutDf[,"qcomp.obs"],na.rm=T), 
-                       max(stroutDf[,"qcomp.mod1"],na.rm=T))
+        combmax <- max(max(stroutDf[,"qcomp.obs"],na.rm=T), max(stroutDf[,"qcomp.mod1"],na.rm=T))
         print(paste("Combined max flow for y-axis:",combmax))
         }
     # Plot
@@ -294,8 +278,7 @@ PlotFdcCompare <- function(strDf.obs, strCol.obs="q_cms",
                    col=c("black","red","blue","cyan"), bty='n')
             }
         else {
-            legend('topright', legend=c(labelObs,labelMod1), pch=c(1,1), 
-                   col=c("black","blue"), bty='n')
+            legend('topright', legend=c(labelObs,labelMod1), pch=c(1,1), col=c("black","blue"), bty='n')
             }
         }
         mtext(c(paste("Dates: ", min(format(stroutDf$POSIXct,"%Y-%m-%d")), " to ", 

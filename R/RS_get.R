@@ -22,12 +22,9 @@
 #' packages.
 #' 
 #' NOTE: This tool currently only works for geogrid files in Lambert Conformal 
-#' Conic projection OR a GDAL-friendly georeferenced TIF file.
+#' Conic projection.
 #' 
-#' @param extent The pathname to the geogrid file (i.e., geo_em.d01.nc)
-#'  OR the path to a georeferenced TIF file of the domain OR the path to 
-#'  a shapefile of the desired extent OR a standard country name that can
-#'  be identified in the mapdata package.
+#' @param geogrdPath The pathname to the geogrid file (i.e., geo_em.d01.nc).
 #' @param prodName The MODIS product name to download/process. Run the 
 #'   \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package 
 #'   getProducts() for a complete list of supported products.
@@ -72,16 +69,13 @@
 #'   is one of the GDAL methods listed above.
 #' @param quiet From MODIS::runGdal help: Logical, Default FALSE. Some progress 
 #'   informations.
-#' @param scriptPath OPTIONAL path to where gdal_calc.py script lives in case
-#'   it is not in the same default path as gdal executables
 #' @return Empty
 #'   
 #' @examples
 #' ## First, specify the target directories for the MODIS package.
 #' \dontrun{
 #' MODISoptions(localArcPath="/d1/WRF_Hydro/RS/MODIS_ARC", 
-#'              outDirPath="/d1/WRF_Hydro/RS/MODIS_ARC/PROCESSED",
-#'              stubbornness="low")
+#'              outDirPath="/d1/WRF_Hydro/RS/MODIS_ARC/PROCESSED")
 #' 
 #' ## Then, use GetMODIS to download the MODIS MOD15A2 (FPAR/LAI) product for 
 #' ## all tiles that overlap our Fourmile Creek domain (as specified by the 
@@ -90,7 +84,7 @@
 #' ## /d1/WRF_Hydro/RS/MODIS_ARC/ and the final processed TIF files will be 
 #' ## stored in /d1/WRF_Hydro/RS/MODIS_ARC/PROCESSED/Fourmile_LAI/.
 #' 
-#' GetMODIS(extent="/d1/WRF_Hydro/Fourmile_fire/DOMAIN/geo_em.d01.nc", 
+#' GetMODIS(geogrdPath="/d1/WRF_Hydro/Fourmile_fire/DOMAIN/geo_em.d01.nc", 
 #'          prodName="MOD15A2", outDir="Fourmile_LAI", 
 #'          begin="2011.01.01", end="2011.01.31",
 #'          exclList=list("Fpar_1km"="gt 100", 
@@ -110,10 +104,10 @@
 #' @concept MODIS dataGet
 #' @family MODIS
 #' @export
-GetMODIS <- function(extent, prodName, outDir, begin=NULL, end=NULL, 
+GetMODIS <- function(geogrdPath, prodName, outDir, begin=NULL, end=NULL, 
                      collection=NULL, buffer=0.04,
                      SDSstring=NULL, 
-                     exclList=NULL, resampList=NULL, quiet=FALSE, scriptPath=NULL) {
+                     exclList=NULL, resampList=NULL, quiet=FALSE) {
     # Check packages
     if (!(require("rgdal") & require("raster") & require("ncdf4") & require("MODIS"))) {
         stop("Required packages not found. Must have R packages: rgdal (requires GDAL system install), raster, ncdf4, and MODIS")
@@ -124,30 +118,13 @@ GetMODIS <- function(extent, prodName, outDir, begin=NULL, end=NULL,
       dir.create(locPath, showWarnings = FALSE)
     }
     # Get geogrid and projection info
-    if (inherits(try(suppressWarnings(ncdf4::nc_open(extent))), "try-error")) {
-        if (file.exists(extent)) {
-            if ( grepl(".shp", extent, ignore.case = TRUE) ) {
-                message("Assuming file is a shapefile.")
-                hgt.r <- extent
-            } else if ( grepl(".tif", extent, ignore.case = TRUE) ) {
-                message("Assuming file is a georeferenced TIF.")
-                hgt.r <- raster::raster(extent)
-            } else {
-                stop("Must provide a .shp or .tif file.")
-            }
-        } else {
-            message("Assuming file is a country name. Requires 'mapdata' package.")
-            hgt.r <- extent
-        }
-    } else {
-      message("Assuming file is a geogrid in netcdf format.")
-      geogrd.nc <- ncdf4::nc_open(extent)
-      map_proj <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="MAP_PROJ")$value
-      cen_lat <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="CEN_LAT")$value
-      cen_lon <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="STAND_LON")$value
-      truelat1 <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="TRUELAT1")$value
-      truelat2 <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="TRUELAT2")$value
-      if (map_proj==1) {
+    geogrd.nc <- ncdf4::nc_open(geogrdPath)
+    map_proj <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="MAP_PROJ")$value
+    cen_lat <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="CEN_LAT")$value
+    cen_lon <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="STAND_LON")$value
+    truelat1 <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="TRUELAT1")$value
+    truelat2 <- ncdf4::ncatt_get(geogrd.nc, varid=0, attname="TRUELAT2")$value
+    if (map_proj==1) {
          geogrd.crs <- paste0("+proj=lcc +lat_1=", truelat1, " +lat_2=", truelat2, 
                               " +lat_0=", cen_lat, " +lon_0=", cen_lon, 
                               " +x_0=0 +y_0=0 +a=6370000 +b=6370000 +units=m +no_defs")
@@ -160,17 +137,16 @@ GetMODIS <- function(extent, prodName, outDir, begin=NULL, end=NULL,
         stop(paste0('Error: Asymmetric grid cells not supported. DX=', dx, ', DY=', dy))
         }
     # Create a readable TIF from geogrid
-    ExportGeogrid(extent, "HGT_M", paste0(locPath, "/geogrid_tmp.tif"))
+    ExportGeogrid(geogrdPath, "HGT_M", paste0(locPath, "/geogrid_tmp.tif"))
 	  hgt.r <- raster::raster(paste0(locPath, "/geogrid_tmp.tif"))
     system(paste0("rm ", paste0(locPath, "/geogrid_tmp.tif")))
-    }
     # Run the download & processing
     mod.list <- MODIS::runGdal(product=prodName, collection=collection, 
                                begin=begin, end=end,
                                extent=hgt.r, buffer=buffer, 
                                SDSstring=SDSstring, job=outDir, 
                                exclList=exclList, resampList=resampList,
-                               quiet=quiet, scriptPath=scriptPath)
+                               quiet=quiet)
 }
 
 
@@ -234,13 +210,8 @@ GetMODIS <- function(extent, prodName, outDir, begin=NULL, end=NULL,
 #'   outFile is provided.
 #' @param varNA Value to set for "NA" or "no data". Default is -1.e+36. Only
 #'   required if outFile is provided.
-#' @param pos1 From MODIS orgTime: Start position of date in the filename 
-#'   (DEFAULT=10).
-#' @param pos2 From MODIS orgTime: End position of date in the filename 
-#'   (DEFAULT=16).
-#' @param format From MODIS orgTime: How is the date formatted in the file.
-#'   Default is "\%Y\%j" ('YYYYDDD'). Read ?as.Date for for more information.
 #' @return A raster stack.
+#'   
 #' @examples
 #' ## Import the already processed LAI TIF images into a raster stack. Use 
 #' ## the full time series of images.
@@ -253,7 +224,7 @@ GetMODIS <- function(extent, prodName, outDir, begin=NULL, end=NULL,
 #' ## Export a subset of the already processed LAI TIF images into an output netcdf file
 #' 
 #' lai.b <- ConvertRS2Stack("/d6/adugger/WRF_Hydro/RS/MODIS_ARC/PROCESSED/BCNED_LAI", 
-#'                          "*Lai_1km.tif", begin="2011.06.01", end="2011.06.30", 
+#'                          "*Lai_1km.tif", begin=c("2011.06.01", end="2011.06.30", 
 #'                          noData=100, noDataQual="max", valScale=0.1, valAdd=0, 
 #'                          outFile="BCNED_LAI.nc", varName="LAI",
 #'                          varUnit="(m^2)/(m^2)", varLong="Leaf area index")
@@ -265,21 +236,16 @@ GetMODIS <- function(extent, prodName, outDir, begin=NULL, end=NULL,
 ConvertRS2Stack <- function(inPath, matchStr, begin=NULL, end=NULL,
                             noData=NULL, noDataQual="exact", valScale=1, valAdd=0,
                             outFile=NULL, varName=NULL, varUnit=NULL, varLong=NULL, 
-                            varNA=(-1.e+36),
-                            pos1=10, pos2=16, format="%Y%j") {
+                            varNA=-1.e+36) {
     # Get file list
     if (!is.null(begin) & !is.null(end)) {
-        beginDt <- format(as.POSIXct(begin, format="%Y.%m.%d", tz="UTC"), 
-                          "%Y%j", tz="UTC")
-        endDt <- format(as.POSIXct(end, format="%Y.%m.%d", tz="UTC"), 
-                        "%Y%j", tz="UTC")
+        beginDt <- format(as.POSIXct(begin, format="%Y.%m.%d", tz="UTC"), "%Y%j", tz="UTC")
+        endDt <- format(as.POSIXct(end, format="%Y.%m.%d", tz="UTC"), "%Y%j", tz="UTC")
         timeInfo <- MODIS::orgTime(MODIS::preStack(path=inPath, pattern=matchStr), 
-                                   begin=beginDt, end=endDt, pillow=0,
-                                   pos1=pos1, pos2=pos2, format=format)
+                                   begin=beginDt, end=endDt, pillow=0)
     } else {
-        timeInfo <- MODIS::orgTime(MODIS::preStack(path=inPath, pattern=matchStr), 
-                                   pillow=0, pos1=pos1, pos2=pos2, format=format)
-    }
+        timeInfo <- MODIS::orgTime(MODIS::preStack(path=inPath, pattern=matchStr), pillow=0)
+        }
     rsFilelist <- MODIS::preStack(path=inPath, pattern=matchStr, timeInfo=timeInfo)
     #rsFilelist <- list.files(path=inPath, pattern=glob2rx(matchStr), full.names=TRUE)
     # Loop through files
@@ -296,42 +262,42 @@ ConvertRS2Stack <- function(inPath, matchStr, begin=NULL, end=NULL,
         #begPOSIXct <- if(is.null(begin)) { dtPOSIXct } else { as.POSIXct(begin, format="%Y.%m.%d", tz="UTC") }
         #endPOSIXct <- if(is.null(end)) { dtPOSIXct } else { as.POSIXct(end, format="%Y.%m.%d", tz="UTC") }
         #if ( (dtPOSIXct >= begPOSIXct) & (dtPOSIXct <= endPOSIXct) ) {
-        rsRast <- raster::raster(rsFile)
-        # Remove MODIS nodata values
-        if (!is.null(noData)) {
-            if (noDataQual == "min") {
-                rsRast[rsRast[] < noData]<-NA
-            } else if (noDataQual == "max") {
-                rsRast[rsRast[] > noData]<-NA
+            rsRast <- raster::raster(rsFile)
+            # Remove MODIS nodata values
+            if (!is.null(noData)) {
+                if (noDataQual == "min") {
+                    rsRast[rsRast[] < noData]<-NA
+                } else if (noDataQual == "max") {
+                    rsRast[rsRast[] > noData]<-NA
+                } else {
+                    rsRast[rsRast[] == noData]<-NA
+                    }
+                }
+            # Apply MODIS scaling
+            if ((valScale != 1) | (valAdd != 0)) {
+                rsRast <- rsRast * valScale + valAdd
+                }
+            # Track dates
+            dtInts[n] <- as.integer(difftime(as.POSIXct(dtStr, format="%Y%j", tz="UTC"), 
+                                             as.POSIXct("198001", format="%Y%j", tz="UTC", 
+                                                        units="days")))
+            dtNames[n] <- paste0("DT", format(as.POSIXct(dtStr, format="%Y%j", tz="UTC"), 
+                                              "%Y.%m.%d"))
+            if (n==1) {
+                rsStack <- raster::stack(rsRast)
             } else {
-                rsRast[rsRast[] == noData]<-NA
-            }
-        }
-        # Apply MODIS scaling
-        if ((valScale != 1) | (valAdd != 0)) {
-            rsRast <- rsRast * valScale + valAdd
-        }
-        # Track dates
-        dtInts[n] <- as.integer(difftime(as.POSIXct(dtStr, format="%Y%j", tz="UTC"), 
-                                         as.POSIXct("198001", format="%Y%j", tz="UTC", 
-                                                    units="days")))
-        dtNames[n] <- paste0("DT", format(as.POSIXct(dtStr, format="%Y%j", tz="UTC"), 
-                                          "%Y.%m.%d"))
-        if (n==1) {
-            rsStack <- raster::stack(rsRast)
-        } else {
-            rsStack <- raster::addLayer(rsStack, rsRast)
-        }
-        n <- n+1
-        #   } # end date check
-    } # end for loop
+                rsStack <- raster::addLayer(rsStack, rsRast)
+                }
+            n <- n+1
+         #   } # end date check
+        } # end for loop
     names(rsStack) <- dtNames
     if (!is.null(outFile)) {
-        ConvertStack2NC(rsStack, outFile, varName, varUnit, varLong, varNA)
+	ConvertStack2NC(rsStack, outFile, varName, varUnit, varLong, varNA)
         return(rsStack)
-    }
+        }
     return(rsStack)
-}
+    }
 
 
 #' Convert a raster stack to a NetCDF file.
@@ -350,8 +316,6 @@ ConvertRS2Stack <- function(inPath, matchStr, begin=NULL, end=NULL,
 #' @param varUnit Units for the NetCDF export variable.
 #' @param varLong Long name for the NetCDF export variable.
 #' @param varNA Value to set for "NA" or "no data". Default is -1.e+36.
-#' @param flipY Reverse y indices, e.g., to match geogrid S->N 
-#' orientation (DEFAULT=TRUE).
 #' @return NULL
 #'   
 #' @examples
@@ -367,7 +331,7 @@ ConvertRS2Stack <- function(inPath, matchStr, begin=NULL, end=NULL,
 #' @family MODIS
 #' @export
 ConvertStack2NC <- function(inStack, outFile=NULL, varName=NULL, varUnit=NULL, 
-                            varLong=NULL, varNA=-1.e+36, flipY=TRUE) {
+                            varLong=NULL, varNA=-1.e+36) {
     # Get dates
     dtInts <- c()
     dtNames <- names(inStack)
@@ -387,10 +351,7 @@ ConvertStack2NC <- function(inStack, outFile=NULL, varName=NULL, varUnit=NULL,
     ncFile <- ncdf4::nc_open(outFile, write=TRUE)
     ncdf4::ncvar_put(ncFile, "Time", dtInts)
     ncdf4::nc_close(ncFile)
-    if (flipY) {
-      system(paste0('ncpdq -O -a -south_north ', outFile, ' ', outFile))
     }
-}
 
 
 #' Run MODIS-R Whittaker smoothing over pre-processed raster stack.
@@ -464,12 +425,10 @@ SmoothStack <- function(inStack, w=NULL, t=NULL, lambda = 5000, nIter= 3,
     if (!file.exists(outDirPath)) {
       dir.create(outDirPath, showWarnings = FALSE)
     }
-    timeInfo <- MODIS::orgTime(inStack, pos1 = 3, pos2 = 13, format = "%Y.%m.%d", 
-                               pillow=0)
+    timeInfo <- MODIS::orgTime(inStack, pos1 = 3, pos2 = 13, format = "%Y.%m.%d", pillow=0)
     resultList <- MODIS::whittaker.raster(vi=inStack, w=w, t=t, 
                                           timeInfo=timeInfo, lambda=lambda, 
-                                          nIter=nIter, outputAs=outputAs, 
-                                          collapse=collapse, 
+                                          nIter=nIter, outputAs=outputAs, collapse=collapse, 
                                           outDirPath=outDirPath, 
                                           removeOutlier=removeOutlier, 
                                           outlierThreshold=outlierThreshold, 
@@ -544,14 +503,12 @@ InsertRS <- function(inFile, forcPath, forcName="LDASIN_DOMAIN1",
             dtStrForc <- paste0(unlist(strsplit(dtStr,"[.]"))[1], 
                                 unlist(strsplit(dtStr,"[.]"))[2], 
                                 unlist(strsplit(dtStr,"[.]"))[3], "00")
-            ncFile <- ncdf4::nc_open(paste0(forcPath,"/",dtStrForc,".",forcName), 
-                                     write=TRUE)
+            ncFile <- ncdf4::nc_open(paste0(forcPath,"/",dtStrForc,".",forcName), write=TRUE)
             dimT <- ncdf4::ncdim_def( "Time", "", 1, unlim=TRUE, create_dimvar=T)
             dimY <- ncdf4::ncdim_def( "south_north", "", 1:dim(inFile)[1], create_dimvar=T)
             dimX <- ncdf4::ncdim_def( "west_east", "", 1:dim(inFile)[2], create_dimvar=T)
             # NOTE: ncdf4 reads dimensions in reverse order from ncdump!
-            varNew <- ncdf4::ncvar_def(name=varName, units=varUnit, 
-                                       dim=list(dimX, dimY, dimT), 
+            varNew <- ncdf4::ncvar_def(name=varName, units=varUnit, dim=list(dimX, dimY, dimT), 
                                        missval=varNA, longname=varLong)
             if ( (varName %in% names(ncFile$var)) ) {
                 if (overwrite) {
@@ -568,8 +525,7 @@ InsertRS <- function(inFile, forcPath, forcName="LDASIN_DOMAIN1",
             ncdf4::ncvar_add(ncFile, varNew)
             # Close and re-open, otherwise ncdf4 throws error
             ncdf4::nc_close(ncFile)
-            ncFile <- ncdf4::nc_open(paste0(forcPath,"/",dtStrForc,".",forcName), 
-                                     write=TRUE)
+            ncFile <- ncdf4::nc_open(paste0(forcPath,"/",dtStrForc,".",forcName), write=TRUE)
             ncdf4::ncvar_put(ncFile, varNew, RotateCw(raster::as.matrix(inFile[[i]])))
             ncdf4::nc_close(ncFile)
             }
@@ -579,7 +535,7 @@ InsertRS <- function(inFile, forcPath, forcName="LDASIN_DOMAIN1",
         nTime <- inNC$var[[varName]]$dim[[3]]$len
         for (i in 1:(nTime)) {
             dtNum <- inNC$var[[varName]]$dim[[3]]$val[[i]]
-            dtStr <- as.POSIXlt("198001", format = "%Y%j", tz = "UTC")
+            dtStr <- as.POSIXct("198001", format = "%Y%j", tz = "UTC")
             dtStr$mday <- dtStr$mday + dtNum
             dtStrForc <- paste0(format(dtStr, "%Y%m%d"), "00")
             if (overwrite) {
@@ -639,131 +595,120 @@ CalcStatsRS <- function(inStack) {
     }
 
 
-#' Gap fill a series of MODIS images using interpolation.
-#' 
-#' \code{GapFillRS} takes a set of pre-processed MODIS TIF files and
-#' fills no-data gaps using interpolation.
-#' 
-#' \code{GapFillRS} scans the specified directory and runs the GDAL python
-#' script gdal_fillnodata.py. If a mask file is provided, GapFillRS will
-#' convert specified mask cells to specified values AFTER the gap-filling.
-#' 
-#' @param inPath The path to the directory that holds the already processed
-#'   MODIS TIF files.
-#' @param matchStr The regular expression for filename matching (e.g.,
-#'   "*Lai_1km.tif").
-#' @param outDir Pathname to the directory to store the output files.
-#' @param begin Date string for the start date to include. The date string
-#'   should follow \href{http://r-forge.r-project.org/projects/modis/}{MODIS}
-#'   package convention (e.g., "2011.06.01"). (DEFAULT=NULL, all files are
-#'   processed).
-#' @param end Date string for the end date to include. The date string should
-#'   follow \href{http://r-forge.r-project.org/projects/modis/}{MODIS} package
-#'   convention (e.g., "2011.06.01"). (DEFAULT=NULL, all files are processed).
-#' @param maskFile Mask grid file. File must be in a GDAL-friendly format and 
-#'   should match the dimensions and resolution of the inputs.
-#' @param maskVals List of value sets to pull from mask file and convert. 
-#'   The list should be in the form: list("maskValue"=outputValue), 
-#'   e.g., list("1"=0, "16"=0) to convert all cells in the mask grid with mask 
-#'   values of 1 and 16 to 0 in the output files.
-#' @param nodataVal Value to use to represent no data. Make sure this value 
-#'   is NOT in your mask raster. (DEFAULT=-9999) 
-#' @param scriptPath OPTIONAL path to where gdal_calc.py script lives in case
-#'   it is not in the same default path as gdal executables
-#' @param pos1 From MODIS orgTime: Start position of date in the filename (DEFAULT=10).
-#' @param pos2 From MODIS orgTime: End position of date in the filename (DEFAULT=16).
-#' @param format From MODIS orgTime: How is the date formatted in the file, default 
-#' expects: YYYYDDD (\%Y\%j). Read ?as.Date for for more information.
-#' @return null
-#'   
+#' Creates a georeferenced TIF from a geogrid variable
+#'
+#' \code{ExportGeogrid} takes a NetCDF geogrid and converts the specified
+#' variable into a georeferenced TIF file.
+#'
+#' \code{ExportGeogrid} takes a standard geogrid in NetCDF format and 
+#' converts the specified variable to a georeferenced geoTiff for use 
+#' in standard GIS tools.
+#'
+#' @param inFile The geogrid NetCDF file.
+#' @param inVar The name of the variable to be converted.
+#' @param outFile The geoTiff filename to create.
+#' @return NULL
+#'
 #' @examples
-#' ## Gap fill a set of MODIS LAI images. We will convert all non-vegetation 
-#' ## land use types into 0.
-#' 
-#' \dontrun{ 
-#' maskVals <- list("1"=0, "16"=0, "19"=0, "23"=0, 
-#'                  "24"=0, "25"=0, "26"=0, "27"=0)
-#' GapFillRS("~/wrfHydroTestCases/MODIS_ARC/PROCESSED/FOURMILE_LAI",
-#'                          outDir="~/wrfHydroTestCases/MODIS_ARC/PROCESSED/FOURMILE_LAI_GAPFILL",
-#'                          matchStr="*Lai_1km.tif", 
-#'                          begin="2013.05.01", end="2013.07.31", 
-#'                          maskFile="~/wrfHydroTestCases/Fourmile_Creek/DOMAIN/geo_LUINDEX.tif",
-#'                          maskVals=maskVals)
+#' ## Export the HGT_M field from the geogrid file geo_em.d01_1km.nc
+#' ## to a geoTiff called geogrid_hgt.tif.
+#'
+#' \dontrun{
+#' ExportGeogrid("geo_em.d01_1km.nc", "HGT_M", "geogrid_hgt.tif")
 #' }
 #' @keywords IO
-#' @concept MODIS dataMgmt
-#' @family MODIS
+#' @concept dataMgmt
 #' @export
-GapFillRS <- function(inPath, matchStr, outDir, 
-                            begin=NULL, end=NULL,
-                            maskFile=NULL, maskVals=NULL, 
-                            nodataVal=-9999, scriptPath=NULL,
-                            pos1=10, pos2=16, format="%Y%j") {
-  # Setup
-  if (!is.null(scriptPath)) scriptPath <- paste0(scriptPath, "/")
-  inPath <- path.expand(inPath)
-  outDir <- path.expand(outDir)
-  if (!is.null(maskFile)) maskFile <- path.expand(maskFile)
-  if (!file.exists(outDir)) {
-    dir.create(outDir, showWarnings = FALSE)
-  }
-  
-  # Get file list
-  if (!is.null(begin) & !is.null(end)) {
-    beginDt <- format(as.POSIXct(begin, format="%Y.%m.%d", tz="UTC"), "%Y%j", tz="UTC")
-    endDt <- format(as.POSIXct(end, format="%Y.%m.%d", tz="UTC"), "%Y%j", tz="UTC")
-    timeInfo <- MODIS::orgTime(MODIS::preStack(path=inPath, pattern=matchStr), 
-                               begin=beginDt, end=endDt, pillow=0,
-                               pos1=pos1, pos2=pos2, format=format)
-  } else {
-    timeInfo <- MODIS::orgTime(MODIS::preStack(path=inPath, pattern=matchStr), pillow=0,
-                               pos1=pos1, pos2=pos2, format=format)
-  }
-  rsFilelist <- MODIS::preStack(path=inPath, pattern=matchStr, timeInfo=timeInfo)
-  #rsFilelist <- list.files(path=inPath, pattern=glob2rx(matchStr), full.names=TRUE)
-
-  # Mask case
-  if (!is.null(maskFile)) {
-    # Setup mask calc string
-    calcStr1 <- ''
-    calcStr2 <- ''
-    for (i in 1:length(maskVals)) {
-      maskIn <- names(maskVals)[i]
-      maskOut <- maskVals[[maskIn]]
-      if (calcStr1=='') {
-        calcStr1 <- paste0(maskOut, "*(A==", maskIn, ")")
-        calcStr2 <- paste0("+(", nodataVal, ")*((A!=", maskIn)
-      } else {
-        calcStr1 <- paste0(calcStr1, "+", maskOut, "*(A==", maskIn, ")")
-        calcStr2 <- paste0(calcStr2, ")&(A!=", maskIn)
-      }
-    }
-    calcStr <- paste0(calcStr1, calcStr2, "))")
-    # Create mask
-    tmpMask <- tempfile(fileext=".tif")
-    cmd_calc <- paste0(scriptPath,"gdal_calc.py ", 
-                     "-A ", "'", maskFile, "'",
-                     " --outfile=", "'", tmpMask, "'",
-                     " --calc='", calcStr, 
-                     "' --NoDataValue=", as.character(nodataVal), 
-                     " --overwrite")
-    system(cmd_calc)
-  }
-  
-  # Loop through files
-  for (rsFile in rsFilelist) {
-    cmd_fill <- paste0(scriptPath,"gdal_fillnodata.py ", 
-                      rsFile, " ", outDir, "/", basename(rsFile))
-    system(cmd_fill)
-    # Mask case
-    if (!is.null(maskFile)) {
-      cmd_merge <- paste0(scriptPath,"gdal_merge.py ", 
-                       " -o ", "'", paste0(outDir, "/", basename(rsFile)), "'",
-                       " -n ", as.character(nodataVal),
-                       " '", paste0(outDir, "/", basename(rsFile)), 
-                       "' '", tmpMask, "'")
-      system(cmd_merge)
-    }
-  }
-  file.remove(tmpMask)
+ExportGeogrid <- function(inFile, inVar, outFile) {
+	# Check packages
+    if (!(require("rgdal") & require("raster") & require("ncdf4") )) {
+        stop("Required packages not found. Must have R packages: rgdal (requires GDAL system install), raster, ncdf4")
+	}
+	inNC <- ncdf4::nc_open(inFile)
+	inNCVar <- ncdf4::ncvar_get(inNC, inVar)
+	varList <- names(inNC$var)
+	# Data types
+	typlist <- list("byte"="Byte",
+					"short"="Int16",
+					"int"="Int32",
+					"long"="Int32",
+					"float"="Float32",
+					"real"="Float32",
+					"double"="Float64",
+					"ubyte"="qmin_cfs",
+					"ushort"="UInt16",
+					"uint"="UInt32",
+					"int64"="Int64",
+					"uint64"="UInt64")
+	# Get coords
+	if ("XLONG_M" %in% varList & "XLAT_M" %in% varList) {
+		inNCLon <- ncdf4::ncvar_get(inNC, "XLONG_M")
+		inNCLat <- ncdf4::ncvar_get(inNC, "XLAT_M")
+	} else if ("XLONG" %in% varList & "XLAT" %in% varList) {
+		inNCLon <- ncdf4::ncvar_get(inNC, "XLONG")
+		inNCLat <- ncdf4::ncvar_get(inNC, "XLAT")
+	} else if ("lon" %in% varList & "lat" %in% varList) {
+		inNCLon <- ncdf4::ncvar_get(inNC, "lon")
+		inNCLat <- ncdf4::ncvar_get(inNC, "lat")
+	} else {
+		stop('Error: Latitude and longitude fields not found (tried: XLAT_M/XLONG_M, XLAT/XLONG, lat/lon')
+	}
+	# Reverse column order to get UL in UL
+	x <- as.vector(inNCLon[,ncol(inNCLon):1])
+	y <- as.vector(inNCLat[,ncol(inNCLat):1])
+	#coords <- data.frame(lon=x, lat=y)
+	#coordinates(coords) <- c("lon", "lat")
+	#proj4string(coords) <- CRS("+proj=longlat +a=6370000 +b=6370000 +no_defs")
+	coords <- as.matrix(cbind(x, y))
+	# Get geogrid and projection info
+	map_proj <- ncdf4::ncatt_get(inNC, varid=0, attname="MAP_PROJ")$value
+	cen_lat <- ncdf4::ncatt_get(inNC, varid=0, attname="CEN_LAT")$value
+	cen_lon <- ncdf4::ncatt_get(inNC, varid=0, attname="STAND_LON")$value
+	truelat1 <- ncdf4::ncatt_get(inNC, varid=0, attname="TRUELAT1")$value
+	truelat2 <- ncdf4::ncatt_get(inNC, varid=0, attname="TRUELAT2")$value
+	if (map_proj==1) {
+		geogrd.proj <- paste0("+proj=lcc +lat_1=", 
+                          truelat1, " +lat_2=", truelat2, " +lat_0=", 
+                          cen_lat, " +lon_0=", cen_lon, 
+                          " +x_0=0 +y_0=0 +a=6370000 +b=6370000 +units=m +no_defs")
+	#geogrd.crs <- CRS(geogrd.proj)
+    } else {
+		stop('Error: Projection type not supported (currently this tool only works for Lambert Conformal Conic projections).')
+	}
+	dx <- ncdf4::ncatt_get(inNC, varid=0, attname="DX")$value
+	dy <- ncdf4::ncatt_get(inNC, varid=0, attname="DY")$value
+	if ( dx != dy ) {
+		stop(paste0('Error: Asymmetric grid cells not supported. DX=', dx, ', DY=', dy))
+	}
+	#coords.proj <- spTransform(coords, geogrd.crs)
+	projcoords <- rgdal::project(coords, geogrd.proj)
+	ul <- projcoords[1,]
+	# Define geo transform:
+	# x coord of UL corner of UL cell
+	gt0 = ul[1] - dx/2.0
+	# x pixel resolution
+	gt1 = dx
+	# x rotation
+	gt2 = 0.0
+	# y coord of UL corner of UL cell
+	gt3 = ul[2] + dy/2.0
+	# y rotation
+	gt4 = 0.0
+	# y pixel resolution, should be negative
+	gt5 = -dy
+	gt = c(gt0,gt1,gt2,gt3,gt4,gt5)
+	# Setup temp geotif
+	d.drv <- new("GDALDriver", "GTiff")
+	tds.out <- new("GDALTransientDataset", driver = d.drv, 
+				   rows = dim(inNCVar)[2], cols = dim(inNCVar)[1], 
+				   bands = 1, type = typlist[[inNC$var[[inVar]]$prec]])
+	.Call("RGDAL_SetGeoTransform", tds.out, gt, PACKAGE = "rgdal")
+	.Call("RGDAL_SetProject", tds.out, geogrd.proj, PACKAGE = "rgdal")
+	# Prep NC variable
+	inNCVarRast <- raster::as.matrix(raster::raster(inNCVar))
+	inNCVarRast <- inNCVarRast[,ncol(inNCVarRast):1]
+	# Insert data and export geotiff
+	rgdal::putRasterData(tds.out, as.matrix(inNCVarRast))
+	rgdal::saveDataset(tds.out, outFile)
+	rgdal::GDAL.close(tds.out)
 }
