@@ -19,29 +19,31 @@ library("rwrfhydro")
 
 Set a data path to the Fourmile Creek test case.
 ```{r}
-dataPath <- '~/wrfHydroTestCases/Fourmile_Creek'
+dataPath <- '~/wrfHydroTestCases/Fourmile_Creek_testcase_v2.0'
 ```
 
 
 # Import modelled datasets
 
-Calculate basin-averaged LSM water fluxes. The LSM was run at 1km resolution and the high-res hydro grid was 100m resolution, so our aggregation factor is 10. We only have 1 basin in our model domain, and our basin ID is 1. We are going to use R's multi-core capability (make sure  doMC is installed) and run this summary over 8 cores.
+Calculate basin-averaged LSM water fluxes. The LSM was run at 1km resolution and the high-res hydro grid was 100m resolution, so our aggregation factor is 10. We only have 1 basin in our model domain, and our basin ID is 1. To speed up the netcdf file reads, we are going to use R's multi-core capability and run this summary over 3 cores.
 ```{r}
-modLdasoutWb1h.allrt.fc <- ReadLdasoutWb(paste0(dataPath, '/RUN.RTTESTS/OUTPUT_ALLRT_DAILY'), 
-                                         paste0(dataPath, '/DOMAIN/Fulldom_hydro_OrodellBasin_100m.nc'), 
-                                         mskvar="basn_msk", basid=1, aggfact=10, ncores=8)
+library(doMC)
+registerDoMC(3)
+modLdasoutWb1h.allrt.fc <- ReadLdasoutWb(paste0(dataPath, '/run.FullRouting'), 
+                                         paste0(dataPath, '/DOMAIN/Fulldom_hires_hydrofile.Fourmile100m.nc'), 
+                                         mskvar="basn_msk", basid=1, aggfact=10, parallel=TRUE)
 ```
 
 Calculate basin-averaged routing water fluxes. 
 ```{r}
-modRtout1h.allrt.fc <- ReadRtout(paste0(dataPath, '/RUN.RTTESTS/OUTPUT_ALLRT_DAILY'), 
-                                 paste0(dataPath, '/DOMAIN/Fulldom_hydro_OrodellBasin_100m.nc'), 
-                                 mskvar="basn_msk", basid=1, ncores=8)
+modRtout1h.allrt.fc <- ReadRtout(paste0(dataPath, '/run.FullRouting'), 
+                                 paste0(dataPath, '/DOMAIN/Fulldom_hires_hydrofile.Fourmile100m.nc'), 
+                                 mskvar="basn_msk", basid=1, parallel=TRUE)
 ```
 
 Import groundwater outflow model output.
 ```{r}
-modGwout.allrt.fc <- ReadGwOut(paste0(dataPath, '/RUN.RTTESTS/OUTPUT_ALLRT_DAILY/GW_outflow.txt'))
+modGwout.allrt.fc <- ReadGwOut(paste0(dataPath, '/run.FullRouting/GW_outflow.txt'))
 ```
 
 
@@ -67,6 +69,8 @@ Plot the water budget as a pie chart.
 ```{r watbudgPie, fig.width = 8, fig.height = 8, out.width='600', out.height='600'}
 PlotWatBudg(wb.allrt.fc)
 ```
+
+Note that we are calculating the water budget for March-July only, so we see significant change in storage from a melting snowpack. Calculating the water budget for a full water year would likely result in a much smaller change in storage and the other water flux components would sum to close to 100%.
 
 Plot the water budget as a bar chart.
 ```{r watbudgBar, fig.width = 8, fig.height = 8, out.width='600', out.height='600'}

@@ -1,139 +1,9 @@
-[![Travis-CI Build Status](https://travis-ci.org/mccreigh/rwrfhydro.png?branch=master)](https://travis-ci.org/mccreigh/rwrfhydro)
+[![Travis-CI Build Status](https://travis-ci.org/mccreigh/rwrfhydro.png?branch=devBranch)](https://travis-ci.org/mccreigh/rwrfhydro)
 
 # rwrfhydro
-## A CRAN-like overview
-
-<h4 style="color: rgb(40%, 40%, 40%); font-family: monospace; font-size: large;">rwrfhydro: R tools for the WRF Hydro Model</h4>
-<p>A community-contributed tool box for managing, analyzing, and visualizing WRF Hydro input and output files in R. See the <a href="https://github.com/mccreigh/rwrfhydro/blob/master/README.Rmd">github repository README file</a> for more information. </p>
-<table summary="Package rwrfhydro summary">
-<tr>
-<td style="vertical-align: top;">Version:</td>
-<td>1.0.0.9000</td>
-</tr>
-<tr>
-<td style="vertical-align: top;">Depends:</td>
-<td>R (&ge; 3.1.0), stats, methods</td>
-</tr>
-<tr>
-<td style="vertical-align: top;">Imports:</td>
-<td> plyr (>= 1.8.1), grid (>= 3.1.2), lubridate (>= 1.3.3), ncdf4
-        (>= 1.13), ggplot2 (>= 1.0.0), ggmap (>= 2.3), reshape2 (>=
-        1.4.1), doMC (>= 1.3.3), foreach (>= 1.4.2), curl (>= 0.5),
-        dataRetrieval (>= 2.1.2), raster (>= 2.3), httr (>= 0.6.1),
-        devtools (>= 1.7.0), jsonlite (>= 0.9.14)
-</td>
-</tr>
-<tr>
-<td style="vertical-align: top;">Suggests:</td>
-<td>testthat, knitr, rgdal, pander, ptw</td>
-</tr>
-<tr>
-<td style="vertical-align: top;">Published:</td>
-<td>2015-05-01</td>
-</tr>
-<tr>
-<td style="vertical-align: top;">Author:</td>
-<td>James McCreight [aut, cre],
-Aubrey Dugger[aut]</td>
-</tr>
-<tr>
-<td style="vertical-align: top;">Maintainer:</td>
-<td>James McCreight</td>
-</tr>
-<tr>
-<td style="vertical-align: top;">BugReports:</td>
-<td><a href="https://github.com/mccreigh/rwrfhydro/issues">https://github.com/mccreigh/rwrfhydro/issues</a></td>
-</tr>
-<tr>
-<td style="vertical-align: top;">License:</td>
-<td><a href="https://github.com/mccreigh/rwrfhydro/blob/master/LICENSE.md">Terms of use.</a></td>
-</tr>
-<tr>
-<td style="vertical-align: top;">URL:</td>
-<td><a href="https://github.com/mccreigh/rwrfhydro">https://github.com/mccreigh/rwrfhydro</a>, <a href="http://www.ral.ucar.edu/projects/wrf_hydro/download.php">http://www.ral.ucar.edu/projects/wrf_hydro/download.php</a></td>
-</tr>
-<tr>
-<td style="vertical-align: top;">NeedsCompilation:</td>
-<td>no</td>
-</tr>
-<tr>
-<td style="vertical-align: top;">Citation:</td>
-<td><em>McCreight, J.L., Dugger, A., Gochis, D.J., 2015: The rwrfhydro R package. Available
-at http://www.ral.ucar.edu/projects/wrf_hydro/rwrfhydro.php.</em>
-</a> </td>
-</tr>
-<tr>
-<td style="vertical-align: top;">Materials:</td>
-<td><a href="https://github.com/mccreigh/rwrfhydro/blob/master/README.Rmd">README</a> <a href="https://github.com/mccreigh/rwrfhydro/blob/master/NEWS.Rmd">NEWS</a> </td>
-</tr>
-</table>
-
-
-<h4 style="color: rgb(40%, 40%, 40%); font-family: monospace;">Downloads:</h4>
-<table summary="Package rwrfydro downloads", width="80%">
-  
-<table width="100%">
-  <col style="width: 6%;" />
-  <col style="width: 94%;" />
-  <td style="vertical-align: top;"> Package&nbsp;source: </td>
-  <td>
-    Git repositry available on github at <a href="https://github.com/mccreigh/rwrfhydro/">https://github.com/mccreigh/rwrfhydro.</a> <br />
-    See the <a href="https://github.com/mccreigh/rwrfhydro/blob/master/README.Rmd#developing-and-bug-reports">  README </a> to contribute to the source code.
-  </td>
-</table>
-</tr>
-
-<table width="100%">
-  <col style="width: 6%;" />
-  <col style="width: 94%;" />
-  <td style="vertical-align: top;"> Installation: </td>
-  <td>
-    <a href="https://github.com/mccreigh/rwrfhydro/blob/master/README.Rmd#installing"> See installation instructions. </a>
-  </td>
-</table>
-</tr>
-
-  
-<tr>
-<table width="100%">
-  <col style="width: 6%;" />
-  <col style="width: 94%;" />
-  <td style="vertical-align: top;"> Reference&nbsp;manual: </td>
-  <td>
-    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/rwrfhydro-manual.pdf">rwrfhydro.pdf </a>
-  </td>
-</table>
-</tr>
-
-<tr>
-<table width="100%">
-  <col style="width: 6%;" />
-  <col style="width: 94%;" />
-  <td style="vertical-align: top;">Vignettes:</td>
-  
-  <td style="text-align: left; vertical-align: top;">
-    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/overview.html">An overview of rwrfhydro functionality</a> <br>
-    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/streamflowEval.html">Streamflow Evaluation</a> <br>
-    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/domainChannelVis.html">WRF Hydro Domain and Channel Visualization</a> <br>
-    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/getMultiNetcdf.html">Get data from multiple netcdf files</a> <br>
-    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/usgsObsDb.html">Collect USGS stream observations and build a local database</a> <br>
-    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/waterBudget.html">Water Budget</a> <br>
-    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/evapotranspirationEval.html">ET Evaluation</a> <br>
-    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/streamflowEvalMulti.html">Streamflow Evaluation - Multi-Basin</a> <br>
-    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/modisProcessing.html">MODIS Processing</a> <br>
-    <a href="http://www.ral.ucar.edu/projects/wrf_hydro/images/v3.0/rwrfhydro/vignettes/snodas.html">Collect the SNODAS product and build a local database</a> <br>
-  </td>
-
-</table>
-</tr>
-
-</div>
-
-
-
-# Purpose
 A community-contributed tool box for managing, analyzing, and visualizing WRF Hydro (and HydroDART) input and output files in R.
 
+# Purpose
 Intentionally, “rwrfhydro” can be read as “our wrf hydro”. The purpose of this R package is to focus community development of 
 tools for working with and analyzing data related to the WRF Hydro model. These tools are both free and open-source, just like
 R, which should help make them accessible and popular. For users new to R, several introductory resources are listed below. 
@@ -143,21 +13,14 @@ develop the package so you can quickly start adding your contributions.
 
 Table of Contents
 =================
-  * [rwrfhydro](#rwrfhydro)
-    * [A CRAN-like overview](#a-cran-like-overview)
-        * [rwrfhydro: R tools for the WRF Hydro Model](#rwrfhydro-r-tools-for-the-wrf-hydro-model)
-        * [Downloads:](#downloads)
-  * [Purpose](#purpose)
-  * [Table of Contents](#table-of-contents)
   * [Installing](#installing)
   * [Using](#using)
-  * [Developing and bug reports](#developing-and-bug-reports)
+  * [Developing](#developing)
     * [Version control for collaboration: Github](#version-control-for-collaboration-github)
-      * [Forking and cloning](#forking-and-cloning)
-      * [devBranch and pull requests](#devbranch-and-pull-requests)
-      * [Not using Github.](#not-using-github)
-      * [Travis-CI and `R CMD check`](#travis-ci-and-r-cmd-check)
-    * [Workflow: git, R Packaging, and you](#workflow-git-r-packaging-and-you)
+      * [Forking](#forking-and-cloning)
+      * [devBranch and pull requests](#devbranch-and-pull-requests)  
+      * [Not using Github](#not-using-github)
+    * [Workflow: git, R packaging, and you](#workflow-git-r-packaging-and-you)
     * [Our best practices](#our-best-practices)
       * [R package best practices and code style](#r-package-best-practices-and-code-style)
         * [Organizing functions](#organizing-functions)
@@ -167,11 +30,11 @@ Table of Contents
       * [Objects in rwrfhydro](#objects-in-rwrfhydro)
       * [Graphics](#graphics)
   * [R Package development resources](#r-package-development-resources)
-  * [Introductory R resources (somewhat random)](#introductory-r-resources-somewhat-random)
+  * [Introductory R resources](#introductory-r-resources)
 
 # Installing
-Installing the development package (not on [CRAN](http://cran.r-project.org/)) is facilitated by the devtools package (on CRAN),
-so devtools is installed in this process. The following is done for the initial install or to update the rwrfhydro package.
+Installing rwrfhydro (not on [CRAN](http://cran.r-project.org/)) is facilitated by the devtools package (on CRAN),
+so devtools is installed first. The following is done for the initial install or to update the rwrfhydro package.
 ``` R
 install.packages("devtools")
 devtools::install_github("mccreigh/rwrfhydro")
@@ -186,9 +49,20 @@ To install other branches than master and perhaps from your own fork:
 devtools::install_github("username/rwrfhydro", ref='myBranch')
 ```
 
+Importantly, beta functionality can be installed using:
+``` R
+devtools::install_github("mccreigh/rwrfhydro", ref='devBranch')
+```
+We are finally gaining some Windows users and have attempted to improve portability of rwrfhydro to this system. A primary dependence of rwrfhydro is ncdf4. This ncdf4 package binary can be installed in the following way: First, obtain the binary from [http://cirrus.ucsd.edu/~pierce/ncdf/](http://cirrus.ucsd.edu/~pierce/ncdf/). Then in an R session 
+``` R
+install.packages(file.choose(), repos=NULL, type = "binary")
+``` 
+R will open a window for you to choose the downloaded zip file and will install it.
+
+
 # Using
 After the one-time install or any subsequent re-installs/updates, simply load the rwrfhydro library in an R session:
-```
+``` R
 library(rwrfhydro)
 ```
 and now the package (namespace) is available. 
@@ -200,36 +74,40 @@ For specific functionality see function help (e.g. `?VisualizeDomain` or `help(V
 
 # Developing and bug reports
 
-Bugs are to be reported [here](https://github.com/mccreigh/rwrfhydro/issues). If you want to solve your bugs and get them back into the code, please continue reading about developing. 
+Bugs are to be reported [here](https://github.com/mccreigh/rwrfhydro/issues). If you want to help solve bugs and fixes into the code, please continue reading about developing. 
 
-There are three main aspects of developing the code base and contributing:
+There are four main aspects of developing the code base and contributing:
 
-* Version control for collaboration: Again, not terribly interesting but incredibly useful. For those new to the Git/Github process, it can be a bit daunting. Please contact us for some help, we do want to get your useful code into the main repository!
+* Version control for collaboration: Not terribly interesting but incredibly useful. For those new to the Git/Github process, it can be a bit daunting. Please contact us for some help, we do want to get your useful code into the main repository!
 
-* R Packaging: Not very interesting, but critical for creating the extrememly useful nature of R packages. Fortunately, the `devtools` package simplifies life tremendously and so figures prominently in the development process we sketch below. The main details have been sorted out, contributing new functions is generally fairly easy. 
+* R Packaging: Again, not very interesting, but critical for creating the extrememly useful nature of R packages. Fortunately, the `devtools` package simplifies packaging tremendously and so figures prominently in the development process we sketch below. The main details have been sorted out, contributing new functions is generally fairly easy. 
 
 * Our best practices: This ranges from fundamental to fussy. 
 
-All of these topics (minus some of our specific best practices) are treated by [Hadley Wickham’s book on R Packages](http://r-pkgs.had.co.nz/). Specific sections of this book are linked below. Further resources on R package development are listed below. 
+* Getting in touch with the community: Lots of aspects of this tool are under active development. Dont duplicate efforts, extend them! We will establish a site for communicating development tasks and statuses on the github wiki.
+
+R packageing and some version controll are treated by [Hadley Wickham’s book on R Packages](http://r-pkgs.had.co.nz/). Specific sections of this book are linked below. Further resources on R package development are listed at the end of this page. 
 
 ## Version control for collaboration: Github
 
 Instead of going straight to developing, we recommend that you install rwrfhydro using `devtools::install_github('mccreigh/rwrfhydro')` first, because this streamlines the installation of package dependencies. Note that `devtools::install_github('mccreigh/rwrfhydro')` installs rwrfhydro into you default library path (`.libPaths()[1]`) and that the source code is not included. 
 
-The very best way to obtain and edit the source is to "fork" rwrfhydro on github and clone the repository to your machine(s) of choice. You edit your fork and, when it's ready, you submit a pull request to get the changes back to the main (upstream) fork of rwrfhydro. More details are provided below. Your cloned git repository is not in your default R library path (`.libPaths()[1]`), but somewhere else where you choose to keep your development code. However, devtools allows you to build your development package into your library path. This means that after you add some code locally, you can `library(rwrfhydro)` from other R sessions on that machine with your changes appearing in the package. The basic use of devtools is outlined below. It greatly stream lines all aspects of developing R packages and is highly recommended. Particularly, it make is easyt to go from github to an R package.
+The very best way to obtain and edit the source is to "fork" rwrfhydro on github and then clone _your_ the repository to your machine(s) of choice. You edit your fork and, when it's ready, you submit a pull request to get the changes back to the main (upstream) fork of rwrfhydro. More details are provided below. Your cloned git repository is not in your default R library path (`.libPaths()[1]`), but somewhere else where you choose to keep your development code. However, devtools allows you to build your development package into your library path. This means that after you add some code locally, you can `library(rwrfhydro)` from other R sessions on that machine with your changes appearing in the package. The basic use of devtools is outlined below. It greatly stream lines all aspects of developing R packages and is highly recommended. Particularly, it make is easy to go from github or local changes to an R package.
 
 ### Forking and cloning
-Please fork the repository to contribute. A fork is a separate copy of the main repository. [Forking is trivial in Github](https://help.github.com/articles/fork-a-repo/). You have to have a free (for open-source repositories) account to fork on github.
+Please fork the repository to contribute. A fork is a separate copy of the main repository on which you have write permissions. Note that you do not have write permissions on any other fork of the repository. [Forking is trivial in Github](https://help.github.com/articles/fork-a-repo/). You have to have a free (for open-source repositories) account to fork on github.
 
-Then you'll clone the fork to a local computer and you'll have to interact between your foked github version and the 'master' fork. You are free to merge changes on the master into your fork at any time. Keep your fork sync'd as much as possible to avoid painful merges. Getting changes back to the master fork requires a pull request on github. We give some tips below. 
+Next you'll clone _your_ fork to your local computer and you'll to interact between your forked repository on github, which is called "origin". The repo "mccreigh/rwrfhydro" is known as the "upstream" fork. This is the "official" repo. It's also called upstream because changes to it should always flow to all other repos so that they can easily sync their separate changes back to it. Keep your fork sync'd with upstream as much/often as possible to avoid painful merges, github notifies downstream forks of changes to upstream. 
+
+Because you dont have write permissions to "upstream" (or any other fork), you have to request that your changes be pulled upstream. This is done via a pull request on github (website). We give some tips below and give a general overview of forking on github in [this document](https://docs.google.com/document/d/1DxsViogPdA0uObHgNx4YFKd4ClC-m9UFcX0rO-ZJTY0/edit?usp=sharing).
 
 ### devBranch and pull requests
-We maintain two main branches: master and devBranch. You should never work on the master branch. All changes have to pass through the devBranch before going in to the master and this is controlled by the package maintainer. Therefore, devBranch is where your [pull requests](https://help.github.com/articles/using-pull-requests/) will go. Other barnches on your fork are up to you, How you get your code into your fork's devBranch is your choice. The easiest way is to `git checkout devBranch` and edit that. Some more details on using git are provided in the [workflow](#workflow-git-r-packaging-and-you) overview below.
+We maintain two main branches or rwrfhydro: master and devBranch. You should _never work on the master branch_. All changes have to pass through the devBranch before going in to the master and this is controlled by the package maintainer. Therefore, devBranch is where your [pull requests](https://help.github.com/articles/using-pull-requests/) will go. Other barnches on your fork are up to you. How you get your code into your fork's devBranch is your choice. One suggestion is to work on your personal branch. Then when various files are ready to be contributed to `devBranch`, you first do `git checkout devBranch` then followed by `git checkout myBranch -- path/to/file` for each file you desire to copy from `myBranch` into `devBranch`. Finally the `git add` and `git commit` formally put these files into `devBranch`. Some more details on using git are provided in the [workflow](#workflow-git-r-packaging-and-you) overview below.
 
 ### Not using Github.
-This may be possible for small amounts of codes over long periods of time. It is really only the "hub" part of github which may give pause, interfacing a git repo with github is described here and maybe an alternative if necessary: http://stackoverflow.com/questions/4728432/git-forking-without-github
+This is not recommended, but might be possible. It will certainly hinder you interaction with the upstream repo.
 
-### Travis-CI and `R CMD check`
+## Travis-CI and `R CMD check`
 The rwrfhydro repo is configured to build on a third-party virtual linux machine with every push or pull request to the master or devBranch branches. This service is known as Travis-CI (continuous integration). This means your pull requests are automatically checked by `R CMD check`, this keeps errors from creeping into the upstream code. There are a variety of hurdles to getting code to build on Travis-CI, including installing requisite system and R packages, which can be challenging but worth it for the debugging provided by automated builds in conjunction with `R CMD check`.
 
 `R CMD check` accepts a variety of arguments. Ultimately, it 1) checks the source for consistency including across platforms (Windows, OSX, linux), 2) runs all specified code tests, essentially regression tests, 3) runs all the examples provided in the documentation, and 4) builds all the vignettes. Currently, we are skipping vignette building until we can streamline several of these. 
@@ -241,23 +119,26 @@ You can configure your own fork to build on Travis-CI and you can push frequentl
 Workflow is approximately this:
   
 * Fork project on github
-* Clone the github fork to your local machine(s)
-* Checkout the devBranch (`git checkout devBranch`)
+* Clone _your_ github fork to your local machine(s)
+* Set the upstream repo (`git remote add upstream https://github.com/mccreigh/rwrfhydro` - different syntax for ssh access)
+* Checkout your devBranch (`git checkout devBranch`)
 
 * Development cycles:
-  * Optional: Create a topic branch off of devBranch in git (e.g. `git checkout topicBranch`) and push this to github (`git push origin topicBranch`). 
-  * Write code (in these dirs: R/, NAMESPACE, src/, data/, inst/).
-  * Write documentation (in these dirs: man/, vignettes/).
-  * Write tests (in this dir: test/).
-  * Document and check with devtools: `devtools::document(); devtools::check_doc(); devtools::check()`
-  * Commit to your branch with git. (`git commit -am 'Some cool features were needed.'`)
-  * Push to github (`git push origin branch`). If Travis-CI is configured, this triggers an `R CMD check` on Travis. 
+    * Optional: Create a topic branch off of devBranch in git (e.g. `git checkout -b myBranch`) and push this to github (`git push origin myBranch`). 
+    * Write code (in these dirs: R/, NAMESPACE, src/, data/, inst/).
+    * Write documentation (in these dirs: man/, vignettes/).
+    * Write tests (in this dir: test/).
+    * Document and check with devtools: `devtools::document(); devtools::check_doc(); devtools::check()`
+    * Commit to your branch with git. (`git commit -am 'Some cool features were needed.'`)
+    * Push to github (`git push origin branch`). If Travis-CI is configured, this can trigger an `R CMD check` on Travis. 
 
-To get code back to the main reposiory/fork:  
-  * [If on topicBranch: merge it into devBranch.]
-  * Merge your devBranch with the "upstream" devBranch, that is in the master fork: [See here.](https://help.github.com/articles/syncing-a-fork/) **Note** pushing back to github at the very bottom of that page.
-  * [If on topicBranch: You probably want to mege devBranch into topicBranch.]
-  * Submit a [pull request on github](https://help.github.com/articles/using-pull-requests/) on devBranch. 
+* To get code back to the main reposiory/fork:  
+    * If on myBranch: You probably want to mege devBranch into myBranch: `git pull upstream devBranch`.
+    * If on myBranch: `checkout devBranch`. The either wholsale merge your work from origin (`git pull origin myBranch`) or cherry pick files (`git check out myBranch -- path/to/file` for eac file) it into devBranch.
+    * if on myBranch: commit, `git commit -am'Fixes and new features'`.
+    * If not previously on myBranch and did not do a wholesale merge in previous step: Sync with the "upstream" devBranch: [See here.](https://help.github.com/articles/syncing-a-fork/) If upstream repo is set: `git pull upstream devBranch`.
+    * Push your devBranch to your fork on github: `git push origin devBranch`.
+    * Submit a [pull request on github](https://help.github.com/articles/using-pull-requests/) on devBranch to upstream (mccreigh/rwrfhydro).
 
 
 ## Our best practices
@@ -267,17 +148,20 @@ To get code back to the main reposiory/fork:
 
 #### Organizing functions
 [http://r-pkgs.had.co.nz/r.html#r-organising](http://r-pkgs.had.co.nz/r.html#r-organising)
+
 * Do NOT put all functions in a single file, nor each in their own file. Functions should be grouped by files and may occasionally need moved to new or different files as new functions are written.
 * File names end in .R and are all lowercase with _ used to separate words. (All lowercase (except the .R) helps ensure compatibility with Windows developers.)
 
 #### R code style
 [http://r-pkgs.had.co.nz/r.html#style](http://r-pkgs.had.co.nz/r.html#style)
+
 * Generally follow Google’s R style guide with preference for variableName (first-lower camel case) over variable.name (period distinction). Note that functions are first-upper camel case, e.g. FunctionName.  [https://google-styleguide.googlecode.com/svn/trunk/Rguide.xml](https://google-styleguide.googlecode.com/svn/trunk/Rguide.xml)
 * Variables are nouns. Functions are verbs.
 * Lots of other style considerations to learn: indents, braces, line length, assignment, comment style.
 
 #### Packages are NOT scripts
 [http://r-pkgs.had.co.nz/r.html#r-differences](http://r-pkgs.had.co.nz/r.html#r-differences)
+
 * Don’t use library() or require(). Use the DESCRIPTION to specify your package’s requirements.
 * Use package::function() to use function from external packages. Make sure the package and version are listed in DESCRIPTION.
 * Never use source() to load code from a file. Rely on devtools::load_all() to automatically source all files in R/.
@@ -286,6 +170,7 @@ To get code back to the main reposiory/fork:
 
 #### Documentation with roxygen
 [http://r-pkgs.had.co.nz/man.html](http://r-pkgs.had.co.nz/man.html)
+
 Once you get used to this, you will love writing documentation as you go for your R functions. 
 
 * Roxygen comments start with #' and come before a function. All the roxygen lines preceding a function are called ablock. Each line should be wrapped in the same way as your code, normally at 80 characters.
@@ -295,6 +180,48 @@ Once you get used to this, you will love writing documentation as you go for you
 * The second paragraph is the description: this comes first in the documentation and should briefly describe what the function does.
 * The third and subsequent paragraphs go into the details: this is a (often long) section that is shown after the argument description and should go into detail about how the function works.
 * All objects must have a title and description. Details are optional.
+* GetPkgMeta: NOTE that this function only works for packages _not_ installed by devtools::load_all(). The function analzes the @keywords and @concepts tags supplied in the roxygen documentation to categorize and relate functions and objects in rwrfhydro (or any other package). Keywords follow R conventions (see this obscure link which I need to find). Concepts are customized to rwrfhydro. The current list of keywords and concepts can be gathered from the latest version of devBranch, using the following command, which gives as of this writing:
+
+``` R
+> GetPkgMeta(listMetaOnly=TRUE)
+-----------------------------------
+rwrfhydro concepts
+-----------------------------------
+Ameriflux
+DART
+data
+dataAnalysis
+dataGet
+dataMgmt
+geospatial
+getData
+GHCN
+modelEval
+MODIS
+ncdf
+nudging
+plot
+SNODAS
+SNOTEL
+Streamflow
+usgs
+usgsStreamObs
+
+-----------------------------------
+rwrfhydro keywords
+-----------------------------------
+data
+database
+hplot
+internal
+IO
+manip
+smooth
+ts
+univar
+utilities
+```
+
 
 ### Objects in rwrfhydro
 We will probably need to develop some s3 classes or reuse some from other packages.

@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="James McCreight and Aubrey Dugger" />
+
+<meta name="date" content="2017-05-01" />
+
+<title>An overview of rwrfhydro functionality</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">An overview of rwrfhydro functionality</h1>
+<h4 class="author"><em>James McCreight and Aubrey Dugger</em></h4>
+<h4 class="date"><em>2017-05-01</em></h4>
+
+
+
+<div id="background" class="section level1">
+<h1>Background</h1>
+<p>The rwrfhydro package is intended as a multi-purpose tool for computing activities related to the WRF Hydro model. But how do you know which tool to use or even if the right tool might exist? If you are developing a new set of tools, how do you help users discover your tools?</p>
+<p>To aid in discover of appropriate tools, the functions are organized or tagged in two ways. First, using the existing set of R “keywords” (see the end of this document for that list). Second, tools are tagged with customized “concepts” which are defined specifically for rwrfhydro. We illustrate how to reveal these categories and the functions within them for rwrfhydro (or any other package). For developers, we show how to document keywords and concepts and how to cross-reference within the documentation.</p>
+<p>(Note that these commands will not work for packages loaded by <code>devtools::load_all</code>, you have to load an built/installed version of rwrfhydro.)</p>
+</div>
+<div id="setup" class="section level1">
+<h1>Setup</h1>
+<p>Load the rwrfhydro package.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;rwrfhydro&quot;</span>)</code></pre></div>
+</div>
+<div id="r-help-and-help.search" class="section level1">
+<h1>R <code>help</code> and <code>help.search</code></h1>
+<p>There are several basic commands which can give insight into a package and its contents</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">?rwrfhydro</code></pre></div>
+<div class="r-help-page">
+<table width="100%" summary="page for rwrfhydro">
+<tr>
+<td>
+rwrfhydro
+</td>
+<td style="text-align: right;">
+R Documentation
+</td>
+</tr>
+</table>
+<h2>
+rwrfhydro: Tools for working with WRF Hydro data.
+</h2>
+<h3>
+Description
+</h3>
+<p>
+A community-contributed tool box for managing, analyzing, and visualizing WRF Hydro (and HydroDART) input and output files in R.
+</p>
+<h3>
+Getting started
+</h3>
+<p>
+Please visit the welcome documentation/README page at: <br /> <a href="https://github.com/mccreigh/rwrfhydro" class="uri">https://github.com/mccreigh/rwrfhydro</a>
+</p>
+<h3>
+Other package help
+</h3>
+<ul>
+<li>
+<p>
+Top level help: <code>help(package=‘rwrfhydro’)</code>
+</p>
+</li>
+<li>
+<p>
+<p>Package overview vignette (long-form example) online:<br /> <a href="http://htmlpreview.github.io/?https://github.com/mccreigh/rwrfhydro/blob/master/vignettes/overview.Rmd" class="uri">http://htmlpreview.github.io/?https://github.com/mccreigh/rwrfhydro/blob/master/vignettes/overview.Rmd</a></p>
+</p>
+</li>
+<li>
+<p>
+<p>All package vignettes (long-form examples) online: <br /> <a href="https://github.com/mccreigh/rwrfhydro/blob/master/vignettes.Rmd" class="uri">https://github.com/mccreigh/rwrfhydro/blob/master/vignettes.Rmd</a></p>
+</p>
+</li>
+<li>
+<p>
+<p>Discover rwrfhydro orgainzation into “concepts” and “keywords”: <code>GetPkgMeta</code></p>
+</p>
+</li>
+</ul>
+</div>
+<p>Or</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">help</span>(<span class="dt">package=</span><span class="st">'rwrfhydro'</span>)</code></pre></div>
+<pre><code>##      Information on package 'rwrfhydro'
+## 
+## Description:
+## 
+## Package:           rwrfhydro
+## Type:              Package
+## Title:             R tools for the WRF Hydro Model
+## Version:           1.0.9000
+## Date:              2015-05-01
+## Authors@R:         c( person(&quot;James&quot;, &quot;McCreight&quot;, email = &quot;jamesmcc@ucar.edu&quot;, role =
+##                    c(&quot;aut&quot;,&quot;cre&quot;)), person(&quot;Aubrey&quot;, &quot;Dugger&quot;, email = &quot;&quot;, role = &quot;aut&quot;),
+##                    person(&quot;Arezoo&quot;, &quot;RafieeiNasab&quot;, email = &quot;&quot;, role = &quot;aut&quot;),
+##                    person(&quot;Logan&quot;, &quot;Karsten&quot;, email = &quot;&quot;, role = &quot;aut&quot;), person(&quot;Alyssa&quot;,
+##                    &quot;Hendricks&quot;, email = &quot;&quot;, role = &quot;aut&quot;) )
+## Maintainer:        James McCreight &lt;jamesmcc@ucar.edu&gt;
+## Description:       A community-contributed tool box for managing, analyzing, and
+##                    visualizing WRF Hydro (and HydroDART) input and output files in R.
+## License:           https://github.com/mccreigh/rwrfhydro/blob/master/LICENSE.md
+## Depends:           R (&gt;= 3.1.0)
+## Imports:           data.table (&gt;= 1.9.6), plyr (&gt;= 1.8.1), grid (&gt;= 3.1.2), lubridate (&gt;=
+##                    1.3.3), ncdf4 (&gt;= 1.13), ggplot2 (&gt;= 1.0.0), ggmap (&gt;= 2.3), reshape2
+##                    (&gt;= 1.4.1), foreach (&gt;= 1.4.2), curl (&gt;= 0.5), RCurl (&gt;= 1.95),
+##                    dataRetrieval (&gt;= 2.1.2), raster (&gt;= 2.3), httr (&gt;= 0.6.1), devtools
+##                    (&gt;= 1.7.0), jsonlite (&gt;= 0.9.14)
+## LazyData:          true
+## Suggests:          testthat, knitr, rgdal, sp, pander, doMC, ptw, rmarkdown
+## BuildVignettes:    false
+## VignetteBuilder:   knitr
+## RoxygenNote:       5.0.1
+## Author:            James McCreight [aut, cre], Aubrey Dugger [aut], Arezoo RafieeiNasab
+##                    [aut], Logan Karsten [aut], Alyssa Hendricks [aut]
+## Built:             R 3.3.2; ; 2016-12-13 00:06:50 UTC; unix
+## RemoteType:        github
+## RemoteHost:        https://api.github.com
+## RemoteRepo:        rwrfhydro
+## RemoteUsername:    mccreigh
+## RemoteRef:         devBranch
+## RemoteSha:         b0c84177cfd0b5bae47541baaf38278976c43e57
+## GithubRepo:        rwrfhydro
+## GithubUsername:    mccreigh
+## GithubRef:         devBranch
+## GithubSHA1:        b0c84177cfd0b5bae47541baaf38278976c43e57
+## 
+## Index:
+## 
+## AddRouteLinkGage        Add a 'gages' column to a RouteLink.nc file
+## CalcDailyGhcn           Aggregate hourly precipitation data into daily
+##                         values to be comparable to GHCN daily data.
+## CalcFdc                 Calculate flow duration curve statistics
+## CalcFdcPerf             Computes flow duration curve statistics for
+##                         WRF-Hydro streamflow output
+## CalcFdcSpline           Generate a spline-fit funtion for a flow
+##                         duration curve
+## CalcModPerf             Computes model performance statistics for
+##                         WRF-Hydro flux output
+## CalcModPerfMulti        Computes model performance statistics for
+##                         WRF-Hydro flux output
+## CalcNoahmpFluxes        Calculate water fluxes from NoahMP output
+## CalcNoahmpWatBudg       Calculate water balance from WRF-Hydro
+##                         (w/NoahMP) output
+## CalcSnodasCoords        Calculate the SNODAS coordinates.
+## CalcStatCategorical     Calculate some categorical verification
+##                         measures for categorical/continuous variables.
+## CalcStatCont            Calculate some verification measures for
+##                         continuous variables.
+## CalcStatsRS             Calculates summary statistics from a remote
+##                         sensing time series
+## ChanObsToTimeSlice      Process model CHANOBS to observation timeSlice
+##                         format for nudging DA.
+## CheckConn               CheckConn checks a re-expressed network.
+## ConvertRS2Stack         Convert a set of MODIS images to a raster stack
+##                         and, optionally, a NetCDF file.
+## ConvertStack2NC         Convert a raster stack to a NetCDF file.
+## CreateBasinMask         Create a coarse-resolution basin mask grid.
+## EditFrxstPts            Edit the a frxst pts layer in Fulldom
+## ExportGeogrid           Creates a georeferenced TIF from a geogrid
+##                         variable
+## FindUsgsStns            Discover USGS stations using huc8 code or
+##                         lat/lon/radius.
+## GapFillRS               Gap fill a series of MODIS images using
+##                         interpolation.
+## GatherStreamInds        Gather upstream or downstream distance from a
+##                         given starting location.
+## GetAmeriflux            Get Ameriflux data for specified sites.
+## GetCoDwrData            Get CO DWR data for specified sites.
+## GetDomainCoordsProj     'GetDomainCoordsProj' collects and reprojects
+##                         spatial data from geo and hydro files.
+## GetGeogridIndex         Get geogrid cell indices from lat/lon (or
+##                         other) coordinates.
+## GetGeogridSpatialInfo   Pull necessary geospatial information from
+##                         geogrid file used for regridding and
+##                         deprojection.
+## GetGhcn                 Get GHCN-D data for specified siteIds.
+## GetGhcn2                Get GHCN-D data for specified siteIds.
+## GetMODIS                Get MODIS data and process to match geogrid
+## GetMultiNcdf            Get WRF Hydro output/restart (scalar)
+##                         timeseries spread over multiple files.
+## GetNWCSnowPoints        Get and unpack National Water Center SWE and
+##                         snow depth point observations for a given hour.
+## GetNcdfFile             Get variables from a ncdf file
+## GetPkgMeta              Get a package's metadata fields and associated
+##                         entries.
+## GetPoly                 Return the polygon attribute for any point.
+## GetProj                 Pull projection information from geogrid file
+##                         'GetProj' Pull projection information of
+##                         WRF-Hydro modeling domain from geogrid file.
+## GetRfc                  Return the RFC name for any point.
+## GetSiteHuc              Given a USGS site code, return its HUC8.
+## GetSnodasDepthSweDate   Get and unpack the SNODAS snow depth and SWE
+##                         tarball for given dates.
+## GetSnodasPointTs        Pull SNODAS snowdepth and SWE time series for a
+##                         given lat/lon pair.
+## GetSnotel               Get SNOTEL data for specified sites.
+## GetStage4Files          Download Stage IV and II data files
+## GetTimeZone             Return the time zone for any point.
+## GetUsgsHucData          Get all the USGS streamgage information within
+##                         a HUC8.
+## InsertRS                Inserts pre-processed images into appropriate
+##                         forcing NetCDF files by date.
+## MkDischargeVariance     Make variances for prettyUsgs discharge
+##                         observations.
+## MkNcdf                  List based creation of netcdf files.
+## MkNudgingParams         Create a parameter file for nudging.
+## MkUsgsTimeSlice         Make timeslices from active USGS discharge data
+##                         files.
+## Model3SdErrClimTaper    Three-sigma error specification assuming errors
+##                         are smaller near climatological median (or
+##                         other quantile).
+## Model3SdErrPctErrPlusQntlIncpt
+##                         Three-sigma errors specified as percent of
+##                         observed plus some quantile of historical
+##                         flows.
+## NamedList               Create and or name a list with its entries.
+## NtwKReExToNcdf          Output the network reexpression to netcdf.
+## PlotFdc                 Plot a flow duration curve for a single
+##                         streamflow time series
+## PlotFdcCompare          Plots a flow duration curve for up to three
+##                         streamflow time series (e.g., observed &amp; two
+##                         model outputs)
+## PlotFluxCompare         Plot time series comparing modeled and observed
+##                         fluxes
+## PlotPrettyUsgs          Plot USGS site data which has been prettied
+##                         with PrettyUsgs.
+## PlotWatBudg             Plot water balance from WRF-Hydro (w/NoahMP)
+##                         output
+## PolyToRaster            Creates raster file from polygon matching the
+##                         'geoFile'
+## PrettyUsgs              PrettyUsgs constructs the S3 class prettyUsgs.
+## PutSnodasCoordsNcdf     Put the SNODAS coordinates into a netcdf file.
+## PutSnodasNcdf           Write output of ReadSnodasDepthSweDate to
+##                         netcdf.
+## QueryHaveSite           General purpose query/get for instantaneous
+##                         USGS streamflow data.
+## QuerySiteData           Returns the data for given sites from local
+##                         database.
+## QuerySiteInfo           Returns the desired information from the
+##                         database metadata file.
+## QuerySiteName           Find the name (site id) for a given site (name)
+##                         in the local database.
+## QuerySiteProd           Find the products available for a given site in
+##                         the local database.
+## ReExpNetwork            ReExpress stream networks indexed network
+##                         traversal.
+## ReExpressRouteLink      ReExpress the Route_Link.nc file.
+## ReIndexRouteLink        ReIndex RouteLink.nc (netcdf) files for indexed
+##                         network traversal.
+## ReadAmerifluxCSV        Read standard-format CSV data downloaded from
+##                         Ameriflux
+## ReadAmerifluxNC         Read standard-format NetCDF data downloaded
+##                         from Ameriflux
+## ReadChrtout             Read WRF-Hydro CHRTOUT data files.
+## ReadCoDwrGage           Read standard-format text data table downloaded
+##                         from CO DWR
+## ReadFrxstPts            Read WRF-Hydro standard-format forecast points
+##                         output text file.
+## ReadGwOut               Read WRF-Hydro standard-format groundwater
+##                         output text file.
+## ReadLdasoutAll          Read WRF-Hydro (w/NoahMP) LDASOUT data files
+##                         and generate basin-wide mean of all variables.
+## ReadLdasoutWb           Read WRF-Hydro (w/NoahMP) LDASOUT data files
+##                         and generate basin-wide mean water budget
+##                         variables.
+## ReadRouteLink           Read in WRF-Hydro route link file
+## ReadRtout               Read WRF-Hydro RTOUT data files and generate
+##                         basin-wide mean water fluxes.
+## ReadSnodasDepthSweDate
+##                         Read snodas snow depth and SWE into memory for
+##                         a given date.
+## ReadUsgsGage            Read standard-format text data table downloaded
+##                         from USGS Water Data
+## SaveHucData             Save the output of GetUsgsHucData to an
+##                         archive.
+## SelectGhcnGauges        Read the daily GHCN-D metadata and select
+##                         gauges based on the user criteria.
+## SmoothStack             Run MODIS-R Whittaker smoothing over
+##                         pre-processed raster stack.
+## VisualizeChanNtwk       Visualize WRF Hydro channel link indices and
+##                         get coordinates.
+## VisualizeDomain         Visualize WRF Hydro domain files.
+## VisualizeRouteLink      Visualize RouteLink.nc files.
+## VisualizeSpatial        Visualize WRF Hydro domain spatial data.
+## VisualizeSubsetStream   Visualize upstream or downstream links
+##                         determined from GatherStreamInds
+## WriteDischargeObsSeq    Writes an ascii obs_seq.in file for DART binary
+##                         create_obs_sequence
+## amfMeta                 Ameriflux site metadata
+## gages2Attr              Gages-II attributes
+## gages2AttrPlus          Gages-II attributes
+## multiplot               Plot multiple ggplot objects
+## ncdump                  Emulate ncdump -h and -v.
+## rfc                     Polygon shapefile of River Forecast Center
+##                         boundaries.
+## rwrfhydro               rwrfhydro: Tools for working with WRF Hydro
+##                         data.
+## snotelMeta              SNOTEL site metadata
+## timeZone                Time zone polygon
+## tzLookup                Time zone lookup table</code></pre>
+<p>To simply print the available (exported) functions:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ls</span>(<span class="st">'package:rwrfhydro'</span>)</code></pre></div>
+<pre><code>##   [1] &quot;AddRouteLinkGage&quot;               &quot;AllSame&quot;                       
+##   [3] &quot;amfMeta&quot;                        &quot;AsCharLongInt&quot;                 
+##   [5] &quot;CalcCOM&quot;                        &quot;CalcDailyGhcn&quot;                 
+##   [7] &quot;CalcDates&quot;                      &quot;CalcDateTrunc&quot;                 
+##   [9] &quot;CalcFdc&quot;                        &quot;CalcFdcPerf&quot;                   
+##  [11] &quot;CalcFdcSpline&quot;                  &quot;CalcMeanMinrm&quot;                 
+##  [13] &quot;CalcMeanNarm&quot;                   &quot;CalcModPerf&quot;                   
+##  [15] &quot;CalcModPerfMulti&quot;               &quot;CalcMonthDays&quot;                 
+##  [17] &quot;CalcNoahmpFluxes&quot;               &quot;CalcNoahmpWatBudg&quot;             
+##  [19] &quot;CalcRunningMean&quot;                &quot;CalcSnodasCoords&quot;              
+##  [21] &quot;CalcStatCategorical&quot;            &quot;CalcStatCont&quot;                  
+##  [23] &quot;CalcStatsRS&quot;                    &quot;CalcWaterYear&quot;                 
+##  [25] &quot;ChanObsToTimeSlice&quot;             &quot;CheckForUpdates&quot;               
+##  [27] &quot;CheckMasterSha&quot;                 &quot;CommitGithub&quot;                  
+##  [29] &quot;ConvertRS2Stack&quot;                &quot;ConvertStack2NC&quot;               
+##  [31] &quot;CreateBasinMask&quot;                &quot;CumsumNa&quot;                      
+##  [33] &quot;EditFrxstPts&quot;                   &quot;ExportGeogrid&quot;                 
+##  [35] &quot;FillOutliers&quot;                   &quot;FindUsgsStns&quot;                  
+##  [37] &quot;FlipLR&quot;                         &quot;FlipUD&quot;                        
+##  [39] &quot;FormalsToDf&quot;                    &quot;gages2Attr&quot;                    
+##  [41] &quot;gages2AttrPlus&quot;                 &quot;GapFillRS&quot;                     
+##  [43] &quot;GatherStreamInds&quot;               &quot;GetActiveHucData&quot;              
+##  [45] &quot;GetAmeriflux&quot;                   &quot;GetCoDwrData&quot;                  
+##  [47] &quot;GetDomainCoordsProj&quot;            &quot;GetFileStat&quot;                   
+##  [49] &quot;GetGages2NwisMeta&quot;              &quot;GetGeogridIndex&quot;               
+##  [51] &quot;GetGeogridSpatialInfo&quot;          &quot;GetGhcn&quot;                       
+##  [53] &quot;GetGhcn2&quot;                       &quot;GetMODIS&quot;                      
+##  [55] &quot;GetMultiNcdf&quot;                   &quot;GetMultiNcdfFile&quot;              
+##  [57] &quot;GetMultiNcdfVariable&quot;           &quot;GetNcdfFile&quot;                   
+##  [59] &quot;GetNWCSnowPoints&quot;               &quot;GetPkgMeta&quot;                    
+##  [61] &quot;GetPkgRawDataPath&quot;              &quot;GetPoly&quot;                       
+##  [63] &quot;GetProj&quot;                        &quot;GetRemoteMetadata&quot;             
+##  [65] &quot;GetRfc&quot;                         &quot;GetSiteHuc&quot;                    
+##  [67] &quot;GetSnodasDepthSweDate&quot;          &quot;GetSnodasPointTs&quot;              
+##  [69] &quot;GetSnotel&quot;                      &quot;GetStage4Files&quot;                
+##  [71] &quot;GetTimeZone&quot;                    &quot;GetUsgsHucData&quot;                
+##  [73] &quot;GetUsgsIvProduct&quot;               &quot;github_GET&quot;                    
+##  [75] &quot;ImproveHucMeta&quot;                 &quot;InsertRS&quot;                      
+##  [77] &quot;LoadMetaDB&quot;                     &quot;LsObjects&quot;                     
+##  [79] &quot;lsOS&quot;                           &quot;MkDischargeVariance&quot;           
+##  [81] &quot;MkNcdf&quot;                         &quot;MkNudgingParams&quot;               
+##  [83] &quot;MkUsgsTimeSlice&quot;                &quot;Model3SdErrClimTaper&quot;          
+##  [85] &quot;Model3SdErrPctErrPlusQntlIncpt&quot; &quot;multiplot&quot;                     
+##  [87] &quot;NamedList&quot;                      &quot;ncdump&quot;                        
+##  [89] &quot;Nse&quot;                            &quot;NseLog&quot;                        
+##  [91] &quot;NtwKReExToNcdf&quot;                 &quot;PadRange&quot;                      
+##  [93] &quot;PlotCollectStats&quot;               &quot;PlotFdc&quot;                       
+##  [95] &quot;PlotFdcCompare&quot;                 &quot;PlotFluxCompare&quot;               
+##  [97] &quot;PlotLatency&quot;                    &quot;PlotNStnSlice&quot;                 
+##  [99] &quot;PlotPrettyUsgs&quot;                 &quot;PlotWatBudg&quot;                   
+## [101] &quot;PolyToRaster&quot;                   &quot;PosixOrigin&quot;                   
+## [103] &quot;PrettyUsgs&quot;                     &quot;PutSnodasCoordsNcdf&quot;           
+## [105] &quot;PutSnodasNcdf&quot;                  &quot;QueryHaveSite&quot;                 
+## [107] &quot;QuerySiteData&quot;                  &quot;QuerySiteInfo&quot;                 
+## [109] &quot;QuerySiteName&quot;                  &quot;QuerySiteProd&quot;                 
+## [111] &quot;RBFlash&quot;                        &quot;ReadAmerifluxCSV&quot;              
+## [113] &quot;ReadAmerifluxNC&quot;                &quot;ReadChrtout&quot;                   
+## [115] &quot;ReadCoDwrGage&quot;                  &quot;ReadFrxstPts&quot;                  
+## [117] &quot;ReadGwOut&quot;                      &quot;ReadLdasoutAll&quot;                
+## [119] &quot;ReadLdasoutWb&quot;                  &quot;ReadNcTimeSlice&quot;               
+## [121] &quot;ReadRouteLink&quot;                  &quot;ReadRtout&quot;                     
+## [123] &quot;ReadSnodasDepthSweDate&quot;         &quot;ReadUsgsGage&quot;                  
+## [125] &quot;ReExpNetwork&quot;                   &quot;ReExpressRouteLink&quot;            
+## [127] &quot;ReIndexRouteLink&quot;               &quot;ReshapeMultiNcdf&quot;              
+## [129] &quot;rfc&quot;                            &quot;Rmse&quot;                          
+## [131] &quot;RmseNorm&quot;                       &quot;RotateCcw&quot;                     
+## [133] &quot;RotateCw&quot;                       &quot;RoundMinutes&quot;                  
+## [135] &quot;SaveHucData&quot;                    &quot;SelectGhcnGauges&quot;              
+## [137] &quot;SmoothStack&quot;                    &quot;snotelMeta&quot;                    
+## [139] &quot;StdLon&quot;                         &quot;timeZone&quot;                      
+## [141] &quot;TransTz&quot;                        &quot;tzLookup&quot;                      
+## [143] &quot;VisualizeChanNtwk&quot;              &quot;VisualizeDomain&quot;               
+## [145] &quot;VisualizeRouteLink&quot;             &quot;VisualizeSpatial&quot;              
+## [147] &quot;VisualizeSubsetStream&quot;          &quot;WriteDischargeObsSeq&quot;          
+## [149] &quot;WriteNcTimeSlice&quot;</code></pre>
+<p>However, none of the above (except perhaps the first) really help make sense of the (already) sprawling set of functions available in rwrfhydro. The R <code>help.search()</code> matches a pattern against <code>fields = c(&quot;alias&quot;, &quot;concept&quot;, &quot;title&quot;)</code> by default, so it can help when you know the concept your are looking for. It also provides a <code>keyword</code> field, so you can find keywords of interest (keywords are defined a priori unlike concepts, so you might actually know them).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">help.search</span>(<span class="st">&quot;DART&quot;</span>,<span class="dt">package=</span><span class="st">'rwrfhydro'</span>)</code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Package</th>
+<th align="left">Topic</th>
+<th align="left">Title</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">rwrfhydro</td>
+<td align="left">MkDischargeVariance</td>
+<td align="left">Make variances for prettyUsgs discharge observations.</td>
+</tr>
+<tr class="even">
+<td align="left">rwrfhydro</td>
+<td align="left">VisualizeChanNtwk</td>
+<td align="left">Visualize WRF Hydro channel link indices and get coordinates.</td>
+</tr>
+<tr class="odd">
+<td align="left">rwrfhydro</td>
+<td align="left">WriteDischargeObsSeq</td>
+<td align="left">Writes an ascii obs_seq.in file for DART binary create_obs_sequence</td>
+</tr>
+</tbody>
+</table>
+<p>Or</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">help.search</span>(<span class="dt">package=</span><span class="st">'rwrfhydro'</span>, <span class="dt">keyword=</span><span class="st">'hplot'</span>)</code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Package</th>
+<th align="left">Topic</th>
+<th align="left">Title</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">rwrfhydro</td>
+<td align="left">GetDomainCoordsProj</td>
+<td align="left">‘GetDomainCoordsProj’ collects and reprojects spatial data from geo and hydro files.</td>
+</tr>
+<tr class="even">
+<td align="left">rwrfhydro</td>
+<td align="left">PlotFdc</td>
+<td align="left">Plot a flow duration curve for a single streamflow time series</td>
+</tr>
+<tr class="odd">
+<td align="left">rwrfhydro</td>
+<td align="left">PlotFdcCompare</td>
+<td align="left">Plots a flow duration curve for up to three streamflow time series (e.g., observed &amp; two model outputs)</td>
+</tr>
+<tr class="even">
+<td align="left">rwrfhydro</td>
+<td align="left">PlotPrettyUsgs</td>
+<td align="left">Plot USGS site data which has been prettied with PrettyUsgs.</td>
+</tr>
+<tr class="odd">
+<td align="left">rwrfhydro</td>
+<td align="left">VisualizeChanNtwk</td>
+<td align="left">Visualize WRF Hydro channel link indices and get coordinates.</td>
+</tr>
+<tr class="even">
+<td align="left">rwrfhydro</td>
+<td align="left">VisualizeDomain</td>
+<td align="left">Visualize WRF Hydro domain files.</td>
+</tr>
+<tr class="odd">
+<td align="left">rwrfhydro</td>
+<td align="left">VisualizeRouteLink</td>
+<td align="left">Visualize RouteLink.nc files.</td>
+</tr>
+<tr class="even">
+<td align="left">rwrfhydro</td>
+<td align="left">VisualizeSpatial</td>
+<td align="left">Visualize WRF Hydro domain spatial data.</td>
+</tr>
+<tr class="odd">
+<td align="left">rwrfhydro</td>
+<td align="left">VisualizeSubsetStream</td>
+<td align="left">Visualize upstream or downstream links determined from GatherStreamInds</td>
+</tr>
+</tbody>
+</table>
+<p>But there’s no clear way in R to discover keywords or concepts used within a package (that I’ve ever found.)</p>
+</div>
+<div id="getpkgmeta" class="section level1">
+<h1><code>GetPkgMeta</code></h1>
+<p>So, rwrfhydro includes <code>GetPkgMeta</code>: the slicer and dicer of package discovery that reveals both concepts and keywords, each in alphabetical order and shows the functions associated with each. With the following argument, only the concepts and keywords are returned.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">GetPkgMeta</span>(<span class="dt">listMetaOnly =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<pre><code>## 
+## -----------------------------------
+## rwrfhydro concepts
+## -----------------------------------
+## Ameriflux
+## DART
+## data
+## dataAnalysis
+## dataGet
+## dataMgmt
+## geospatial
+## getData
+## GHCN
+## modelEval
+## MODIS
+## ncdf
+## nudging
+## plot
+## ploting
+## SNODAS
+## SNOTEL
+## Streamflow
+## usgs
+## usgsStreamObs
+## 
+## -----------------------------------
+## rwrfhydro keywords
+## -----------------------------------
+## data
+## database
+## hplot
+## internal
+## IO
+## manip
+## plot
+## smooth
+## ts
+## univar
+## utilities</code></pre>
+<p>By defulat (without any arguments at all), you also get the functions in each concept and keyword</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">pkgMeta &lt;-<span class="st"> </span><span class="kw">GetPkgMeta</span>()</code></pre></div>
+<pre><code>## 
+## -----------------------------------
+## rwrfhydro concepts
+## -----------------------------------
+## * Ameriflux:
+##    GetAmeriflux
+## 
+## * DART:
+##    MkDischargeVariance VisualizeChanNtwk WriteDischargeObsSeq
+## 
+## * data:
+##    amfMeta gages2Attr gages2AttrPlus rfc snotelMeta timeZone tzLookup
+## 
+## * dataAnalysis:
+##    CalcStatsRS SmoothStack
+## 
+## * dataGet:
+##    CreateBasinMask FindUsgsStns GetFileStat GetGeogridIndex GetMODIS GetMultiNcdfFile
+##    GetMultiNcdfVariable GetNWCSnowPoints GetSiteHuc GetStage4Files GetUsgsHucData
+##    GetUsgsIvProduct ImproveHucMeta ReadAmerifluxCSV ReadAmerifluxNC ReadChrtout
+##    ReadCoDwrGage ReadFrxstPts ReadGwOut ReadLdasoutAll ReadLdasoutWb ReadRouteLink
+##    ReadRtout ReadUsgsGage SaveHucData
+## 
+## * dataMgmt:
+##    AddRouteLinkGage CalcNoahmpFluxes CheckConn ConvertRS2Stack ConvertStack2NC
+##    EditFrxstPts ExportGeogrid GapFillRS GatherStreamInds GetPoly GetRfc GetTimeZone
+##    InsertRS LoadMetaDB MkDischargeVariance MkNudgingParams NtwKReExToNcdf PolyToRaster
+##    PrettyUsgs QueryHaveSite QuerySiteData QuerySiteInfo QuerySiteName QuerySiteProd
+##    ReExpNetwork ReExpressRouteLink ReIndexRouteLink TransUsgsProdStat VisualizeRouteLink
+##    WriteDischargeObsSeq sub-.prettyUsgs subset.prettyUsgs
+## 
+## * geospatial:
+##    ExportGeogrid GetGeogridIndex GetGeogridSpatialInfo GetProj PolyToRaster
+## 
+## * getData:
+##    GetGeogridSpatialInfo GetProj
+## 
+## * GHCN:
+##    CalcDailyGhcn GetGhcn GetGhcn2 SelectGhcnGauges
+## 
+## * modelEval:
+##    CalcFdc CalcFdcPerf CalcFdcSpline CalcModPerf CalcModPerfMulti CalcNoahmpWatBudg
+##    CalcStatCategorical CalcStatCont PlotFdc PlotFdcCompare
+## 
+## * MODIS:
+##    CalcStatsRS ConvertRS2Stack ConvertStack2NC GapFillRS GetMODIS InsertRS SmoothStack
+## 
+## * ncdf:
+##    GetNcdfFile MkNcdf ncdump
+## 
+## * nudging:
+##    AddRouteLinkGage ChanObsToTimeSlice CheckConn EditFrxstPts GatherStreamInds
+##    MkNudgingParams NtwKReExToNcdf ReExpNetwork ReExpressRouteLink VisualizeSubsetStream
+## 
+## * plot:
+##    GetDomainCoordsProj PlotFdc PlotFdcCompare PlotPrettyUsgs VisualizeChanNtwk
+##    VisualizeDomain VisualizeRouteLink VisualizeSpatial VisualizeSubsetStream
+## 
+## * ploting:
+##    multiplot
+## 
+## * SNODAS:
+##    CalcSnodasCoords GetSnodasDepthSweDate GetSnodasPointTs PutSnodasCoordsNcdf
+##    PutSnodasNcdf ReadSnodasDepthSweDate
+## 
+## * SNOTEL:
+##    GetSnotel
+## 
+## * Streamflow:
+##    GetCoDwrData
+## 
+## * usgs:
+##    MkUsgsTimeSlice
+## 
+## * usgsStreamObs:
+##    FindUsgsStns GetSiteHuc GetUsgsHucData GetUsgsIvProduct ImproveHucMeta LoadMetaDB
+##    PlotPrettyUsgs PrettyUsgs QueryHaveSite QuerySiteData QuerySiteInfo QuerySiteName
+##    QuerySiteProd SaveHucData TransUsgsProdStat sub-.prettyUsgs subset.prettyUsgs
+## 
+## 
+## -----------------------------------
+## rwrfhydro keywords
+## -----------------------------------
+## * data:
+##    amfMeta gages2Attr gages2AttrPlus rfc snotelMeta timeZone tzLookup
+## 
+## * database:
+##    LoadMetaDB QueryHaveSite QuerySiteData QuerySiteInfo QuerySiteName QuerySiteProd
+##    SaveHucData TransUsgsProdStat
+## 
+## * hplot:
+##    GetDomainCoordsProj PlotFdc PlotFdcCompare PlotPrettyUsgs VisualizeChanNtwk
+##    VisualizeDomain VisualizeRouteLink VisualizeSpatial VisualizeSubsetStream
+## 
+## * internal:
+##    AllSame AsCharLongInt CalcCOM CalcDateTrunc CalcDates CalcMeanMinrm CalcMeanNarm
+##    CalcMonthDays CalcRunningMean CalcWaterYear CumsumNa FillOutliers FlipLR FlipUD
+##    FormalsToDf GetFileStat GetGithubPat GetMultiNcdfFile GetMultiNcdfVariable
+##    GetPkgRawDataPath GetUsgsIvProduct ImproveHucMeta LoadMetaDB LsObjects Nse NseLog
+##    PadRange PosixOrigin RBFlash ReadNcTimeSlice ReshapeMultiNcdf Rmse RmseNorm RotateCcw
+##    RotateCw RoundMinutes StdLon TransTz TransUsgsProdStat WriteNcTimeSlice lsOS
+##    sub-.prettyUsgs subset.prettyUsgs
+## 
+## * IO:
+##    AddRouteLinkGage ChanObsToTimeSlice ConvertRS2Stack ConvertStack2NC CreateBasinMask
+##    EditFrxstPts ExportGeogrid FindUsgsStns GapFillRS GetAmeriflux GetCoDwrData
+##    GetGeogridIndex GetGeogridSpatialInfo GetGhcn GetGhcn2 GetMODIS GetNWCSnowPoints
+##    GetPoly GetProj GetRfc GetSiteHuc GetSnodasDepthSweDate GetSnodasPointTs GetSnotel
+##    GetStage4Files GetTimeZone GetUsgsHucData GetUsgsIvProduct ImproveHucMeta InsertRS
+##    MkNudgingParams PolyToRaster PutSnodasCoordsNcdf PutSnodasNcdf ReadAmerifluxCSV
+##    ReadAmerifluxNC ReadChrtout ReadCoDwrGage ReadFrxstPts ReadGwOut ReadLdasoutAll
+##    ReadLdasoutWb ReadRouteLink ReadRtout ReadUsgsGage SaveHucData SelectGhcnGauges
+## 
+## * manip:
+##    AddRouteLinkGage CalcDailyGhcn CalcNoahmpFluxes CalcNoahmpWatBudg CalcSnodasCoords
+##    ChanObsToTimeSlice CheckConn EditFrxstPts GatherStreamInds MkDischargeVariance
+##    MkNudgingParams NamedList NtwKReExToNcdf PrettyUsgs ReExpNetwork ReExpressRouteLink
+##    ReIndexRouteLink ReadSnodasDepthSweDate VisualizeRouteLink WriteDischargeObsSeq
+##    sub-.prettyUsgs subset.prettyUsgs
+## 
+## * plot:
+##    multiplot
+## 
+## * smooth:
+##    SmoothStack
+## 
+## * ts:
+##    CalcFdcPerf CalcModPerf CalcModPerfMulti CalcStatCategorical CalcStatCont ReadChrtout
+##    ReadLdasoutAll ReadLdasoutWb ReadRtout
+## 
+## * univar:
+##    CalcFdc CalcFdcPerf CalcFdcSpline CalcModPerf CalcModPerfMulti CalcStatCategorical
+##    CalcStatCont CalcStatsRS ReadChrtout ReadLdasoutAll ReadLdasoutWb ReadRtout
+## 
+## * utilities:
+##    AsCharLongInt CalcDateTrunc CalcMonthDays CalcRunningMean FillOutliers FormalsToDf
+##    GetPkgMeta LsObjects PosixOrigin ReshapeMultiNcdf lsOS</code></pre>
+<p>Note the structure of the returned value which could be computed on.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">str</span>(pkgMeta)</code></pre></div>
+<pre><code>## List of 2
+##  $ concept:List of 20
+##   ..$ Ameriflux    : chr &quot;GetAmeriflux&quot;
+##   ..$ DART         : chr [1:3] &quot;MkDischargeVariance&quot; &quot;VisualizeChanNtwk&quot; &quot;WriteDischargeObsSeq&quot;
+##   ..$ data         : chr [1:7] &quot;amfMeta&quot; &quot;gages2Attr&quot; &quot;gages2AttrPlus&quot; &quot;rfc&quot; ...
+##   ..$ dataAnalysis : chr [1:2] &quot;CalcStatsRS&quot; &quot;SmoothStack&quot;
+##   ..$ dataGet      : chr [1:25] &quot;CreateBasinMask&quot; &quot;FindUsgsStns&quot; &quot;GetFileStat&quot; &quot;GetGeogridIndex&quot; ...
+##   ..$ dataMgmt     : chr [1:32] &quot;AddRouteLinkGage&quot; &quot;CalcNoahmpFluxes&quot; &quot;CheckConn&quot; &quot;ConvertRS2Stack&quot; ...
+##   ..$ geospatial   : chr [1:5] &quot;ExportGeogrid&quot; &quot;GetGeogridIndex&quot; &quot;GetGeogridSpatialInfo&quot; &quot;GetProj&quot; ...
+##   ..$ getData      : chr [1:2] &quot;GetGeogridSpatialInfo&quot; &quot;GetProj&quot;
+##   ..$ GHCN         : chr [1:4] &quot;CalcDailyGhcn&quot; &quot;GetGhcn&quot; &quot;GetGhcn2&quot; &quot;SelectGhcnGauges&quot;
+##   ..$ modelEval    : chr [1:10] &quot;CalcFdc&quot; &quot;CalcFdcPerf&quot; &quot;CalcFdcSpline&quot; &quot;CalcModPerf&quot; ...
+##   ..$ MODIS        : chr [1:7] &quot;CalcStatsRS&quot; &quot;ConvertRS2Stack&quot; &quot;ConvertStack2NC&quot; &quot;GapFillRS&quot; ...
+##   ..$ ncdf         : chr [1:3] &quot;GetNcdfFile&quot; &quot;MkNcdf&quot; &quot;ncdump&quot;
+##   ..$ nudging      : chr [1:10] &quot;AddRouteLinkGage&quot; &quot;ChanObsToTimeSlice&quot; &quot;CheckConn&quot; &quot;EditFrxstPts&quot; ...
+##   ..$ plot         : chr [1:9] &quot;GetDomainCoordsProj&quot; &quot;PlotFdc&quot; &quot;PlotFdcCompare&quot; &quot;PlotPrettyUsgs&quot; ...
+##   ..$ ploting      : chr &quot;multiplot&quot;
+##   ..$ SNODAS       : chr [1:6] &quot;CalcSnodasCoords&quot; &quot;GetSnodasDepthSweDate&quot; &quot;GetSnodasPointTs&quot; &quot;PutSnodasCoordsNcdf&quot; ...
+##   ..$ SNOTEL       : chr &quot;GetSnotel&quot;
+##   ..$ Streamflow   : chr &quot;GetCoDwrData&quot;
+##   ..$ usgs         : chr &quot;MkUsgsTimeSlice&quot;
+##   ..$ usgsStreamObs: chr [1:17] &quot;FindUsgsStns&quot; &quot;GetSiteHuc&quot; &quot;GetUsgsHucData&quot; &quot;GetUsgsIvProduct&quot; ...
+##   ..- attr(*, &quot;meta&quot;)= chr &quot;concept&quot;
+##   ..- attr(*, &quot;package&quot;)= chr &quot;rwrfhydro&quot;
+##   ..- attr(*, &quot;class&quot;)= chr [1:2] &quot;pkgMeta&quot; &quot;list&quot;
+##  $ keyword:List of 11
+##   ..$ data     : chr [1:7] &quot;amfMeta&quot; &quot;gages2Attr&quot; &quot;gages2AttrPlus&quot; &quot;rfc&quot; ...
+##   ..$ database : chr [1:8] &quot;LoadMetaDB&quot; &quot;QueryHaveSite&quot; &quot;QuerySiteData&quot; &quot;QuerySiteInfo&quot; ...
+##   ..$ hplot    : chr [1:9] &quot;GetDomainCoordsProj&quot; &quot;PlotFdc&quot; &quot;PlotFdcCompare&quot; &quot;PlotPrettyUsgs&quot; ...
+##   ..$ internal : chr [1:43] &quot;AllSame&quot; &quot;AsCharLongInt&quot; &quot;CalcCOM&quot; &quot;CalcDateTrunc&quot; ...
+##   ..$ IO       : chr [1:47] &quot;AddRouteLinkGage&quot; &quot;ChanObsToTimeSlice&quot; &quot;ConvertRS2Stack&quot; &quot;ConvertStack2NC&quot; ...
+##   ..$ manip    : chr [1:22] &quot;AddRouteLinkGage&quot; &quot;CalcDailyGhcn&quot; &quot;CalcNoahmpFluxes&quot; &quot;CalcNoahmpWatBudg&quot; ...
+##   ..$ plot     : chr &quot;multiplot&quot;
+##   ..$ smooth   : chr &quot;SmoothStack&quot;
+##   ..$ ts       : chr [1:9] &quot;CalcFdcPerf&quot; &quot;CalcModPerf&quot; &quot;CalcModPerfMulti&quot; &quot;CalcStatCategorical&quot; ...
+##   ..$ univar   : chr [1:12] &quot;CalcFdc&quot; &quot;CalcFdcPerf&quot; &quot;CalcFdcSpline&quot; &quot;CalcModPerf&quot; ...
+##   ..$ utilities: chr [1:11] &quot;AsCharLongInt&quot; &quot;CalcDateTrunc&quot; &quot;CalcMonthDays&quot; &quot;CalcRunningMean&quot; ...
+##   ..- attr(*, &quot;meta&quot;)= chr &quot;keyword&quot;
+##   ..- attr(*, &quot;package&quot;)= chr &quot;rwrfhydro&quot;
+##   ..- attr(*, &quot;class&quot;)= chr [1:2] &quot;pkgMeta&quot; &quot;list&quot;
+##  - attr(*, &quot;class&quot;)= chr [1:2] &quot;pkgMeta&quot; &quot;list&quot;</code></pre>
+<p>To suppress printing of the functions and see only the concepts:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">GetPkgMeta</span>(<span class="dt">listMetaOnly =</span> <span class="ot">TRUE</span>, <span class="dt">meta=</span><span class="st">'concept'</span>)</code></pre></div>
+<pre><code>## 
+## -----------------------------------
+## rwrfhydro concepts
+## -----------------------------------
+## Ameriflux
+## DART
+## data
+## dataAnalysis
+## dataGet
+## dataMgmt
+## geospatial
+## getData
+## GHCN
+## modelEval
+## MODIS
+## ncdf
+## nudging
+## plot
+## ploting
+## SNODAS
+## SNOTEL
+## Streamflow
+## usgs
+## usgsStreamObs</code></pre>
+<p>Or perhaps you just want to look at certain concepts and keywords</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">GetPkgMeta</span>(<span class="dt">concept=</span><span class="kw">c</span>(<span class="st">'plot'</span>, <span class="st">'dataGet'</span>), <span class="dt">keyword=</span><span class="kw">c</span>(<span class="st">'hplot'</span>, <span class="st">'manip'</span>))</code></pre></div>
+<pre><code>## 
+## -----------------------------------
+## rwrfhydro concepts
+## -----------------------------------
+## * dataGet:
+##    CreateBasinMask FindUsgsStns GetFileStat GetGeogridIndex GetMODIS GetMultiNcdfFile
+##    GetMultiNcdfVariable GetNWCSnowPoints GetSiteHuc GetStage4Files GetUsgsHucData
+##    GetUsgsIvProduct ImproveHucMeta ReadAmerifluxCSV ReadAmerifluxNC ReadChrtout
+##    ReadCoDwrGage ReadFrxstPts ReadGwOut ReadLdasoutAll ReadLdasoutWb ReadRouteLink
+##    ReadRtout ReadUsgsGage SaveHucData
+## 
+## * plot:
+##    GetDomainCoordsProj PlotFdc PlotFdcCompare PlotPrettyUsgs VisualizeChanNtwk
+##    VisualizeDomain VisualizeRouteLink VisualizeSpatial VisualizeSubsetStream
+## 
+## 
+## -----------------------------------
+## rwrfhydro keywords
+## -----------------------------------
+## * hplot:
+##    GetDomainCoordsProj PlotFdc PlotFdcCompare PlotPrettyUsgs VisualizeChanNtwk
+##    VisualizeDomain VisualizeRouteLink VisualizeSpatial VisualizeSubsetStream
+## 
+## * manip:
+##    AddRouteLinkGage CalcDailyGhcn CalcNoahmpFluxes CalcNoahmpWatBudg CalcSnodasCoords
+##    ChanObsToTimeSlice CheckConn EditFrxstPts GatherStreamInds MkDischargeVariance
+##    MkNudgingParams NamedList NtwKReExToNcdf PrettyUsgs ReExpNetwork ReExpressRouteLink
+##    ReIndexRouteLink ReadSnodasDepthSweDate VisualizeRouteLink WriteDischargeObsSeq
+##    sub-.prettyUsgs subset.prettyUsgs
+## 
+## * plot:
+##    multiplot</code></pre>
+<p>What were the concepts or keywords of the <code>GetPkgMeta</code> and <code>ReadAmerifluxCSV</code> functions?</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">GetPkgMeta</span>(<span class="dt">byFunction =</span> <span class="kw">c</span>(<span class="st">'GetPkgMeta'</span>,<span class="st">'ReadAmerifluxCSV'</span>))</code></pre></div>
+<pre><code>## 
+## -----------------------------------
+## rwrfhydro: GetPkgMeta()
+## -----------------------------------
+## * keyword:
+##    utilities
+## 
+## 
+## -----------------------------------
+## rwrfhydro: ReadAmerifluxCSV()
+## -----------------------------------
+## * concept:
+##    dataGet
+## 
+## * keyword:
+##    IO</code></pre>
+<p>The function can be applied to other packages too.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">GetPkgMeta</span>(<span class="dt">package=</span><span class="st">'dataRetrieval'</span>, <span class="dt">list=</span><span class="ot">TRUE</span>)</code></pre></div>
+<pre><code>## 
+## -----------------------------------
+## dataRetrieval keywords
+## -----------------------------------
+## countyCd
+## data
+## import
+## internal
+## IO
+## manip
+## service
+## services
+## stateCd
+## USGS
+## USGS,
+## web
+## WQP</code></pre>
+</div>
+<div id="documenting" class="section level1">
+<h1>Documenting</h1>
+<p>The following show the Roxygen markdown used to tag keywords and concepts onto a function. The family field cross-references documentation with all other functions with that family.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#' @keywords internal manip</span>
+<span class="co">#' @concept SNODAS</span>
+<span class="co">#' @family SNODAS</span>
+<span class="co">#' @export</span></code></pre></div>
+<p>Internal functions (those not exported into the package namespace) should be exported but tagged with keyword “internal”. This makes the documentation available to users.</p>
+<p>For reference, the following command lists the existing R keywords.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cat</span>( <span class="kw">readLines</span>( <span class="kw">paste0</span>(<span class="kw">R.home</span>(<span class="st">&quot;doc&quot;</span>),<span class="st">'/KEYWORDS'</span>) ) , <span class="dt">sep =</span> <span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span> )</code></pre></div>
+<pre><code>## GROUPED Keywords
+## ----------------
+## 
+## Graphics
+##  aplot       &amp;   Add to Existing Plot / internal plot
+##  dplot       &amp;   Computations Related to Plotting
+##  hplot       &amp;   High-Level Plots
+##  iplot       &amp;   Interacting with Plots
+##  color       &amp;   Color, Palettes etc
+##  dynamic     &amp;   Dynamic Graphics
+##  device      &amp;   Graphical Devices
+## 
+## Basics
+##  sysdata     &amp;   Basic System Variables      [!= S]
+##  datasets    &amp;   Datasets available by data(.)   [!= S]
+##  data        &amp;   Environments, Scoping, Packages [~= S]
+##  manip       &amp;   Data Manipulation
+##  attribute   &amp;   Data Attributes
+##  classes     &amp;   Data Types (not OO)
+##      &amp; character &amp;   Character Data (&quot;String&quot;) Operations
+##      &amp; complex   &amp;   Complex Numbers
+##      &amp; category  &amp;   Categorical Data
+##      &amp; NA    &amp;   Missing Values          [!= S]
+##  list        &amp;   Lists
+##  chron       &amp;   Dates and Times
+##  package     &amp;   Package Summaries
+## 
+## Mathematics
+##  array       &amp;   Matrices and Arrays
+##        &amp; algebra &amp;   Linear Algebra
+##  arith       &amp;   Basic Arithmetic and Sorting    [!= S]
+##  math        &amp;   Mathematical Calculus etc.  [!= S]
+##  logic       &amp;   Logical Operators
+##  optimize    &amp;   Optimization
+##  symbolmath  &amp;   &quot;Symbolic Math&quot;, as polynomials, fractions
+##  graphs      &amp;   Graphs, (not graphics), e.g. dendrograms
+## 
+## Programming, Input/Ouput, and Miscellaneous
+## 
+##  programming &amp;   Programming
+##       &amp; interface&amp;   Interfaces to Other Languages
+##  IO      &amp;   Input/output
+##       &amp; file &amp;   Files
+##       &amp; connection&amp;  Connections
+##       &amp; database &amp;   Interfaces to databases
+##  iteration   &amp;   Looping and Iteration
+##  methods     &amp;   Methods and Generic Functions
+##  print       &amp;   Printing
+##  error       &amp;   Error Handling
+## 
+##  environment &amp;   Session Environment
+##  internal    &amp;   Internal Objects (not part of API)
+##  utilities   &amp;   Utilities
+##  misc        &amp;   Miscellaneous
+##  documentation   &amp;   Documentation
+##  debugging   &amp;   Debugging Tools
+## 
+## Statistics
+## 
+##  datagen     &amp;   Functions for generating data sets
+##  distribution    &amp;   Probability Distributions and Random Numbers
+##  univar      &amp;   simple univariate statistics  [!= S]
+##  htest       &amp;   Statistical Inference
+##  models      &amp;   Statistical Models
+##      &amp; regression&amp;   Regression
+##      &amp; &amp;nonlinear&amp;   Non-linear Regression (only?)
+##  robust      &amp;   Robust/Resistant Techniques
+##  design      &amp;   Designed Experiments
+##  multivariate    &amp;   Multivariate Techniques
+##  ts      &amp;   Time Series
+##  survival    &amp;   Survival Analysis
+##  nonparametric   &amp;   Nonparametric Statistics [w/o 'smooth']
+##  smooth      &amp;   Curve (and Surface) Smoothing
+##       &amp; loess    &amp;   Loess Objects
+##  cluster     &amp;   Clustering
+##  tree        &amp;   Regression and Classification Trees
+##  survey      &amp;   Complex survey samples
+## 
+## 
+## MASS (2, 1997)
+## --------------
+## 
+## add the following keywords :
+## 
+##  classif     &amp;   Classification  ['class' package]
+##  spatial     &amp;   Spatial Statistics ['spatial' package]
+##  neural      &amp;   Neural Networks ['nnet'  package]</code></pre>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
