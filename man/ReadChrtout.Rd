@@ -6,14 +6,14 @@
 \usage{
 ReadChrtout(pathOutdir, idList = NULL, gageList = NULL, rtlinkFile = NULL,
   parallel = FALSE, useDatatable = TRUE, gageOnly = TRUE,
-  pattern = glob2rx("*.CHRTOUT_DOMAIN*"))
+  pattern = glob2rx("*.CHRTOUT_DOMAIN*"), idvar = "feature_id")
 }
 \arguments{
 \item{pathOutdir}{The full pathname to the output directory containing the 
 RTOUT files.}
 
 \item{idList}{Optional list of station IDs to import (must be consistent
-with IDs as used in the "station_id" variable).}
+with IDs as used in the specified idvar variable).}
 
 \item{gageList}{Optional list of gage IDs to import. Must provide a corresponding
 route link file (used to map gage IDs to link IDs). Available only for reach-based
@@ -33,6 +33,8 @@ gage IDs only (vs. all reaches) (DEFAULT=TRUE)}
 
 \item{pattern}{The pattern to match for file ingest
 (DEFAULT=glob2rx('*.CHRTOUT_DOMAIN*'))}
+
+\item{idvar}{The unique ID variable (DEFAULT="feature_id")}
 }
 \value{
 A datatable containing a time series of channel fluxes.

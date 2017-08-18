@@ -5,7 +5,7 @@
 \title{Creates a georeferenced TIF from a geogrid variable}
 \usage{
 ExportGeogrid(inFile, inVar, outFile, inCoordFile = NA, inLyr = NA,
-  inLyrPos = 2, inProj4 = NA)
+  inLyrPos = 2, inProj4 = NA, inRadius = 6370000)
 }
 \arguments{
 \item{inFile}{A netcdf file containing the variable to be converted to a TIF.}
