@@ -41,7 +41,7 @@
 #' @family geospatial
 #' @export
 ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA, 
-                          inLyr=NA, inLyrPos=2, inProj4=NA) {
+                          inLyr=NA, inLyrPos=2, inProj4=NA, inRadius=6370000.0) {
   # Check packages
   if (!(require("rgdal") & require("raster") & require("ncdf4") )) {
     stop("Required packages not found. Must have R packages: rgdal (requires GDAL system install), raster, ncdf4")
@@ -116,7 +116,8 @@ ExportGeogrid <- function(inFile, inVar, outFile, inCoordFile=NA,
       geogrd.proj <- paste0("+proj=lcc +lat_1=",
                           truelat1, " +lat_2=", truelat2, " +lat_0=",
                           cen_lat, " +lon_0=", cen_lon,
-                          " +x_0=0 +y_0=0 +a=6370000 +b=6370000 +units=m +no_defs")
+                          " +x_0=0 +y_0=0 +a=", inRadius, " +b=", inRadius, 
+                          " +units=m +no_defs")
       #geogrd.crs <- CRS(geogrd.proj)
     } else {
       stop('Error: Projection type not supported (currently this tool only works for Lambert Conformal Conic projections).')
