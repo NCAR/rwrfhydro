@@ -286,10 +286,11 @@ VisualizeDomain <- function(file, plotVar=NULL, plot=TRUE, plotDf=NULL) {
       ggColorScaleObj <- ggplot2::scale_color_gradientn(name=plotVar, colours=gradNColors)
       ggCoordObj <- ggplot2::coord_map(xlim=xlimEval, ylim=ylimEval) 
 
-      if(plot)
-        print(ggObj <- ggmap::ggmap(ggMapObj) + ggPlotObj +
-                      ggColorScaleObj + ggCoordObj + theme_bw(base_size=20))
-
+      ggObj <- ggmap::ggmap(ggMapObj) + ggPlotObj +
+                      ggColorScaleObj + ggCoordObj + theme_bw(base_size=20)
+      
+      if(plot) print(ggObj)
+          
       outList <- list(plotDf=plotDf, ggObj=ggObj)
       if(returnComponents)
         outList <- c(outList,

@@ -13,9 +13,9 @@ vignette: >
 
 USGS streamflow observations are a primary source of hydrologic information and often used for
 validation and calibration of hydrlogic models. Recently, web services have been developed
-at [*NWIS*](http://waterdata.usgs.gov/nwis) and the [*dataRetrieval*](http://cran.r-project.org/web/packages/dataRetrieval/index.html) R package have emerged to make it easy to get USGS data into R.
+at [*NWIS*](http://waterdata.usgs.gov/nwis) and the [*dataRetrieval*](http://cran.r-project.org/web/packages/dataRetrieval/index.html) R package has emerged to make it easy to get USGS data into R.
 
-This vignette demonstates some rwrfhydro tools to collect, store, and mainipulate USGS within a local database. This data is then used to evaluate model performance in estimating streamflow with and without overland, subsurface, and groundwater routing active. 
+This vignette demonstates some rwrfhydro tools to collect, store, and mainipulate USGS within a local database. This data is then used to evaluate model performance in estimating streamflow with and without overland, subsurface, and groundwater routing active. WRF-Hydro was run predict streamflow for Fourmile Creek at the Orodell USGS gage for the 2013 snowmelt period. NoahMP was used as the LSM and a 3-year spinup period was completed prior to the part of the simulation in the test case directory.
 
 The fundamental layout of the local database is simply a directory containing:
 
@@ -26,8 +26,6 @@ The fundamental layout of the local database is simply a directory containing:
   and all the previously retrieved data for the HUC8.
 
 Generally, there are two basic kinds of functions: "Get" and "Query". Get functions use dataRetrieval functions to actually go out to NWIS and "get" data and metadata. Query functions query the local database. There are exceptions to this.
-
-WRF-Hydro has been used to predict streamflow for Fourmile Creek at the Orodell USGS gage for the ____ snowmelt period. WRF-Hydro was run with NoahMP as the LSM for a 3-year spinup period, (((this all needs to be changed to specifics)))
 
 # Setup
 Load the rwrfhydro package. 

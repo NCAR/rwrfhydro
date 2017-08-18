@@ -17,6 +17,10 @@
 library("rwrfhydro")
 
 #' 
+## ---- echo=FALSE---------------------------------------------------------
+options(warn=1)
+
+#' 
 #' Set a data path to the Fourmile Creek test case.
 ## ------------------------------------------------------------------------
 dataPath <- '~/wrfHydroTestCases/Fourmile_Creek_testcase_v2.0/'
@@ -70,7 +74,7 @@ indList <- list( lsm=lsmInds )
 ## ------------------------------------------------------------------------
 library(doMC)
 registerDoMC(3)
-modDf <- GetMultiNcdf(file=flList,var=varList, ind=indList, parallel=TRUE)
+modDf <- GetMultiNcdf(file=flList,var=varList, ind=indList, parallel=FALSE)
 
 #' 
 #' Now we can "flatten" the output to make it work better with certain tools.
@@ -99,8 +103,8 @@ nrMeta
 #' 
 #' We plug this timezone into the ReadAmeriflux function along with the downloaded file (BASE format).
 ## ------------------------------------------------------------------------
-obsFlux30min.usnr1 <- ReadAmeriflux('~/wrfhydroTestCases/Fourmile_Creek_testcase_v2.0/OBS/AMF_US-NR1_BASE_HH_9-1.csv',
-                                    tz='America/Denver')
+obsFlux30min.usnr1 <- ReadAmeriflux('~/wrfHydroTestCases/Fourmile_Creek_testcase_v2.0/OBS/AMF_US-NR1_BASE_HH_9-1.csv',
+                                     tz='America/Denver')
 
 #' 
 #' Our LDASOUT time step was 1 day, so we need to aggregate the observations to a UTC daily time step for comparison. We apply the aggregations only to numeric variables to avoid a bunch of R warnings.
