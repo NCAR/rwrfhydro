@@ -542,6 +542,7 @@ ReadChrtout <- function(pathOutdir,
                         gageOnly=TRUE,
                         pattern=glob2rx('*.CHRTOUT_DOMAIN*'),
                         idvar="feature_id") {
+
     # Get files
     filesList <- list.files(path=pathOutdir, 
                                     pattern=pattern, 
@@ -608,6 +609,7 @@ ReadChrtout <- function(pathOutdir,
                     out <- out[get(idvar) %in% idList,]
                 } else {
                     out <- subset(out, out[[idvar]] %in% idList)
+
                 }
             }
             outList <- c(outList, list(out))
@@ -622,6 +624,7 @@ ReadChrtout <- function(pathOutdir,
     names(outDT)[names(outDT)=="velocity"]<-"vel_ms"
     if (exists("rtLink")) {
         names(outDT)[names(outDT)==idvar]<-"link"
+
         if (useDatatable) {
             data.table::setkey(rtLink, "link")
             data.table::setkey(outDT, "link")
