@@ -1,4 +1,4 @@
-#' Read WRF-Hydro standard-format forecast points output text file.
+' Read WRF-Hydro standard-format forecast points output text file.
 #'
 #' \code{ReadFrxstPts} reads in WRF-Hydro forecast points output text file.
 #'
