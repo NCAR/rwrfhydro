@@ -35,7 +35,8 @@
 #' @concept dataGet
 #' @family obsDataReads
 #' @export
-ReadUsgsGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, timeZone=NULL) {
+ReadUsgsGage <- function(pathGageData, returnMetric=TRUE, 
+                         returnEnglish=TRUE, timeZone=NULL) {
 
   outDf <- read.table(pathGageData, sep="\t", na.strings=c("","Rat","Mnt"),
                       stringsAsFactors=F, comment.char="#")
@@ -80,7 +81,8 @@ ReadUsgsGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, ti
      "%Y-%m-%d %H:%M" # instantaneous
   } else { "%Y-%m-%d" }  # daily avg
 
-  outDf$POSIXct <- as.POSIXct(as.character(outDf$datetime), format=usgsTimeFmt, tz=timeZone)
+  outDf$POSIXct <- as.POSIXct(as.character(outDf$datetime), format=usgsTimeFmt, 
+                              tz=timeZone)
 
   outDf$wy <- CalcWaterYear(outDf$POSIXct)
   #outDf$wy <- ifelse(as.numeric(format(outDf$POSIXct,"%m"))>=10,
@@ -147,11 +149,14 @@ ReadUsgsGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, ti
 #' @concept dataGet
 #' @family obsDataReads
 #' @export
-ReadCoDwrGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, timeZone="America/Denver") {
-  # Manually remove commented lines since cannot automate due to mismatch between column names and column count
+ReadCoDwrGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, 
+                          timeZone="America/Denver") {
+  # Manually remove commented lines since cannot automate due to mismatch 
+  # between column names and column count
   ncomm <- as.integer(system(paste('grep "#"', pathGageData, '| wc -l'), intern=TRUE))
   outDf <- read.table(pathGageData, sep="\t", stringsAsFactors=F, skip=ncomm+1,
-                      na.strings=c("B","Bw","Dis","E","Eqp","Ice","M","na","nf","Prov","Rat","S","Ssn","wtr op","----"))
+                      na.strings=c("B","Bw","Dis","E","Eqp","Ice","M","na","nf","Prov",
+                                   "Rat","S","Ssn","wtr op","----"))
   # Deal with header (not 1:1 with data columns)
   outDf.tmp <- read.table(pathGageData, sep="\t", na.strings=c(""),
                            stringsAsFactors=F, skip=ncomm, nrows=1)
@@ -161,7 +166,8 @@ ReadCoDwrGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, t
     outDf.head[i] <- unlist(strsplit(outDf.tmp[1,i], split=" ", fixed=TRUE))[1]
     outDf.units[i] <- unlist(strsplit(outDf.tmp[1,i], split=" ", fixed=TRUE))[2]
   }
-  # Deal with duplicate "Date/Time" header. We need to know the index so we can remove it from "units" too.
+  # Deal with duplicate "Date/Time" header. We need to know the index so 
+  # we can remove it from "units" too.
   tmp<-grep("Date/Time", outDf.head, fixed=TRUE)
   outDf.head[tmp[2]]<-"datetime"
   outDf.head<-c(outDf.head[1:(tmp[1]-1)], outDf.head[(tmp[1]+1):length(outDf.head)])
@@ -192,110 +198,138 @@ ReadCoDwrGage <- function(pathGageData, returnMetric=TRUE, returnEnglish=TRUE, t
     }
   }
   # Deal with time
-  #if (is.null(timeZone)) { timeZone <- "MST" } # assuming local time for all gages, no daylight savings?
+  #if (is.null(timeZone)) { timeZone <- "MST" } 
+  # assuming local time for all gages, no daylight savings?
   usgsTimeFmt <- if (grepl(" ",outDf$datetime[1])) {
     "%Y-%m-%d %H:%M" # instantaneous
   } else { "%Y-%m-%d" }  # daily avg
   outDf$POSIXct <- as.POSIXct(as.character(outDf$datetime), format=usgsTimeFmt, tz=timeZone)
-  # Screen out NA times, since CO DWR leaves in null values for the missing daylight savings hour.
+  # Screen out NA times, since CO DWR leaves in null values for the 
+  # missing daylight savings hour.
   outDf <- subset(outDf, !is.na(outDf$POSIXct))
   outDf$wy <- CalcWaterYear(outDf$POSIXct)
   
   outDf
 }
 
-
-#' Read standard-format NetCDF data downloaded from Ameriflux
+#' Download Stage IV and II data files
 #' 
-#' \code{ReadAmerifluxNC} reads Ameriflux data table (Level 2 standardized
-#' NetCDF file) and creates a dataframe.
+#' \code{GetStage4Files} downloads Stage IV and Stage II data files
 #' 
-#' \code{ReadAmerifluxNC} reads an Ameriflux Level 2 standardized NetCDF file
-#' and outputs a dataframe with consistent date and data columns for use with
-#' other rwrfhydro tools.
+#' \code{GetStage4Files} downloads Stage IV and Stage II data files from NCEP 
+#' ftp site based on user configurations. The function downloads Stage IV or 
+#' Stage II data from NCEP ftp site, unpacks them, and removes uncessary 
+#' files (e.g., *.gif). Note for Stage II, only the multi-sensor ("ml") data 
+#' files are kept while others are removed. Both Stage IV & Stage II datasets 
+#' contain hourly, 6-hourly, and daily precipitation data.
 #' 
-#' @param pathFluxData The full pathname to the flux time series NetCDF file as
-#'   downloaded from an Ameriflux data server.
-#' @param timeZone The time zone for the flux data. Time zone name must be
-#'   R-friendly for your current OS. See:
-#'   \url{http://stat.ethz.ch/R-manual/R-devel/library/base/html/timezones.html}
-#' @return A dataframe containing the Ameriflux data.
-#'   
+#' @author Yuqiong.Liu@@noaa.gov (updated by aubreyd)
+#' @param startDate start date + hour in the form of YYYYMMDDHH
+#' @param endDate end date + hour in the form of YYYYMMDDHH
+#' @param dataTyp name of the dataset: stage4 or stage2
+#' @param dataDir directory to store the data, subdirectories YYYY/MM will be created
+#' @param keepDownloads logical for whether to keep original download files;
+#' if FALSE, dummy empty files will be used for tracking instead
+#' to conserve space (DEFAULT=FALSE)
+#' @param runParallel logical for running in parallel mode (must have a parallel
+#' backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)
+#' @return NULL
 #' @examples
-#' ## Takes a NetCDF file downloaded from the ORNL Amerifux website for US-NC2
-#' ## (North Carolina Loblolly Pine) and returns a dataframe.
-#' 
+#' ## Pull data for May 1-5, 2015.
 #' \dontrun{
-#' obsFlux30min.usnc2 <- 
-#'   ReadAmerifluxNC("../OBS/FLUX/AMF_USNC2_2005_L2_WG_V003.nc", "America/New_York")
+#' datadir <- "~/wrfHydroTestCases/OBS/Stage_II/"
+#' GetStage4Files(startDate="2015050100", endDate="2015050500", 
+#'                  dataTyp="stage2", dataDir=datadir, 
+#'                  runParallel=FALSE)
 #' }
 #' @keywords IO
 #' @concept dataGet
 #' @family obsDataReads
 #' @export
-ReadAmerifluxNC <- function(pathFluxData, timeZone) {
-    ncFile <- nc_open(pathFluxData)
-    nc <- ncFile$nvars
-    nr <- ncFile$var[[1]]$varsize
-    outDf <- as.data.frame(matrix(nrow=nr, ncol=nc))
-    ncVarList <- list()
-    for (i in 1:nc ) {
-        ncVar <- ncFile$var[[i]]
-        ncVarList[i] <- ncVar$name
-        outDf[,i] <- ncvar_get( ncFile, ncVar )
+#' 
+GetStage4Files <- function(startDate, endDate, 
+                           dataTyp, dataDir, 
+                           keepDownloads=FALSE,
+                           runParallel=FALSE) {
+    # template wget url string for StageII data 
+    # ftp://ftp.emc.ncep.noaa.gov/mmb/precip/st2n4.arch/201505/ST2.20150501
+    
+    # template wget url string for StageIV data 
+    # ftp://ftp.emc.ncep.noaa.gov/mmb/precip/st2n4.arch/201405/ST4.20140506
+    
+    urlStr <- "ftp://ftp.emc.ncep.noaa.gov/mmb/precip/st2n4.arch/" 
+    
+    # time period for data retrieval
+    yr1 <- c(substr(startDate,1,4),substr(endDate,1,4))
+    mo1 <- c(substr(startDate,5,6),substr(endDate,5,6))
+    da1 <- c(substr(startDate,7,8),substr(endDate,7,8))
+    hr1 <- c(substr(startDate,9,10),substr(endDate,9,10))
+    
+    # collect all the hours for data retrieval
+    hours = seq(ISOdatetime(yr1[1],mo1[1],da1[1],hr1[1],0,0),
+                ISOdatetime(yr1[2],mo1[2],da1[2],hr1[2],0,0),by="day")      
+    
+    # create directory if it does not exist
+    if (substr(dataDir, nchar(dataDir), nchar(dataDir)) != "/") {
+        dataDir <- paste0(dataDir, "/")
     }
-    colnames(outDf) <- ncVarList
-    nc_close(ncFile)
-    outDf$POSIXct <- as.POSIXct( paste(as.character(outDf$YEAR), as.character(outDf$DOY),
-                        as.character(ifelse(substr(outDf$HRMIN,1,nchar(outDf$HRMIN)-2)=='', "00", substr(outDf$HRMIN,1,nchar(outDf$HRMIN)-2))),
-                        as.character(substr(outDf$HRMIN,nchar(outDf$HRMIN)-1,nchar(outDf$HRMIN))), sep="-"),
-                        format="%Y-%j-%H-%M", tz=timeZone )
-    outDf$wy <- ifelse(as.numeric(format(outDf$POSIXct, "%m"))>=10,
-                        as.numeric(format(outDf$POSIXct,"%Y"))+1,
-                        as.numeric(format(outDf$POSIXct,"%Y")))
-    outDf
+    if (!file.exists(dataDir)) dir.create(dataDir, recursive=TRUE)
+    dataDirRaw <- paste0(dataDir, "/RAW/")
+    if (!file.exists(dataDirRaw)) dir.create(dataDirRaw, recursive=TRUE)
+    
+    # create sub function that we can loop with
+    GetFiles4Loop <- function(hoursi, dataTyp.=dataTyp,
+                              dataDir.=dataDir, dataDirRaw.=dataDirRaw) {
+        # contruct the url for data retrieval
+        print(paste0("Processing: ", hoursi))
+        fname <-  paste0("ST", substr(dataTyp.,6,6),format(hoursi,".%Y%m%d"))
+        dtstr <- unlist(strsplit(fname, split="[.]"))[2]
+        dirSrc <- paste0(format(hoursi,"%Y%m/"))
+        dirDst <- paste0(dataDir., format(hoursi,"%Y%m/"))
+        
+        if (!file.exists(paste0(dataDirRaw., fname))) {
+            print("   File not in RAW directory. Downloading and uncompressing...")
+            if (!file.exists(dirDst)) dir.create(dirDst,recursive=TRUE)
+            url1 <- paste0(urlStr,dirSrc,fname)
+            try(curl::curl_download(url1, paste0(dirDst, fname)))
+            system(paste0("tar -xf ", dirDst, fname, ' -C ', dirDst), 
+                   ignore.stdout = TRUE)
+            if (keepDownloads) {
+                system(paste0("mv ", dirDst, fname, " ", dataDirRaw., "/."))
+            } else {
+                system(paste0("touch ", dataDirRaw., fname))
+                system(paste0("rm ", dirDst, fname))
+            }
+            filesToRm <- list.files(path=dirDst, 
+                                    pattern=glob2rx(paste0("*.", dtstr, "*.gif")),
+                                    full.names=TRUE)
+            filesToRm <- c(filesToRm, list.files(path=dirDst, 
+                                    pattern=glob2rx(paste0("*rd", dtstr, "*.gz")),
+                                    full.names=TRUE))
+            filesToRm <- c(filesToRm, list.files(path=dirDst, 
+                                    pattern=glob2rx(paste0("*gg", dtstr, "*.gz")),
+                                    full.names=TRUE))
+            filesToRm <- c(filesToRm, list.files(path=dirDst, 
+                                    pattern=glob2rx(paste0("*un", dtstr, "*.gz")),
+                                    full.names=TRUE))
+            if (length(filesToRm)>0) kill <- file.remove(filesToRm)
+            system(paste0("gunzip ", dirDst, paste0("*", dtstr, "*.gz")))    
+        } else {
+            print("File already in directory. Skipping...")
+        }
+    }
+               
+    if (runParallel) {
+        # PARALLEL VERSION
+        foreach (i=1:length(hours)) %dopar% {
+            GetFiles4Loop(hours[i], dataTyp, dataDir, dataDirRaw)
+        }
+    } else { 
+        # NON-PARALLEL VERSION
+        for (i in 1:length(hours)) {
+            GetFiles4Loop(hours[i], dataTyp, dataDir, dataDirRaw)
+        }
+    }
 }
 
 
-
-#' Read standard-format CSV data downloaded from Ameriflux
-#' 
-#' \code{ReadAmerifluxCSV} reads Ameriflux data table (Level 2 standardized CSV
-#' file) and creates a dataframe.
-#' 
-#' \code{ReadAmerifluxCSV} reads an Ameriflux Level 2 standardized CSV file and
-#' outputs a dataframe with consistent date and data columns for use with other
-#' rwrfhydro tools.
-#' 
-#' @param pathFluxData The full pathname to the flux time series CSV file as
-#'   downloaded from an Ameriflux data server.
-#' @param timeZone The time zone for the flux data. Time zone name must be
-#'   R-friendly for your current OS. See:
-#'   \url{http://stat.ethz.ch/R-manual/R-devel/library/base/html/timezones.html}
-#' @return A dataframe containing the Ameriflux data.
-#'   
-#' @examples
-#' ## Takes a CSV file downloaded from the ORNL Amerifux website for US-NR1 (Niwot Ridge)
-#' ## and returns a dataframe.
-#' 
-#' \dontrun{
-#' obsFlux30min.usnr1 <- 
-#'   ReadAmerifluxCSV("../OBS/FLUX/AMF_USNR1_2013_L2_GF_V008.csv", "America/Denver")
-#' }
-#' @keywords IO
-#' @concept dataGet
-#' @family obsDataReads
-#' @export
-ReadAmerifluxCSV <- function(pathFluxData, timeZone) {
-    outDf <- read.table(pathFluxData, sep=",", skip=20, na.strings=c(-6999,-9999), strip.white=T)
-    outDf.head <- read.table(pathFluxData, sep=",", skip=17, nrows=1, strip.white=T)
-    colnames(outDf) <- as.matrix(outDf.head)[1,]
-    outDf$POSIXct <- as.POSIXct( paste(as.character(outDf$YEAR), as.character(outDf$DOY),
-                        as.character(ifelse(substr(outDf$HRMIN,1,nchar(outDf$HRMIN)-2)=='', "00", substr(outDf$HRMIN,1,nchar(outDf$HRMIN)-2))),
-                        as.character(substr(outDf$HRMIN,nchar(outDf$HRMIN)-1,nchar(outDf$HRMIN))), sep="-"),
-                        format="%Y-%j-%H-%M", tz=timeZone )
-    outDf$wy <- ifelse(as.numeric(format(outDf$POSIXct, "%m"))>=10,
-                        as.numeric(format(outDf$POSIXct,"%Y"))+1,
-                        as.numeric(format(outDf$POSIXct,"%Y")))
-    outDf
-}
