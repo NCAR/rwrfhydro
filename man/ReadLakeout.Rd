@@ -36,4 +36,3 @@ ReadLakeout('~/wrfHydroTestCases/FRN.REACH/OUTPUT',
      lakeidList=c("1", "5"))
 }
 }
-

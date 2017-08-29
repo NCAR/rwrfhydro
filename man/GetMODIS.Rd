@@ -141,4 +141,3 @@ Other MODIS: \code{\link{CalcStatsRS}},
 MODIS dataGet
 }
 \keyword{IO}
-

@@ -16,4 +16,3 @@ Dataframe
 \code{ReadLinkFile} reads in a route link file and generates a dataframe
 }
 \keyword{utilities}
-

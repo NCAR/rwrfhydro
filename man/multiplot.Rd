@@ -41,4 +41,3 @@ multiplot(plotlist = list(p1,p2,p3), layout = matrix(c(1,2,3,3), nrow=2, byrow=T
 ploting
 }
 \keyword{plot}
-

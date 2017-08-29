@@ -36,4 +36,3 @@ Other getMultiNcdf: \code{\link{GetFileStat}},
 dataGet
 }
 \keyword{internal}
-

@@ -20,4 +20,3 @@ Calculate the Nash-Sutcliffe Efficiency for vectors
 of modelled and observed values.
 }
 \keyword{internal}
-

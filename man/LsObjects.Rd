@@ -30,4 +30,3 @@ Petr Pikal, David Hinds, Dirk Eddelbuettel, Tony Breyal.
 }
 \keyword{internal}
 \keyword{utilities}
-

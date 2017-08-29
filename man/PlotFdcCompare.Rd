@@ -84,4 +84,3 @@ Other flowDurationCurves: \code{\link{CalcFdcSpline}},
 modelEval plot
 }
 \keyword{hplot}
-

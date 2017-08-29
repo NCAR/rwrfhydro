@@ -38,4 +38,3 @@ dataGet usgsStreamObs
 }
 \keyword{IO}
 \keyword{internal}
-
