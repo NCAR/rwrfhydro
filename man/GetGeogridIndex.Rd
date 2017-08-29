@@ -54,4 +54,3 @@ Other geospatial: \code{\link{ExportGeogrid}},
 dataGet geospatial
 }
 \keyword{IO}
-

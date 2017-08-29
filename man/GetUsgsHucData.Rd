@@ -45,4 +45,3 @@ Other streamObs: \code{\link{FindUsgsStns}},
 dataGet usgsStreamObs
 }
 \keyword{IO}
-

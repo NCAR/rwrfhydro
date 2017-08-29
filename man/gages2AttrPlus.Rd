@@ -41,6 +41,7 @@ Publication_Place: Reston, Virginia \cr
 Publisher: U.S. Geological Survey \cr
 Online_Linkage: \link[http://water.usgs.gov/lookup/getspatial?gagesII_Sept2011]{http://water.usgs.gov/lookup/getspatial?gagesII_Sept2011} \cr
 }
+
 \seealso{
 Other gages2: \code{\link{gages2Attr}}
 }
@@ -48,4 +49,3 @@ Other gages2: \code{\link{gages2Attr}}
 data
 }
 \keyword{data}
-

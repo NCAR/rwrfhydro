@@ -33,4 +33,3 @@ Other Ameriflux: \code{\link{ReadAmeriflux}},
 data
 }
 \keyword{data}
-

@@ -96,4 +96,3 @@ PlotFluxCompare(obsStr5min.fc, "q_cms", modStrh.chrt.fc, "q_cms",
                                    format="\%Y-\%m-\%d \%H:\%M:\%S", tz="UTC"))
 }
 }
-

@@ -27,4 +27,3 @@ a running mean over specified number of records
 }
 \keyword{internal}
 \keyword{utilities}
-
