@@ -18,4 +18,3 @@ x
 FlipUD(x)
 }
 \keyword{internal}
-

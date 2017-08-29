@@ -17,4 +17,3 @@ List of 2 dataframes
 dataframes: 1 for the gridded info (data) and 2 for the poly info (poly)
 }
 \keyword{utilities}
-

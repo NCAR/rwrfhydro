@@ -19,4 +19,3 @@ RotateCcw(x)
 RotateCcw(RotateCcw(x))
 }
 \keyword{internal}
-

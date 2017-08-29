@@ -37,4 +37,3 @@ Other getMultiNcdf: \code{\link{GetMultiNcdfFile}},
 dataGet
 }
 \keyword{internal}
-

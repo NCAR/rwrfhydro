@@ -43,4 +43,3 @@ str( GetPkgMeta(concept = c('dataMgmt','DART'), key=c('internal','hplot') , quie
 GetPkgMeta(byFunction=c('MkDischargeVariance','SaveHucData'))
 }
 \keyword{utilities}
-

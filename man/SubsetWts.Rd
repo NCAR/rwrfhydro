@@ -29,4 +29,3 @@ and user-defined start and end indices. Returns a list of 2 dataframes for
 the subsetted data and poly objects.
 }
 \keyword{utilities}
-

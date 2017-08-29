@@ -17,4 +17,3 @@ dataframe
 }
 \keyword{internal}
 \keyword{utilities}
-
