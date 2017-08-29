@@ -1,4 +1,4 @@
-#' Stash NWM channel data in a SQLlite database
+#' Extract streamflow data from channel route netcdf files
 #' @details This function can only be used for NWM model output from versions 1.1-1.2. 
 #' Given a character vector of paths to channel route netcdf files, \code{get_nwmChannel} will extract selected data and return a dataframe. 
 #' @param files A character vector of file paths to CHRTOUT files.
@@ -11,8 +11,7 @@
 #' }
 #' @import data.table
 #' @export
-
-get_nwmChannelOut <- function(files,features = NULL,variables = c('streamflow','velocity','nudge','q_lateral')) {
+GetNwmChannelOut <- function(files,features = NULL,variables = c('streamflow','velocity','nudge','q_lateral')) {
   
   variables <- c("feature_id",setdiff(variables,'feature_id'))
   
