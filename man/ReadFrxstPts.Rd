@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_modelout.R
 \name{ReadFrxstPts}
 \alias{ReadFrxstPts}
-\title{Read WRF-Hydro standard-format forecast points output text file.}
+\title{\code{ReadFrxstPts} reads in WRF-Hydro forecast points output text file.}
 \usage{
 ReadFrxstPts(pathOutfile, stIdType = "character", adjPosix = FALSE)
 }
@@ -20,9 +20,6 @@ A dataframe containing the forecast points output flow data. Note that POSIXct i
 time for the flow but timest is not, it is the LSM time prior to the flow at POSIXct.
 }
 \description{
-\code{ReadFrxstPts} reads in WRF-Hydro forecast points output text file.
-}
-\details{
 \code{ReadFrxstPts} reads a standard-format WRF-Hydro forecast points output text
 file and creates a dataframe with consistent date and data columns for use with other
 rwrfhydro tools.
