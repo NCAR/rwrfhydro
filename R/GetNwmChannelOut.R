@@ -78,10 +78,7 @@ GetNwmChannelOut <- function(files,features = NULL,variables = c('streamflow','v
                "initTime",
                "validTime",
                "nwmVersion",
-               #"leadTime", 
-               "streamflow",
-               "velocity",
-               "q_lateral")]
+               setdiff(variables,'feature_id'))]
     return(dfOut)
 }
     
