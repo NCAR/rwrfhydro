@@ -31,4 +31,3 @@ Other SNOTEL: \code{\link{GetSnotel}}
 data
 }
 \keyword{data}
-

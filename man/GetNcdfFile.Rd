@@ -4,7 +4,7 @@
 \alias{GetNcdfFile}
 \title{Get variables from a ncdf file}
 \usage{
-GetNcdfFile(file, variables, exclude = FALSE, quiet = FALSE,
+GetNcdfFile(file, variables = NULL, exclude = FALSE, quiet = FALSE,
   flip2D = TRUE)
 }
 \arguments{
@@ -37,4 +37,3 @@ Other ncdf: \code{\link{MkFrcAdjFromLdasin}},
 \concept{
 ncdf
 }
-

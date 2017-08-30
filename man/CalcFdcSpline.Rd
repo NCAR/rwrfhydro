@@ -52,4 +52,3 @@ Other flowDurationCurves: \code{\link{CalcFdc}},
 modelEval
 }
 \keyword{univar}
-
