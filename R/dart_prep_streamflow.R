@@ -217,7 +217,7 @@ WriteDischargeObsSeq <- function(obsDf,
   #############################################
   ## 
   ## open a file for writing
-  outCon <- file(outFileName, "w")  # open an output file connection
+  outCon <- file(outFilePathName, "w")  # open an output file connection
   
   ## create_obs_seqence meta info
   ## Input upper bound on number of observations in sequence
@@ -305,7 +305,7 @@ WriteDischargeObsSeq <- function(obsDf,
   cat(outSeqFileName, file=outCon, sep='\n')
   
   close(outCon)
-  outFileName
+  outFilePathName
 }
 
 
