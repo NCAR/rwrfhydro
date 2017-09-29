@@ -155,7 +155,7 @@ MkDischargeVariance <- function(prettyUsgs, error3SdFunc, retVariance=TRUE) {
 #' @family dartObs
 #' @export
 WriteDischargeObsSeq <- function(obsDf,
-                                 POSIXctCol=NULL
+                                 POSIXctCol=NULL,
                                  lonCol=NULL,
                                  latCol=NULL,
                                  elevCol=NULL,
@@ -321,9 +321,11 @@ TimesliceToDART <- function(timesliceFiles,
                             locLonCol=NULL,
                             locLatCol=NULL,
                             locElevCol=NULL,
-                            qErrFunc=NULL,
+                            QErrFunc=NULL,
                             negativeQ.rm=TRUE,
-                            qualityThresh.rm=1) {
+                            qualityThresh.rm=1,
+                            bySite=FALSE,
+                            groupTag=NULL) {
 
   if(FALSE) {
 
@@ -338,7 +340,7 @@ TimesliceToDART <- function(timesliceFiles,
     
     routeLinkFile <- '/home/jamesmcc/WRF_Hydro/TESTING/TEST_FILES/CONUS/V1.2/RouteLink_2017_04_24.nc'
     
-    qErrFunc <- function(q) q*.1
+    QErrFunc <- function(q) q*.1
     
   }
 
@@ -369,14 +371,40 @@ TimesliceToDART <- function(timesliceFiles,
   }
     
   ## Apply the error function
-  obsDf$err <- qErrFunc(obsDf$discharge)
+  obsDf$err <- QErrFunc(obsDf$discharge)
+  errTag <- as.character(substitute(QErrFunc))
 
   ## Remove non-positive values
   if(negativeQ.rm) obsDf <- subset(obsDf, discharge > 0)
   
   ## Remove values with discharge_quality < qualityThresh.rm
   obsDf <- subset(obsDf, discharge_quality*.01 >= qualityThresh.rm)
-
   
+
+  SiteWriteDischargeObsSeq <- function(subDf, groupTag)
+    WriteDischargeObsSeq(obsDf, POSIXctCol='POSIXct',
+                         lonCol='lon', latCol='lat', elevCol='alt',
+                         obsCol='discharge', sigma3Col='err', siteCol='site_no',
+                         outPath='.',
+                         groupTag=groupTag,
+                         errTag=errTag,
+                         dartTypeQ=20, na.rm=FALSE)
+
+  if(bySite) {
+
+    returnedFiles <- list()
+    for(ss in trimws(unique(obsDf$site_no))) {
+      groupTagSite <- ifelse( is.null(groupTag) || groupTag=='' ,
+                             ss, paste0(groupTag,'_',ss))
+      returnedFiles[ss] <- SiteWriteDischargeObsSeq( subset(obsDf, site_no == ss), groupTagSite)
+    }
+    
+  } else {
+
+    returnedFiles <- SiteWriteDischargeObsSeq(obsDf, groupTag)
+    
+  }
+
+  invisible(unlist(returnedFiles))
   
 }
