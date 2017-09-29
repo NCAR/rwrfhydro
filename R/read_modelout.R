@@ -1,4 +1,4 @@
-#' Read WRF-Hydro standard-format forecast points output text file.
+' Read WRF-Hydro standard-format forecast points output text file.
 #'
 #' \code{ReadFrxstPts} reads in WRF-Hydro forecast points output text file.
 #'
@@ -503,7 +503,7 @@ ReadRtout <- function(pathOutdir, pathDomfile,
 #' @param pathOutdir The full pathname to the output directory containing the 
 #' RTOUT files.
 #' @param idList Optional list of station IDs to import (must be consistent
-#' with IDs as used in the "station_id" variable). 
+#' with IDs as used in the specified idvar variable). 
 #' @param gageList Optional list of gage IDs to import. Must provide a corresponding
 #' route link file (used to map gage IDs to link IDs). Available only for reach-based
 #' channel routing model runs.
@@ -517,6 +517,7 @@ ReadRtout <- function(pathOutdir, pathDomfile,
 #' gage IDs only (vs. all reaches) (DEFAULT=TRUE)
 #' @param pattern The pattern to match for file ingest
 #' (DEFAULT=glob2rx('*.CHRTOUT_DOMAIN*'))
+#' @param idvar The unique ID variable (DEFAULT="feature_id")
 #' @return A datatable containing a time series of channel fluxes.
 #'
 #' @examples
@@ -539,7 +540,9 @@ ReadChrtout <- function(pathOutdir,
                         parallel=FALSE,
                         useDatatable=TRUE,
                         gageOnly=TRUE,
-                        pattern=glob2rx('*.CHRTOUT_DOMAIN*')) {
+                        pattern=glob2rx('*.CHRTOUT_DOMAIN*'),
+                        idvar="feature_id") {
+
     # Get files
     filesList <- list.files(path=pathOutdir, 
                                     pattern=pattern, 
@@ -573,7 +576,7 @@ ReadChrtout <- function(pathOutdir,
     
     # Single file read function
     ReadFile4Loop <- function(file., useDatatable.=TRUE) {
-        out <- GetNcdfFile(file., variables=c("time"), exclude=TRUE, quiet=TRUE)
+        out <- GetNcdfFile(file., variables=c("time", "reference_time"), exclude=TRUE, quiet=TRUE)
         dtstr <- basename(file.)
         dtstr <- unlist(strsplit(dtstr, "[.]"))[1]
         dtstr <- as.POSIXct(dtstr, format="%Y%m%d%H%M", tz="UTC")
@@ -588,12 +591,12 @@ ReadChrtout <- function(pathOutdir,
         packageList <- ifelse(useDatatable, c("ncdf4","data.table"), c("ncdf4"))
         outList <- foreach(file=filesList, .packages = packageList, 
                            .combine=c) %dopar% {
-            out <- ReadFile4Loop(file)
+            out <- ReadFile4Loop(file, useDatatable.=useDatatable)
             if (!is.null(idList)) {
                 if (useDatatable) {
-                    out <- out[station_id %in% idList,]
+                    out <- out[get(idvar) %in% idList,]
                 } else {
-                    out <- subset(out, out$station_id %in% idList)
+                    out <- subset(out, out[[idvar]] %in% idList)
                 }
             }
             list(out)
@@ -603,9 +606,10 @@ ReadChrtout <- function(pathOutdir,
             out <- ReadFile4Loop(file)
             if (!is.null(idList)) {
                 if (useDatatable) {
-                    out <- out[station_id %in% idList,]
+                    out <- out[get(idvar) %in% idList,]
                 } else {
-                    out <- subset(out, out$station_id %in% idList)
+                    out <- subset(out, out[[idvar]] %in% idList)
+
                 }
             }
             outList <- c(outList, list(out))
@@ -619,7 +623,8 @@ ReadChrtout <- function(pathOutdir,
     names(outDT)[names(outDT)=="streamflow"]<-"q_cms"
     names(outDT)[names(outDT)=="velocity"]<-"vel_ms"
     if (exists("rtLink")) {
-        names(outDT)[names(outDT)=="station_id"]<-"link"
+        names(outDT)[names(outDT)==idvar]<-"link"
+
         if (useDatatable) {
             data.table::setkey(rtLink, "link")
             data.table::setkey(outDT, "link")
