@@ -154,72 +154,70 @@ MkDischargeVariance <- function(prettyUsgs, error3SdFunc, retVariance=TRUE) {
 #' @concept DART dataMgmt
 #' @family dartObs
 #' @export
-WriteDischargeObsSeq <- function(pretty, outPath='.', 
-                                 stationName, errorId, 
-                                 typeQ=20) {
+WriteDischargeObsSeq <- function(obsDf,
+                                 POSIXctCol=NULL,
+                                 lonCol=NULL,
+                                 latCol=NULL,
+                                 elevCol=NULL,
+                                 obsCol=NULL,
+                                 sigma3Col=NULL,
+                                 siteCol=NULL,
+                                 outPath='.', 
+                                 groupTag=NULL,
+                                 errTag=NULL,
+                                 dartTypeQ=20,
+                                 na.rm=FALSE) {
   
-  if(!('prettyUsgs' %in% class(pretty))) {
-    warning('WriteDischargeObsSeq requires a prettyUsgs object as its first argument.')
-    return(NULL)
-  }
-  
-  variables <- attr(pretty,'variables')
-  codes     <- attr(pretty,'codes')
-  variances <- attr(pretty,'variances')
-  stDevs    <- attr(pretty,'st.devs.')
-  errVars   <- c(variances,stDevs)
-  
-  if(!length(errVars)) {
-    warning(paste0('WriteDischargeObsSeq requires variances or std.devs. to be specified in ',
-                   'the prettyUsgs object. See MkDischargeVariance.'))
-    return(NULL)
-  }
-  
-  siteInfo  <- attr(pretty,'siteInfo')
-  
-  ## If there is more than one variable, which to use?
-  ## nly output a single a single variable+variance. 
-  if(length(variables)>1 && length(errVars)) {
-    errUnits <- plyr::laply(strsplit(errVars,'[(^)]'), '[[', 2)
-    if(length(errVars)==1) { 
-      ## this selects from more than one variable using the only available err info.
-      theVar <- variables[grep(errUnits,variables)]
-      theErr <- errVars
-    } else { 
-      ## otherwise, the variable is user selected.
-      varsWErr <- variables[plyr::laply(errUnits, grep, variables)]
-      whVar <- readline(prompt=paste0('Please select a single variable to plot with error bars: \n',
-                                      paste(1:length(varsWErr),varsWErr, sep=': ', collapse=' \n'),' \n'))
-      theVar <- variables[as.numeric(whVar)]
-      theErr <- errVars[grep( strsplit(theVar,'[(^)]')[[1]][2], errUnits )]
-    }
-    pretty <- pretty[,c("dateTime","site_no", codes, theVar, theErr)]
-    variables <- theVar
-    errVars   <- theErr
+
+  if(FALSE) {
+    
+    POSIXctCol='POSIXct'
+    lonCol='lon'
+    latCol='lat'
+    elevCol='alt'
+    obsCol='discharge'
+    sigma3Col='err'
+    siteCol='site_no'
+
+    dartTypeQ=20
+
+    outPath <- '~/'
+    ## typcially the tag would include error spec info as well as grouping info
+    groupTag <- format(obsDf[1, POSIXctCol], '%Y-%m-%d')
+    errTag <- '10PctErr'
+    
   }
   
   ## remove missing observations
-  for (var in variables) {
-    whNa <- which(is.na(pretty[[var]]))
-    if(length(whNa)) pretty <- pretty[-whNa,]
+  whNa <- which(is.na(obsDf[[obsCol]]))
+  if(length(whNa)) {
+    if(na.rm) {
+      warning('Missing observations removed in WriteDischargeObsSeq')
+      obsDf <- obsDf[-whNa,]
+    } else
+    warning('Missing observations present in WriteDischargeObsSeq')
   }
   
   ## time in year month day hour minute second
-  pretty$year   <-  format(pretty$dateTime, '%Y')
-  pretty$month  <-  format(pretty$dateTime, '%m')
-  pretty$day    <-  format(pretty$dateTime, '%d')
-  pretty$hour   <-  format(pretty$dateTime, '%H')
-  pretty$minute <-  format(pretty$dateTime, '%M')
-  pretty$second <-  format(pretty$dateTime, '%S')
-  
-  outFileName <- paste0(outPath,'/',stationName,'.Q.cms.MASTER.',errorId,'.obs_seq.inputForCreateObsSeq')
+  obsDf$year   <-  format(obsDf[,POSIXctCol], '%Y')
+  obsDf$month  <-  format(obsDf[,POSIXctCol], '%m')
+  obsDf$day    <-  format(obsDf[,POSIXctCol], '%d')
+  obsDf$hour   <-  format(obsDf[,POSIXctCol], '%H')
+  obsDf$minute <-  format(obsDf[,POSIXctCol], '%M')
+  obsDf$second <-  format(obsDf[,POSIXctCol], '%S')
+
+  outFileBase <- paste0(groupTag,'.',errTag)
+  outFilePathName <- paste0(outPath,'/',outFileBase,'.inputForCreateObsSeq')
 
   ## this is the file listed at the end of the file we will write, it is the name of the
   ## file to be made by create_obs_seq
-  outSeqFileName <- paste0(stationName,'.Q.cms.MASTER.',errorId,'.obs_seq.out')
-  
+  outSeqFileName <- paste0(outFileBase,'.obs_seq.out')
+
+
+  #############################################
+  ## 
   ## open a file for writing
-  outCon <- file(outFileName, "w")  # open an output file connection
+  outCon <- file(outFilePathName, "w")  # open an output file connection
   
   ## create_obs_seqence meta info
   ## Input upper bound on number of observations in sequence
@@ -233,7 +231,7 @@ WriteDischargeObsSeq <- function(pretty, outPath='.',
   ## input meta data for qc field             1
   ##missing
   
-  cat(as.character(nrow(pretty)+1), file = outCon, sep = "\n")
+  cat(as.character(nrow(obsDf)+1), file = outCon, sep = "\n")
 
   nCopies <- 1
   cat(as.character(nCopies), file = outCon, sep = "\n")
@@ -284,25 +282,22 @@ WriteDischargeObsSeq <- function(pretty, outPath='.',
   ##                 20 STREAM_FLOW
   ##2 [[[repeat]]]
   
-  theEle <- as.character(siteInfo$alt_va[1]*feet2meters)
-  theLon <- siteInfo$dec_long_va
-  theLon <- format(theLon %% 360, digits=20)
-  theLat <- format(siteInfo$dec_lat_va, digits=20)
-  
-  for (i in 1:nrow(pretty) ) {
+  for (i in 1:nrow(obsDf) ) {
     cat(as.character(i),
-        as.character(typeQ),
+        as.character(dartTypeQ),
         as.character(-1),
-        theEle, theLon, theLat,
-        paste(as.character(pretty$year[i]),
-              as.character(pretty$month[i]),
-              as.character(pretty$day[i]),
-              as.character(pretty$hour[i]),
-              as.character(pretty$minute[i]), 
-              as.character(pretty$second[i]),
+        as.character(obsDf[i, elevCol]),
+        format(obsDf[i, lonCol] %% 360, digits=20),
+        format(obsDf[i, latCol], digits=20),
+        paste(as.character(obsDf[i, 'year']),
+              as.character(obsDf[i, 'month']),
+              as.character(obsDf[i, 'day']),
+              as.character(obsDf[i, 'hour']),
+              as.character(obsDf[i, 'minute']), 
+              as.character(obsDf[i, 'second']),
               sep=' '),
-        as.character(pretty$error)[i], 
-        as.character(pretty$Q.cms[i]),
+        as.character(obsDf[i, sigma3Col]), 
+        as.character(obsDf[i, obsCol]),
         file=outCon, sep='\n')
   }
   
@@ -310,6 +305,106 @@ WriteDischargeObsSeq <- function(pretty, outPath='.',
   cat(outSeqFileName, file=outCon, sep='\n')
   
   close(outCon)
-  outFileName
+  outFilePathName
 }
 
+
+
+
+#'
+#'
+#' @export
+TimesliceToDART <- function(timesliceFiles,
+                            routeLinkFile=NULL,
+                            locationDf=NULL,
+                            locSiteCol=NULL,
+                            locLonCol=NULL,
+                            locLatCol=NULL,
+                            locElevCol=NULL,
+                            QErrFunc=NULL,
+                            negativeQ.rm=TRUE,
+                            qualityThresh.rm=1,
+                            bySite=FALSE,
+                            groupTag=NULL) {
+
+  if(FALSE) {
+
+    negativeQ.rm=TRUE
+    qualityThresh.rm=1
+
+    ## this gets a days worth of files
+    sliceSearchDir <-
+      "/d7/lpan/wcoss1.2/data/para.nomads.ncep.noaa.gov/pub/data/nccf/com/nwm/para/nwm.20170901"
+    timesliceFiles <-
+      list.files(sliceSearchDir, pattern='usgsTimeSlice.ncdf$', recursive=TRUE, full=TRUE)
+    
+    routeLinkFile <- '/home/jamesmcc/WRF_Hydro/TESTING/TEST_FILES/CONUS/V1.2/RouteLink_2017_04_24.nc'
+    
+    QErrFunc <- function(q) q*.1
+    
+  }
+
+  ## Get the obs
+  obsDf <- plyr::ldply(timesliceFiles, GetNcdfFile,
+                             q=TRUE, exclude=TRUE, variable='queryTime')
+  ## rename
+  obsDf <- dplyr::rename(obsDf, site_no = stationId)
+  obsDf$POSIXct <- as.POSIXct(obsDf$time, format='%Y-%m-%d_%H:%M:%S', tz='UTC')
+  
+  ## Bring in the lat-lon meta data
+  if(!is.null(routeLinkFile)) {
+    rl <- GetNcdfFile(routeLinkFile, variable=c('gages','alt','lon','lat'), q=TRUE)
+    #rl <- data.table::as.data.table(rl)
+    rl <- dplyr::rename(rl, site_no = gages)
+    rl <- subset(rl, trimws(site_no) != '')
+    rl$site_no <- as.vector(rl$site_no)
+    obsDf <- dplyr::inner_join(obsDf, rl, by='site_no')
+  } else if(!is.null(locationDf)) {
+
+    ## This is NOT tested. 
+    #    locationDf <- dplyr::rename(
+    data.table::setnames(locationlocationDf,
+                         c('locSiteCol', 'locLonCol', 'locLatCol', 'locElevCol'),
+                         c('site_no',    'lon',       'lat',       'elev'      ) )
+    obsDf <- dplyr::inner_join(obsDf, locationDf, by='site_no')
+                         
+  }
+    
+  ## Apply the error function
+  obsDf$err <- QErrFunc(obsDf$discharge)
+  errTag <- as.character(substitute(QErrFunc))
+
+  ## Remove non-positive values
+  if(negativeQ.rm) obsDf <- subset(obsDf, discharge > 0)
+  
+  ## Remove values with discharge_quality < qualityThresh.rm
+  obsDf <- subset(obsDf, discharge_quality*.01 >= qualityThresh.rm)
+  
+
+  SiteWriteDischargeObsSeq <- function(subDf, groupTag)
+    WriteDischargeObsSeq(obsDf, POSIXctCol='POSIXct',
+                         lonCol='lon', latCol='lat', elevCol='alt',
+                         obsCol='discharge', sigma3Col='err', siteCol='site_no',
+                         outPath='.',
+                         groupTag=groupTag,
+                         errTag=errTag,
+                         dartTypeQ=20, na.rm=FALSE)
+
+  if(bySite) {
+
+    returnedFiles <- list()
+    for(ss in trimws(unique(obsDf$site_no))) {
+      groupTagSite <- ifelse( is.null(groupTag) || groupTag=='' ,
+                             ss, paste0(groupTag,'_',ss))
+      returnedFiles[ss] <- SiteWriteDischargeObsSeq( subset(obsDf, site_no == ss), groupTagSite)
+    }
+    
+  } else {
+
+    returnedFiles <- SiteWriteDischargeObsSeq(obsDf, groupTag)
+    
+  }
+
+  invisible(unlist(returnedFiles))
+  
+}
