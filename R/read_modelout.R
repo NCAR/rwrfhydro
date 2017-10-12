@@ -786,13 +786,9 @@ ReadLakeout<-function (pathOutdir = NULL, lakeidList = NULL, parallel = FALSE,
   }
   if (useDatatable) {
     outDT <- data.table::rbindlist(outList)
-    #outDT <- outDT[, .SD, .SDcols = c("lake_id", "POSIXct",
-    #                                   "inflow", "outflow", "water_sfc_elev")]
   }
   else {
     outDT <- do.call("rbind", outList)
-    outDT <- subset(outDT, select = c("lake_id", "POSIXct",
-                                      "inflow", "outflow", "water_sfc_elev"))
   }
   outDT
 }
