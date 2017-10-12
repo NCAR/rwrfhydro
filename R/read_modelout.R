@@ -792,3 +792,163 @@ ReadLakeout<-function (pathOutdir = NULL, lakeidList = NULL, parallel = FALSE,
   }
   outDT
 }
+
+
+#' Read WRF-Hydro CHRTOUT data files for gridded routing.
+#'
+#' \code{ReadChrtoutgrid} reads in WRF-Hydro CHRTOUT files for gridded routing and outputs a time series of
+#' channel fluxes at specified lat/long locations. 
+#'
+#' \code{ReadChrtoutgrid} reads standard-format WRF-Hydro CHRTOUT NetCDF files with gridded routing and 
+#' outputs a time series of channel fluxes.
+#'
+#' @param pathOutdir The full pathname to the output directory containing the 
+#' RTOUT files.
+#' @param idList Optional list of station IDs to import (must be consistent
+#' with IDs as used in the specified idvar variable). 
+#' @param gageList Optional list of gage IDs to import. Must provide a corresponding
+#' route link file (used to map gage IDs to link IDs). Available only for reach-based
+#' channel routing model runs.
+#' @param rtlinkFile Optional path to the route link file. Available only for 
+#' reach-based channel routing model runs.
+#' @param parallel Logical for running in parallel mode (must have a parallel
+#' backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)
+#' @param useDatatable Logical for utilizing the data.table package and 
+#' outputting in data.table format (DEFAULT=TRUE)
+#' @param gageOnly Logical for whether to bring in reaches with associated 
+#' gage IDs only (vs. all reaches) (DEFAULT=TRUE)
+#' @param pattern The pattern to match for file ingest
+#' (DEFAULT=glob2rx('*.CHRTOUT_DOMAIN*'))
+#' @param idvar The unique ID variable (DEFAULT="feature_id")
+#' @return A datatable containing a time series of channel fluxes.
+#'
+#' @examples
+#' ## Take an OUTPUT directory for a model run with gridded routing (channel_routing option =3) 
+#' ## and find the streamflow at specific lat/longs (e.g. forecast points and gages) that corresponds to the location on 
+#' ## the channel grid; output is a data table of streamflow for all pts provided.
+#'
+#' \dontrun{
+#' ReadChrtoutgrid('~/wrfHydroTestCases/FRN.REACH/OUTPUT', 
+#'      gaugeFile='~/wrfHydroTestCases/FRN.REACH/frxstpts_frntrng.txt')
+#' }
+#' @keywords IO univar ts
+#' @concept dataGet
+#' @family modelDataReads
+#' @export
+ReadChrtoutgrid<-function (pathOutdir = NULL, gaugeFile=NULL, gaugePtlist=NULL, parallel = FALSE,
+                        pattern = glob2rx("*.CHRTOUT_DOMAIN*")) {
+  #Read in the gauges/frxst pts file if provided. 
+  if(!is.null(gaugePtlist))
+    gaugePts=gaugePtlist
+  else if(!is.null(gaugeFile)){
+    gages <- read.table(gaugeFile, sep=",", header=TRUE, stringsAsFactors=FALSE, 
+                        colClasses="character")
+    gages$LON<-as.numeric(gages$LON)
+    gages$LAT<-as.numeric(gages$LAT)
+    gaugePts <- list()
+    for (i in 1:nrow(gages)) { 
+      gaugePts[[i]] <- data.frame(lon=gages$LON[i], lat=gages$LAT[i], id=gages$SITE_NO[i])
+      names(gaugePts)[i] <- gages$STATION[i]
+    }
+  }
+  else{stop("No gauges provided in gaugeFile or gaugePts list.")}
+    
+  ### Retrieve DF of locations and indices ###
+  TblChanNtwk <- function(file, gaugePts=NULL, excludeCols=NULL) {
+      
+      ## Get the data.
+      ncid <- ncdf4::nc_open(file)
+      
+      if(length(grep('CHRTOUT',file))) {
+        lat <- ncdf4::ncvar_get(ncid,'latitude')
+        lon <- ncdf4::ncvar_get(ncid,'longitude')
+        q <- ncdf4::ncvar_get(ncid,'streamflow')
+        dum <- ncdf4::nc_close(ncid)
+        linkDf <- data.frame( ind = 1:length(lat) )
+        linkDf$lon <- lon
+        linkDf$lat <- lat
+        linkDf$q <- q
+        rm('lon','lat')
+      }
+      #excludeCols=c("q_lateral","velocity","feature_id")
+      #if(length(excludeCols)) linkDf <- linkDf[, -which(names(linkDf) %in% c("q_lateral","velocity","feature_id"))]
+      
+      ## standardize the lon just in case
+      linkDf$lon <- StdLon(linkDf$lon)
+      
+      ## find nearest neighbors if gaugePts was defined.
+      if(length(gaugePts)) {
+        ## This is better way of handling 
+        gaugePtsDf <- plyr::ldply(gaugePts, .id='location')
+        
+        StdLon <- StdLon
+        ## standardize the lon to +-180
+        gaugePtsDf <- plyr::ddply(gaugePtsDf,
+                                  plyr::.(location, lon, lat, id),
+                                  plyr::summarize,
+                                  lon=StdLon(lon))
+        
+        ## the euclidean metric in lat/lon works fine.
+        FindNn <- function(dd) {
+          whMin <- which.min(sqrt( (dd$lon-linkDf$lon)^2 + (dd$lat-linkDf$lat)^2 ))
+          dd$chanInd <- whMin
+          dd$lon <- linkDf$lon[whMin]
+          dd$lat <- linkDf$lat[whMin]
+          dd$modelFile <- file
+          if('q' %in% names(linkDf)) dd$q <- linkDf$q[whMin]
+          dd
+        }
+        gaugePtsModelDf <- plyr::ddply(gaugePtsDf, plyr::.(location), FindNn)
+      }
+      
+      ## remove factors
+      i <- sapply(gaugePtsModelDf, is.factor)
+      gaugePtsModelDf[i] <- lapply(gaugePtsModelDf[i], as.character)
+      
+      gaugePtsModelDf
+    }
+    
+    ############################################
+    
+    outDT <- data.table()
+    
+    for (i in 1:length(pathOutdir)) {
+      filesList <- list.files(path = pathOutdir[i],
+                              pattern = "CHRTOUT_DOMAIN",
+                              full.names = TRUE)
+      chrtFile <- filesList[1]
+      gaugeDf <- TblChanNtwk(chrtFile, gaugePts=gaugePts)
+      
+      
+      # Get indices from DF above
+      indicesToGet <- c()
+      for (j in names(gaugePts)) {
+        indicesToGet <- c(indicesToGet, subset(gaugeDf, location==j)$chanInd)
+      }
+      names(indicesToGet) <- names(gaugePts)
+      indicesNames <- names(indicesToGet)
+      names(indicesNames) <- indicesToGet
+      
+      GetSubsetChrtout <- function(ff) {
+        data <- GetNcdfFile(ff, var=c('time', 'reference_time'), exc=TRUE, q=TRUE)
+        data$chanInd <- 1:nrow(data)
+        data[indicesToGet,]
+      }
+      chrtout <- plyr::ldply(NamedList(filesList), GetSubsetChrtout)
+      isfact <- sapply(chrtout, is.factor)
+      chrtout[isfact] <- lapply(chrtout[isfact], as.character)
+      chrtout <- as.data.table(chrtout)
+      chrtout[, POSIXct := as.POSIXct(substr(basename(chrtout$.id), 1, 10), '%Y%m%d%H', tz='UTC')]
+      chrtout <- merge(chrtout, as.data.table(gaugeDf)[,c("chanInd", "location", "id"),with=FALSE], by="chanInd", all.x=TRUE, all.y=FALSE)
+      
+      # Rename some variables
+      setnames(chrtout, "id", "site_no")
+      setnames(chrtout, "streamflow", "q_cms")
+
+      # Combine
+      outDT <- rbindlist(list(outDT, chrtout), fill=TRUE)
+      outDT<-outDT[,c("q_lateral","velocity","feature_id"):=NULL]
+      
+    }
+    outDT
+}
