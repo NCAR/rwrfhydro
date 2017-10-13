@@ -698,93 +698,244 @@ CreateBasinMask <- function(ncfile, mskvar="basn_msk", basid=1, aggfact=1) {
      rtLinks$site_no <- stringr::str_trim(rtLinks$gages)
      rtLinks
  }
-#' Read LAKEOUT files from gridded lake routing option and create data frame/table for selected lakes.
-#' \code{ReadLakeout} reads in the WRF-Hydro LAKEOUT files from gridded lake routing: Community Release version.
-#'
-#' @param pathOutdir The full pathname to the WRF-Hydro lake output files.
-#' @param lakeidList The list of lakeids to put in the output data table. These lakeids correspond to the lakes in the LAKEGRID, LAKEPARM and lakes.shp files that are
-#' created in the routing files from the ArcGIS pre-processing tools.
-#' @param parallel Logical for running in parallel mode (must have a parallel
-#' backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)
-#' @param useDatatable Logical for utilizing the data.table package and
-#' outputting in data.table format (DEFAULT=TRUE)
-#' @param pattern Pattern to match in the model output (e.g. *LAKEOUT_DOMAIN1*)
+ #' Read LAKEOUT files from gridded lake routing option and create data frame/table for selected lakes.
+ #' \code{ReadLakeout} reads in the WRF-Hydro LAKEOUT files from gridded lake routing: Community Release version.
+ #'
+ #' @param pathOutdir The full pathname to the WRF-Hydro lake output files.
+ #' @param lakeidList The list of lakeids to put in the output data table. These lakeids correspond to the lakes in the LAKEGRID, LAKEPARM and lakes.shp files that are
+ #' either read in from ComIDs or created in the routing files from the ArcGIS pre-processing tools.
+ #' @param parallel Logical for running in parallel mode (must have a parallel
+ #' backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)
+ #' @param useDatatable Logical for utilizing the data.table package and
+ #' outputting in data.table format (DEFAULT=TRUE)
+ #' @param pattern Pattern to match in the model output (e.g. *LAKEOUT_DOMAIN1*)
+ #' @param idvar Tracker of variable that identifies the lake ID (lakeidList is a subset of this variable).
+ 
+ #' @examples
+ #' # This function loops through LAKEOUT files in the pathOutdir and creates a data frame or
+ #' # data table to store inflow, outflow, elevation and the station_id (lakeid).  The lakeids
+ #' # correspond to the lakes in the LAKEGRID, LAKEPARM and lakes.shp files that are
+ #' # created in the routing files from the ArcGIS pre-processing tools.
+ 
+ #' \dontrun{
+ #' ReadLakeout('~/wrfHydroTestCases/FRN.REACH/OUTPUT',
+ #'      lakeidList=c("1", "5"),idvar="feature_id")
+ #' }
+ #' @export
+ ReadLakeout<-function (pathOutdir = NULL, lakeidList = NULL, parallel = FALSE,
+                        useDatatable = TRUE, pattern = glob2rx("*.LAKEOUT_DOMAIN*"),
+                        idvar=NULL) {
+   
+   filesList <- list.files(path = pathOutdir, pattern = pattern,
+                           full.names = TRUE)
+   if (length(filesList) == 0)
+     stop("No matching files in specified directory.")
+   firstFile <- filesList[1]
+   ncid <- ncdf4::nc_open(firstFile)
+   lakeCount <- ncid$dim[["feature_id"]]$len
+   lakeCount_old<-ncid$dim[["station"]]$len
+   ncdf4::nc_close(ncid)
+   if (length(lakeCount) == 0 & length(lakeCount_old)==0)
+     stop("No lakes found.")
+   ReadFile4Loop <- function(file., useDatatable. = TRUE) {
+     out <- GetNcdfFile(file., variables = c("time", "reference_time"), exclude = TRUE,
+                        quiet = TRUE)
+     dtstr <- basename(file.)
+     dtstr <- unlist(strsplit(dtstr, "[.]"))[1]
+     dtstr <- as.POSIXct(dtstr, format = "%Y%m%d%H%M", tz = "UTC")
+     out$POSIXct <- dtstr
+     if (useDatatable.)
+       out <- data.table(out)
+     out
+   }
+   outList <- list()
+   if (parallel) {
+     packageList <- ifelse(useDatatable, c("ncdf4", "data.table"),
+                           c("ncdf4"))
+     outList <- foreach(file = filesList, .packages = packageList,
+                        .combine = c) %dopar% {
+                          out <- ReadFile4Loop(file)
+                          if (!is.null(idList)) {
+                            if (useDatatable) {
+                              out <- out[get(idvar) %in% lakeidList,
+                                         ]
+                            }
+                            else {
+                              out <- subset(out, out[[idvar]] %in%
+                                              lakeidList)
+                            }
+                          }
+                          list(out)
+                        }
+   }
+   else {
+     for (file in filesList) {
+       out <- ReadFile4Loop(file)
+       if (!is.null(lakeidList)) {
+         if (useDatatable) {
+           out <- out[get(idvar) %in% lakeidList,]
+         }
+         else {
+           out <- subset(out, out[[idvar]] %in% lakeidList)
+         }
+       }
+       outList <- c(outList, list(out))
+     }
+   }
+   if (useDatatable) {
+     outDT <- data.table::rbindlist(outList)
+   }
+   else {
+     outDT <- do.call("rbind", outList)
+   }
+   return(outDT)
+ }
 
-#' @examples
-#' # This function loops through LAKEOUT files in the pathOutdir and creates a data frame or 
-#' # data table to store inflow, outflow, elevation and the station_id (lakeid).  The lakeids 
-#' # correspond to the lakes in the LAKEGRID, LAKEPARM and lakes.shp files that are
-#' # created in the routing files from the ArcGIS pre-processing tools.
-
-#' \dontrun{
-#' ReadLakeout('~/wrfHydroTestCases/FRN.REACH/OUTPUT',
-#'      lakeidList=c("1", "5"))
-#' }
-
- ReadLakeout <- function(pathOutdir=NULL,
-                        lakeidList=NULL,
-                        parallel=FALSE,
-                        useDatatable=TRUE,
-                        pattern=glob2rx('*.LAKEOUT_DOMAIN*')) {
-  # Get files
-  filesList <- list.files(path=pathOutdir,
-                          pattern=pattern,
-                          full.names=TRUE)
-  if (length(filesList)==0) stop("No matching files in specified directory.")
-  # Compile lake list
-  firstFile <- filesList[1]
-  ncid <- ncdf4::nc_open(firstFile)
-  lakeCount <- ncid$dim[["station"]]$len
-  ncdf4::nc_close(ncid)
-
-  if (length(lakeCount)==0) stop("No lakes found.")
-
-  # Single file read function
-  ReadFile4Loop <- function(file., useDatatable.=TRUE) {
-    out <- GetNcdfFile(file., variables=c("time"), exclude=TRUE, quiet=TRUE)
-    dtstr <- basename(file.)
-    dtstr <- unlist(strsplit(dtstr, "[.]"))[1]
-    dtstr <- as.POSIXct(dtstr, format="%Y%m%d%H%M", tz="UTC")
-    out$POSIXct <- dtstr
-    if (useDatatable.) out<-data.table(out)
-    out
-  }
-  # Loop through all files
-  outList <- list()
-  if (parallel) {
-    packageList <- ifelse(useDatatable, c("ncdf4","data.table"), c("ncdf4"))
-    outList <- foreach(file=filesList, .packages = packageList,
-                       .combine=c) %dopar% {
-                         out <- ReadFile4Loop(file)
-                         if (!is.null(idList)) {
-                           if (useDatatable) {
-                             out <- out[trimws(station_id) %in% lakeidList,]
-                           } else {
-                             out <- subset(out, out$trimws(station_id) %in% lakeidList)
-                           }
-                         }
-                         list(out)
-                       }
-  } else {
-    for (file in filesList) {
-      out <- ReadFile4Loop(file)
-      if (!is.null(lakeidList)) {
-        if (useDatatable) {
-          out <- out[trimws(station_id) %in% lakeidList,]
-        } else {
-          out <- subset(out, out$trimws(station_id) %in% lakeidList)
-        }
-      }
-      outList <- c(outList, list(out))
-    }
-  }
-  if (useDatatable) {
-    outDT <- data.table::rbindlist(outList)
-    outDT<-outDT[,.SD,.SDcols=c("station_id","POSIXct","inflow","outflow","elevation")]
-  } else {
-    outDT <- do.call("rbind", outList)
-    outDT<-subset(outDT,select=c("station_id","POSIXct","inflow","outflow","elevation"))
-  }
-  outDT
-}
-
+ #' Read WRF-Hydro CHRTOUT data files for gridded routing.
+ #'
+ #' \code{ReadChrtgrid} reads in WRF-Hydro CHRTOUT files for gridded routing and outputs a time series of
+ #' channel fluxes at specified lat/long locations. 
+ #'
+ #' \code{ReadChrtgrid} reads standard-format WRF-Hydro CHRTOUT NetCDF files with gridded routing and 
+ #' outputs a time series of channel fluxes.
+ #'
+ #' @param pathOutdir The full pathname to the output directory containing the 
+ #' CHRTOUT files.
+ #' @param gaugeFile Optional list of gaugePts or frxstPts to import (must be consistent
+ #' with the format of the frxstpts.txt file specified for creating frxstpts on the grid). 
+ #' @param gaugePtlist Optional list of gage or frxst locations to import. Must provide the LAT,LON,and SITE_NO 
+ #' for each location specified.  
+ #' @return A datatable containing a time series of channel fluxes. Note that datatable is REQUIRED. 
+ #'
+ #' @examples
+ #' ## Take an OUTPUT directory for a model run with gridded routing (channel_routing option =3) 
+ #' ## and find the streamflow at specific lat/longs (e.g. forecast points and gages) that corresponds to the location on 
+ #' ## the channel grid; output is a data table of streamflow for all pts provided.
+ #'
+ #' \dontrun{
+ #' ReadChrtgrid('~/wrfHydroTestCases/FRN.REACH/OUTPUT', 
+ #'      gaugeFile='~/wrfHydroTestCases/FRN.REACH/frxstpts_frntrng.txt')
+ #' 
+ #' gaugePtlist=list(BigTOMP=data.frame(lon=-105.5836, lat=40.3534, id='402114105350101'),
+ #'                  Fountain_Cr_nr_Col_Spgs=data.frame(lon=-104.8782, lat=38.85422, id='07105500')) 
+ #'   ReadChrtgrid(('~/wrfHydroTestCases/FRN.REACH/OUTPUT',gaugePtlist=gaugePtlist) 
+ #' }
+ #' @keywords IO univar ts
+ #' @concept dataGet
+ #' @family modelDataReads
+ #' @export
+ ReadChrtgrid<-function (pathOutdir = NULL, gaugeFile=NULL, gaugePtlist=NULL,
+                         pattern = glob2rx("*.CHRTOUT_DOMAIN*")) {
+   #Read in the gauges/frxst pts file if provided. 
+   if(!is.null(gaugePtlist))
+     gaugePts=gaugePtlist
+   else if(!is.null(gaugeFile)){
+     gages <- read.table(gaugeFile, sep=",", header=TRUE, stringsAsFactors=FALSE, 
+                         colClasses=c("integer", "numeric","numeric","character", "character","character"))
+     gaugePts <- list()
+     for (i in 1:nrow(gages)) { 
+       gaugePts[[i]] <- data.frame(lon=gages$LON[i], lat=gages$LAT[i], id=gages$SITE_NO[i])
+       names(gaugePts)[i] <- gages$STATION[i]
+     }
+   }
+   else{stop("No gauges provided in gaugeFile or gaugePts list.")}
+   
+   ### Retrieve DF of locations and indices ###
+   TblChanNtwk <- function(file, gaugePts=NULL, excludeCols=NULL) {
+     
+     ## Get the data.
+     ncid <- ncdf4::nc_open(file)
+     
+     if(length(grep('CHRTOUT',file))) {
+       lat <- ncdf4::ncvar_get(ncid,'latitude')
+       lon <- ncdf4::ncvar_get(ncid,'longitude')
+       q <- ncdf4::ncvar_get(ncid,'streamflow')
+       dum <- ncdf4::nc_close(ncid)
+       linkDf <- data.frame( ind = 1:length(lat) )
+       linkDf$lon <- lon
+       linkDf$lat <- lat
+       linkDf$q <- q
+       rm('lon','lat')
+     }
+     
+     ## standardize the lon just in case
+     linkDf$lon <- StdLon(linkDf$lon)
+     
+     ## find nearest neighbors if gaugePts was defined.
+     if(length(gaugePts)) {
+       ## This is better way of handling 
+       gaugePtsDf <- plyr::ldply(gaugePts, .id='location')
+       
+       StdLon <- StdLon
+       ## standardize the lon to +-180
+       gaugePtsDf <- plyr::ddply(gaugePtsDf,
+                                 plyr::.(location, lon, lat, id),
+                                 plyr::summarize,
+                                 lon=StdLon(lon))
+       
+       ## the euclidean metric in lat/lon works fine.
+       FindNn <- function(dd) {
+         whMin <- which.min(sqrt( (dd$lon-linkDf$lon)^2 + (dd$lat-linkDf$lat)^2 ))
+         dd$chanInd <- whMin
+         dd$lon <- linkDf$lon[whMin]
+         dd$lat <- linkDf$lat[whMin]
+         dd$modelFile <- file
+         if('q' %in% names(linkDf)) dd$q <- linkDf$q[whMin]
+         dd
+       }
+       gaugePtsModelDf <- plyr::ddply(gaugePtsDf, plyr::.(location), FindNn)
+     }
+     
+     ## remove factors
+     i <- sapply(gaugePtsModelDf, is.factor)
+     gaugePtsModelDf[i] <- lapply(gaugePtsModelDf[i], as.character)
+     
+     gaugePtsModelDf
+   }
+   
+   ############################################
+   #write the output into a data table 
+   outDT <- data.table()
+   
+   for (i in 1:length(pathOutdir)) {
+     filesList <- list.files(path = pathOutdir[i],
+                             pattern = "CHRTOUT_DOMAIN",
+                             full.names = TRUE)
+     chrtFile <- filesList[1]
+     gaugeDf <- TblChanNtwk(chrtFile, gaugePts=gaugePts)
+     
+     
+     # Get indices from DF above
+     indicesToGet <- c()
+     for (j in names(gaugePts)) {
+       indicesToGet <- c(indicesToGet, subset(gaugeDf, location==j)$chanInd)
+     }
+     names(indicesToGet) <- names(gaugePts)
+     indicesNames <- names(indicesToGet)
+     names(indicesNames) <- indicesToGet
+     
+     GetSubsetChrtout <- function(ff) {
+       data <- GetNcdfFile(ff, var=c('time', 'reference_time'), exc=TRUE, q=TRUE)
+       data$chanInd <- 1:nrow(data)
+       data[indicesToGet,]
+     }
+     chrtout <- plyr::ldply(NamedList(filesList), GetSubsetChrtout)
+     isfact <- sapply(chrtout, is.factor)
+     chrtout[isfact] <- lapply(chrtout[isfact], as.character)
+     chrtout <- as.data.table(chrtout)
+     chrtout[, POSIXct := as.POSIXct(substr(basename(chrtout$.id), 1, 10), '%Y%m%d%H', tz='UTC')]
+     chrtout <- merge(chrtout, as.data.table(gaugeDf)[,c("chanInd", "location", "id"),with=FALSE], by="chanInd", all.x=TRUE, all.y=FALSE)
+     
+     # Rename variables for consistency 
+     setnames(chrtout, "id", "site_no")
+     setnames(chrtout, "streamflow", "q_cms")
+     
+     # Combine
+     outDT <- rbindlist(list(outDT, chrtout), fill=TRUE)
+     #Place holder for these outputs if they become active in the gridded CHRTOUT output 
+     outDT<-outDT[,c("q_lateral","velocity","feature_id"):=NULL]
+     
+   }
+   outDT
+ }
+ 
