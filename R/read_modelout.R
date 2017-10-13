@@ -950,5 +950,5 @@ ReadChrtoutgrid<-function (pathOutdir = NULL, gaugeFile=NULL, gaugePtlist=NULL, 
       outDT<-outDT[,c("q_lateral","velocity","feature_id"):=NULL]
       
     }
-    outDT
+    return(outDT)
 }
