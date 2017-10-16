@@ -824,6 +824,39 @@ CreateBasinMask <- function(ncfile, mskvar="basn_msk", basid=1, aggfact=1) {
  #' @concept dataGet
  #' @family modelDataReads
  #' @export
+ #' Read WRF-Hydro CHRTOUT data files for gridded routing.
+ #'
+ #' \code{ReadChrtgrid} reads in WRF-Hydro CHRTOUT files for gridded routing and outputs a time series of
+ #' channel fluxes at specified lat/long locations. 
+ #'
+ #' \code{ReadChrtgrid} reads standard-format WRF-Hydro CHRTOUT NetCDF files with gridded routing and 
+ #' outputs a time series of channel fluxes.
+ #'
+ #' @param pathOutdir The full pathname to the output directory containing the 
+ #' CHRTOUT files.
+ #' @param gaugeFile Optional list of gaugePts or frxstPts to import (must be consistent
+ #' with the format of the frxstpts.txt file specified for creating frxstpts on the grid). 
+ #' @param gaugePtlist Optional list of gage or frxst locations to import. Must provide the LAT,LON,and SITE_NO 
+ #' for each location specified.  
+ #' @return A datatable containing a time series of channel fluxes. Note that datatable is REQUIRED. 
+ #'
+ #' @examples
+ #' ## Take an OUTPUT directory for a model run with gridded routing (channel_routing option =3) 
+ #' ## and find the streamflow at specific lat/longs (e.g. forecast points and gages) that corresponds to the location on 
+ #' ## the channel grid; output is a data table of streamflow for all pts provided.
+ #'
+ #' \dontrun{
+ #' ReadChrtgrid('~/wrfHydroTestCases/FRN.REACH/OUTPUT', 
+ #'      gaugeFile='~/wrfHydroTestCases/FRN.REACH/frxstpts_frntrng.txt')
+ #' 
+ #' gaugePtlist=list(BigTOMP=data.frame(lon=-105.5836, lat=40.3534, id='402114105350101'),
+ #'                  Fountain_Cr_nr_Col_Spgs=data.frame(lon=-104.8782, lat=38.85422, id='07105500')) 
+ #'   ReadChrtgrid(('~/wrfHydroTestCases/FRN.REACH/OUTPUT',gaugePtlist=gaugePtlist) 
+ #' }
+ #' @keywords IO univar ts
+ #' @concept dataGet
+ #' @family modelDataReads
+ #' @export
  ReadChrtgrid<-function (pathOutdir = NULL, gaugeFile=NULL, gaugePtlist=NULL,
                          pattern = glob2rx("*.CHRTOUT_DOMAIN*")) {
    #Read in the gauges/frxst pts file if provided. 
@@ -831,7 +864,9 @@ CreateBasinMask <- function(ncfile, mskvar="basn_msk", basid=1, aggfact=1) {
      gaugePts=gaugePtlist
    else if(!is.null(gaugeFile)){
      gages <- read.table(gaugeFile, sep=",", header=TRUE, stringsAsFactors=FALSE, 
-                         colClasses=c("integer", "numeric","numeric","character", "character","character"))
+                         colClasses="character")
+     gages$LON<-as.numeric(gages$LON)
+     gages$LAT<-as.numeric(gages$LAT)
      gaugePts <- list()
      for (i in 1:nrow(gages)) { 
        gaugePts[[i]] <- data.frame(lon=gages$LON[i], lat=gages$LAT[i], id=gages$SITE_NO[i])
