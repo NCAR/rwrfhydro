@@ -705,7 +705,7 @@ CreateBasinMask <- function(ncfile, mskvar="basn_msk", basid=1, aggfact=1) {
  #' @param lakeidList The list of lakeids to put in the output data table. These lakeids correspond to the lakes in the LAKEGRID, LAKEPARM and lakes.shp files that are
  #' either read in from ComIDs or created in the routing files from the ArcGIS pre-processing tools.
  #' @param parallel Logical for running in parallel mode (must have a parallel
- #' backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)
+ #' backend installed and registered (e.g., doMC or doParallel); requires doMC and foreach libraries (DEFAULT=FALSE)
  #' @param useDatatable Logical for utilizing the data.table package and
  #' outputting in data.table format (DEFAULT=TRUE)
  #' @param pattern Pattern to match in the model output (e.g. *LAKEOUT_DOMAIN1*)
@@ -755,7 +755,7 @@ CreateBasinMask <- function(ncfile, mskvar="basn_msk", basid=1, aggfact=1) {
      outList <- foreach(file = filesList, .packages = packageList,
                         .combine = c) %dopar% {
                           out <- ReadFile4Loop(file)
-                          if (!is.null(idList)) {
+                          if (!is.null(lakeidList)) {
                             if (useDatatable) {
                               out <- out[get(idvar) %in% lakeidList,
                                          ]
