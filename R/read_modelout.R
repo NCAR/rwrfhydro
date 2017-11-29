@@ -545,8 +545,8 @@ ReadChrtout <- function(pathOutdir,
 
     # Get files
     filesList <- list.files(path=pathOutdir, 
-                                    pattern=pattern, 
-                                    full.names=TRUE)
+                            pattern=pattern, 
+                            full.names=TRUE)
     if (length(filesList)==0) stop("No matching files in specified directory.")
     # Compile link list
     if (!is.null(rtlinkFile)) {
@@ -576,7 +576,8 @@ ReadChrtout <- function(pathOutdir,
     
     # Single file read function
     ReadFile4Loop <- function(file., useDatatable.=TRUE) {
-        out <- GetNcdfFile(file., variables=c("time", "reference_time"), exclude=TRUE, quiet=TRUE)
+        out <- GetNcdfFile(file., variables=c("time", "reference_time"),
+                           exclude=TRUE, quiet=TRUE)
         dtstr <- basename(file.)
         dtstr <- unlist(strsplit(dtstr, "[.]"))[1]
         dtstr <- as.POSIXct(dtstr, format="%Y%m%d%H%M", tz="UTC")
