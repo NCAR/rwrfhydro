@@ -17,7 +17,10 @@
 #' @concept ncdf 
 #' @family ncdf 
 #' @export
-GetNcdfFile <- function(file, variables=NULL, exclude=FALSE, quiet=FALSE, flip2D=TRUE){
+GetNcdfFile <- function(file, variables=NULL,
+                        exclude=FALSE,
+                        quiet=FALSE,
+                        flip2D=TRUE) {
   
   if(!file.exists(file)) warning(paste0('The file ', file, 'does not exist.'), immediate. = TRUE)
 
@@ -35,9 +38,18 @@ GetNcdfFile <- function(file, variables=NULL, exclude=FALSE, quiet=FALSE, flip2D
   if(!is.null(variables)) {
     varsNotInFile <- setdiff(variables, varsInFile)
     if(length(varsNotInFile)) 
-      warning(paste0('The following variables were not found in the file', paste(varsNotInFile, collapse=', ')))
+      warning(paste0('The following variables were not found in the file',
+                     paste(varsNotInFile, collapse=', ')))
     if(!exclude) intersect(variables, varsInFile) else setdiff(varsInFile, variables)
   } else varsInFile
+
+
+  varNDims <- unlist(lapply(nc$var, function(vv) vv$ndims))
+  if(length(whZeroDim <-  which(varNDims==0))) {
+    if(!quiet) cat("The following variables are ommitted because they have zero dimensions: ",
+                   names(whZeroDim),'\n')
+    returnVars <- setdiff(returnVars, names(whZeroDim))
+  }
   
   doGetVar <- function(theVar) ncdf4::ncvar_get(nc, varid=theVar)
   outList <- plyr::llply(NamedList(returnVars), doGetVar)
@@ -193,8 +205,17 @@ ncdump <-function(file, variable, quiet=FALSE) {
         cat(paste0(indent,':',nms[ia], ' = "', atts[[ia]], '"\n' ))
     }
   } ## !quiet
-  
-  ret <- if(!missing(variable)) ncdf4::ncvar_get(nc,variable) else nc
+
+  ret <- nc
+  if(!missing(variable)) {
+    varNDims <- nc$var[[variable]]$ndims
+    if(varNDims==0) {
+      warning("The requested variable has zero dimensions: ",variable,'\n')
+      ret <- NULL
+    } else {
+      ret <- ncdf4::ncvar_get(nc,variable) 
+    }
+  } 
   
   ncdf4::nc_close(nc)
   invisible(ret)
