@@ -1,43 +1,45 @@
 ##=========================================================================================================
 #' Get variables from a ncdf file
-#' 
-#' This saves some annoying typing. 
 #'
-#' @param file Character, the file to inspect. 
+#' This saves some annoying typing.
+#'
+#' @param file Character, the file to inspect.
 #' @param variables Character vector, optional. The variables to return. If not specified, all variables are returned.
 #' @param exclude Logical, exclude the specified variables and return all others.
 #' @param quiet Logical, suppress the 'meta' dump?
 #' @param flip2D Logical, apply a vertical flip to 2D variables? (E.g. WRF Hydro geo grids)
+#' , apply a vertical flip to 2D variables? (E.g. WRF Hydro geo grids)
 #' @return A list or a dataframe (if all variables are 1D of the same length.)
 #' @examples
 #' \dontrun{
 #' conn <- GetNcdfFile('~/wrfHydroTestCases/Fourmile_Creek/CHANNEL_CONNECTIVITY.nc')
 #'  conn <- GetNcdfFile('~/wrfHydroTestCases/Fourmile_Creek/CHANNEL_CONNECTIVITY.nc', var='lambert_conformal_conic', exc=TRUE)
 #' }
-#' @concept ncdf 
-#' @family ncdf 
+#' @concept ncdf
+#' @family ncdf
 #' @export
 GetNcdfFile <- function(file, variables=NULL,
                         exclude=FALSE,
                         quiet=FALSE,
-                        flip2D=TRUE) {
-  
+                        flip2D=TRUE,
+                        collapse_degen=FALSE) {
+
   if(!file.exists(file)) warning(paste0('The file ', file, 'does not exist.'), immediate. = TRUE)
 
   if(!quiet) ncdump(file)
-    
+
   nc <- ncdf4::nc_open(file)
-  
+
   # Deal with variables asked for
   varsInFile <- names(nc$var)
   dimVarsInFile <- names(nc$dim)
   whDimVarsVals <- plyr::laply(nc$dim, '[[', 'create_dimvar')
   if(any(whDimVarsVals)) varsInFile <- c(dimVarsInFile[whDimVarsVals], varsInFile)
-  
-  returnVars <- 
+
+  returnVars <-
   if(!is.null(variables)) {
     varsNotInFile <- setdiff(variables, varsInFile)
-    if(length(varsNotInFile)) 
+    if(length(varsNotInFile))
       warning(paste0('The following variables were not found in the file',
                      paste(varsNotInFile, collapse=', ')))
     if(!exclude) intersect(variables, varsInFile) else setdiff(varsInFile, variables)
@@ -50,76 +52,158 @@ GetNcdfFile <- function(file, variables=NULL,
                    names(whZeroDim),'\n')
     returnVars <- setdiff(returnVars, names(whZeroDim))
   }
-  
-  doGetVar <- function(theVar) ncdf4::ncvar_get(nc, varid=theVar)
+
+  doGetVar <- function(theVar) ncdf4::ncvar_get(nc, varid=theVar, collapse_degen=collapse_degen)
   outList <- plyr::llply(NamedList(returnVars), doGetVar)
 
   doGetVarAtt <- function(theVar) ncdf4::ncatt_get( nc, varid=theVar )
   attList <- plyr::llply(NamedList(returnVars), doGetVarAtt)
-  
+
   natts <- nc$natts
   if( natts  > 0 ) attList$global <- ncdf4::ncatt_get( nc, 0 )
 
   ncdf4::nc_close(nc)
-  
+
   nDims <- plyr::laply(outList, function(ll) length(dim(ll)))
-  
+
   if(flip2D & any(nDims==2)){
     wh2D <- which(nDims==2)
     for(ww in wh2D) outList[[ww]] <- FlipUD(outList[[ww]])
   }
-    
+
   if( !(all(nDims==nDims[1])) | !(all(nDims==1)) ) return(outList)
-  
+
   vecLen <- plyr::laply(outList[-10], length)
   if( all(vecLen==vecLen[1]) ) outList <- as.data.frame(outList)
 
   if( natts > 0 ) attributes(outList) <- c(attributes(outList), attList)
-  
+
   outList
 }
 
 ##=========================================================================================================
 #' Emulate ncdump -h and -v.
-#' 
-#' I just hacked print.ncdf4 just to make it look more like unix output. 
 #'
-#' @param file Character, the file to inspect. 
-#' @param variable Character, a variable to return. 
+#' I just hacked print.ncdf4 just to make it look more like unix output.
+#'
+#' @param file Character, the file to inspect.
+#' @param variable Character, a variable to return.
 #' @param quiet Logical, suppress the 'meta' dump?
-#' @return If variable is not set, the meta object \code{ncdf4::nc_open(file)} is returned. If \code{variable}
-#' is set, its values are returned. 
-#' @concept ncdf 
-#' @family ncdf 
+#' @param collapse_degen If TRUE (the default), then degenerate (length==1) dimensions in the returned array are removed.
+#' @return A list or a dataframe (if all variables are 1D of the same length.)
+#' @examples
+#' \dontrun{
+#' conn <- GetNcdfFile('~/wrfHydroTestCases/Fourmile_Creek/CHANNEL_CONNECTIVITY.nc')
+#'  conn <- GetNcdfFile('~/wrfHydroTestCases/Fourmile_Creek/CHANNEL_CONNECTIVITY.nc', var='lambert_conformal_conic', exc=TRUE)
+#' }
+#' @concept ncdf
+#' @family ncdf
 #' @export
-ncdump <-function(file, variable, quiet=FALSE) {
-  
+GetNcdfFile <- function(file, variables=NULL,
+                        exclude=FALSE,
+                        quiet=FALSE,
+                        flip2D=TRUE,
+                        collapse_degen=TRUE) {
+
+  if(!file.exists(file)) warning(paste0('The file ', file, 'does not exist.'), immediate. = TRUE)
+
+  if(!quiet) ncdump(file)
+
   nc <- ncdf4::nc_open(file)
-  
+
+  # Deal with variables asked for
+  varsInFile <- names(nc$var)
+  dimVarsInFile <- names(nc$dim)
+  whDimVarsVals <- plyr::laply(nc$dim, '[[', 'create_dimvar')
+  if(any(whDimVarsVals)) varsInFile <- c(dimVarsInFile[whDimVarsVals], varsInFile)
+
+  returnVars <-
+  if(!is.null(variables)) {
+    varsNotInFile <- setdiff(variables, varsInFile)
+    if(length(varsNotInFile))
+      warning(paste0('The following variables were not found in the file',
+                     paste(varsNotInFile, collapse=', ')))
+    if(!exclude) intersect(variables, varsInFile) else setdiff(varsInFile, variables)
+  } else varsInFile
+
+
+  varNDims <- unlist(lapply(nc$var, function(vv) vv$ndims))
+  if(length(whZeroDim <-  which(varNDims==0))) {
+    if(!quiet) cat("The following variables are ommitted because they have zero dimensions: ",
+                   names(whZeroDim),'\n')
+    returnVars <- setdiff(returnVars, names(whZeroDim))
+  }
+
+  doGetVar <- function(theVar) ncdf4::ncvar_get(nc, varid=theVar, collapse_degen=collapse_degen)
+  outList <- plyr::llply(NamedList(returnVars), doGetVar)
+
+  doGetVarAtt <- function(theVar) ncdf4::ncatt_get( nc, varid=theVar )
+  attList <- plyr::llply(NamedList(returnVars), doGetVarAtt)
+
+  natts <- nc$natts
+  if( natts  > 0 ) attList$global <- ncdf4::ncatt_get( nc, 0 )
+
+  ncdf4::nc_close(nc)
+
+  nDims <- plyr::laply(outList, function(ll) length(dim(ll)))
+
+  if(flip2D & any(nDims==2)){
+    wh2D <- which(nDims==2)
+    for(ww in wh2D) outList[[ww]] <- FlipUD(outList[[ww]])
+  }
+
+  if( !(all(nDims==nDims[1])) | !(all(nDims==1)) ) return(outList)
+
+  vecLen <- plyr::laply(outList[-10], length)
+  if( all(vecLen==vecLen[1]) ) outList <- as.data.frame(outList)
+
+  if( natts > 0 ) attributes(outList) <- c(attributes(outList), attList)
+
+  outList
+}
+
+##=========================================================================================================
+#' Emulate ncdump -h and -v.
+#'
+#' I just hacked print.ncdf4 just to make it look more like unix output.
+#'
+#' @param file Character, the file to inspect.
+#' @param variable Character, a variable to return.
+#' @param quiet Logical, suppress the 'meta' dump?
+#' @param collapse_degen If TRUE (the default), then degenerate (length==1) dimensions in the returned array are removed.
+#' @return If variable is not set, the meta object \code{ncdf4::nc_open(file)} is returned. If \code{variable}
+#' is set, its values are returned.
+#' @concept ncdf
+#' @family ncdf
+#' @export
+ncdump <-function(file, variable, quiet=FALSE, collapse_degen=TRUE) {
+
+  nc <- ncdf4::nc_open(file)
+
   if(!quiet) {
     is_netcdf_v4 = (nc$format == 'NC_FORMAT_NETCDF4')
     is_GMT       = ifelse( nc$is_GMT, ' ( GMT format )', '' )
     is_safemode  = ifelse( nc$safemode, ' ( SAFE MODE ON )', '' )
-    
+
     cat(paste0("File: ", nc$file, "\n( ", nc$format, " )", is_GMT,  is_safemode, ":\n"))
-    
+
     indent <- '    '
-    
+
     cat(paste0("dimensions (",nc$ndims,"):\n"))
     if( nc$ndims > 0 ) {
       for( i in 1:nc$ndims ) {
         if( nc$dim[[i]]$unlim ) {
-         
+
           cat(paste0(indent,nc$dim[[i]]$name," = UNLIMITED ; // (",nc$dim[[i]]$len,' currently)\n' ))
         } else {
           cat(paste0(indent,nc$dim[[i]]$name," = ",nc$dim[[i]]$len,' ; \n' ))
         }
       }
     }
-    
+
     totVars <- nc$nvars + sum(plyr::laply(nc$dim, function(dd) dd$create_dimvar))
     cat(paste0("variables (",totVars,"):\n"))
-    
+
     ## dimension variables
     if( nc$ndims > 0 ) {
       for( i in 1:nc$ndims ) {
@@ -128,12 +212,12 @@ ncdump <-function(file, variable, quiet=FALSE) {
         if( natts > 0 ) {
           cat(paste0(indent,typeof(nc$dim[[i]]$vals),' ',nc$dim[[i]]$name,"(",nc$dim[[i]]$name,') ; \n' ))
           nms <- names( atts )
-          for( ia in 1:natts ) 
+          for( ia in 1:natts )
             cat(paste0(indent,indent,nc$dim[[i]]$name,':',nms[ia], ' = "', atts[[ia]], '"\n' ))
         }
       }
-    }  
-    
+    }
+
     if( nc$nvars > 0 ) {
       for( i in 1:nc$nvars ) {
         nd <- nc$var[[i]]$ndims
@@ -146,11 +230,11 @@ ncdump <-function(file, variable, quiet=FALSE) {
           }
         }
         dimstring <- paste(dimstring,') ',sep='')
-        
+
         chunk_tag = ''
         compress_tag = ''
         if( is_netcdf_v4 ) {
-          
+
           #----------------------------
           # Handle chunking information
           #----------------------------
@@ -166,13 +250,13 @@ ncdump <-function(file, variable, quiet=FALSE) {
             }
             chunk_tag = paste( chunk_tag, "])", sep='' )
           }
-          
+
           #---------------------------------------
           # Handle shuffle/compression information
           #---------------------------------------
           is_shuffle  = (nc$var[[i]]$shuffle == 1)
           is_compress = (!is.na(nc$var[[i]]$compression))
-          if( (!is_shuffle) && (!is_compress))  
+          if( (!is_shuffle) && (!is_compress))
             compress_tag = ""
           else if( is_shuffle && (!is_compress))
             compress_tag = "(Compression: shuffle)"
@@ -186,13 +270,13 @@ ncdump <-function(file, variable, quiet=FALSE) {
         natts <- length(atts)
         if( natts > 0 ) {
           nms <- names( atts )
-          for( ia in 1:natts ) 
+          for( ia in 1:natts )
             cat(paste0(indent,indent,nc$var[[i]]$name,':',nms[ia], ' = "', atts[[ia]], '" ;\n' ))
         }
       }
     }
-    
-    
+
+
     #--------------------------
     # Now get global attributes
     #--------------------------
@@ -201,24 +285,33 @@ ncdump <-function(file, variable, quiet=FALSE) {
     if( natts > 0 ) {
       cat(paste0('\n// global attributes (',natts,'):\n'))
       nms <- names( atts )
-      for( ia in 1:natts ) 
+      for( ia in 1:natts )
         cat(paste0(indent,':',nms[ia], ' = "', atts[[ia]], '"\n' ))
     }
   } ## !quiet
 
-  ret <- nc
   if(!missing(variable)) {
     varNDims <- nc$var[[variable]]$ndims
+    if(is.null(varNDims)) if(!is.null(nc$dim[[variable]])) varNDims <- 1
+    if(is.null(varNDims)) {
+        warning("The requested variable does not exist: ",variable,'\n')
+        ncdf4::nc_close(nc)
+        return(invisible(NULL))
+    }
     if(varNDims==0) {
       warning("The requested variable has zero dimensions: ",variable,'\n')
-      ret <- NULL
-    } else {
-      ret <- ncdf4::ncvar_get(nc,variable) 
+      ncdf4::nc_close(nc)
+      return(invisible(NULL))
     }
-  } 
-  
+    if(varNDims>0) {
+      ret <- ncdf4::ncvar_get(nc,variable, collapse_degen=collapse_degen)
+      ncdf4::nc_close(nc)
+      return(invisible(ret))
+    }
+  }
+
   ncdf4::nc_close(nc)
-  invisible(ret)
+  invisible(nc)
 }
 
 
