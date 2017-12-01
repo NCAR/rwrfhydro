@@ -4,7 +4,7 @@
 \alias{ncdump}
 \title{Emulate ncdump -h and -v.}
 \usage{
-ncdump(file, variable, quiet = FALSE)
+ncdump(file, variable, quiet = FALSE, collapse_degen = TRUE)
 }
 \arguments{
 \item{file}{Character, the file to inspect.}
@@ -12,6 +12,8 @@ ncdump(file, variable, quiet = FALSE)
 \item{variable}{Character, a variable to return.}
 
 \item{quiet}{Logical, suppress the 'meta' dump?}
+
+\item{collapse_degen}{If TRUE (the default), then degenerate (length==1) dimensions in the returned array are removed.}
 }
 \value{
 If variable is not set, the meta object \code{ncdf4::nc_open(file)} is returned. If \code{variable}

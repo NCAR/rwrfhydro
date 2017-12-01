@@ -60,8 +60,8 @@ ReadChrtout('~/wrfHydroTestCases/FRN.REACH/OUTPUT',
 }
 \seealso{
 Other modelDataReads: \code{\link{CreateBasinMask}},
-  \code{\link{ReadFrxstPts}}, \code{\link{ReadGwOut}},
-  \code{\link{ReadLdasoutAll}},
+  \code{\link{ReadChrtgrid}}, \code{\link{ReadFrxstPts}},
+  \code{\link{ReadGwOut}}, \code{\link{ReadLdasoutAll}},
   \code{\link{ReadLdasoutWb}}, \code{\link{ReadRouteLink}},
   \code{\link{ReadRtout}}
 }

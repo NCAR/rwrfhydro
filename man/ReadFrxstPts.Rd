@@ -33,8 +33,8 @@ modStr1h.mod1.fc <- ReadFrxstPts("../OUTPUT/frxst_pts_out.txt")
 }
 \seealso{
 Other modelDataReads: \code{\link{CreateBasinMask}},
-  \code{\link{ReadChrtout}}, \code{\link{ReadGwOut}},
-  \code{\link{ReadLdasoutAll}},
+  \code{\link{ReadChrtgrid}}, \code{\link{ReadChrtout}},
+  \code{\link{ReadGwOut}}, \code{\link{ReadLdasoutAll}},
   \code{\link{ReadLdasoutWb}}, \code{\link{ReadRouteLink}},
   \code{\link{ReadRtout}}
 }
