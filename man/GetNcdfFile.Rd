@@ -2,10 +2,14 @@
 % Please edit documentation in R/ncdf_get.R
 \name{GetNcdfFile}
 \alias{GetNcdfFile}
+\alias{GetNcdfFile}
 \title{Get variables from a ncdf file}
 \usage{
 GetNcdfFile(file, variables = NULL, exclude = FALSE, quiet = FALSE,
-  flip2D = TRUE)
+  flip2D = TRUE, collapse_degen = TRUE)
+
+GetNcdfFile(file, variables = NULL, exclude = FALSE, quiet = FALSE,
+  flip2D = TRUE, collapse_degen = TRUE)
 }
 \arguments{
 \item{file}{Character, the file to inspect.}
@@ -16,15 +20,32 @@ GetNcdfFile(file, variables = NULL, exclude = FALSE, quiet = FALSE,
 
 \item{quiet}{Logical, suppress the 'meta' dump?}
 
-\item{flip2D}{Logical, apply a vertical flip to 2D variables? (E.g. WRF Hydro geo grids)}
+\item{flip2D}{Logical, apply a vertical flip to 2D variables? (E.g. WRF Hydro geo grids)
+, apply a vertical flip to 2D variables? (E.g. WRF Hydro geo grids)}
+
+\item{collapse_degen}{If TRUE (the default), then degenerate (length==1) dimensions in the returned array are removed.}
+
+\item{file}{Character, the file to inspect.}
+
+\item{variable}{Character, a variable to return.}
+
+\item{quiet}{Logical, suppress the 'meta' dump?}
 }
 \value{
+A list or a dataframe (if all variables are 1D of the same length.)
+
 A list or a dataframe (if all variables are 1D of the same length.)
 }
 \description{
 This saves some annoying typing.
+
+I just hacked print.ncdf4 just to make it look more like unix output.
 }
 \examples{
+\dontrun{
+conn <- GetNcdfFile('~/wrfHydroTestCases/Fourmile_Creek/CHANNEL_CONNECTIVITY.nc')
+ conn <- GetNcdfFile('~/wrfHydroTestCases/Fourmile_Creek/CHANNEL_CONNECTIVITY.nc', var='lambert_conformal_conic', exc=TRUE)
+}
 \dontrun{
 conn <- GetNcdfFile('~/wrfHydroTestCases/Fourmile_Creek/CHANNEL_CONNECTIVITY.nc')
  conn <- GetNcdfFile('~/wrfHydroTestCases/Fourmile_Creek/CHANNEL_CONNECTIVITY.nc', var='lambert_conformal_conic', exc=TRUE)
@@ -33,7 +54,12 @@ conn <- GetNcdfFile('~/wrfHydroTestCases/Fourmile_Creek/CHANNEL_CONNECTIVITY.nc'
 \seealso{
 Other ncdf: \code{\link{MkFrcAdjFromLdasin}},
   \code{\link{MkNcdf}}, \code{\link{ncdump}}
+
+Other ncdf: \code{\link{MkFrcAdjFromLdasin}},
+  \code{\link{MkNcdf}}, \code{\link{ncdump}}
 }
 \concept{
+ncdf
+
 ncdf
 }

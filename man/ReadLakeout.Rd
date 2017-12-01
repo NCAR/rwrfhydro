@@ -6,33 +6,36 @@
 \code{ReadLakeout} reads in the WRF-Hydro LAKEOUT files from gridded lake routing: Community Release version.}
 \usage{
 ReadLakeout(pathOutdir = NULL, lakeidList = NULL, parallel = FALSE,
-  useDatatable = TRUE, pattern = glob2rx("*.LAKEOUT_DOMAIN*"))
+  useDatatable = TRUE, pattern = glob2rx("*.LAKEOUT_DOMAIN*"),
+  idvar = NULL)
 }
 \arguments{
 \item{pathOutdir}{The full pathname to the WRF-Hydro lake output files.}
 
 \item{lakeidList}{The list of lakeids to put in the output data table. These lakeids correspond to the lakes in the LAKEGRID, LAKEPARM and lakes.shp files that are
-created in the routing files from the ArcGIS pre-processing tools.}
+either read in from ComIDs or created in the routing files from the ArcGIS pre-processing tools.}
 
 \item{parallel}{Logical for running in parallel mode (must have a parallel
-backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)}
+backend installed and registered (e.g., doMC or doParallel); requires doMC and foreach libraries (DEFAULT=FALSE)}
 
 \item{useDatatable}{Logical for utilizing the data.table package and
 outputting in data.table format (DEFAULT=TRUE)}
 
 \item{pattern}{Pattern to match in the model output (e.g. *LAKEOUT_DOMAIN1*)}
+
+\item{idvar}{Tracker of variable that identifies the lake ID (lakeidList is a subset of this variable).}
 }
 \description{
 Read LAKEOUT files from gridded lake routing option and create data frame/table for selected lakes.
 \code{ReadLakeout} reads in the WRF-Hydro LAKEOUT files from gridded lake routing: Community Release version.
 }
 \examples{
-# This function loops through LAKEOUT files in the pathOutdir and creates a data frame or 
-# data table to store inflow, outflow, elevation and the station_id (lakeid).  The lakeids 
+# This function loops through LAKEOUT files in the pathOutdir and creates a data frame or
+# data table to store inflow, outflow, elevation and the station_id (lakeid).  The lakeids
 # correspond to the lakes in the LAKEGRID, LAKEPARM and lakes.shp files that are
 # created in the routing files from the ArcGIS pre-processing tools.
 \dontrun{
 ReadLakeout('~/wrfHydroTestCases/FRN.REACH/OUTPUT',
-     lakeidList=c("1", "5"))
+     lakeidList=c("1", "5"),idvar="feature_id")
 }
 }
