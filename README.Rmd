@@ -1,4 +1,4 @@
-[![Travis-CI Build Status](https://travis-ci.org/mccreigh/rwrfhydro.png?branch=devBranch)](https://travis-ci.org/mccreigh/rwrfhydro)
+[![Travis-CI Build Status](https://travis-ci.org/NCAR/rwrfhydro.png?branch=devBranch)](https://travis-ci.org/NCAR/rwrfhydro)
 
 # rwrfhydro
 A community-contributed tool box for managing, analyzing, and visualizing WRF Hydro (and HydroDART) input and output files in R.
@@ -37,10 +37,10 @@ Installing rwrfhydro (not on [CRAN](http://cran.r-project.org/)) is facilitated 
 so devtools is installed first. The following is done for the initial install or to update the rwrfhydro package.
 ``` R
 install.packages("devtools")
-devtools::install_github("mccreigh/rwrfhydro")
+devtools::install_github("NCAR/rwrfhydro")
 ```
 The very first time this is run, it can take a while to install all the package dependencies listed as "Imports" in the
-[DESCRIPTION](https://github.com/mccreigh/rwrfhydro/blob/master/DESCRIPTION) file. 
+[DESCRIPTION](https://github.com/NCAR/rwrfhydro/blob/master/DESCRIPTION) file. 
 
 To check for updates once rwrfhydro is loaded run `CheckForUpdates()`. 
 
@@ -51,7 +51,7 @@ devtools::install_github("username/rwrfhydro", ref='myBranch')
 
 Importantly, beta functionality can be installed using:
 ``` R
-devtools::install_github("mccreigh/rwrfhydro", ref='devBranch')
+devtools::install_github("NCAR/rwrfhydro", ref='devBranch')
 ```
 We are finally gaining some Windows users and have attempted to improve portability of rwrfhydro to this system. A primary dependence of rwrfhydro is ncdf4. This ncdf4 package binary can be installed in the following way: First, obtain the binary from [http://cirrus.ucsd.edu/~pierce/ncdf/](http://cirrus.ucsd.edu/~pierce/ncdf/). Then in an R session 
 ``` R
@@ -67,14 +67,14 @@ library(rwrfhydro)
 ```
 and now the package (namespace) is available. 
 
-[*Online vignettes*](https://github.com/mccreigh/rwrfhydro/blob/master/vignettes.Rmd) (or in R `browseVignettes("rwrfhydro")`) are probably the easiest way to get in-depth, thematic overviews of rwrfhydro functionality. 
+[*Online vignettes*](https://github.com/NCAR/rwrfhydro/blob/master/vignettes.Rmd) (or in R `browseVignettes("rwrfhydro")`) are probably the easiest way to get in-depth, thematic overviews of rwrfhydro functionality. 
 
 To get package metadata and a listing of functions:  `library(help=rwrfhydro)`. Just the functions: `ls('package:rwrfhydro')`.
 For specific functionality see function help (e.g. `?VisualizeDomain` or `help(VisualizeDomain)`). 
 
 # Developing and bug reports
 
-Bugs are to be reported [here](https://github.com/mccreigh/rwrfhydro/issues). If you want to help solve bugs and fixes into the code, please continue reading about developing. 
+Bugs are to be reported [here](https://github.com/NCAR/rwrfhydro/issues). If you want to help solve bugs and fixes into the code, please continue reading about developing. 
 
 There are four main aspects of developing the code base and contributing:
 
@@ -90,14 +90,14 @@ R packageing and some version controll are treated by [Hadley Wickham’s book o
 
 ## Version control for collaboration: Github
 
-Instead of going straight to developing, we recommend that you install rwrfhydro using `devtools::install_github('mccreigh/rwrfhydro')` first, because this streamlines the installation of package dependencies. Note that `devtools::install_github('mccreigh/rwrfhydro')` installs rwrfhydro into you default library path (`.libPaths()[1]`) and that the source code is not included. 
+Instead of going straight to developing, we recommend that you install rwrfhydro using `devtools::install_github('NCAR/rwrfhydro')` first, because this streamlines the installation of package dependencies. Note that `devtools::install_github('NCAR/rwrfhydro')` installs rwrfhydro into you default library path (`.libPaths()[1]`) and that the source code is not included. 
 
 The very best way to obtain and edit the source is to "fork" rwrfhydro on github and then clone _your_ the repository to your machine(s) of choice. You edit your fork and, when it's ready, you submit a pull request to get the changes back to the main (upstream) fork of rwrfhydro. More details are provided below. Your cloned git repository is not in your default R library path (`.libPaths()[1]`), but somewhere else where you choose to keep your development code. However, devtools allows you to build your development package into your library path. This means that after you add some code locally, you can `library(rwrfhydro)` from other R sessions on that machine with your changes appearing in the package. The basic use of devtools is outlined below. It greatly stream lines all aspects of developing R packages and is highly recommended. Particularly, it make is easy to go from github or local changes to an R package.
 
 ### Forking and cloning
 Please fork the repository to contribute. A fork is a separate copy of the main repository on which you have write permissions. Note that you do not have write permissions on any other fork of the repository. [Forking is trivial in Github](https://help.github.com/articles/fork-a-repo/). You have to have a free (for open-source repositories) account to fork on github.
 
-Next you'll clone _your_ fork to your local computer and you'll to interact between your forked repository on github, which is called "origin". The repo "mccreigh/rwrfhydro" is known as the "upstream" fork. This is the "official" repo. It's also called upstream because changes to it should always flow to all other repos so that they can easily sync their separate changes back to it. Keep your fork sync'd with upstream as much/often as possible to avoid painful merges, github notifies downstream forks of changes to upstream. 
+Next you'll clone _your_ fork to your local computer and you'll to interact between your forked repository on github, which is called "origin". The repo "NCAR/rwrfhydro" is known as the "upstream" fork. This is the "official" repo. It's also called upstream because changes to it should always flow to all other repos so that they can easily sync their separate changes back to it. Keep your fork sync'd with upstream as much/often as possible to avoid painful merges, github notifies downstream forks of changes to upstream. 
 
 Because you dont have write permissions to "upstream" (or any other fork), you have to request that your changes be pulled upstream. This is done via a pull request on github (website). We give some tips below and give a general overview of forking on github in [this document](https://docs.google.com/document/d/1DxsViogPdA0uObHgNx4YFKd4ClC-m9UFcX0rO-ZJTY0/edit?usp=sharing).
 
@@ -120,7 +120,7 @@ Workflow is approximately this:
   
 * Fork project on github
 * Clone _your_ github fork to your local machine(s)
-* Set the upstream repo (`git remote add upstream https://github.com/mccreigh/rwrfhydro` - different syntax for ssh access)
+* Set the upstream repo (`git remote add upstream https://github.com/NCAR/rwrfhydro` - different syntax for ssh access)
 * Checkout your devBranch (`git checkout devBranch`)
 
 * Development cycles:
@@ -138,7 +138,7 @@ Workflow is approximately this:
     * if on myBranch: commit, `git commit -am'Fixes and new features'`.
     * If not previously on myBranch and did not do a wholesale merge in previous step: Sync with the "upstream" devBranch: [See here.](https://help.github.com/articles/syncing-a-fork/) If upstream repo is set: `git pull upstream devBranch`.
     * Push your devBranch to your fork on github: `git push origin devBranch`.
-    * Submit a [pull request on github](https://help.github.com/articles/using-pull-requests/) on devBranch to upstream (mccreigh/rwrfhydro).
+    * Submit a [pull request on github](https://help.github.com/articles/using-pull-requests/) on devBranch to upstream (NCAR/rwrfhydro).
 
 
 ## Our best practices
