@@ -128,7 +128,7 @@ Workflow is approximately this:
     * Write code (in these dirs: R/, NAMESPACE, src/, data/, inst/).
     * Write documentation (in these dirs: man/, vignettes/).
     * Write tests (in this dir: test/).
-    * Document and check with devtools: `devtools::document(); devtools::check_doc(); devtools::check()`
+    * Document and check with devtools: `devtools::document(); devtools::check_man(); devtools::check()`
     * Commit to your branch with git. (`git commit -am 'Some cool features were needed.'`)
     * Push to github (`git push origin branch`). If Travis-CI is configured, this can trigger an `R CMD check` on Travis. 
 
