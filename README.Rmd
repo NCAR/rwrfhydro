@@ -1,6 +1,14 @@
-[![Travis-CI Build Status](https://travis-ci.org/NCAR/rwrfhydro.png?branch=devBranch)](https://travis-ci.org/NCAR/rwrfhydro)
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
 
 # rwrfhydro
+
+[![Travis-CI Build Status](https://travis-ci.org/NCAR/rwrfhydro.png?branch=devBranch)](https://travis-ci.org/NCAR/rwrfhydro)
+
+
 A community-contributed tool box for managing, analyzing, and visualizing WRF Hydro (and HydroDART) input and output files in R.
 
 # Purpose
