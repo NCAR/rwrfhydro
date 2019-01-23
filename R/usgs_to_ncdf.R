@@ -74,9 +74,13 @@ WriteNcPrettyUsgs <- function(prettyDf, outPath='.') {
 #' library(rwrfhydro)
 #' library(data.table); library(plyr); library(lubridate)
 #'
-#' rlFile <- '/glade/p/work/jamesmcc/TEST_DOMAINS/v5_community/croton_NY/NWM/DOMAIN/RouteLink.nc'
+#' \dontrun{
+#' rlFile <- 'example_case/NWM/DOMAIN/RouteLink.nc'
 #' rl <- GetNcdfFile(rlFile, q=TRUE)
 #' siteNumbers <- setdiff(trimws(unique(rl$gages)),'')
+#' }
+#'
+#' siteNumbers <- c("01374559", "01374598", "01374581", "0137462010")
 #' parameterCd <- "00060"  # Discharge
 #' # NWIS is local time. Pad time at least enough to account
 #' # for the 5hr offset in this domain.
