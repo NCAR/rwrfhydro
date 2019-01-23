@@ -32,8 +32,8 @@ r_check_args: "--no-vignettes --no-manual"
 r_build_args: "--no-build-vignettes --no-manual"
 
 branches:
-  only:
-  - master
+  except:
+  - procUsgs
 
 notifications:
   email:
