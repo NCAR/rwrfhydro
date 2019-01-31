@@ -28,31 +28,42 @@ WtGetEventData <- function(location=NA, event=NA, info=FALSE) {
     ## Start date is included (>=), end is not included (<).
     subset_info= list(
 
-        austin = list(
+        onion_creek = list(
             site_no = '08159000',
             events = list(
-                one_event = list(start = '2012-01-24', end = '2012-01-28'),
-                three_mos = list(start = '2012-01-01', end = '2013-04-02'),
-                one_year  = list(start = '2012-01-01', end = '2013-01-01'),
-                five_yrs  = list(start = '2010-10-01', end = '2016-12-01')
+                one_event  = list(start="2012-01-24 08:00:00", end="2012-01-27 07:00:00"),
+                three_mos  = list(start="2012-01-01 08:00:00", end="2012-04-01 06:00:00"),
+                one_year   = list(start="2012-01-01 08:00:00", end="2012-12-31 07:00:00"),
+                five_years = list(start="2010-10-01 00:00:00", end="2016-11-30 23:00:00")
             )
-        ),
+         ),
         
-        taylor = list(
+        taylor_river= list(
             site_no = "09107000",
             events = list(
+                one_season = list(start="2013-05-01 07:00:00", end="2013-07-01 05:00:00"),
+                one_year   = list(start="2013-01-01 08:00:00", end="2013-12-31 06:00:00"),
+                five_years = list(start="2010-10-01 00:00:00", end="2016-11-30 23:00:00")
             )
         ),
         
-        pemigewasset = list(
+        pemigewasset_river= list(
             site_no = "01075000",
             events = list(
+                one_event   = list(start="2012-03-01 08:00:00", end="2012-04-15 05:00:00"),
+                small_event = list(start="2012-04-01 07:00:00", end="2012-05-26 05:00:00"),
+                one_year    = list(start="2012-03-01 08:00:00", end="2013-02-28 06:00:00"),
+                five_years  = list(start="2010-10-01 00:00:00", end="2016-11-30 23:00:00")
             )
         ),
         
-        pierre = list(
+        bad_river= list(
             site_no = "06441500",
             events = list(
+                one_month  = list(start="2013-07-01 07:00:00", end="2013-07-25 05:00:00"),
+                two_months = list(start="2013-05-15 07:00:00", end="2013-07-31 05:00:00"),
+                one_year   = list(start="2013-01-01 08:00:00", end="2013-12-31 06:00:00"),
+                five_years = list(start="2010-10-01 00:00:00", end="2016-11-30 23:00:00")
             )
         )
     )
