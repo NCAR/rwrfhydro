@@ -25,7 +25,7 @@ WtMakeData <- function() {
 
 
 WtGetEventData <- function(location=NA, event=NA, info=FALSE) {
-    ## Start date is included (>=), end is not included (<).
+    ## Start date is included (>=), end is included (<=).
     subset_info= list(
 
         onion_creek = list(
@@ -85,9 +85,10 @@ WtGetEventData <- function(location=NA, event=NA, info=FALSE) {
     }
     
     output <-
-        waveletTimingData[ site_no == subset_info[[location]]$site_no &
-          POSIXct >= as.POSIXct(subset_info[[location]]$events[[event]]$start, tz='UTC') &
-          POSIXct <  as.POSIXct(subset_info[[location]]$events[[event]]$end, tz='UTC')
+        waveletTimingData[
+            site_no == subset_info[[location]]$site_no &
+            POSIXct >= as.POSIXct(subset_info[[location]]$events[[event]]$start, tz='UTC') &
+            POSIXct <= as.POSIXct(subset_info[[location]]$events[[event]]$end, tz='UTC')
          ]
 
     return(output)
@@ -127,13 +128,15 @@ WtEventMtx <- function(wt) { # TODO JLM: The wt here is the extended one
     n_periods = length(wt$period)
 
     event_mtx$period_clusters <- wt$event_timing$mask$event * -1
+    options(warn=2)
     for (period in 1:n_periods){
 
         mask_vec <- wt$event_timing$mask$event[period,]
-        
+
         result <- rle(mask_vec)
         class(result) <-  'list' # That is annoying
         result <- as.data.table(result)
+        if (all(result$values %in% c(0))) next
         result$ends <- cumsum(result$lengths)
         result$starts <- c(1, result$ends[1:(nrow(result)-1)]+1)
         events <- result[values == 1,]
@@ -145,7 +148,6 @@ WtEventMtx <- function(wt) { # TODO JLM: The wt here is the extended one
         ## check
         if (!all(as.logical(event_mtx$period_clusters[period, ]) == as.logical(mask_vec)))
             stop('Problem with event cluster identification.')
-
     }
     
     return(event_mtx)
@@ -187,11 +189,16 @@ WtEventTiming <- function(time, obs, mod, max.scale=256) {
     output[['obs']]$wt$event_timing$all$time <-  output[['obs']]$wt$t[wh_event_mask[,2]]
     output[['obs']]$wt$event_timing$all$period_clusters <-
         output[['obs']]$wt$event_timing$event_mtx$period_clusters[wh_event_mask]
+    ## sort all by period and time
+    setkey(output[['obs']]$wt$event_timing$all, period, time)
     
     ## Calculate the period-averaged corrected wavelet power spectrum on the obs:
     output[['obs']]$wt$event_timing$period_avg <-
         output[['obs']]$wt$event_timing$all[,.(power_corr=mean(power_corr)),.(period)]
 
+    ## Sort period_avg by period
+    setkey(output[['obs']]$wt$event_timing$period_avg, period)
+    
     ## Calculate the local maxima of the period-avg corrected WPS so we can sample timing
     ## on just the most important periods.
     output[['obs']]$wt$event_timing$period_avg$local_max <- 
@@ -236,18 +243,25 @@ WtEventTiming <- function(time, obs, mod, max.scale=256) {
         mod_for_wt <- cbind(1:n_time, mod[[name]])
         output[[name]]$xwt <- biwavelet::xwt(obs_for_wt, mod_for_wt, max.scale=max.scale)
 
-        ## It's key that wh_event_mask is from the *obs* wt object..
-        wh_event_mask <- which(output[['obs']]$wt$event_timing$mask$event == 1, arr.ind=TRUE)
+        ## The masks 
+        output[[name]]$xwt$event_timing$mask <- WtEventMask(output[[name]]$xwt)
 
-        ## JLM TODO: do we only take significant regions from the XWT too?
-        
+        ## The event matrices
+        output[[name]]$xwt$event_timing$event_mtx<- WtEventMtx(output[[name]]$xwt)
+    
+        ## It's key that wh_event_mask is from the *obs* wt object and the modelex xwt object.
+        wh_event_mask <-
+            which(output[['obs']]$wt$event_timing$mask$event == 1 &
+                  output[[name]]$xwt$event_timing$mask$event == 1  ,
+                  arr.ind=TRUE)
+
         output[[name]]$xwt$event_timing$all <-
             data.table::data.table(phase = output[[name]]$xwt$phase[wh_event_mask])
 
         output[[name]]$xwt$event_timing$all$xwt_power_corr <-
             output[[name]]$xwt$power.corr[wh_event_mask]
 
-        ## This is excessive but having trouble joining it from the obs
+        ## This is excessive but having trouble joining it from the obs later.
         output[[name]]$xwt$event_timing$all$obs_power_corr <-
             output[['obs']]$wt$power.corr[wh_event_mask]
 
@@ -261,6 +275,11 @@ WtEventTiming <- function(time, obs, mod, max.scale=256) {
             2*pi * output[[name]]$xwt$event_timing$all$phase *
             output[[name]]$xwt$event_timing$all$period
 
+        output[[name]]$xwt$event_timing$all$period_clusters <-
+            output[[name]]$xwt$event_timing$event_mtx$period_clusters[wh_event_mask]
+
+        setkey(output[[name]]$xwt$event_timing$all, period, time)
+        
         ## Stats on bulk timing errors
         output[[name]]$xwt$event_timing$all_stats <- list()
         output[[name]]$xwt$event_timing$all_stats$mean_timing_err <-
@@ -275,10 +294,8 @@ WtEventTiming <- function(time, obs, mod, max.scale=256) {
     peak_periods <- output[['obs']]$wt$event_timing$period_avg$period[wh_peak]
 
     for (name in mod_names) {
-        keep_cols <- c('obs_power_corr', 'time', 'period', 'timing_err')
+        keep_cols <- c('obs_power_corr', 'time', 'period', 'timing_err', 'period_clusters')
         all_sub <- output[[name]]$xwt$event_timing$all[, keep_cols, with=FALSE]
-        # TODO JLM: This should be a join for safety, right now I know they are in the same order.
-        all_sub$period_clusters <- output[['obs']]$wt$event_timing$all$period_clusters
         all_sub <- all_sub[ period %in% peak_periods, ]
 
         all_sub <- all_sub[,
@@ -287,6 +304,8 @@ WtEventTiming <- function(time, obs, mod, max.scale=256) {
         output[[name]]$xwt$event_timing$period_avg <-
             all_sub[ obs_power_corr == pow_max, c('period_clusters', keep_cols), with=FALSE ]
 
+        setkey(output[[name]]$xwt$event_timing$period_avg, period)
+        
         ## Stats on period-averaged timing errors
         output[[name]]$xwt$event_timing$period_avg_stats <- list()
         output[[name]]$xwt$event_timing$period_avg_stats$mean_timing_err <-
