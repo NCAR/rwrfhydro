@@ -168,7 +168,7 @@ WtEventTiming <- function(time, obs, mod, max.scale=256) {
     ## Observed timeseries is just one.
     obs_for_wt <- cbind(1:n_time, obs)
     wt_obs <- biwavelet::wt(obs_for_wt, max.scale=256)
-    ## TODO JLM: Extend the class of these wt_* objects?
+    class(wt_obs) <- c("wavelet_timing", class(wt_obs))
     
     n_period <- length(wt_obs$period)
 
@@ -192,17 +192,17 @@ WtEventTiming <- function(time, obs, mod, max.scale=256) {
     ## sort all by period and time
     setkey(output[['obs']]$wt$event_timing$all, period, time)
     
-    ## Calculate the period-averaged corrected wavelet power spectrum on the obs:
-    output[['obs']]$wt$event_timing$period_avg <-
+    ## Calculate the time-averaged corrected wavelet power spectrum on the obs:
+    output[['obs']]$wt$event_timing$time_avg <-
         output[['obs']]$wt$event_timing$all[,.(power_corr=mean(power_corr)),.(period)]
 
-    ## Sort period_avg by period
-    setkey(output[['obs']]$wt$event_timing$period_avg, period)
+    ## Sort time_avg by period
+    setkey(output[['obs']]$wt$event_timing$time_avg, period)
     
-    ## Calculate the local maxima of the period-avg corrected WPS so we can sample timing
+    ## Calculate the local maxima of the time-avg corrected WPS so we can sample timing
     ## on just the most important periods.
-    output[['obs']]$wt$event_timing$period_avg$local_max <- 
-        pastecs::turnpoints(output[['obs']]$wt$event_timing$period_avg$power_corr)$peaks
+    output[['obs']]$wt$event_timing$time_avg$local_max <- 
+        pastecs::turnpoints(output[['obs']]$wt$event_timing$time_avg$power_corr)$peaks
 
     
     ## ---------------------------------------------------------------------------
@@ -213,6 +213,7 @@ WtEventTiming <- function(time, obs, mod, max.scale=256) {
     for (name in mod_names) {
         mod_for_wt <- cbind(1:n_time, mod[[name]])
         wt_mod[[name]] <- biwavelet::wt(mod_for_wt, max.scale=max.scale)
+        class(wt_mod[[name]]) <- c("wavelet_timing", class(wt_mod[[name]]))
     }
 
     for (name in mod_names) {
@@ -242,7 +243,8 @@ WtEventTiming <- function(time, obs, mod, max.scale=256) {
     for (name in mod_names) {
         mod_for_wt <- cbind(1:n_time, mod[[name]])
         output[[name]]$xwt <- biwavelet::xwt(obs_for_wt, mod_for_wt, max.scale=max.scale)
-
+        class(output[[name]]$xwt) <- c("wavelet_timing", class(output[[name]]$xwt))
+        
         ## The masks 
         output[[name]]$xwt$event_timing$mask <- WtEventMask(output[[name]]$xwt)
 
@@ -289,9 +291,9 @@ WtEventTiming <- function(time, obs, mod, max.scale=256) {
     }
 
 
-    ## Period-averaged maxima sampling of phase errors.
-    wh_peak <- output[['obs']]$wt$event_timing$period_avg$local_max
-    peak_periods <- output[['obs']]$wt$event_timing$period_avg$period[wh_peak]
+    ## Time-averaged maxima sampling of phase errors.
+    wh_peak <- output[['obs']]$wt$event_timing$time_avg$local_max
+    peak_periods <- output[['obs']]$wt$event_timing$time_avg$period[wh_peak]
 
     for (name in mod_names) {
         keep_cols <- c('obs_power_corr', 'time', 'period', 'timing_err', 'period_clusters')
@@ -301,17 +303,17 @@ WtEventTiming <- function(time, obs, mod, max.scale=256) {
         all_sub <- all_sub[,
                         pow_max := .(max_obs_power_corr=max(obs_power_corr)),
                         .(period, period_clusters)]
-        output[[name]]$xwt$event_timing$period_avg <-
+        output[[name]]$xwt$event_timing$time_avg <-
             all_sub[ obs_power_corr == pow_max, c('period_clusters', keep_cols), with=FALSE ]
 
-        setkey(output[[name]]$xwt$event_timing$period_avg, period)
+        setkey(output[[name]]$xwt$event_timing$time_avg, period)
         
         ## Stats on period-averaged timing errors
-        output[[name]]$xwt$event_timing$period_avg_stats <- list()
-        output[[name]]$xwt$event_timing$period_avg_stats$mean_timing_err <-
-            mean(output[[name]]$xwt$event_timing$period_avg$timing_err)
-        output[[name]]$xwt$event_timing$period_avg_stats$sd_timing_err <-
-            sd(output[[name]]$xwt$event_timing$period_avg$timing_err)
+        output[[name]]$xwt$event_timing$time_avg_stats <- list()
+        output[[name]]$xwt$event_timing$time_avg_stats$mean_timing_err <-
+            mean(output[[name]]$xwt$event_timing$time_avg$timing_err)
+        output[[name]]$xwt$event_timing$time_avg_stats$sd_timing_err <-
+            sd(output[[name]]$xwt$event_timing$time_avg$timing_err)
     }
 
     
