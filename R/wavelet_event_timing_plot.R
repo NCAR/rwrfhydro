@@ -62,7 +62,18 @@ get_data_plot_power <- function(wt, event=FALSE) {
 
 
 
-merge_data_plot <- function(...) {
+merge_data_plot <- function(
+                            ...,
+                            time_axis_len=1,
+                            time_axis_trans=NULL,
+                            avg_power_axis_len=1/6,
+                            avg_power_axis_trans=NULL,
+                            period_axis_len=1,
+                            period_axis_trans=NULL,
+                            streamflow_axis_len=1/2,
+                            streamflow_axis_trans=NULL
+                            ) {
+        
     raw_data <- list(...)
     
     x_levels <- c('Time', 'Avg Power', 'Event Avg Power')
@@ -91,6 +102,59 @@ merge_data_plot <- function(...) {
     }
 
     plot_data <- plyr::ldply(plot_list)
+
+    ## Transformations.
+    ## Where are the dimensions in the dataframe?
+    wh_time <- which(plot_data$x_var == 'Time')
+    wh_avg_power <- which(plot_data$x_var == 'Avg Power')
+    wh_period <- which(plot_data$y_var == 'Period')
+    wh_streamflow <- which(plot_data$y_var == 'Streamflow (cms)')
+
+    ## Transform streamflow axis:
+    if(!is.null(streamflow_axis_trans))
+       plot_data$y[wh_streamflow] <- streamflow_axis_trans()$trans(plot_data$y[wh_streamflow])
+
+    ## Transform Period axis:
+    if(!is.null(period_axis_trans))
+       plot_data$y[wh_period] <- period_axis_trans()$trans(plot_data$y[wh_period])
+
+    ## Transform Avg Power axis:
+    if(!is.null(avg_power_axis_trans))
+       plot_data$x[wh_avg_power] <- avg_power_axis_trans()$trans(plot_data$x[wh_avg_power])
+
+    
+    ## x-axis: Time vs Avg Power, Relative sizes in plot
+    if(length(wh_time) & length(wh_avg_power)) {
+
+        time_range <- diff(range(plot_data$x[wh_time], na.rm=TRUE))
+        avg_power_range <- diff(range(plot_data$x[wh_avg_power], na.rm=TRUE))
+
+        if(!is.null(avg_power_axis_trans))
+            avg_power_range <-
+                diff(range(pmax(plot_data$x[wh_avg_power], avg_power_axis_trans()$domain[1])))
+        
+        ## Leave the time range alone, scale the avg_power_range
+        plot_data$x[wh_avg_power] <-
+            plot_data$x[wh_avg_power] *
+            time_range/avg_power_range * avg_power_axis_len/time_axis_len
+
+    }
+
+    
+    ## y-axis: Period vs Streamflow, Relative sizes in plot
+    if(length(wh_period) & length(wh_streamflow)) {
+
+        period_range <- diff(range(plot_data$y[wh_period], na.rm=TRUE))
+        streamflow_range <- diff(range(plot_data$y[wh_streamflow], na.rm=TRUE))
+        
+        ## Leave the period range alone, scale the streamflow_range
+        plot_data$y[wh_streamflow] <-
+            plot_data$y[wh_streamflow] *
+            period_range/streamflow_range * streamflow_axis_len/period_axis_len
+
+    }
+
+
     
     return(plot_data)
 }
@@ -181,19 +245,11 @@ plot_wavelet_events <- function(plot_data) {
     gg <-
         gg +
         
-        facet_grid(y_var ~ x_var, scales='free', space='free_x', switch='y') +
+        facet_grid(y_var ~ x_var, scales='free', space='free', switch='y') +
         
         scale_y_continuous(expand = c(0, 0), position = "right") + #, labels=wt$period) +
         
         scale_x_continuous(expand = c(0, 0)) +
-        
-        ## Allow the vjust by users?
-        ## guides(
-        ##     fill = guide_colourbar(
-        ##         title.vjust = 0.75
-        ##         #label.theme = element_text(size=5, angle = -45)
-        ##     )
-        ## ) +
         
         theme_bw(base_size=13) +
         theme(
@@ -206,25 +262,40 @@ plot_wavelet_events <- function(plot_data) {
         )
     
 
-    ## https://stackoverflow.com/questions/49521848/remove-unused-facet-combinations-in-2-way-facet-grid
-    library(grid)
-    library(gtable)
+    if(
+        nrow(subset_power) > 0 &
+        nrow(subset_input) > 0 &
+        nrow(subset_t_avg) > 0
+    ) {
+       
+        ## https://stackoverflow.com/questions/49521848/remove-unused-facet-combinations-in-2-way-facet-grid
+        suppressMessages(library(grid))
+        suppressMessages(library(gtable))
 
-    grob <- ggplotGrob(gg)
-    idx <- which(grob$layout$name %in% c("panel-2-2"))
-    for (i in idx) grob$grobs[[i]] <- nullGrob()
+        grob <- ggplotGrob(gg)
+        idx <- which(grob$layout$name %in% c("panel-2-2"))
+        for (i in idx) grob$grobs[[i]] <- nullGrob()
+        
+        idx <- which(grob$layout$name %in% c("axis-b-2"))
+        grob$layout[idx, c("t", "b")] <- grob$layout[idx, c("t", "b")] - c(2, 1)
+        
+        ## Move y axes right
+        ## axis-l-2 needs to move 2 columns to the right
+        ## axis-l-3 needs ot move 4 columns to the right
+        idx <- which(grob$layout$name %in% c("axis-r-2"))
+        grob$layout[idx, c("l", "r")] <- grob$layout[idx, c("l", "r")] - c(1.1, 1.1)
+        
+        grid.newpage()
+        grid.draw(grob)
 
-    idx <- which(grob$layout$name %in% c("axis-b-2"))
-    grob$layout[idx, c("t", "b")] <- grob$layout[idx, c("t", "b")] - c(2, 1)
+        return(invisible(grob))
+        
+    } else {
 
-    ## Move y axes right
-    ## axis-l-2 needs to move 2 columns to the right
-    ## axis-l-3 needs ot move 4 columns to the right
-    idx <- which(grob$layout$name %in% c("axis-r-2"))
-    grob$layout[idx, c("l", "r")] <- grob$layout[idx, c("l", "r")] - c(1.1, 1.1)
+        print(gg)
+        return(invisible(gg))
+
+    }    
     
-    grid.newpage()
-    grid.draw(grob)
-
 }
 

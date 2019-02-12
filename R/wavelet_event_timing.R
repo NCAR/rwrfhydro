@@ -153,16 +153,37 @@ WtEventMtx <- function(wt) { # TODO JLM: The wt here is the extended one
     return(event_mtx)
 }
 
-WtEventTiming <- function(time, obs, mod, max.scale=256) {
+WtEventTiming <- function(POSIXct, obs, mod, max.scale=256) {
     ## TODO JLM: what determines max.scale? are those in hours?
     ## use ... or other kw for passing to wt, xwt.
     ## TODO JLM: are max.scale wt and xwt necessarily the same?
     ## JLM TODO: Gap handling. 
     ## JLM TODO: If there were discontinuities, would have a loop over the chunks.
     ## JLM TODO: If we break up the timeseries, should probably return the chunks of raw data too.
-    
-    n_time <- length(time)
 
+    n_time <- length(POSIXct)
+    output <- list()
+    
+    ## ---------------------------------------------------------------------------
+    ## Input data
+    input_data <- 
+        as.data.table(
+            data.frame(
+                POSIXct=POSIXct,
+                Time=1:length(POSIXct),
+                obs=obs
+            )
+        )
+
+    for(key in names(mod)) input_data[[key]] <- mod[[key]]
+
+    output[['input_data']] <- melt(
+        input_data,
+        id.vars=c('Time', 'POSIXct'),
+        variable.name='Streamflow',
+        value.name='Streamflow (cms)'
+    )
+    
     ## ---------------------------------------------------------------------------
     ## Observed.
     ## Observed timeseries is just one.
@@ -172,7 +193,7 @@ WtEventTiming <- function(time, obs, mod, max.scale=256) {
     
     n_period <- length(wt_obs$period)
 
-    output <- list(obs = list(wt = wt_obs))
+    output[['obs']] = list(wt = wt_obs)
 
     ## The masks 
     output[['obs']]$wt$event_timing$mask <- WtEventMask(output[['obs']]$wt)
