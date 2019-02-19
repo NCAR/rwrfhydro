@@ -30,33 +30,38 @@ get_data_plot_time_avg_power <- function(wt, event=FALSE) {
         time_avg_power$`Avg over` <- 'time'
 
     }
+
+    time_avg_power$avg_power_values <- time_avg_power$`Avg Power`
     
     return(time_avg_power)    
 }
 
 
-get_data_plot_power <- function(wt, event=FALSE) {
+get_data_plot_power <- function(wt, POSIXct, event=FALSE) {
     ## Return the data to plot the wavelet power spectrum
     wps_matrix <- wt$power.corr
     rownames(wps_matrix) <- length(wt$period):1
-    colnames(wps_matrix) <- wt$t
+    colnames(wps_matrix) <- POSIXct
     wps <- setNames(reshape2::melt(wps_matrix), c('Period', 'Time', 'Power'))
     plot_df <- wps
     
     coi_matrix <- wt$event_timing$mask$coi
     rownames(coi_matrix) <- 1:length(wt$period)
-    colnames(coi_matrix) <- wt$t
+    colnames(coi_matrix) <- POSIXct
     coi <- setNames(reshape2::melt(coi_matrix), c('Period', 'Timde', 'COI'))
     plot_df$COI <- coi$COI
     coi <- NULL
     
     signif_matrix <- wt$event_timing$mask$signif * 1
     rownames(signif_matrix) <- 1:length(wt$period)
-    colnames(signif_matrix) <- wt$t
+    colnames(signif_matrix) <- POSIXct
     signif <- setNames(reshape2::melt(signif_matrix), c('Period', 'Time', 'Significance'))
     plot_df$Significance <- signif$Significance
     signif <- NULL
 
+    period_df <- data.frame(Period=length(wt$period):1, period=wt$period)
+    plot_df <- merge(plot_df, period_df, by='Period')
+    
     return(plot_df)
 }
 
@@ -65,13 +70,24 @@ get_data_plot_power <- function(wt, event=FALSE) {
 merge_data_plot <- function(
                             ...,
                             time_axis_len=1,
-                            time_axis_trans=NULL,
+                            time_trans=NULL,
+                            time_breaks=NULL,
+                            time_label_format=NULL,
+                            
                             avg_power_axis_len=1/6,
-                            avg_power_axis_trans=NULL,
+                            avg_power_trans=NULL,
+                            avg_power_breaks=NULL,
+                            avg_power_label_format=NULL,
+                            
                             period_axis_len=1,
-                            period_axis_trans=NULL,
+                            period_trans=NULL,
+                            period_breaks=NULL,
+                            period_label_format=NULL,
+                            
                             streamflow_axis_len=1/2,
-                            streamflow_axis_trans=NULL
+                            streamflow_trans=NULL,
+                            streamflow_breaks=NULL,
+                            streamflow_label_format=NULL
                             ) {
         
     raw_data <- list(...)
@@ -92,7 +108,7 @@ merge_data_plot <- function(
             }
         }    
     }
-
+    
     ## Now homogenize with empty cols/vars to perform a rbind.
     all_var_names <- unlist(plyr::llply(plot_list, function(list) names(list)))
     for(item in 1:length(raw_data)) {
@@ -103,57 +119,177 @@ merge_data_plot <- function(
 
     plot_data <- plyr::ldply(plot_list)
 
-    ## Transformations.
-    ## Where are the dimensions in the dataframe?
+    ## -------------------------------------------------------
+    ## What dimensions do we have?
     wh_time <- which(plot_data$x_var == 'Time')
     wh_avg_power <- which(plot_data$x_var == 'Avg Power')
     wh_period <- which(plot_data$y_var == 'Period')
     wh_streamflow <- which(plot_data$y_var == 'Streamflow (cms)')
+    
+    ## -------------------------------------------------------
+    ## Axis Breaks and Labels
 
-    ## Transform streamflow axis:
-    if(!is.null(streamflow_axis_trans))
-       plot_data$y[wh_streamflow] <- streamflow_axis_trans()$trans(plot_data$y[wh_streamflow])
+    ## x - time
+    if(length(wh_time)) {
+        use_time <- if('POSIXct' %in% names(plot_data)) "POSIXct" else "x"
+        if(is.null(time_breaks))
+            time_breaks <- scales::pretty_breaks()(subset(plot_data, x_var == 'Time')[[use_time]])
+                
+        if(is.null(time_label_format)) {
+            time_labels <- time_breaks
+            if(use_time == 'x')
+                time_labels <- as.POSIXct(time_breaks, tz='UTC', origin=rwrfhydro::PosixOrigin())
+            time_labels <- scales::date_format('%d %b\n%Y')(time_labels)
+        } else {
+            time_labels <- time_label_format(time_breaks)
+        }
+    }
 
-    ## Transform Period axis:
-    if(!is.null(period_axis_trans))
-       plot_data$y[wh_period] <- period_axis_trans()$trans(plot_data$y[wh_period])
+    ## x - avg_power
+    if(length(wh_avg_power)) {
+        if(is.null(avg_power_breaks))
+            avg_power_breaks <-
+                scales::pretty_breaks()(subset(plot_data, x_var == 'Avg Power')$avg_power_values)
+        avg_power_labels <- avg_power_breaks
+        if(!is.null(avg_power_label_format))
+            avg_power_labels <- avg_power_label_format(avg_power_breaks)
+    }
 
-    ## Transform Avg Power axis:
-    if(!is.null(avg_power_axis_trans))
-       plot_data$x[wh_avg_power] <- avg_power_axis_trans()$trans(plot_data$x[wh_avg_power])
+    ## y - period
+    if(length(wh_period)) {
+        if(is.null(period_breaks))
+            period_breaks <-
+                scales::pretty_breaks()(subset(plot_data, y_var == 'Period')$y)
+
+        ## The breaks probably need rounded, or the nearest neighbor in the set needs found.
+        period_labels <- as.character(period_breaks * NA)
+        plot_period <- subset(plot_data, y_var == 'Period' & !is.na(period))
+        for(bb in 1:length(period_breaks))
+            period_labels[bb] <-
+                plot_period$period[which(plot_period$y == period_breaks[bb])[1]]
+
+        ## Do NOT allow transform of period?
+        if(is.null(period_label_format)) {
+            period_labels <- scales::number_format()(as.numeric(period_labels))
+        } else {
+            period_labels <- period_label_format(as.numeric(period_labels))
+        }
+    }
+    
+    ## y - streamflow
+    if(length(wh_streamflow)) {
+        if(is.null(streamflow_breaks))
+            streamflow_breaks <-
+                scales::pretty_breaks()(subset(
+                                         plot_data,
+                                         y_var == 'Streamflow (cms)'
+                                     )$streamflow_values)
+        streamflow_labels <- streamflow_breaks
+        if(!is.null(streamflow_label_format))
+            streamflow_labels <- streamflow_label_format(streamflow_breaks)
+    }
 
     
-    ## x-axis: Time vs Avg Power, Relative sizes in plot
+    ## -------------------------------------------------------
+    ## Transformations of axis values.
+    
+    ## Transform Avg Power axis:
+    if(!is.null(avg_power_trans)) {
+        plot_data$x[wh_avg_power] <- avg_power_trans()$trans(plot_data$x[wh_avg_power])
+        avg_power_breaks <- avg_power_trans()$trans(avg_power_breaks)
+    }
+
+    ## Transform Period axis:
+    if(!is.null(period_trans)) {
+        plot_data$y[wh_period] <- period_trans()$trans(plot_data$y[wh_period])
+        period_breaks <- period_trans()$trans(period_breaks)
+    }
+
+    ## Transform streamflow axis:
+    if(!is.null(streamflow_trans)) {
+        plot_data$y[wh_streamflow] <- streamflow_trans()$trans(plot_data$y[wh_streamflow])
+        streamflow_breaks <- streamflow_trans()$trans(streamflow_breaks)
+    }
+    
+    ## -------------------------------------------------------
+    ## Axis scaling for relative plot sizes
+    ## x-axis: Time vs Avg Power
     if(length(wh_time) & length(wh_avg_power)) {
 
         time_range <- diff(range(plot_data$x[wh_time], na.rm=TRUE))
         avg_power_range <- diff(range(plot_data$x[wh_avg_power], na.rm=TRUE))
 
-        if(!is.null(avg_power_axis_trans))
+        # scales::trans_new()$domain[1] is the lower-bound on transformed values.
+        if(!is.null(avg_power_trans))
             avg_power_range <-
-                diff(range(pmax(plot_data$x[wh_avg_power], avg_power_axis_trans()$domain[1])))
+                diff(range( pmax(plot_data$x[wh_avg_power], avg_power_trans()$domain[1]) ))
         
-        ## Leave the time range alone, scale the avg_power_range
-        plot_data$x[wh_avg_power] <-
-            plot_data$x[wh_avg_power] *
-            time_range/avg_power_range * avg_power_axis_len/time_axis_len
+        ## Leave the time range alone, scale the avg_power_range to be above the time range.
+        xform_avg_power_absc <- function(data) {
+            max(plot_data$x[wh_time])*2 +
+                data *
+                time_range/avg_power_range * avg_power_axis_len/time_axis_len
+        }
 
+        plot_data$x[wh_avg_power] <- xform_avg_power_absc(plot_data$x[wh_avg_power])
+
+        avg_power_breaks <- xform_avg_power_absc(avg_power_breaks)
     }
 
-    
+
+    #stop()
     ## y-axis: Period vs Streamflow, Relative sizes in plot
     if(length(wh_period) & length(wh_streamflow)) {
 
         period_range <- diff(range(plot_data$y[wh_period], na.rm=TRUE))
         streamflow_range <- diff(range(plot_data$y[wh_streamflow], na.rm=TRUE))
-        
-        ## Leave the period range alone, scale the streamflow_range
-        plot_data$y[wh_streamflow] <-
-            plot_data$y[wh_streamflow] *
-            period_range/streamflow_range * streamflow_axis_len/period_axis_len
+
+        if(!is.null(period_trans))
+            period_range <-
+                diff(range( pmax(plot_data$y[wh_period], period_trans()$domain[1]) ))
+
+        if(!is.null(streamflow_trans))
+            streamflow_range <-
+                diff(range( pmax(plot_data$y[wh_streamflow], streamflow_trans()$domain[1]) ))
+
+        ## Leave the streamflow_range alone, scale the period_range to be above the time range.
+        xform_period_absc <- function(data) {
+            max(plot_data$y[wh_streamflow])*2 +
+                data *
+                streamflow_range/period_range * period_axis_len/streamflow_axis_len
+        }
+
+        plot_data$y[wh_period] <- xform_period_absc(plot_data$y[wh_period])
+
+        period_breaks <- xform_period_absc(period_breaks)
 
     }
 
+    x_breaks <- as.numeric(c())
+    x_labels <- as.character(c())
+    if(length(wh_time)) {
+        x_breaks <- c(x_labels, time_breaks)
+        x_labels <- c(x_labels, time_labels)
+    }
+    if(length(wh_avg_power)) {
+        x_breaks <- c(x_breaks, avg_power_breaks)
+        x_labels <- c(x_labels, avg_power_labels)
+    }
+    attr(plot_data, 'x_breaks') <- x_breaks
+    attr(plot_data, 'x_labels') <- x_labels
+
+    y_breaks <- as.numeric(c())
+    y_labels <- as.character(c())
+    if(length(wh_streamflow)) {
+        y_breaks <- c(y_labels, streamflow_breaks)
+        y_labels <- c(y_labels, streamflow_labels)
+    }
+    if(length(wh_period)) {
+        y_breaks <- c(y_breaks, period_breaks)
+        y_labels <- c(y_labels, period_labels)
+    }
+    attr(plot_data, 'y_breaks') <- y_breaks
+    attr(plot_data, 'y_labels') <- y_labels
 
     
     return(plot_data)
@@ -230,8 +366,11 @@ plot_wavelet_events <- function(plot_data) {
         gg <-
             gg +
             
-            geom_path(data=subset_t_avg,
-                      aes(x=x, y=y, linetype=`Avg over`))
+            geom_path(
+                data=subset_t_avg,
+                aes(x=x, y=y, linetype=`Avg over`)
+            )
+        
         ## Event power
         ##geom_path(data=subset(plot_data, x_var=='Event Avg Power'),
         ##          aes(x=x, y=y)) + #, size=event_count)) +
@@ -242,16 +381,33 @@ plot_wavelet_events <- function(plot_data) {
 
     ## -------------------------------------------------------
     ## Plot layout/style
+    ##my_breaks <- function(x) { if (max(x) < 6000) seq(0, 5000, 1000) else seq(0, 15000, 5000) }
+
+    x_breaks <- as.numeric(attr(plot_data, 'x_breaks'))
+    x_labels <- attr(plot_data, 'x_labels')
+    y_breaks <- as.numeric(attr(plot_data, 'y_breaks'))
+    y_labels <- attr(plot_data, 'y_labels')
+    
     gg <-
         gg +
         
         facet_grid(y_var ~ x_var, scales='free', space='free', switch='y') +
         
-        scale_y_continuous(expand = c(0, 0), position = "right") + #, labels=wt$period) +
+        scale_y_continuous(
+            expand = c(0, 0),
+            position = "right",
+            breaks=y_breaks,
+            labels=y_labels
+        ) +
         
-        scale_x_continuous(expand = c(0, 0)) +
+        scale_x_continuous(
+            expand = c(0, 0),
+            breaks=x_breaks,
+            labels=x_labels
+        ) +
         
         theme_bw(base_size=13) +
+        
         theme(
             legend.position="left",
             ##legend.key.height=unit(3, "line"),
@@ -298,4 +454,3 @@ plot_wavelet_events <- function(plot_data) {
     }    
     
 }
-

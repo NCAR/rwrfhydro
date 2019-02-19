@@ -170,7 +170,7 @@ WtEventTiming <- function(POSIXct, obs, mod, max.scale=256) {
         as.data.table(
             data.frame(
                 POSIXct=POSIXct,
-                Time=1:length(POSIXct),
+                Time=as.numeric(POSIXct), #1:length(POSIXct), 
                 obs=obs
             )
         )
@@ -183,6 +183,7 @@ WtEventTiming <- function(POSIXct, obs, mod, max.scale=256) {
         variable.name='Streamflow',
         value.name='Streamflow (cms)'
     )
+    output[['input_data']]$streamflow_values <- output[['input_data']]$`Streamflow (cms)`
     
     ## ---------------------------------------------------------------------------
     ## Observed.
