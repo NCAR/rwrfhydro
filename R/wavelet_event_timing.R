@@ -119,7 +119,9 @@ WtEventMask <- function(wt) {
 }
 
 
-WtEventMtx <- function(wt) { # TODO JLM: The wt here is the extended one
+WtEventMtx <- function(wt) {
+    ## TODO JLM: The input wt is the extended one (?)
+
     ## Event power spectra
     event_mtx <- list(power = wt$event_timing$mask$event * wt$power)
     event_mtx$power_corr <- wt$event_timing$mask$event * wt$power.corr
@@ -130,13 +132,13 @@ WtEventMtx <- function(wt) { # TODO JLM: The wt here is the extended one
     event_mtx$period_clusters <- wt$event_timing$mask$event * -1
     options(warn=2)
     for (period in 1:n_periods){
-
         mask_vec <- wt$event_timing$mask$event[period,]
 
         result <- rle(mask_vec)
         class(result) <-  'list' # That is annoying
         result <- as.data.table(result)
         if (all(result$values %in% c(0))) next
+
         result$ends <- cumsum(result$lengths)
         result$starts <- c(1, result$ends[1:(nrow(result)-1)]+1)
         events <- result[values == 1,]
@@ -153,19 +155,65 @@ WtEventMtx <- function(wt) { # TODO JLM: The wt here is the extended one
     return(event_mtx)
 }
 
-WtEventTiming <- function(POSIXct, obs, mod, max.scale=256) {
-    ## TODO JLM: what determines max.scale? are those in hours?
+
+WtTimeChunks <- function(input_data, obs_name, mod_name=NULL, max.scale=256) {
+
+    chunk_list <- list()
+    for(cc in unique(input_data$chunk)) {
+        input_chunk <- subset(input_data, chunk == cc)
+        obs_for_wt <- cbind(1:nrow(input_chunk), input_chunk[[obs_name]])
+        if(is.null(mod_name)) {
+            ## regular wavelet transform
+            chunk_list[[cc]] <- biwavelet::wt(obs_for_wt, max.scale=max.scale)
+        } else {
+            ## xwt
+            mod_for_wt <- cbind(1:nrow(input_chunk), input_chunk[[mod_name]])
+            chunk_list[[cc]] <- biwavelet::xwt(obs_for_wt, mod_for_wt, max.scale=max.scale)
+        }
+    }
+
+    time_vars_1d <- c("coi", "t", "xaxis")
+    time_vars_2d <- c("wave", "power", "power.corr", "phase", "signif")
+    
+    ## any shenanigans about time or xaxis and gaps, or leave it to POSIXct?
+    output <- chunk_list[[1]]
+    if(length(chunk_list) > 1) {
+        for(cc in 2:length(chunk_list)) {
+            for(var in time_vars_1d)
+                output[[var]] <- c(output[[var]], chunk_list[[cc]][[var]])
+
+            for(var in time_vars_2d)
+                output[[var]] <- cbind(output[[var]], chunk_list[[cc]][[var]])
+        }
+    }
+
+    return(output)
+}
+
+
+WtEventTiming <- function(POSIXct, obs, mod,
+                          max.scale=256,
+                          min_ts_length=max.scale * time_step_h,
+                          time_step_h=NULL) {
+
+    ## TODO JLM: max.scale is unitless but min_ts_length is not? max.scale*time_step_h gives
+    ## a unit for it.
+    
     ## use ... or other kw for passing to wt, xwt.
     ## TODO JLM: are max.scale wt and xwt necessarily the same?
     ## JLM TODO: Gap handling. 
     ## JLM TODO: If there were discontinuities, would have a loop over the chunks.
     ## JLM TODO: If we break up the timeseries, should probably return the chunks of raw data too.
 
+    ## TODO JLM: option for reducing this object size if only stats are required.
+    ##           most of the bloat is for plotting.
+    
     n_time <- length(POSIXct)
     output <- list()
     
     ## ---------------------------------------------------------------------------
     ## Input data
+    ## Save of a data frame, this facilitates plotting. Could make this optional. 
     input_data <- 
         as.data.table(
             data.frame(
@@ -177,19 +225,46 @@ WtEventTiming <- function(POSIXct, obs, mod, max.scale=256) {
 
     for(key in names(mod)) input_data[[key]] <- mod[[key]]
 
+    ## -------------------------------------------------------
+    ## Deal with missing data
+    ## Missing data across all of (obs, model1, ..., modelN) should be removed.
+    ## Generally, model data wont be missing but if we just did this on the obs and
+    ## data were missing for one model instance and not another, the results would
+    ## not be consistent.
+
+    ## Break up the data in to contiguous time chunks.
+    input_data <- input_data[complete.cases(input_data),]
+    ## Label time chunks
+    ## How do we know the timestep?
+    if(is.null(time_step_h))
+        ## time_step_h <- as.numeric(median(diff(input_data$POSIXct)), units="hours")
+        time_step_h <- median(diff(input_data$POSIXct)) # This is a timediff.
+    ## Need to ensure that a passed value is a timediff.
+    wh_gt_time_step <- which(diff(input_data$POSIXct) > time_step_h) + 1
+    input_data$chunk <- 0
+    input_data$chunk[wh_gt_time_step] <- 1
+    input_data$chunk <- cumsum(input_data$chunk) + 1
+                             
+    ## Filter out chunks less than some size
+    chunk_len = input_data[, .(len_h = max(POSIXct) - min(POSIXct)), by='chunk']
+    rm_chunks <- subset(chunk_len, len_h < min_ts_length)$chunk
+    if(length(rm_chunks))
+        input_data <- input_data[ !(chunk %in% rm_chunks) ]
+
+    ## Melt just for the output list
     output[['input_data']] <- melt(
         input_data,
-        id.vars=c('Time', 'POSIXct'),
+        id.vars=c('Time', 'POSIXct', 'chunk'),
         variable.name='Streamflow',
         value.name='Streamflow (cms)'
     )
+    ## Why this extra copy?
     output[['input_data']]$streamflow_values <- output[['input_data']]$`Streamflow (cms)`
-    
+
     ## ---------------------------------------------------------------------------
-    ## Observed.
+    ## Observed wavelet transforms.
     ## Observed timeseries is just one.
-    obs_for_wt <- cbind(1:n_time, obs)
-    wt_obs <- biwavelet::wt(obs_for_wt, max.scale=256)
+    wt_obs <- WtTimeChunks(input_data, obs_name='obs', max.scale=max.scale)
     class(wt_obs) <- c("wavelet_timing", class(wt_obs))
     
     n_period <- length(wt_obs$period)
@@ -233,11 +308,10 @@ WtEventTiming <- function(POSIXct, obs, mod, max.scale=256) {
     wt_mod = list()
     mod_names <-  names(mod)
     for (name in mod_names) {
-        mod_for_wt <- cbind(1:n_time, mod[[name]])
-        wt_mod[[name]] <- biwavelet::wt(mod_for_wt, max.scale=max.scale)
+        wt_mod[[name]] <- WtTimeChunks(input_data, name, max.scale=max.scale)
         class(wt_mod[[name]]) <- c("wavelet_timing", class(wt_mod[[name]]))
     }
-
+    
     for (name in mod_names) {
         output[[name]] <- list(wt = wt_mod[[name]])
         output[[name]]$wt$event_timing$mask <- WtEventMask(output[[name]]$wt)
@@ -259,12 +333,12 @@ WtEventTiming <- function(POSIXct, obs, mod, max.scale=256) {
     ## obs_event_frac is like a hit rate, 1 - mod_event_frac is like a FAR.
     
     ## The timing stats.
-
     ## Gather the "bulk" phase/timing errors:
     ##    No sampling, take all observed significant/event timing errors from the obs-mod xwt.
     for (name in mod_names) {
-        mod_for_wt <- cbind(1:n_time, mod[[name]])
-        output[[name]]$xwt <- biwavelet::xwt(obs_for_wt, mod_for_wt, max.scale=max.scale)
+        output[[name]]$xwt <-
+            WtTimeChunks(input_data, obs_name='obs', mod_name=name, max.scale=max.scale)
+
         class(output[[name]]$xwt) <- c("wavelet_timing", class(output[[name]]$xwt))
         
         ## The masks 
@@ -338,6 +412,7 @@ WtEventTiming <- function(POSIXct, obs, mod, max.scale=256) {
             sd(output[[name]]$xwt$event_timing$time_avg$timing_err)
     }
 
-    
+
+    ## TODO JLM: strip off data.tables?
     return(output)
 }
