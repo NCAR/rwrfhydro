@@ -130,7 +130,7 @@ WtEventMtx <- function(wt) {
     n_periods = length(wt$period)
 
     event_mtx$period_clusters <- wt$event_timing$mask$event * -1
-    options(warn=2)
+#    options(warn=2)
     for (period in 1:n_periods){
         mask_vec <- wt$event_timing$mask$event[period,]
 

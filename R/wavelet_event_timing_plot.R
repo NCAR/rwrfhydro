@@ -37,31 +37,40 @@ get_data_plot_time_avg_power <- function(wt, event=FALSE) {
 }
 
 
-get_data_plot_power <- function(wt, POSIXct, event=FALSE) {
+get_data_plot_power <- function(wt, input_data, event=FALSE) {
+
+    input_obs <- subset(input_data, Streamflow == 'obs')
+    
     ## Return the data to plot the wavelet power spectrum
     wps_matrix <- wt$power.corr
     rownames(wps_matrix) <- length(wt$period):1
-    colnames(wps_matrix) <- POSIXct
+    colnames(wps_matrix) <- input_obs$POSIXct
     wps <- setNames(reshape2::melt(wps_matrix), c('Period', 'Time', 'Power'))
     plot_df <- wps
     
+    chunk_matrix <- wps_matrix
+    for(pp in 1:length(wt$period)) chunk_matrix[pp,] <- input_obs$chunk
+    chunk <- setNames(reshape2::melt(chunk_matrix), c('Period', 'Time', 'chunk'))
+    plot_df$chunk <- chunk$chunk
+    chunk <- NULL
+    
     coi_matrix <- wt$event_timing$mask$coi
     rownames(coi_matrix) <- 1:length(wt$period)
-    colnames(coi_matrix) <- POSIXct
-    coi <- setNames(reshape2::melt(coi_matrix), c('Period', 'Timde', 'COI'))
+    colnames(coi_matrix) <- input_obs$POSIXct
+    coi <- setNames(reshape2::melt(coi_matrix), c('Period', 'Time', 'COI'))
     plot_df$COI <- coi$COI
     coi <- NULL
     
     signif_matrix <- wt$event_timing$mask$signif * 1
     rownames(signif_matrix) <- 1:length(wt$period)
-    colnames(signif_matrix) <- POSIXct
+    colnames(signif_matrix) <- input_obs$POSIXct
     signif <- setNames(reshape2::melt(signif_matrix), c('Period', 'Time', 'Significance'))
     plot_df$Significance <- signif$Significance
     signif <- NULL
 
     period_df <- data.frame(Period=length(wt$period):1, period=wt$period)
     plot_df <- merge(plot_df, period_df, by='Period')
-    
+
     return(plot_df)
 }
 
@@ -316,7 +325,7 @@ plot_wavelet_events <- function(plot_data) {
             
             geom_contour(
                 data=subset_power,
-                aes(x=x, y=y, z=Significance),
+                aes(x=x, y=y, z=Significance, group=chunk),
                 bins=1,
                 color='black',
                 size=.5
