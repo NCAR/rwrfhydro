@@ -28,7 +28,7 @@ GetSnodasDepthSweDate <- function(datePOSIXct, outputDir='.', overwrite=FALSE,
                                   parallel=(foreach::getDoParWorkers()>1) ){
   
   ## This atomic function gets called below. 
-  GetSnodasDepthSweDate.atomic <- function(datePOSIXct, outputDir='.', overwrite=FALSE, 
+  GetSnodasDepthSweDate.atomic <- function(datePOSIXct, outputDir=outputDir, overwrite=FALSE, 
                                            quiet=TRUE) {
     # date parameters
     yy <- format(datePOSIXct, c("%Y")); mm <- format(datePOSIXct, c("%m"))
