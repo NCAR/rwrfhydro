@@ -130,7 +130,7 @@ WtEventMtx <- function(wt) {
     n_periods = length(wt$period)
 
     event_mtx$period_clusters <- wt$event_timing$mask$event * -1
-#    options(warn=2)
+
     for (period in 1:n_periods){
         mask_vec <- wt$event_timing$mask$event[period,]
 
@@ -191,7 +191,8 @@ WtTimeChunks <- function(input_data, obs_name, mod_name=NULL, max.scale=256) {
 }
 
 
-WtEventTiming <- function(POSIXct, obs, mod,
+WtEventTiming <- function(POSIXct, obs,
+                          mod=NULL,
                           max.scale=256,
                           min_ts_length=max.scale * time_step_h,
                           time_step_h=NULL) {
@@ -301,7 +302,8 @@ WtEventTiming <- function(POSIXct, obs, mod,
     output[['obs']]$wt$event_timing$time_avg$local_max <- 
         pastecs::turnpoints(output[['obs']]$wt$event_timing$time_avg$power_corr)$peaks
 
-    
+    if(is.null(mod)) return(output)
+        
     ## ---------------------------------------------------------------------------
     ## Modeled.
     ## For the modeled timeseries, we loop over the named list of modeled timeseries.
@@ -340,18 +342,24 @@ WtEventTiming <- function(POSIXct, obs, mod,
             WtTimeChunks(input_data, obs_name='obs', mod_name=name, max.scale=max.scale)
 
         class(output[[name]]$xwt) <- c("wavelet_timing", class(output[[name]]$xwt))
+
+        ## Calculate the timing error matrix
+        output[[name]]$xwt$event_timing$mtx$timing_err <- output[[name]]$xwt$phase * NA
+        for(rr in 1:nrow(output[[name]]$xwt$phase)) {
+            output[[name]]$xwt$event_timing$mtx$timing_err[rr,] <-
+                 output[[name]]$xwt$period[rr] *
+                output[[name]]$xwt$phase[rr,] / (2*pi)
+        }
         
         ## The masks 
         output[[name]]$xwt$event_timing$mask <- WtEventMask(output[[name]]$xwt)
 
         ## The event matrices
-        output[[name]]$xwt$event_timing$event_mtx<- WtEventMtx(output[[name]]$xwt)
-    
+        output[[name]]$xwt$event_timing$event_mtx <- WtEventMtx(output[[name]]$xwt)
+
         ## It's key that wh_event_mask is from the *obs* wt object and the modelex xwt object.
         wh_event_mask <-
-            which(output[['obs']]$wt$event_timing$mask$event == 1 &
-                  output[[name]]$xwt$event_timing$mask$event == 1  ,
-                  arr.ind=TRUE)
+            which(output[['obs']]$wt$event_timing$mask$event == 1, arr.ind=TRUE)
 
         output[[name]]$xwt$event_timing$all <-
             data.table::data.table(phase = output[[name]]$xwt$phase[wh_event_mask])
@@ -370,49 +378,133 @@ WtEventTiming <- function(POSIXct, obs, mod,
             output[[name]]$xwt$t[wh_event_mask[,2]]
 
         output[[name]]$xwt$event_timing$all$timing_err <-
-            2*pi * output[[name]]$xwt$event_timing$all$phase *
-            output[[name]]$xwt$event_timing$all$period
-
+            output[[name]]$xwt$event_timing$all$period *
+            output[[name]]$xwt$event_timing$all$phase / (2*pi)
+                        
+        ## The period clusters are FOR THE OBSERVATIONS, not the modeled
         output[[name]]$xwt$event_timing$all$period_clusters <-
-            output[[name]]$xwt$event_timing$event_mtx$period_clusters[wh_event_mask]
+            output[['obs']]$wt$event_timing$event_mtx$period_clusters[wh_event_mask]
 
+        # Is this observed event significant in the XWT?
+        output[[name]]$xwt$event_timing$all$xwt_signif <- 
+            output[['obs']]$wt$event_timing$mask$event[wh_event_mask] == 1 &
+            output[[name]]$xwt$event_timing$mask$event[wh_event_mask] == 1
+        
         setkey(output[[name]]$xwt$event_timing$all, period, time)
-        
-        ## Stats on bulk timing errors
-        output[[name]]$xwt$event_timing$all_stats <- list()
-        output[[name]]$xwt$event_timing$all_stats$mean_timing_err <-
-            mean(output[[name]]$xwt$event_timing$all$timing_err)
-        output[[name]]$xwt$event_timing$all_stats$sd_timing_err <-
-            sd(output[[name]]$xwt$event_timing$all$timing_err)        
     }
-
-
-    ## Time-averaged maxima sampling of phase errors.
-    wh_peak <- output[['obs']]$wt$event_timing$time_avg$local_max
-    peak_periods <- output[['obs']]$wt$event_timing$time_avg$period[wh_peak]
-
-    for (name in mod_names) {
-        keep_cols <- c('obs_power_corr', 'time', 'period', 'timing_err', 'period_clusters')
-        all_sub <- output[[name]]$xwt$event_timing$all[, keep_cols, with=FALSE]
-        all_sub <- all_sub[ period %in% peak_periods, ]
-
-        all_sub <- all_sub[,
-                        pow_max := .(max_obs_power_corr=max(obs_power_corr)),
-                        .(period, period_clusters)]
-        output[[name]]$xwt$event_timing$time_avg <-
-            all_sub[ obs_power_corr == pow_max, c('period_clusters', keep_cols), with=FALSE ]
-
-        setkey(output[[name]]$xwt$event_timing$time_avg, period)
-        
-        ## Stats on period-averaged timing errors
-        output[[name]]$xwt$event_timing$time_avg_stats <- list()
-        output[[name]]$xwt$event_timing$time_avg_stats$mean_timing_err <-
-            mean(output[[name]]$xwt$event_timing$time_avg$timing_err)
-        output[[name]]$xwt$event_timing$time_avg_stats$sd_timing_err <-
-            sd(output[[name]]$xwt$event_timing$time_avg$timing_err)
-    }
-
 
     ## TODO JLM: strip off data.tables?
     return(output)
+}
+
+
+we_hydro_stats <- function(wt_event) {
+
+    output <- list()
+    mod_names <- setdiff(names(wt_event), c("input_data", "obs"))
+
+    ## -------------------------------------------------------
+    ## "Bulk" stats timing errors
+    for (name in mod_names) {
+        output[[name]]$xwt$event_timing$bulk_stats <- list()
+        output[[name]]$xwt$event_timing$bulk_stats$mean_timing_err <-
+            mean(wt_event[[name]]$xwt$event_timing$all$timing_err)
+        output[[name]]$xwt$event_timing$bulk_stats$sd_timing_err <-
+            sd(wt_event[[name]]$xwt$event_timing$all$timing_err)
+    }
+
+    ## -------------------------------------------------------
+    ## Extract the periods of interest from the obs wt analysis.
+    wh_peak <- wt_event[['obs']]$wt$event_timing$time_avg$local_max
+    peak_periods <- wt_event[['obs']]$wt$event_timing$time_avg$period[wh_peak]
+
+    ## -------------------------------------------------------
+    ## Mean timing errors by period.
+
+    for (name in mod_names) {
+        keep_cols <- c('obs_power_corr', 'time', 'period', 'timing_err', 'period_clusters')
+        all_sub <- wt_event[[name]]$xwt$event_timing$all[, keep_cols, with=FALSE]
+        all_sub <- all_sub[ period %in% peak_periods, ]
+
+        output[[name]]$xwt$event_timing$time_avg <-
+            wt_event[[name]]$xwt$event_timing$all[
+                period %in% peak_periods,
+                .(time_err=mean(timing_err),
+                  obs_power_corr=mean(obs_power_corr),
+                  xwt_power_corr=mean(xwt_power_corr),
+                  xwt_signif=mean(xwt_signif),
+                  n_clusters=length(unique(period_clusters)),
+                  time=mean(time)
+                 ),
+                .(period)
+            ]
+        
+        setkey(output[[name]]$xwt$event_timing$time_avg, period)
+        
+    }
+
+    ## -------------------------------------------------------
+    ## Cluster-mean timing errors on maxima of time-averaged obs wt power.
+    for (name in mod_names) {
+
+        output[[name]]$xwt$event_timing$cluster_mean <-
+            wt_event[[name]]$xwt$event_timing$all[
+                period %in% peak_periods,
+                .(time_err=mean(timing_err),
+                  obs_power_corr=mean(obs_power_corr),
+                  xwt_power_corr=mean(xwt_power_corr),
+                  xwt_signif=mean(xwt_signif),
+                  time=mean(time)
+                  ),
+                by=c("period_clusters", "period")
+            ]
+
+        output[[name]]$xwt$event_timing$cluster_mean_time_avg <-
+            output[[name]]$xwt$event_timing$cluster_mean[
+                 ,
+                .(time_err=mean(time_err),
+                  obs_power=mean(obs_power_corr),
+                  xwt_power=mean(xwt_power_corr),
+                  xwt_signif_frac=mean(xwt_signif),
+                  n_clusters=.N
+                 ),
+                by='period'
+            ]
+
+        setkey(output[[name]]$xwt$event_timing$cluster_mean, period)
+    }
+    
+    ## -------------------------------------------------------
+    ## Cluster-MAX timing errors on maxima of time-averaged obs wt power.
+    for (name in mod_names) {
+
+        output[[name]]$xwt$event_timing$cluster_max <-
+            wt_event[[name]]$xwt$event_timing$all[
+                period %in% peak_periods,
+                .(time_err=timing_err[which.max(obs_power_corr)],
+                  obs_power_corr=obs_power_corr[which.max(obs_power_corr)],
+                  xwt_power_corr=xwt_power_corr[which.max(obs_power_corr)],
+                  xwt_signif=xwt_signif[which.max(obs_power_corr)],
+                  time=time[which.max(obs_power_corr)]
+                  ),
+                by=c("period_clusters", "period")
+            ]
+
+        output[[name]]$xwt$event_timing$cluster_max_time_avg <-
+            output[[name]]$xwt$event_timing$cluster_max[
+                 ,
+                .(time_err=mean(time_err),
+                  obs_power=mean(obs_power_corr),
+                  xwt_power=mean(xwt_power_corr),
+                  xwt_signif_frac=mean(xwt_signif),
+                  n_clusters=.N
+                 ),
+                by='period'
+            ]
+
+        setkey(output[[name]]$xwt$event_timing$cluster_max, period)
+    }
+    
+    return(output)
+    
 }

@@ -1,3 +1,7 @@
+library(ggplot2)
+library(ggnewscale)
+library(relayer) ## git hash 8a1d49e1707d9fcc1aaa83476a3d9a15448a1065
+library(dplyr)
 
 get_data_plot_time_avg_power <- function(wt, event=FALSE) {
     ## Return the data to plot the time-averaged wavelet spectrum.
@@ -37,12 +41,20 @@ get_data_plot_time_avg_power <- function(wt, event=FALSE) {
 }
 
 
-get_data_plot_power <- function(wt, input_data, event=FALSE) {
+get_data_plot_power <- function(wt, input_data, wt_field=NULL, event=FALSE) {
+    ## Return the data to plot the wavelet power spectrum
+
+    ## The wt_field allows an arbitray field to be combined with the
+    ## COI and significance of a different field.
 
     input_obs <- subset(input_data, Streamflow == 'obs')
     
-    ## Return the data to plot the wavelet power spectrum
-    wps_matrix <- wt$power.corr
+    if(is.null(wt_field)) {
+        wps_matrix <- wt$power.corr
+    } else {
+        wps_matrix <- wt_field
+    }
+    
     rownames(wps_matrix) <- length(wt$period):1
     colnames(wps_matrix) <- input_obs$POSIXct
     wps <- setNames(reshape2::melt(wps_matrix), c('Period', 'Time', 'Power'))
@@ -73,7 +85,6 @@ get_data_plot_power <- function(wt, input_data, event=FALSE) {
 
     return(plot_df)
 }
-
 
 
 merge_data_plot <- function(
@@ -306,12 +317,12 @@ merge_data_plot <- function(
 
 
 
-plot_wavelet_events <- function(plot_data) {
+plot_wavelet_events <- function(plot_data, do_plot=TRUE) {
     gg <- ggplot()
 
     ##-------------------------------------------------------
     ## Wavelet spectrum plots
-    subset_power <- subset(plot_data, x_var=='Time' & y_var == 'Period')
+    subset_power <- subset(plot_data, x_var == 'Time' & y_var == 'Period')
 
     if(nrow(subset_power) > 0) {
         gg <-
@@ -342,7 +353,8 @@ plot_wavelet_events <- function(plot_data) {
                 palette = "Accent", #"Set3", #"Accent", #"BrBG","PiYG", #"PRGn", #"Spectral",
                 direction=-1,
                 trans='log2',
-                labels = scales::scientific_format(digits=2)
+                labels = scales::scientific_format(digits=2),
+                na.value="transparent"
             ) +
             
             ## Abstract this out? at lest the FALSE level.
@@ -371,15 +383,15 @@ plot_wavelet_events <- function(plot_data) {
     ## Time-averaged power plots
     ## Avg power
     subset_t_avg <- subset(plot_data, x_var=='Avg Power' & y_var == 'Period')
+
     if(nrow(subset_t_avg) > 0) {
         gg <-
-            gg +
-            
+            gg +            
             geom_path(
                 data=subset_t_avg,
                 aes(x=x, y=y, linetype=`Avg over`)
             )
-        
+
         ## Event power
         ##geom_path(data=subset(plot_data, x_var=='Event Avg Power'),
         ##          aes(x=x, y=y)) + #, size=event_count)) +
@@ -425,9 +437,11 @@ plot_wavelet_events <- function(plot_data) {
             panel.spacing = unit(.25, "lines"),
             strip.background = element_rect(fill = 'grey90')
         )
-    
 
+    ## handle the grob... only if plotting.
+    ## extract this as a useful funciton
     if(
+        do_plot &
         nrow(subset_power) > 0 &
         nrow(subset_input) > 0 &
         nrow(subset_t_avg) > 0
@@ -438,28 +452,566 @@ plot_wavelet_events <- function(plot_data) {
         suppressMessages(library(gtable))
 
         grob <- ggplotGrob(gg)
+
+        ## remove lower right panel
         idx <- which(grob$layout$name %in% c("panel-2-2"))
         for (i in idx) grob$grobs[[i]] <- nullGrob()
-        
+
+        ## move x-axis on right panels up one panel
         idx <- which(grob$layout$name %in% c("axis-b-2"))
         grob$layout[idx, c("t", "b")] <- grob$layout[idx, c("t", "b")] - c(2, 1)
-        
-        ## Move y axes right
-        ## axis-l-2 needs to move 2 columns to the right
-        ## axis-l-3 needs ot move 4 columns to the right
+
+        ## move the y-axis on the lower right panel left one panel
         idx <- which(grob$layout$name %in% c("axis-r-2"))
         grob$layout[idx, c("l", "r")] <- grob$layout[idx, c("l", "r")] - c(1.1, 1.1)
         
-        grid.newpage()
+        #grid.newpage()
         grid.draw(grob)
-
         return(invisible(grob))
         
     } else {
 
-        print(gg)
+        if(do_plot) print(gg)
         return(invisible(gg))
-
+        
     }    
     
+}
+
+
+facet_grob_adj <- function(gg,
+                           del=NULL,
+                           adj=NULL) {
+    ## Del is a vector of grob$layout$names to delete.
+    ## adj is a named list in grob$layout$name names each containing a
+    ## list with 2 vectors, positions and values.
+    
+    suppressMessages(library(grid))
+    suppressMessages(library(gtable))
+
+    if(!('grob' %in% class(gg))) {
+        grob <- ggplotGrob(gg)
+    } else {
+        grob <- gg
+    }
+    
+    if(!is.null(del)) {
+        for(to_del in del) {
+            idx <- which(grob$layout$name %in% to_del)
+            for (i in idx) grob$grobs[[i]] <- nullGrob()
+        }
+    }
+
+    if(!is.null(adj)) {
+        for(the_name in names(adj)) {
+            to_adj = adj[[the_name]]
+            idx <- which(grob$layout$name %in% the_name)
+            grob$layout[idx, to_adj$position] <-
+                grob$layout[idx, to_adj$position] + to_adj$values
+        }
+    }
+
+    return(invisible(grob))
+}
+
+
+step1_figure <- function(wt_event) {
+
+    obs_power <- get_data_plot_power(wt_event$obs$wt, wt_event$input_data)
+    obs_t_avg_power <- get_data_plot_time_avg_power(wt_event$obs$wt)
+    obs_event_t_avg_power <- get_data_plot_time_avg_power(wt_event$obs$wt, event=TRUE)
+    ## Should include the ar1 spectrum
+
+    plot_data <-
+        merge_data_plot(
+            wt_event$input_data,
+            obs_power,
+            obs_t_avg_power,
+            obs_event_t_avg_power,
+            avg_power_axis_len=1/5,
+            avg_power_breaks=c(10000, 100000),
+            avg_power_label_format=scales::scientific_format(digits=0),
+            ##avg_power_breaks = c(1e2, 1e3, 1e4, 1e5),
+            ##avg_power_trans = scales::log10_trans,
+            streamflow_axis_len=1/2,
+            streamflow_breaks=c(.1,1,10,100,1000),
+            streamflow_trans=scales::log2_trans
+            ## avg_power_axis_trans=scales::log10_trans
+        )
+    
+    ## Add a new vertical facet for showing the "event cluster"
+    new_y_levels <- c('Streamflow (cms)', 'Period', 'c Period', 'd Period')
+    new_y_labels <- c('Streamflow (cms)', 'Period', 'Period',    'Period')
+    y_labeller <- function(string) {
+        labs <- new_y_labels
+        names(labs) <- new_y_levels
+        labs[string]
+    }
+    
+    ## Copy the data (same fill values, different mask) for the new
+    ## plot, showing the event cluster.
+    wt_copy <- subset(plot_data, x_var == 'Time' & y_var == 'Period')
+    wt_copy$y_var <- ordered("c Period", levels=new_y_levels)
+    wt_copy$Power[which(wt_copy$COI == FALSE | wt_copy$Significance == 0)] <- NA
+    
+    ## Transform the factor levels on the original data.
+    plot_data$y_var <- ordered(plot_data$y_var, levels=new_y_levels)
+    
+    ## Put the event spectrum on the new axis.
+    wh_events <- which(plot_data$`Avg over` == 'events')
+    plot_data$y_var[wh_events]<- ordered(new_y_levels[3], levels=new_y_levels)
+
+    ## Plot the maxima on the time-avg spectra with this dataframe
+    max_data <- wt_event$obs$wt$event_timing$time_avg[local_max == TRUE,]
+    max_data$x_var <- factor('Avg Power',  levels=levels(plot_data$x_var))
+    max_data$y_var <- factor('c Period',  levels=levels(plot_data$y_var))
+    max_data <- merge(
+        max_data, plot_data,
+        by=c("x_var", "y_var", 'period'),
+        all.x=TRUE, all.y=FALSE
+    )
+
+    ## Plot the cluster numbers
+    max_periods <- wt_event$obs$wt$event_timing$time_avg[local_max == TRUE]$period
+    max_period_clusters <- wt_event$obs$wt$event_timing$all[ period %in% max_periods ]
+    wt_event$input_data$time <- 1:nrow(wt_event$input_data)
+    max_period_clusters <- merge(
+        max_period_clusters,
+        wt_event$input_data[, c('Time', 'time')],
+        by='time',
+        all.x=TRUE, all.y=FALSE
+    )
+    setnames(max_period_clusters, "Time", 'x')
+    max_period_clusters$x_var <- factor('Time',  levels=levels(plot_data$x_var))
+    max_period_clusters$y_var <- factor('Period',  levels=levels(plot_data$y_var))
+    max_period_clusters <- merge(
+        max_period_clusters, plot_data,
+        by=c("x_var", "y_var", 'period', 'x'), 
+        all.x=TRUE, all.y=FALSE
+    )
+    max_period_clusters$y_var <- factor('d Period',  levels=levels(plot_data$y_var))
+    ## need to tack on the min+ max in Period because scales=free_y
+    ## There is some chance this may produce a bad result, but these points are probably in the
+    ## COI, so that 
+    min_row <- as.data.table(plot_data)[ x_var == 'Time' & y_var == 'Period' ][
+        period  == min(period, na.rm=TRUE) & x == min(x,   na.rm=TRUE) ]
+    max_row <- as.data.table(plot_data)[ x_var == 'Time' & y_var == 'Period' ][
+        period  == max(period, na.rm=TRUE) & x == max(x, na.rm=TRUE) ]
+    max_row$y_var <- min_row$y_var <- factor('d Period',  levels=levels(plot_data$y_var))
+    max_period_clusters <- merge(
+        max_period_clusters,
+        rbind(min_row, max_row)[, c("x_var", "y_var", 'period', 'x', 'y')],
+        by=c("x_var", "y_var", 'period', 'x', 'y'), 
+        all=TRUE
+    )
+    
+    ## Merge the new and old data.
+    pd <- rbind(plot_data, wt_copy)
+    
+    ## Get the standard plot
+    gg <- plot_wavelet_events(pd, do_plot=FALSE)
+    
+    ## Extend the standard plot.    
+    
+    ## Use annotations for units labels on the y-axes.
+    plot_data <- as.data.table(plot_data)
+    
+    y_labs <-
+        plot_data[,
+            .(y_center=min(y, na.rm=TRUE)+.5*(max(y, na.rm=TRUE)-min(y, na.rm=TRUE)),
+              x_loc=.1*(max(x, na.rm=TRUE)-min(x, na.rm=TRUE))+max(x, na.rm=TRUE)
+             ),
+            by=c('y_var', 'x_var')
+        ]
+    y_labs <- subset(y_labs, x_var == 'Avg Power' | y_var == 'Streamflow (cms)')
+    relab <- c(
+        `c Period`="Period (hours)",
+        `Period`='Period (hours)',
+        `Streamflow (cms)`='Streamflow (cms)'
+    )
+    y_labs$lab <- relab[y_labs$y_var]
+    
+    ## Use the facet titles/labels to enumerate the steps in the process.
+    new_y_levels <-
+        c('Streamflow (cms)', 'Period', 'c Period',  'TimePer',           'Time', 'd Period')
+    new_y_labels <-
+        c('a.  Timeseries',   'b.  Obs WT', 'c. Obs WT Events', 'd.  Timing Errors', 'Wacky Figure Title', 'd. Period Clusters')
+    the_labeller <- function(string) {
+        labs <- new_y_labels
+        names(labs) <- new_y_levels
+        labs[string]
+    }
+
+    gg2 <-
+        gg +
+        
+        geom_raster(
+            data=subset(pd, y_var == new_y_levels[3]),
+            aes(x=x, y=y, fill=Power),
+            interpolate=FALSE
+        ) +
+        
+        geom_path(
+            data=subset(plot_data, y_var == new_y_levels[3]),
+            aes(x=x, y=y, linetype=`Avg over`)
+        ) +
+        
+        geom_point(
+            data=max_data,
+            aes(x=x, y=y, shape="Maxima"),
+            color='red'
+        ) +
+        
+        geom_raster(
+            data=max_period_clusters,
+            aes(x=x, y=y, fill_cluster=factor(period_clusters)),
+            interpolate=FALSE, na.rm=FALSE
+        ) %>% rename_geom_aes(new_aes = c("fill" = "fill_cluster")) +
+        
+        guides(
+            color = guide_legend(order = 1),
+            fill = guide_colorbar(order = 2),
+            linetype = guide_legend(order=3)
+        ) +
+        
+        facet_grid(
+            y_var ~ x_var,
+            labeller = labeller(y_var=y_labeller),
+            scales='free',
+            space='free',
+            switch='y'
+        ) +
+        
+        scale_fill_distiller(
+            aesthetics = "fill", guide = "legend",
+            palette = "Spectral", #Accent", #"Set3", #"Accent", #"BrBG","PiYG", #"PRGn"
+            ##direction=-1,
+            ##trans='log2',
+            labels = scales::scientific_format(digits=2),
+            na.value="transparent"
+        ) +
+        
+        scale_fill_discrete(
+            name='Cluster Number',
+            aesthetics = "fill_cluster", guide = "legend",
+            na.translate=FALSE,
+            na.value="transparent"
+        ) +
+        
+        theme(legend.title=element_text(size=rel(0.8)))
+    
+    ## return(gg2)
+    
+    ## Deal with the unused bits.
+    ## daGrob <- ggplotGrob(gg2)
+    ## gtable::gtable_show_layout(daGrob)
+    ## daGrob
+
+    grob <- facet_grob_adj(
+        gg2,
+        del=c("panel-2-4", "panel-1-3"),
+        adj=list(
+            `axis-r-1`=list(
+                position=c('l', 'r'),
+                values=c(-1.1, -1.1)
+            ),
+            `axis-r-4`=list(
+                position=c('l', 'r'),
+                values=c(-1.1, -1.1)
+            ),
+            `strip-t-2`=list(
+                position=c('t', 'b'),
+                values=(c(0, 0) + 2)
+            )
+        )
+    )
+
+    text_color = 'grey30'
+    text_size = 11
+    
+    text_grob_1 <- grid.text(
+        'Streamflow (cms)', x=-1.25, y=.6, hjust=.50, vjust=-3.5, rot=-90,
+        gp=gpar(col=text_color, fontsize=text_size)
+    )
+    ## size = rel(0.8), colour = "grey30"
+    t <- unique(grob$layout[grepl("panel-1-1",grob$layout$name), "t"])
+    l <- unique(grob$layout[grepl("panel-1-1",grob$layout$name), "l"])
+    g <- gtable::gtable_add_grob(grob, grobs=text_grob_1, t=t, l=l+1, clip='off')
+
+    text_grob_4 <- grid.text(
+        'Period (hours)', x=0, y=.5, hjust=.5, vjust=-3.5, rot=-90,
+        gp=gpar(col=text_color, fontsize=text_size)
+    )
+    t <- unique(grob$layout[grepl("panel-2-2",grob$layout$name), "t"])
+    l <- unique(grob$layout[grepl("panel-2-2",grob$layout$name), "l"])
+    g <- gtable::gtable_add_grob(g, grobs=text_grob_4, t=t, l=l+1, clip='off')
+    
+    # Insert a new column for labels
+    g <- gtable::gtable_add_cols(g, grid::unit(1,"line"), pos = -1)
+    
+    text_grob_2 <- grid.text(
+        'Period (hours)', x=0, y=.5, hjust=.5, vjust=.5, rot=-90,
+        gp=gpar(col=text_color, fontsize=text_size)
+    )
+    t <- unique(grob$layout[grepl("panel-2-1",grob$layout$name), "t"])
+    g <- gtable::gtable_add_grob(g, grobs=text_grob_2, t=t, l=ncol(g), clip='off')
+
+    text_grob_3 <- grid.text(
+        'Period (hours)', x=0, y=.5, hjust=.5, vjust=.5, rot=-90,
+        gp=gpar(col=text_color, fontsize=text_size)
+    )
+    t <- unique(grob$layout[grepl("panel-1-4",grob$layout$name), "t"])
+    g <- gtable::gtable_add_grob(g, grobs=text_grob_3, t=t, l=ncol(g), clip='off')
+
+    return(g)
+}
+
+
+step2_figure <- function(wt_event) {
+
+    ## Currently this is only configured to handle a single modeled timeseries.
+    model_name <- setdiff(names(wt_event), c("input_data", "obs"))
+    
+    wt_power <- get_data_plot_power(wt_event$obs$wt, wt_event$input_data)
+    xwt_power <- get_data_plot_power(wt_event[[model_name]]$xwt, wt_event$input_data)
+    ## Sub phase for power... 
+    xwt_phase <- get_data_plot_power(
+        wt_event[[model_name]]$xwt,
+        wt_event$input_data,
+        wt_field=wt_event[[model_name]]$xwt$phase
+    )
+    ## Timing is associate with the obs COI/signif
+    xwt_timing <- get_data_plot_power(
+        wt_event[[model_name]]$wt,
+        wt_event$input_data,
+        wt_field=wt_event[[model_name]]$xwt$event_timing$mtx$timing_err
+    )
+    
+    ## Restructuring for plotting, these cant be merged because the all have the same Period
+    ## axis. So do them individually with the input, remove the input, rename the y-axis, and
+    ## combine.
+    wt_data <-  merge_data_plot(wt_event$input_data, wt_power, streamflow_axis_len=2/3)
+    xwt_data <- merge_data_plot(wt_event$input_data, xwt_power, streamflow_axis_len=2/3)
+    xwt_phase_data <- merge_data_plot(wt_event$input_data, xwt_phase, streamflow_axis_len=2/3)
+    timing_data <- merge_data_plot(wt_event$input_data, xwt_timing, streamflow_axis_len=2/3)
+    
+    xwt_data <- subset(xwt_data, y_var == 'Period')
+    xwt_phase_data <- subset(xwt_phase_data, y_var == 'Period')
+    timing_data <- subset(timing_data, y_var == 'Period')
+    
+    xwt_data$phase <- xwt_phase_data$Power
+    ## Subsample the xwt_phase_data for plotting 
+    ## This one is gridded, easy selection to even indices.
+    periods_rm <- sort(unique(xwt_phase_data$y))[c(TRUE, TRUE, FALSE)]
+    ## This one is not necessarily gridded.  Convert to hours.
+    times <- sort(unique(xwt_phase_data$x))/3600
+    times_rm <- times[(times %% 2) != 0]*3600
+    wh_rm_ends <- which(xwt_data$x %in% times_rm | xwt_data$y %in% periods_rm)
+    xwt_data$phase[wh_rm_ends] <- NA
+    
+    ## Add a new vertical facet for showing the "event cluster"
+    new_y_levels <-
+        c('Streamflow (cms)',
+          'Period',
+          'XwtPer',
+          'TimePer',
+          'Time')
+    new_y_labels <-
+        c('a.  Timeseries',
+          'b. Obs WT',
+          'c.  XWT',
+          'd. Sampled Timing Errors',
+          'Wacky Figure Title')
+    the_labeller <- function(string) {
+        labs <- new_y_labels
+        names(labs) <- new_y_levels
+        labs[string]
+    }
+    
+    ## Transform the factor levels on the original data.
+    wt_data$y_var <- ordered(wt_data$y_var, levels=new_y_levels)
+    
+    ## Rename the period axis on the other fields.
+    xwt_data$y_var <- ordered('XwtPer', levels=new_y_levels)
+    timing_data$y_var <- ordered("TimePer", levels=new_y_levels)
+    
+    ## JLM subjective shit
+    timing_data$Power[which(timing_data$COI == FALSE | timing_data$Significance == 0)] <- NA
+    
+    ## Merge the new and old data. Wait for the phase... 
+    plot_data <- rbind(wt_data, timing_data)
+    plot_data$phase <- NA
+    plot_data <- rbind(plot_data, xwt_data)
+
+    ## Annotated the y-axes and set the limits (due to the annotation non-clip)
+    plot_data <- as.data.table(plot_data)
+    y_labs <- plot_data[
+         ,
+        .(y_center=min(y)+.5*(max(y)-min(y)), x_loc=.1*(max(x)-min(x))+max(x)),
+        by=y_var
+    ]
+    relab <- c("Streamflow (cms)", rep('Period (hours)',3)); names(relab) <- y_labs$y_var
+    y_labs$lab <- relab[y_labs$y_var]
+    
+    x_breaks <- as.numeric(attr(plot_data, 'x_breaks'))
+    x_labels <- attr(plot_data, 'x_labels')
+    y_breaks <- as.numeric(attr(plot_data, 'y_breaks'))
+    y_labels <- attr(plot_data, 'y_labels')
+    
+    xvals <- unique(subset(wt_data, y_var == 'Streamflow (cms)')$x)
+    xlim <- range(xvals) + c(-1,1) * diff(range(xvals))/length(xvals) / 2
+
+    ## Could have used the standard plot, but it was a bit clearer to redo the whole thing.
+    ## If the two start diverging in a bad way, then may consider using it again.
+
+    gg2 <-
+        ggplot() +
+        
+        ## This describes how the plot is arranged.
+        facet_grid(
+            y_var ~ x_var,
+            labeller = labeller(y_var=the_labeller, x_var=the_labeller),
+            scales='free',
+            space='free',
+            switch='y'
+        ) +
+        
+        ## Input timeseries
+        geom_line(
+            data=subset(plot_data, y_var == "Streamflow (cms)"),
+            aes(x=x, y=y, color=Streamflow),
+            size=1.1
+        ) +
+        
+        scale_color_brewer(
+            palette='Paired' #'Set2'
+        ) +
+        
+        ## WT 
+        geom_raster(
+            data=subset(plot_data, y_var == 'Period'),
+            aes(x=x, y=y, fill=Power),
+            interpolate=TRUE
+        )  +
+        
+        geom_contour(
+            data=subset(plot_data, y_var == "Period"),
+            aes(x=x, y=y, z=Significance, group=chunk),
+            bins=1,
+            color='black',
+            size=.5
+        ) +
+        
+        geom_raster(
+            data=subset(plot_data, y_var == "Period"),
+            aes(x=x, y=y, alpha=COI),
+            interpolate=TRUE,
+            fill='white'
+        ) +
+        
+        scale_alpha_manual(values=c('TRUE'=0, 'FALSE'=.6), guide=FALSE) +
+        
+        scale_fill_distiller("WT Power", palette = "Spectral") +
+        
+        ## XWT
+        new_scale('fill') +
+        scale_fill_distiller("XWT Power", palette = "Spectral") +
+        geom_raster(
+            data=subset(plot_data, y_var == 'XwtPer'),
+            aes(x=x, y=y, fill=Power),
+            interpolate=FALSE
+        ) +
+        
+        geom_text(
+            data=subset(plot_data, y_var == 'XwtPer' & !is.na(phase)),
+            aes(x=x, y=y, angle=(180/pi)*phase),
+            label='>',
+            size=2.5
+        ) +
+        
+        new_scale('fill') +
+        scale_fill_distiller(
+            "Timing Error\n  (hours)",
+            palette = "Spectral",
+            na.value="transparent"
+        ) +
+        
+        geom_raster(
+            data=subset(plot_data, y_var == 'TimePer'),
+            aes(x=x, y=y, fill=Power),
+            interpolate=FALSE,
+            ) +
+        
+        geom_text(
+            data=y_labs,
+            aes(x=x_loc, y=y_center, label=lab),
+            size=3.5,
+            angle=-90,
+            color='grey30'
+        ) +
+        
+        coord_cartesian(clip = 'off', xlim = xlim) +
+        
+        labs(y = "") +
+        
+        scale_y_continuous(
+            expand = c(0, 0),
+            position = "right",
+            breaks=y_breaks,
+            labels=y_labels
+        ) +
+        
+        scale_x_continuous(
+            expand = c(0, 0),
+            breaks=x_breaks,
+            labels=x_labels
+        ) +
+        
+        theme_bw(base_size=11) +
+        
+        theme(
+            legend.position="left",
+            legend.title=element_text(size=rel(0.8)),
+            ##legend.key.height=unit(3, "line"),
+            axis.title.x = element_blank(),
+                                        #axis.title.y = element_blank(),
+            axis.title.y = element_text(color='grey40'),
+            panel.spacing = unit(.25, "lines"),
+            strip.background = element_rect(fill = 'grey90')
+        )
+    
+
+    library(grid)
+    p <- gg2
+    g <- ggplot_gtable(ggplot_build(p))
+    
+    g <- gtable::gtable_add_cols(g, grid::unit(.5,"line"), pos = -1)
+    
+    ## This just removes fill and line around the g$layout$name's axis-t-* to
+    ## repurpose it as a figure title.
+    wh_strip <- which(grepl('strip-t', g$layout$name))
+    fills <- c("transparent")
+    kk <- 1
+    for (ii in wh_strip) {
+        jj <- which(grepl('rect', g$grobs[[ii]]$grobs[[1]]$childrenOrder))
+        g$grobs[[ii]]$grobs[[1]]$children[[jj]]$gp$fill <- fills[kk]
+        g$grobs[[ii]]$grobs[[1]]$children[[jj]]$gp$lwd <- 0
+        kk <- kk+1
+    }
+
+    ## Reorder the guides. This is a random mess.
+    wh_guide_box <- which(g$layout$name == 'guide-box')
+    ## Adjust the height of the individual guides using the panels on the main plot.
+    ##gtable::gtable_show_layout(g)
+    ##gtable::gtable_show_layout(g$grobs[[wh_guide_box]])
+    g$grobs[[wh_guide_box]]$heights[3:9] <- g$heights[8:14]
+    
+    wh_guides <- which(grepl('guides', g$grobs[[wh_guide_box]]$layout$name))
+    guide_layout <- g$grobs[[wh_guide_box]]$layout[wh_guides,]
+    ## That order flummoxes me, but it works.
+    guide_layout <- guide_layout[c(4,1,3,2),]
+    colnames(guide_layout) <- 1:4
+    g$grobs[[wh_guide_box]]$layout[1:4,] <- guide_layout
+
+    return(g)
 }
