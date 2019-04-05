@@ -322,7 +322,7 @@ plot_wavelet_events <- function(plot_data, do_plot=TRUE) {
 
     ##-------------------------------------------------------
     ## Wavelet spectrum plots
-    subset_power <- subset(plot_data, x_var == 'Time' & y_var == 'Period')
+    subset_power <- subset(plot_data, x_var == 'Time' & y_var == 'Period' & is.na(period_clusters))
 
     if(nrow(subset_power) > 0) {
         gg <-
@@ -522,12 +522,71 @@ step1_figure <- function(wt_event) {
     obs_event_t_avg_power <- get_data_plot_time_avg_power(wt_event$obs$wt, event=TRUE)
     ## Should include the ar1 spectrum
 
+    ## Data to plot the maxima on the time-avg spectra with this dataframe
+    event_t_avg_max_data <- wt_event$obs$wt$event_timing$time_avg[local_max == TRUE,]
+    setnames(event_t_avg_max_data, 'power_corr', 'Avg Power')
+    event_t_avg_max_data <- merge(
+        event_t_avg_max_data,
+        obs_event_t_avg_power[, c('period', 'Period', 'Avg over')],
+        by=c('period'),
+        all.x=TRUE, all.y=FALSE
+    )
+
+    # adsf
+    # =============================================================================
+    ## Plot the cluster numbers
+    max_periods <- wt_event$obs$wt$event_timing$time_avg[local_max == TRUE]$period
+    max_period_clusters <- wt_event$obs$wt$event_timing$all[ period %in% max_periods ]
+    wt_event$input_data$time <- 1:nrow(wt_event$input_data)
+    
+    event_t_avg_max_period_clusters <- merge(
+        max_period_clusters,
+        wt_event$input_data[, c('Time', 'time')],
+        by='time',
+        all.x=TRUE, all.y=FALSE
+    )
+    event_t_avg_max_period_clusters$time <- NULL
+    #setnames(event_t_avg_max_period_clusters, 'period_clusters'
+
+    event_t_avg_max_period_clusters <- merge(
+        event_t_avg_max_period_clusters,
+        obs_power[, c('period', 'Time', 'Period')],
+        by=c('period', 'Time'),
+        all.x=TRUE, all.y=FALSE
+    )
+
+    ## setnames(max_period_clusters, "Time", 'x')
+    ## max_period_clusters$x_var <- factor('Time',  levels=levels(plot_data$x_var))
+    ## max_period_clusters$y_var <- factor('Period',  levels=levels(plot_data$y_var))
+    ## max_period_clusters <- merge(
+    ##     max_period_clusters, plot_data,
+    ##     by=c("x_var", "y_var", 'period', 'x'), 
+    ##     all.x=TRUE, all.y=FALSE
+    ## )
+    ## max_period_clusters$y_var <- factor('d Period',  levels=levels(plot_data$y_var))
+    ## ## need to tack on the min+ max in Period because scales=free_y
+    ## ## There is some chance this may produce a bad result, but these points are probably in the
+    ## ## COI, so that 
+    ## min_row <- as.data.table(plot_data)[ x_var == 'Time' & y_var == 'Period' ][
+    ##     period  == min(period, na.rm=TRUE) & x == min(x,   na.rm=TRUE) ]
+    ## max_row <- as.data.table(plot_data)[ x_var == 'Time' & y_var == 'Period' ][
+    ##     period  == max(period, na.rm=TRUE) & x == max(x, na.rm=TRUE) ]
+    ## max_row$y_var <- min_row$y_var <- factor('d Period',  levels=levels(plot_data$y_var))
+    ## max_period_clusters <- merge(
+    ##     max_period_clusters,
+    ##     rbind(min_row, max_row)[, c("x_var", "y_var", 'period', 'x', 'y')],
+    ##     by=c("x_var", "y_var", 'period', 'x', 'y'), 
+    ##     all=TRUE
+    ## )
+        
     plot_data <-
         merge_data_plot(
             wt_event$input_data,
             obs_power,
+            event_t_avg_max_period_clusters,
             obs_t_avg_power,
             obs_event_t_avg_power,
+            event_t_avg_max_data,
             avg_power_axis_len=1/5,
             avg_power_breaks=c(10000, 100000),
             avg_power_label_format=scales::scientific_format(digits=0),
@@ -553,58 +612,17 @@ step1_figure <- function(wt_event) {
     wt_copy <- subset(plot_data, x_var == 'Time' & y_var == 'Period')
     wt_copy$y_var <- ordered("c Period", levels=new_y_levels)
     wt_copy$Power[which(wt_copy$COI == FALSE | wt_copy$Significance == 0)] <- NA
-    
+
     ## Transform the factor levels on the original data.
     plot_data$y_var <- ordered(plot_data$y_var, levels=new_y_levels)
     
+    plot_data$y_var[which(!is.na(plot_data$period_clusters))] <-
+        ordered("d Period", levels=new_y_levels)    
+
     ## Put the event spectrum on the new axis.
     wh_events <- which(plot_data$`Avg over` == 'events')
     plot_data$y_var[wh_events]<- ordered(new_y_levels[3], levels=new_y_levels)
 
-    ## Plot the maxima on the time-avg spectra with this dataframe
-    max_data <- wt_event$obs$wt$event_timing$time_avg[local_max == TRUE,]
-    max_data$x_var <- factor('Avg Power',  levels=levels(plot_data$x_var))
-    max_data$y_var <- factor('c Period',  levels=levels(plot_data$y_var))
-    max_data <- merge(
-        max_data, plot_data,
-        by=c("x_var", "y_var", 'period'),
-        all.x=TRUE, all.y=FALSE
-    )
-
-    ## Plot the cluster numbers
-    max_periods <- wt_event$obs$wt$event_timing$time_avg[local_max == TRUE]$period
-    max_period_clusters <- wt_event$obs$wt$event_timing$all[ period %in% max_periods ]
-    wt_event$input_data$time <- 1:nrow(wt_event$input_data)
-    max_period_clusters <- merge(
-        max_period_clusters,
-        wt_event$input_data[, c('Time', 'time')],
-        by='time',
-        all.x=TRUE, all.y=FALSE
-    )
-    setnames(max_period_clusters, "Time", 'x')
-    max_period_clusters$x_var <- factor('Time',  levels=levels(plot_data$x_var))
-    max_period_clusters$y_var <- factor('Period',  levels=levels(plot_data$y_var))
-    max_period_clusters <- merge(
-        max_period_clusters, plot_data,
-        by=c("x_var", "y_var", 'period', 'x'), 
-        all.x=TRUE, all.y=FALSE
-    )
-    max_period_clusters$y_var <- factor('d Period',  levels=levels(plot_data$y_var))
-    ## need to tack on the min+ max in Period because scales=free_y
-    ## There is some chance this may produce a bad result, but these points are probably in the
-    ## COI, so that 
-    min_row <- as.data.table(plot_data)[ x_var == 'Time' & y_var == 'Period' ][
-        period  == min(period, na.rm=TRUE) & x == min(x,   na.rm=TRUE) ]
-    max_row <- as.data.table(plot_data)[ x_var == 'Time' & y_var == 'Period' ][
-        period  == max(period, na.rm=TRUE) & x == max(x, na.rm=TRUE) ]
-    max_row$y_var <- min_row$y_var <- factor('d Period',  levels=levels(plot_data$y_var))
-    max_period_clusters <- merge(
-        max_period_clusters,
-        rbind(min_row, max_row)[, c("x_var", "y_var", 'period', 'x', 'y')],
-        by=c("x_var", "y_var", 'period', 'x', 'y'), 
-        all=TRUE
-    )
-    
     ## Merge the new and old data.
     pd <- rbind(plot_data, wt_copy)
     
@@ -646,26 +664,26 @@ step1_figure <- function(wt_event) {
         gg +
         
         geom_raster(
-            data=subset(pd, y_var == new_y_levels[3]),
+            data=subset(pd, y_var == new_y_levels[3] & is.na(period_clusters)),
             aes(x=x, y=y, fill=Power),
             interpolate=FALSE
         ) +
         
         geom_path(
-            data=subset(plot_data, y_var == new_y_levels[3]),
+            data=subset(plot_data, y_var == new_y_levels[3] & is.na(local_max)),
             aes(x=x, y=y, linetype=`Avg over`)
         ) +
         
         geom_point(
-            data=max_data,
+            data=subset(plot_data, local_max == TRUE),
             aes(x=x, y=y, shape="Maxima"),
-            color='red'
+            color='grey70'
         ) +
         
         geom_raster(
-            data=max_period_clusters,
-            aes(x=x, y=y, fill_cluster=factor(period_clusters)),
-            interpolate=FALSE, na.rm=FALSE
+           data=subset(plot_data, !is.na(period_clusters)),
+           aes(x=x, y=y, fill_cluster=factor(period_clusters)),
+           interpolate=FALSE, na.rm=FALSE
         ) %>% rename_geom_aes(new_aes = c("fill" = "fill_cluster")) +
         
         guides(
@@ -699,8 +717,6 @@ step1_figure <- function(wt_event) {
         ) +
         
         theme(legend.title=element_text(size=rel(0.8)))
-    
-    ## return(gg2)
     
     ## Deal with the unused bits.
     ## daGrob <- ggplotGrob(gg2)
