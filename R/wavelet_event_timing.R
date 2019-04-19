@@ -219,7 +219,8 @@ WtEventTiming <- function(POSIXct, obs,
         as.data.table(
             data.frame(
                 POSIXct=POSIXct,
-                Time=as.numeric(POSIXct), #1:length(POSIXct), 
+                Time=as.numeric(POSIXct),
+                input_index=1:length(POSIXct), 
                 obs=obs
             )
         )
@@ -255,7 +256,7 @@ WtEventTiming <- function(POSIXct, obs,
     ## Melt just for the output list
     output[['input_data']] <- melt(
         input_data,
-        id.vars=c('Time', 'POSIXct', 'chunk'),
+        id.vars=c('Time', 'POSIXct', 'chunk', 'input_index'),
         variable.name='Streamflow',
         value.name='Streamflow (cms)'
     )
@@ -284,7 +285,10 @@ WtEventTiming <- function(POSIXct, obs,
     output[['obs']]$wt$event_timing$all <-
         data.table::data.table(power_corr = output[['obs']]$wt$power.corr[wh_event_mask])
     output[['obs']]$wt$event_timing$all$period <- output[['obs']]$wt$period[wh_event_mask[,1]]
-    output[['obs']]$wt$event_timing$all$time <-  output[['obs']]$wt$t[wh_event_mask[,2]]
+
+    output[['obs']]$wt$event_timing$all$time <-
+        output[['input_data']][Streamflow == 'obs']$input_index[wh_event_mask[,2]]
+    
     output[['obs']]$wt$event_timing$all$period_clusters <-
         output[['obs']]$wt$event_timing$event_mtx$period_clusters[wh_event_mask]
     ## sort all by period and time
@@ -375,7 +379,7 @@ WtEventTiming <- function(POSIXct, obs,
             output[[name]]$xwt$period[wh_event_mask[,1]]
 
         output[[name]]$xwt$event_timing$all$time <-
-            output[[name]]$xwt$t[wh_event_mask[,2]]
+            output[['input_data']][Streamflow == 'obs']$input_index[wh_event_mask[,2]]
 
         output[[name]]$xwt$event_timing$all$timing_err <-
             output[[name]]$xwt$event_timing$all$period *

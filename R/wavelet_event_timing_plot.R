@@ -54,7 +54,6 @@ get_data_plot_power <- function(wt, input_data, wt_field=NULL, event=FALSE) {
     } else {
         wps_matrix <- wt_field
     }
-    
     rownames(wps_matrix) <- length(wt$period):1
     colnames(wps_matrix) <- input_obs$POSIXct
     wps <- setNames(reshape2::melt(wps_matrix), c('Period', 'Time', 'Power'))
@@ -331,7 +330,7 @@ plot_wavelet_events <- function(plot_data, do_plot=TRUE) {
             geom_raster(
                 data=subset_power,
                 aes(x=x, y=y, fill=Power),
-                interpolate=TRUE
+                interpolate=FALSE
             )  +
             
             geom_contour(
@@ -345,7 +344,7 @@ plot_wavelet_events <- function(plot_data, do_plot=TRUE) {
             geom_raster(
                 data=subset_power,
                 aes(x=x, y=y, alpha=COI),
-                interpolate=TRUE,
+                interpolate=FALSE,
                 fill='white'
             ) +
             
@@ -532,53 +531,42 @@ step1_figure <- function(wt_event) {
         all.x=TRUE, all.y=FALSE
     )
 
-    # adsf
     # =============================================================================
     ## Plot the cluster numbers
+
     max_periods <- wt_event$obs$wt$event_timing$time_avg[local_max == TRUE]$period
     max_period_clusters <- wt_event$obs$wt$event_timing$all[ period %in% max_periods ]
-    wt_event$input_data$time <- 1:nrow(wt_event$input_data)
-    
+
     event_t_avg_max_period_clusters <- merge(
         max_period_clusters,
-        wt_event$input_data[, c('Time', 'time')],
-        by='time',
+        wt_event$input_data[ Streamflow == 'obs', c('Time', 'input_index', 'POSIXct')],
+        by.x='time',
+        by.y='input_index',
         all.x=TRUE, all.y=FALSE
     )
-    event_t_avg_max_period_clusters$time <- NULL
-    #setnames(event_t_avg_max_period_clusters, 'period_clusters'
 
+    event_t_avg_max_period_clusters$time <- NULL
     event_t_avg_max_period_clusters <- merge(
         event_t_avg_max_period_clusters,
         obs_power[, c('period', 'Time', 'Period')],
         by=c('period', 'Time'),
         all.x=TRUE, all.y=FALSE
     )
-
-    ## setnames(max_period_clusters, "Time", 'x')
-    ## max_period_clusters$x_var <- factor('Time',  levels=levels(plot_data$x_var))
-    ## max_period_clusters$y_var <- factor('Period',  levels=levels(plot_data$y_var))
-    ## max_period_clusters <- merge(
-    ##     max_period_clusters, plot_data,
-    ##     by=c("x_var", "y_var", 'period', 'x'), 
-    ##     all.x=TRUE, all.y=FALSE
-    ## )
-    ## max_period_clusters$y_var <- factor('d Period',  levels=levels(plot_data$y_var))
-    ## ## need to tack on the min+ max in Period because scales=free_y
-    ## ## There is some chance this may produce a bad result, but these points are probably in the
-    ## ## COI, so that 
-    ## min_row <- as.data.table(plot_data)[ x_var == 'Time' & y_var == 'Period' ][
-    ##     period  == min(period, na.rm=TRUE) & x == min(x,   na.rm=TRUE) ]
-    ## max_row <- as.data.table(plot_data)[ x_var == 'Time' & y_var == 'Period' ][
-    ##     period  == max(period, na.rm=TRUE) & x == max(x, na.rm=TRUE) ]
-    ## max_row$y_var <- min_row$y_var <- factor('d Period',  levels=levels(plot_data$y_var))
-    ## max_period_clusters <- merge(
-    ##     max_period_clusters,
-    ##     rbind(min_row, max_row)[, c("x_var", "y_var", 'period', 'x', 'y')],
-    ##     by=c("x_var", "y_var", 'period', 'x', 'y'), 
-    ##     all=TRUE
-    ## )
-        
+    ## Have to include the y-limits or it will be squashed and have to sample
+    ## all the raster coordinates to build the raster.
+    minmax <- as.data.table(obs_power)[
+        period == min(period)  | period == max(period) | Time == min(Time)
+    ]
+    
+    ## hmmmm.... is it guaranteed that the min(Time) is all in the COI?
+    minmax <- minmax[, period_clusters := as.integer(-1) ]
+    event_t_avg_max_period_clusters <- merge(
+        event_t_avg_max_period_clusters,
+        minmax[, c('period', 'Time', 'period_clusters', 'Period')],
+        by=c('period', 'Time', 'period_clusters', 'Period'),
+        all.x=TRUE, all.y=TRUE
+    )
+    
     plot_data <-
         merge_data_plot(
             wt_event$input_data,
@@ -618,7 +606,8 @@ step1_figure <- function(wt_event) {
     
     plot_data$y_var[which(!is.na(plot_data$period_clusters))] <-
         ordered("d Period", levels=new_y_levels)    
-
+    plot_data$period_clusters[which(plot_data$period_clusters < 0)] <- NA
+    
     ## Put the event spectrum on the new axis.
     wh_events <- which(plot_data$`Avg over` == 'events')
     plot_data$y_var[wh_events]<- ordered(new_y_levels[3], levels=new_y_levels)
@@ -660,13 +649,17 @@ step1_figure <- function(wt_event) {
         labs[string]
     }
 
+    #asdfadf
+    #subset(plot_data, y_var == new_y_levels[6])
+    
     gg2 <-
         gg +
         
         geom_raster(
             data=subset(pd, y_var == new_y_levels[3] & is.na(period_clusters)),
             aes(x=x, y=y, fill=Power),
-            interpolate=FALSE
+            interpolate=FALSE,
+            na.rm=TRUE
         ) +
         
         geom_path(
@@ -681,7 +674,7 @@ step1_figure <- function(wt_event) {
         ) +
         
         geom_raster(
-           data=subset(plot_data, !is.na(period_clusters)),
+           data=subset(plot_data, y_var == new_y_levels[6]), # & !is.na(period_clusters)),
            aes(x=x, y=y, fill_cluster=factor(period_clusters)),
            interpolate=FALSE, na.rm=FALSE
         ) %>% rename_geom_aes(new_aes = c("fill" = "fill_cluster")) +
@@ -717,6 +710,8 @@ step1_figure <- function(wt_event) {
         ) +
         
         theme(legend.title=element_text(size=rel(0.8)))
+
+    ## return(gg2)
     
     ## Deal with the unused bits.
     ## daGrob <- ggplotGrob(gg2)
@@ -783,7 +778,7 @@ step1_figure <- function(wt_event) {
 }
 
 
-step2_figure <- function(wt_event) {
+step2_figure <- function(wt_event, n_phase_along_x=70) {
 
     ## Currently this is only configured to handle a single modeled timeseries.
     model_name <- setdiff(names(wt_event), c("input_data", "obs"))
@@ -798,7 +793,7 @@ step2_figure <- function(wt_event) {
     )
     ## Timing is associate with the obs COI/signif
     xwt_timing <- get_data_plot_power(
-        wt_event[[model_name]]$wt,
+        wt_event$obs$wt,
         wt_event$input_data,
         wt_field=wt_event[[model_name]]$xwt$event_timing$mtx$timing_err
     )
@@ -821,7 +816,8 @@ step2_figure <- function(wt_event) {
     periods_rm <- sort(unique(xwt_phase_data$y))[c(TRUE, TRUE, FALSE)]
     ## This one is not necessarily gridded.  Convert to hours.
     times <- sort(unique(xwt_phase_data$x))/3600
-    times_rm <- times[(times %% 2) != 0]*3600
+    mod_by <-  length(times) %/% n_phase_along_x
+    times_rm <- times[(times %% mod_by) != 0]*3600
     wh_rm_ends <- which(xwt_data$x %in% times_rm | xwt_data$y %in% periods_rm)
     xwt_data$phase[wh_rm_ends] <- NA
     
@@ -852,8 +848,10 @@ step2_figure <- function(wt_event) {
     timing_data$y_var <- ordered("TimePer", levels=new_y_levels)
     
     ## JLM subjective shit
-    timing_data$Power[which(timing_data$COI == FALSE | timing_data$Significance == 0)] <- NA
-    
+    timing_data$Power[which(timing_data$COI == FALSE)] <- NA
+    timing_data$Power[which(timing_data$Significance == 0)] <- NA
+    ##timing_data$Power[which(timing_data$COI == TRUE | timing_data$Significance == 0)] <- NA
+
     ## Merge the new and old data. Wait for the phase... 
     plot_data <- rbind(wt_data, timing_data)
     plot_data$phase <- NA
@@ -955,7 +953,8 @@ step2_figure <- function(wt_event) {
         geom_raster(
             data=subset(plot_data, y_var == 'TimePer'),
             aes(x=x, y=y, fill=Power),
-            interpolate=FALSE,
+            interpolate=FALSE
+            #na.rm=FALSE
             ) +
         
         geom_text(
