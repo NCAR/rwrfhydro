@@ -22,87 +22,6 @@ GetNcdfFile <- function(file, variables=NULL,
                         exclude=FALSE,
                         quiet=FALSE,
                         flip2D=TRUE,
-                        collapse_degen=FALSE) {
-
-  if(!file.exists(file)) warning(paste0('The file ', file, 'does not exist.'), immediate. = TRUE)
-
-  if(!quiet) ncdump(file)
-
-  nc <- ncdf4::nc_open(file)
-
-  # Deal with variables asked for
-  varsInFile <- names(nc$var)
-  dimVarsInFile <- names(nc$dim)
-  whDimVarsVals <- plyr::laply(nc$dim, '[[', 'create_dimvar')
-  if(any(whDimVarsVals)) varsInFile <- c(dimVarsInFile[whDimVarsVals], varsInFile)
-
-  returnVars <-
-  if(!is.null(variables)) {
-    varsNotInFile <- setdiff(variables, varsInFile)
-    if(length(varsNotInFile))
-      warning(paste0('The following variables were not found in the file',
-                     paste(varsNotInFile, collapse=', ')))
-    if(!exclude) intersect(variables, varsInFile) else setdiff(varsInFile, variables)
-  } else varsInFile
-
-
-  varNDims <- unlist(lapply(nc$var, function(vv) vv$ndims))
-  if(length(whZeroDim <-  which(varNDims==0))) {
-    if(!quiet) cat("The following variables are ommitted because they have zero dimensions: ",
-                   names(whZeroDim),'\n')
-    returnVars <- setdiff(returnVars, names(whZeroDim))
-  }
-
-  doGetVar <- function(theVar) ncdf4::ncvar_get(nc, varid=theVar, collapse_degen=collapse_degen)
-  outList <- plyr::llply(NamedList(returnVars), doGetVar)
-
-  doGetVarAtt <- function(theVar) ncdf4::ncatt_get( nc, varid=theVar )
-  attList <- plyr::llply(NamedList(returnVars), doGetVarAtt)
-
-  natts <- nc$natts
-  if( natts  > 0 ) attList$global <- ncdf4::ncatt_get( nc, 0 )
-
-  ncdf4::nc_close(nc)
-
-  nDims <- plyr::laply(outList, function(ll) length(dim(ll)))
-
-  if(flip2D & any(nDims==2)){
-    wh2D <- which(nDims==2)
-    for(ww in wh2D) outList[[ww]] <- FlipUD(outList[[ww]])
-  }
-
-  if( !(all(nDims==nDims[1])) | !(all(nDims==1)) ) return(outList)
-
-  vecLen <- plyr::laply(outList[-10], length)
-  if( all(vecLen==vecLen[1]) ) outList <- as.data.frame(outList)
-
-  if( natts > 0 ) attributes(outList) <- c(attributes(outList), attList)
-
-  outList
-}
-
-##=========================================================================================================
-#' Emulate ncdump -h and -v.
-#'
-#' I just hacked print.ncdf4 just to make it look more like unix output.
-#'
-#' @param file Character, the file to inspect.
-#' @param variable Character, a variable to return.
-#' @param quiet Logical, suppress the 'meta' dump?
-#' @param collapse_degen If TRUE (the default), then degenerate (length==1) dimensions in the returned array are removed.
-#' @return A list or a dataframe (if all variables are 1D of the same length.)
-#' @examples
-#' \dontrun{
-#' conn <- GetNcdfFile('~/wrfHydroTestCases/Fourmile_Creek/CHANNEL_CONNECTIVITY.nc')
-#'  conn <- GetNcdfFile('~/wrfHydroTestCases/Fourmile_Creek/CHANNEL_CONNECTIVITY.nc', var='lambert_conformal_conic', exc=TRUE)
-#' }
-#' @concept ncdf
-#' @family ncdf
-#' @export
-GetNcdfFile <- function(file, variables=NULL,
-                        exclude=FALSE,
-                        quiet=FALSE,
-                        flip2D=TRUE,
                         collapse_degen=TRUE) {
 
   if(!file.exists(file)) warning(paste0('The file ', file, 'does not exist.'), immediate. = TRUE)
@@ -162,7 +81,8 @@ GetNcdfFile <- function(file, variables=NULL,
   outList
 }
 
-##=========================================================================================================
+
+##==================================================================================================
 #' Emulate ncdump -h and -v.
 #'
 #' I just hacked print.ncdf4 just to make it look more like unix output.
@@ -171,8 +91,8 @@ GetNcdfFile <- function(file, variables=NULL,
 #' @param variable Character, a variable to return.
 #' @param quiet Logical, suppress the 'meta' dump?
 #' @param collapse_degen If TRUE (the default), then degenerate (length==1) dimensions in the returned array are removed.
-#' @return If variable is not set, the meta object \code{ncdf4::nc_open(file)} is returned. If \code{variable}
-#' is set, its values are returned.
+#' @return If variable is not set, the meta object \code{ncdf4::nc_open(file)} is returned. If \code{variable} is set, its values are returned.
+#' @examples
 #' @concept ncdf
 #' @family ncdf
 #' @export
