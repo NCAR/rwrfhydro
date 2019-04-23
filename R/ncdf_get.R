@@ -235,3 +235,49 @@ ncdump <-function(file, variable, quiet=FALSE, collapse_degen=TRUE) {
 }
 
 
+
+##==================================================================================================
+## Bring collected NWM data in netcdf into R as a data.table.
+##
+## @param
+## @param
+## @param
+## @return
+## Example:
+## >  devtools::load_all('~/WRF_Hydro/rwrfhydro/')
+## Loading rwrfhydro
+## To check rwrfhydro updates run: CheckForUpdates()
+## > measure_vars = c('elevation', 'inflow', 'outflow')
+## > data <- GetNcCollectedNwm('reservoir_short_range_201810.nc', measure.vars=measure_vars)
+## data.table 1.12.0  Latest news: r-datatable.com
+## > str(data)
+## Classes 'data.table' and 'data.frame':	575856 obs. of  6 variables:
+##  $ feature_id    : int  1233435 1233435 1233435 1233435 1233435 1233435 1233435 1233435 1233435 1233435 ...
+##  $ reference_time: POSIXct, format: "2018-10-01 00:00:00" "2018-10-01 00:00:00" ...
+##  $ lead_time     : POSIXct, format: "2018-10-01 01:00:00" "2018-10-01 02:00:00" ...
+##  $ elevation     : num  2554 2554 2554 2554 2554 ...
+##  $ inflow        : num  1.26 1.29 1.33 1.37 1.42 ...
+##  $ outflow       : num  1.26 1.29 1.33 1.37 1.42 ...
+##  - attr(*, ".internal.selfref")=<externalptr>
+##  - attr(*, "sorted")= chr "feature_id"
+## @concept ncdf
+## @family ncdf
+
+
+#' @export
+GetNcCollectedNwm <- function(
+    file,
+    measure.vars,
+    id.vars = c('reference_time', 'feature_id', 'lead_time', 'valid_time')
+){
+  data = GetNcdfFile(file, q=TRUE)
+  ref_time_meta <- ncdump(file, q=TRUE)
+  since_time <-
+    as.POSIXct(ref_time_meta$dim$reference_time$units,
+               format='hours since %Y-%m-%d %H:%M:%S',
+               tz='UTC')
+  df <- FlattenMtxList(data, mat_vars=measure_vars, id.vars=id.vars)
+  df$reference_time <- df$reference_time*(60*60) + since_time
+  df$lead_time <- df$lead_time*(60*60) + df$reference_time
+  return(df)
+}

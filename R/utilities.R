@@ -436,7 +436,54 @@ RBFlash <- function (m, na.rm=TRUE) {
 }
 
 
+#' Flatten a list of matrices to a data.table with coordinate dimensions
+#'
+#' @concept utilities
+#' @family utilities
+#' @export
+FlattenMtxList <- function(the_list, mat_vars, implicit_varname='link', id.vars=NULL) {
+  ## In a list, take mat_vars, by examining the dims of each matrix in mat_vars
+  ## identify the 1-d variables in the list which correspond and use these
+  ## to apply dimnames to the matrix. One implied variable name is allowed which
+  ## takes an index along the dimname of 1:length(dim).
+  ## Then use reshape2:melt to melt the matrix to a data.frame with
+  ## the dimname information as abscissae variables.
+  ## Do data.table joins of these to collect all the mat_vars requested.
 
+  get_dims <- function(ll)
+    if(length(dim(ll)) > 1) return(NULL) else return(c(length=dim(ll)))
+  dim_df <- plyr::ldply(the_list, get_dims)
+  if(!is.null(id.vars)) dim_df <- subset(dim_df, .id %in% id.vars)
+
+  if(nrow(dim_df) != length(dim_df$length))
+    stop('Dimensions of data sets do not have unique lengths, dying.')
+
+  output <- NULL
+  for(vv in mat_vars) {
+    mtx <- the_list[[vv]]
+    mtx_dims <- dim(mtx)
+    if(length(mtx_dims) == 2) mtx <- rwrfhydro::FlipUD(mtx)
+    ## Label the dims before melting
+    for(dd in 1:length(mtx_dims)) {
+      wh_dim <- which(dim_df$length == mtx_dims[dd])
+      if(length(wh_dim) == 0) {
+        dimnames(mtx)[[dd]] <- 1:mtx_dims[dd]
+        names(dimnames(mtx))[dd] <- implicit_varname
+      } else {
+        dimnames(mtx)[[dd]] <- the_list[[dim_df$.id[wh_dim]]]
+        names(dimnames(mtx))[dd] <- dim_df$.id[wh_dim]
+      }
+    }
+    mtx_melt <- reshape2::melt(mtx, value.name=vv)
+    if(is.null(output)) {
+      output <- data.table::data.table(mtx_melt)
+    } else {
+      output <- merge(output, data.table::data.table(mtx_melt), by=names(dimnames(mtx)))
+    }
+  }
+
+  return(output)
+}
 
 #' "Flatten" the output from GetMultiNcdf
 #' 
