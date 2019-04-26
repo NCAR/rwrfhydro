@@ -1030,3 +1030,95 @@ step2_figure <- function(wt_event, n_phase_along_x=70) {
 
     return(g)
 }
+
+
+event_cluster_timing_by_period <- function(wt_event, all_timing=FALSE) {
+
+    ## Currently this is only configured to handle a single modeled timeseries.
+    model_name <- setdiff(names(wt_event), c("input_data", "obs"))
+
+    wh_max_periods <- wt_event$obs$wt$event_timing$time_avg$local_max
+    max_periods <- wt_event$obs$wt$event_timing$time_avg$period[wh_max_periods]
+
+    wh_period_rows = which(wt_event[[model_name]]$xwt$period %in% max_periods)
+
+    timing_err_full <- wt_event[[model_name]]$xwt$event_timing$mtx$timing_err[wh_period_rows,]
+
+    if(length(dim(timing_err_full)) > 1) {
+        dimnames(timing_err_full)[[1]] <- wt_event[[model_name]]$xwt$period[wh_period_rows]
+        names(dimnames(timing_err_full))[1] <- "period"
+        dimnames(timing_err_full)[[2]] <- wt_event[[model_name]]$xwt$t
+        names(dimnames(timing_err_full))[2] <- "time"
+        plot_data0 <- reshape2::melt(timing_err_full, value.name='timing_err')
+    } else{
+        plot_data0 <- data.table(
+            timing_err=timing_err_full,
+            time=wt_event[[model_name]]$xwt$t,
+            period=max_periods
+        )
+    }
+
+    event_timing_all <- wt_event[[model_name]]$xwt$event_timing$all[period %in% max_periods]
+    event_timing_all$timing_err <- NULL
+
+    ## Join in the obs signf and the wxt significance
+    ## we_stats <- we_hydro_stats(wt_event)
+    plot_data <- merge(
+        plot_data0,
+        event_timing_all,
+        by=c('time', 'period'),
+        all.x=TRUE,
+        all.y=FALSE
+    )
+    
+    label_clusters <- function(values) {
+        inner_labeller <- function(value) if(is.na(value)) 'None' else as.character(value)
+        plyr::laply(values, inner_labeller)
+    }
+    plot_data$period_clusters <- factor(label_clusters(plot_data$period_clusters))
+    clust_numbers <- setdiff(levels(plot_data$period_clusters), "None")
+    fill_colors <- c(NA, RColorBrewer::brewer.pal(name='Set2', length(clust_numbers)))
+    names(fill_colors) <- c('None', clust_numbers)
+    
+    periods <- unique(plot_data$period)
+    period_facet_labeller = paste0('Period = ', format(periods, digits=2, nsmall=1))
+    names(period_facet_labeller) <- periods
+    
+    we_hist_plot <- function(data) {    
+        result <-
+            ggplot(data) +
+            geom_histogram(
+                aes(
+                    x=timing_err,
+                    fill=period_clusters,
+                    alpha=xwt_signif
+                ),
+                color='grey70',
+                size=.1#, 
+                ## binwidth=.2
+            ) +
+            facet_wrap(
+                ~period,
+                scales='free_x',
+                labeller=as_labeller(period_facet_labeller)
+            ) +
+            scale_alpha_manual(
+                name='XWT Significant',
+                values=c(`TRUE`=1, `FALSE`=.2),
+                breaks=c(TRUE, FALSE),
+                na.translate=TRUE,
+                na.value=.2
+            ) +
+            scale_fill_manual(
+                values=fill_colors,
+                name='Event Cluster Number',
+                na.translate=TRUE
+            ) +
+            scale_x_continuous(name='Timing Error (hrs)') + 
+            theme_bw()
+        return(result)
+    }
+    
+    #we_hist_plot(plot_data)
+    invisible(we_hist_plot(subset(plot_data, !is.na(phase))))
+}
