@@ -1,7 +1,3 @@
-library(ggplot2)
-library(ggnewscale)
-library(relayer) ## git hash 8a1d49e1707d9fcc1aaa83476a3d9a15448a1065
-library(dplyr)
 
 get_data_plot_time_avg_power <- function(wt, event=FALSE) {
     ## Return the data to plot the time-averaged wavelet spectrum.
@@ -517,6 +513,10 @@ facet_grob_adj <- function(gg,
 
 step1_figure <- function(wt_event) {
 
+    library(dplyr)
+    library(ggplot2)
+    library(relayer) ## git hash 8a1d49e1707d9fcc1aaa83476a3d9a15448a1065
+
     obs_power <- get_data_plot_power(wt_event$obs$wt, wt_event$input_data)
     obs_t_avg_power <- get_data_plot_time_avg_power(wt_event$obs$wt)
     obs_event_t_avg_power <- get_data_plot_time_avg_power(wt_event$obs$wt, event=TRUE)
@@ -780,7 +780,11 @@ step1_figure <- function(wt_event) {
 
 
 step2_figure <- function(wt_event, n_phase_along_x=70) {
-
+    library(dplyr)
+    library(ggplot2)
+    library(relayer) ## git hash 8a1d49e1707d9fcc1aaa83476a3d9a15448a1065
+    library(ggnewscale) # This is to be deprecated
+    
     ## Currently this is only configured to handle a single modeled timeseries.
     model_name <- setdiff(names(wt_event), c("input_data", "obs"))
     
