@@ -317,6 +317,7 @@ merge_data_plot <- function(
 
 
 plot_wavelet_events <- function(plot_data, do_plot=TRUE) {
+    library(ggplot2)
     gg <- ggplot()
 
     ##-------------------------------------------------------
