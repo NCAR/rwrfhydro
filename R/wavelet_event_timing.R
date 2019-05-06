@@ -159,8 +159,9 @@ WtEventMtx <- function(wt) {
 WtTimeChunks <- function(input_data, obs_name, mod_name=NULL, max.scale=256) {
 
     chunk_list <- list()
-    for(cc in unique(input_data$chunk)) {
-        input_chunk <- subset(input_data, chunk == cc)
+    the_chunks <- unique(input_data$chunk)
+    for(cc in 1:length(the_chunks)) {
+        input_chunk <- subset(input_data, chunk == the_chunks[cc])
         obs_for_wt <- cbind(1:nrow(input_chunk), input_chunk[[obs_name]])
         if(is.null(mod_name)) {
             ## regular wavelet transform
@@ -253,6 +254,15 @@ WtEventTiming <- function(POSIXct, obs,
     if(length(rm_chunks))
         input_data <- input_data[ !(chunk %in% rm_chunks) ]
 
+    if(nrow(input_data) == 0) {
+        msg <- paste0("All contiguous chunks in the input data were shorter ",
+                      "than min_ts_length. Returning.")
+        cat(msg,'\n')
+        cat(paste0("min_ts_length: ", min_ts_length), '\n')
+        print(chunk_len)
+        return(NULL)
+    }
+    
     ## Melt just for the output list
     output[['input_data']] <- melt(
         input_data,

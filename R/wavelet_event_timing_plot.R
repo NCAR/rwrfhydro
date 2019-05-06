@@ -311,8 +311,7 @@ merge_data_plot <- function(
 }
 
 
-
-plot_wavelet_events <- function(plot_data, do_plot=TRUE) {
+plot_wavelet_events <- function(plot_data, do_plot=TRUE, base_size=9) {
     library(ggplot2)
     gg <- ggplot()
 
@@ -423,7 +422,7 @@ plot_wavelet_events <- function(plot_data, do_plot=TRUE) {
             labels=x_labels
         ) +
         
-        theme_bw(base_size=13) +
+        theme_bw(base_size=base_size) +
         
         theme(
             legend.position="left",
@@ -643,7 +642,7 @@ step1_figure <- function(wt_event) {
     new_y_levels <-
         c('Streamflow (cms)', 'Period', 'c Period',  'TimePer',           'Time', 'd Period')
     new_y_labels <-
-        c('a.  Timeseries',   'b.  Obs WT', 'c. Obs WT Events', 'd.  Timing Errors', 'Wacky Figure Title', 'd. Period Clusters')
+        c('a.  Timeseries',   'b.  Obs WT', 'c. Obs WT Events', 'd.  Timing Errors', '', 'd. Period Clusters')
     the_labeller <- function(string) {
         labs <- new_y_labels
         names(labs) <- new_y_levels
@@ -779,11 +778,10 @@ step1_figure <- function(wt_event) {
 }
 
 
-step2_figure <- function(wt_event, n_phase_along_x=70) {
+step2_figure <- function(wt_event, n_phase_along_x=70, base_size=9) {
     library(dplyr)
     library(ggplot2)
     library(relayer) ## git hash 8a1d49e1707d9fcc1aaa83476a3d9a15448a1065
-    library(ggnewscale) # This is to be deprecated
     
     ## Currently this is only configured to handle a single modeled timeseries.
     model_name <- setdiff(names(wt_event), c("input_data", "obs"))
@@ -838,7 +836,7 @@ step2_figure <- function(wt_event, n_phase_along_x=70) {
           'b. Obs WT',
           'c.  XWT',
           'd. Sampled Timing Errors',
-          'Wacky Figure Title')
+          '')
     the_labeller <- function(string) {
         labs <- new_y_labels
         names(labs) <- new_y_levels
@@ -902,10 +900,6 @@ step2_figure <- function(wt_event, n_phase_along_x=70) {
             size=1.1
         ) +
         
-        scale_color_brewer(
-            palette='Paired' #'Set2'
-        ) +
-        
         ## WT 
         geom_raster(
             data=subset(plot_data, y_var == 'Period'),
@@ -928,18 +922,12 @@ step2_figure <- function(wt_event, n_phase_along_x=70) {
             fill='white'
         ) +
         
-        scale_alpha_manual(values=c('TRUE'=0, 'FALSE'=.6), guide=FALSE) +
-        
-        scale_fill_distiller("WT Power", palette = "Spectral") +
-        
         ## XWT
-        new_scale('fill') +
-        scale_fill_distiller("XWT Power", palette = "Spectral") +
         geom_raster(
             data=subset(plot_data, y_var == 'XwtPer'),
-            aes(x=x, y=y, fill=Power),
+            aes(x=x, y=y, fill_xwt=Power),
             interpolate=FALSE
-        ) +
+        ) %>% rename_geom_aes(new_aes = c("fill" = "fill_xwt")) +
         
         geom_text(
             data=subset(plot_data, y_var == 'XwtPer' & !is.na(phase)),
@@ -948,19 +936,13 @@ step2_figure <- function(wt_event, n_phase_along_x=70) {
             size=2.5
         ) +
         
-        new_scale('fill') +
-        scale_fill_distiller(
-            "Timing Error\n  (hours)",
-            palette = "Spectral",
-            na.value="transparent"
-        ) +
-        
+        # Timing
         geom_raster(
             data=subset(plot_data, y_var == 'TimePer'),
-            aes(x=x, y=y, fill=Power),
+            aes(x=x, y=y, fill_timing=Power),
             interpolate=FALSE
             #na.rm=FALSE
-            ) +
+        )  %>% rename_geom_aes(new_aes = c("fill" = "fill_timing")) +
         
         geom_text(
             data=y_labs,
@@ -986,8 +968,37 @@ step2_figure <- function(wt_event, n_phase_along_x=70) {
             breaks=x_breaks,
             labels=x_labels
         ) +
+    
+        scale_color_brewer(
+            palette='Paired', #'Set2'
+            guide=guide_legend(order=100),
+        ) +
         
-        theme_bw(base_size=11) +
+        scale_alpha_manual(values=c('TRUE'=0, 'FALSE'=.6), guide=FALSE) +
+        
+        scale_fill_distiller(
+            aesthetics='fill',
+            name="WT Power",
+            guide=guide_colorbar(order=75),
+            palette = "Spectral"
+        ) +
+        
+        scale_fill_distiller(
+            name="XWT Power",
+            aesthetics='fill_xwt',
+            guide=guide_colorbar(order=50, available_aes = 'fill_xwt'),
+            palette = "Spectral"
+        ) +
+        
+        scale_fill_distiller(
+            name = "Timing Error\n  (hours)",
+            aesthetics='fill_timing',
+            guide=guide_colorbar(order=1, available_aes = 'fill_timing'),
+            palette = "Spectral",
+            na.value="transparent"
+        ) +
+        
+        theme_bw(base_size=base_size) +
         
         theme(
             legend.position="left",
