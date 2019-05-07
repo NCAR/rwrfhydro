@@ -249,7 +249,8 @@ WtEventTiming <- function(POSIXct, obs,
     input_data$chunk <- cumsum(input_data$chunk) + 1
                              
     ## Filter out chunks less than some size
-    chunk_len = input_data[, .(len_h = max(POSIXct) - min(POSIXct)), by='chunk']
+    chunk_len = input_data[, .(len_h = difftime(max(POSIXct),  min(POSIXct), units='hours')),
+                             by='chunk']
     rm_chunks <- subset(chunk_len, len_h < min_ts_length)$chunk
     if(length(rm_chunks))
         input_data <- input_data[ !(chunk %in% rm_chunks) ]
