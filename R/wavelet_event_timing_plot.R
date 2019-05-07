@@ -510,6 +510,11 @@ facet_grob_adj <- function(gg,
 }
 
 
+cluster_palette <- function(brewer_pal="Accent") {
+  pal6 <- RColorBrewer::brewer.pal(name=brewer_pal, n=6)
+  return(colorRampPalette(pal6, space='Lab'))
+}
+
 step1_figure <- function(wt_event) {
 
     library(dplyr)
@@ -649,8 +654,9 @@ step1_figure <- function(wt_event) {
         labs[string]
     }
 
-    #asdfadf
-    #subset(plot_data, y_var == new_y_levels[6])
+    clust_numbers <- sort(as.integer(setdiff(plot_data$period_clusters, "None")))
+    clust_fill_colors <- c(NA, cluster_palette()(length(clust_numbers)))
+    names(clust_fill_colors) <- c('None', clust_numbers)
     
     gg2 <-
         gg +
@@ -702,9 +708,12 @@ step1_figure <- function(wt_event) {
             na.value="transparent"
         ) +
         
-        scale_fill_discrete(
+        scale_fill_manual(
             name='Cluster Number',
-            aesthetics = "fill_cluster", guide = "legend",
+            aesthetics="fill_cluster",
+            guide="legend",
+            ##palette=cluster_palette(),
+            values=clust_fill_colors,
             na.translate=FALSE,
             na.value="transparent"
         ) +
@@ -1050,6 +1059,8 @@ step2_figure <- function(wt_event, n_phase_along_x=70, base_size=9) {
 
 event_cluster_timing_by_period <- function(wt_event, all_timing=FALSE) {
 
+    library(ggplot2)
+    
     ## Currently this is only configured to handle a single modeled timeseries.
     model_name <- setdiff(names(wt_event), c("input_data", "obs"))
 
@@ -1063,7 +1074,7 @@ event_cluster_timing_by_period <- function(wt_event, all_timing=FALSE) {
     if(length(dim(timing_err_full)) > 1) {
         dimnames(timing_err_full)[[1]] <- wt_event[[model_name]]$xwt$period[wh_period_rows]
         names(dimnames(timing_err_full))[1] <- "period"
-        dimnames(timing_err_full)[[2]] <- wt_event[[model_name]]$xwt$t
+        dimnames(timing_err_full)[[2]] <- sort(unique(wt_event[['input_data']]$input_index))
         names(dimnames(timing_err_full))[2] <- "time"
         plot_data0 <- reshape2::melt(timing_err_full, value.name='timing_err')
     } else{
@@ -1074,6 +1085,7 @@ event_cluster_timing_by_period <- function(wt_event, all_timing=FALSE) {
         )
     }
 
+    # Time here is input_index
     event_timing_all <- wt_event[[model_name]]$xwt$event_timing$all[period %in% max_periods]
     event_timing_all$timing_err <- NULL
 
@@ -1091,9 +1103,11 @@ event_cluster_timing_by_period <- function(wt_event, all_timing=FALSE) {
         inner_labeller <- function(value) if(is.na(value)) 'None' else as.character(value)
         plyr::laply(values, inner_labeller)
     }
+
     plot_data$period_clusters <- factor(label_clusters(plot_data$period_clusters))
-    clust_numbers <- setdiff(levels(plot_data$period_clusters), "None")
-    fill_colors <- c(NA, RColorBrewer::brewer.pal(name='Set2', length(clust_numbers)))
+
+    clust_numbers <- sort(as.integer(setdiff(levels(plot_data$period_clusters), "None")))
+    fill_colors <- c(NA, cluster_palette()(length(clust_numbers)))
     names(fill_colors) <- c('None', clust_numbers)
     
     periods <- unique(plot_data$period)
