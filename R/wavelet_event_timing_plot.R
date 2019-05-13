@@ -1096,7 +1096,7 @@ step2_figure <- function(wt_event, n_phase_along_x=70, base_size=9) {
 }
 
 
-event_cluster_timing_by_period <- function(wt_event, all_timing=FALSE) {
+event_cluster_timing_by_period <- function(wt_event, all_timing=FALSE, n_periods=NULL, ncol=3) {
 
     library(ggplot2)
     
@@ -1115,7 +1115,7 @@ event_cluster_timing_by_period <- function(wt_event, all_timing=FALSE) {
         names(dimnames(timing_err_full))[1] <- "period"
         dimnames(timing_err_full)[[2]] <- sort(unique(wt_event[['input_data']]$input_index))
         names(dimnames(timing_err_full))[2] <- "time"
-        plot_data0 <- reshape2::melt(timing_err_full, value.name='timing_err')
+        plot_data0 <- data.table(reshape2::melt(timing_err_full, value.name='timing_err'))
     } else{
         plot_data0 <- data.table(
             timing_err=timing_err_full,
@@ -1128,12 +1128,17 @@ event_cluster_timing_by_period <- function(wt_event, all_timing=FALSE) {
     event_timing_all <- wt_event[[model_name]]$xwt$event_timing$all[period %in% max_periods]
     event_timing_all$timing_err <- NULL
 
+    ## data table merge on the numeric causes a failure because of float noise...
+    event_timing_all$per_str = as.character(event_timing_all$period)
+    event_timing_all$period <- NULL
+    plot_data0$per_str = as.character(plot_data0$period)
+
     ## Join in the obs signf and the wxt significance
     ## we_stats <- we_hydro_stats(wt_event)
     plot_data <- merge(
         plot_data0,
         event_timing_all,
-        by=c('time', 'period'),
+        by=c('time', 'per_str'),
         all.x=TRUE,
         all.y=FALSE
     )
@@ -1152,7 +1157,21 @@ event_cluster_timing_by_period <- function(wt_event, all_timing=FALSE) {
     periods <- unique(plot_data$period)
     period_facet_labeller = paste0('Period = ', format(periods, digits=2, nsmall=1))
     names(period_facet_labeller) <- periods
-    
+
+    max_period_stats = wt_event$obs$wt$event_timing$time_avg[local_max == TRUE,]
+    max_period_stats$per_str <- as.character(max_period_stats$period)
+    setkey(max_period_stats, power_corr, physical=TRUE)
+
+    if(!is.null(n_periods)) {
+        n_period_use = min(n_periods, length(unique(plot_data$per_str)))
+        plot_data = plot_data[per_str %in% rev(max_period_stats$per_str)[1:n_period_use],]
+    }
+
+    plot_data$period_factor = factor(
+        plot_data$per_str,
+        levels = rev(max_period_stats$per_str)
+    )
+
     we_hist_plot <- function(data) {    
         result <-
             ggplot(data) +
@@ -1167,9 +1186,10 @@ event_cluster_timing_by_period <- function(wt_event, all_timing=FALSE) {
                 ## binwidth=.2
             ) +
             facet_wrap(
-                ~period,
+                ~period_factor,
                 scales='free_x',
-                labeller=as_labeller(period_facet_labeller)
+                labeller=as_labeller(period_facet_labeller),
+                ncol=ncol
             ) +
             scale_alpha_manual(
                 name='XWT Significant',

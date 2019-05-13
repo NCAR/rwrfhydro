@@ -168,8 +168,10 @@ WtTimeChunks <- function(input_data, obs_name, mod_name=NULL, max.scale=256) {
             chunk_list[[cc]] <- biwavelet::wt(obs_for_wt, max.scale=max.scale)
         } else {
             ## xwt
+            print('wtcwtc1')
             mod_for_wt <- cbind(1:nrow(input_chunk), input_chunk[[mod_name]])
             chunk_list[[cc]] <- biwavelet::xwt(obs_for_wt, mod_for_wt, max.scale=max.scale)
+            print('wtcwtc2')
         }
     }
 
@@ -319,7 +321,7 @@ WtEventTiming <- function(POSIXct, obs,
         pastecs::turnpoints(output[['obs']]$wt$event_timing$time_avg$power_corr)$peaks
 
     if(is.null(mod)) return(output)
-        
+
     ## ---------------------------------------------------------------------------
     ## Modeled.
     ## For the modeled timeseries, we loop over the named list of modeled timeseries.
@@ -329,7 +331,7 @@ WtEventTiming <- function(POSIXct, obs,
         wt_mod[[name]] <- WtTimeChunks(input_data, name, max.scale=max.scale)
         class(wt_mod[[name]]) <- c("wavelet_timing", class(wt_mod[[name]]))
     }
-    
+
     for (name in mod_names) {
         output[[name]] <- list(wt = wt_mod[[name]])
         output[[name]]$wt$event_timing$mask <- WtEventMask(output[[name]]$wt)
@@ -353,10 +355,11 @@ WtEventTiming <- function(POSIXct, obs,
     ## The timing stats.
     ## Gather the "bulk" phase/timing errors:
     ##    No sampling, take all observed significant/event timing errors from the obs-mod xwt.
+    print('fafafafa')
     for (name in mod_names) {
         output[[name]]$xwt <-
             WtTimeChunks(input_data, obs_name='obs', mod_name=name, max.scale=max.scale)
-
+        print('fafafafa')
         class(output[[name]]$xwt) <- c("wavelet_timing", class(output[[name]]$xwt))
 
         ## Calculate the timing error matrix
@@ -366,6 +369,7 @@ WtEventTiming <- function(POSIXct, obs,
                  output[[name]]$xwt$period[rr] *
                 output[[name]]$xwt$phase[rr,] / (2*pi)
         }
+
         
         ## The masks 
         output[[name]]$xwt$event_timing$mask <- WtEventMask(output[[name]]$xwt)
