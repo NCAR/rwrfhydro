@@ -137,7 +137,7 @@ WtEventMtx <- function(wt) {
         result <- rle(mask_vec)
         class(result) <-  'list' # That is annoying
         result <- as.data.table(result)
-        if (all(result$values %in% c(0))) next
+        if (all(result$values %in% c(NA,0))) next
 
         result$ends <- cumsum(result$lengths)
         result$starts <- c(1, result$ends[1:(nrow(result)-1)]+1)
@@ -278,6 +278,7 @@ WtEventTiming <- function(POSIXct, obs,
     ## Observed wavelet transforms.
     ## Observed timeseries is just one.
     wt_obs <- WtTimeChunks(input_data, obs_name='obs', max.scale=max.scale)
+
     class(wt_obs) <- c("wavelet_timing", class(wt_obs))
     
     n_period <- length(wt_obs$period)

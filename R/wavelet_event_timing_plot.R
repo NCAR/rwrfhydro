@@ -263,20 +263,22 @@ merge_data_plot <- function(
             period_range <-
                 diff(range( pmax(plot_data$y[wh_period], period_trans()$domain[1]) ))
 
-        if(!is.null(streamflow_trans))
+        if(!is.null(streamflow_trans)) {
             streamflow_range <-
                 diff(range( pmax(plot_data$y[wh_streamflow], streamflow_trans()$domain[1]) ))
-
-        ## Leave the streamflow_range alone, scale the period_range to be above the time range.
-        xform_period_absc <- function(data) {
-            max(plot_data$y[wh_streamflow])*2 +
-                data *
-                streamflow_range/period_range * period_axis_len/streamflow_axis_len
+            # streamflow_range <- streamflow_trans()$inverse(streamflow_range)
         }
 
-        plot_data$y[wh_period] <- xform_period_absc(plot_data$y[wh_period])
+        ## Leave the streamflow_range alone, scale the period_range to be above the time range.
+        xform_period_axis <- function(data) {
+            max(plot_data$y[wh_streamflow])*3 + # This multiplier needs to be >2
+                data *
+                (streamflow_range/period_range) * (period_axis_len/streamflow_axis_len)
+        }
 
-        period_breaks <- xform_period_absc(period_breaks)
+        plot_data$y[wh_period] <- xform_period_axis(plot_data$y[wh_period])
+
+        period_breaks <- xform_period_axis(period_breaks)
 
     }
 
@@ -358,7 +360,22 @@ plot_wavelet_events <- function(plot_data, do_plot=TRUE, base_size=9) {
 
     ## -------------------------------------------------------
     ## Input timeseries
-    subset_input <- subset(plot_data, x_var=='Time' & y_var=='Streamflow (cms)')
+    n_timeseries = length(unique(plot_data$Streamflow))
+    if(n_timeseries > 1) {
+        subset_input <- subset(plot_data, x_var=='Time' & y_var=='Streamflow (cms)')
+        streamflow_colors =
+            RColorBrewer::brewer.pal('Paired', n=3)[c(2, setdiff(1:n_timeseries,2))]
+        names(streamflow_colors) = c('obs', setdiff(unique(subset_input$Streamflow), 'obs'))
+    } else {
+        subset_input <- subset(plot_data,
+                               x_var=='Time' &
+                               y_var=='Streamflow (cms)' &
+                               Streamflow=='obs')
+        streamflow_colors =
+            RColorBrewer::brewer.pal('Paired', n=3)[2]
+        names(streamflow_colors) = unique(subset_input$Streamflow)
+    }
+    
     if(nrow(subset_input) > 0) {
         gg <-
             gg +
@@ -369,8 +386,8 @@ plot_wavelet_events <- function(plot_data, do_plot=TRUE, base_size=9) {
                 size=1.1
             ) +
             
-            scale_color_brewer(
-                palette='Paired' #'Set2'
+            scale_color_manual(
+                values=streamflow_colors
             )
     }
     
@@ -571,10 +588,10 @@ step1_figure <- function(wt_event) {
         by=c('period', 'Time', 'period_clusters', 'Period'),
         all.x=TRUE, all.y=TRUE
     )
-    
+
     plot_data <-
         merge_data_plot(
-            wt_event$input_data,
+            subset(wt_event$input_data, Streamflow=='obs'),
             obs_power,
             event_t_avg_max_period_clusters,
             obs_t_avg_power,
@@ -585,9 +602,9 @@ step1_figure <- function(wt_event) {
             avg_power_label_format=scales::scientific_format(digits=0),
             ##avg_power_breaks = c(1e2, 1e3, 1e4, 1e5),
             ##avg_power_trans = scales::log10_trans,
-            streamflow_axis_len=1/2,
-            streamflow_breaks=c(.1,1,10,100,1000),
-            streamflow_trans=scales::log2_trans
+            streamflow_axis_len=2/3
+            #streamflow_breaks=c(.1,1,10,100,1000),
+            #streamflow_trans=scales::log2_trans
             ## avg_power_axis_trans=scales::log10_trans
         )
     
@@ -813,10 +830,32 @@ step2_figure <- function(wt_event, n_phase_along_x=70, base_size=9) {
     ## Restructuring for plotting, these cant be merged because the all have the same Period
     ## axis. So do them individually with the input, remove the input, rename the y-axis, and
     ## combine.
-    wt_data <-  merge_data_plot(wt_event$input_data, wt_power, streamflow_axis_len=2/3)
-    xwt_data <- merge_data_plot(wt_event$input_data, xwt_power, streamflow_axis_len=2/3)
-    xwt_phase_data <- merge_data_plot(wt_event$input_data, xwt_phase, streamflow_axis_len=2/3)
-    timing_data <- merge_data_plot(wt_event$input_data, xwt_timing, streamflow_axis_len=2/3)
+    streamflow_axis_len = .5
+    wt_data <-  merge_data_plot(
+        wt_event$input_data,
+        wt_power,
+        streamflow_axis_len=streamflow_axis_len,
+        streamflow_breaks=c(.1,1,10,100,1000),
+        streamflow_trans=scales::log2_trans
+    )
+    xwt_data <- merge_data_plot(
+        wt_event$input_data,
+        xwt_power,
+        streamflow_axis_len=streamflow_axis_len,
+        streamflow_trans=scales::log2_trans
+    )
+    xwt_phase_data <- merge_data_plot(
+        wt_event$input_data,
+        xwt_phase,
+        streamflow_axis_len=streamflow_axis_len,
+        streamflow_trans=scales::log2_trans
+    )
+    timing_data <- merge_data_plot(
+        wt_event$input_data,
+        xwt_timing,
+        streamflow_axis_len=streamflow_axis_len,
+        streamflow_trans=scales::log2_trans
+    )
     
     xwt_data <- subset(xwt_data, y_var == 'Period')
     xwt_phase_data <- subset(xwt_phase_data, y_var == 'Period')
