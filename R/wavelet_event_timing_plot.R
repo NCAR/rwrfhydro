@@ -1096,7 +1096,7 @@ step2_figure <- function(wt_event, n_phase_along_x=70, base_size=9) {
 }
 
 
-event_cluster_timing_by_period <- function(wt_event, all_timing=FALSE, n_periods=NULL, ncol=3) {
+event_cluster_timing_by_period <- function(wt_event, n_periods=NULL, ncol=3) {
 
     library(ggplot2)
     
@@ -1210,4 +1210,92 @@ event_cluster_timing_by_period <- function(wt_event, all_timing=FALSE, n_periods
     
     #we_hist_plot(plot_data)
     invisible(we_hist_plot(subset(plot_data, !is.na(phase))))
+}
+
+
+event_cluster_timing_summary_by_period <- function(we_stats, wt_event, n_periods=NULL,
+                                                   ncol=6, distiller_pal='Accent'
+                                                   )
+{
+
+    library(ggplot2)
+    library(data.table)
+
+    plot_data = list()
+    for(mm in names(we_stats)) {
+        names(we_stats[[mm]]$xwt$event_timing)
+        plot_data[[mm]] =
+            plyr::ldply(we_stats[[mm]]$xwt$event_timing[c("cluster_mean", "cluster_max")])
+    }
+    plot_data = data.table(plyr::ldply(plot_data))
+
+    periods <- unique(plot_data$period)
+    period_facet_labeller = format(periods, digits=2, nsmall=1)
+    names(period_facet_labeller) <- periods
+
+    stat_labeller <- c(cluster_mean='mean', cluster_max='max')
+
+    # The observed WT power by period can not be obtained from we_stats. Use wt_event.
+    obs_tavg = wt_event$obs$wt$event_timing$time_avg
+    obs_tavg = obs_tavg[ local_max == TRUE, ]
+    setkey(obs_tavg, power_corr, physical=TRUE)
+    plot_data$per_fact = factor(plot_data$period, levels=rev(obs_tavg$period))
+
+    if(!is.null(n_periods)) {
+        n_period_use = min(n_periods, length(unique(plot_data$period)))
+        plot_data = plot_data[period %in% rev(obs_tavg$period)[1:n_period_use],]
+    }
+
+    ## ggplot(
+    ##     plot_data,
+    ##     aes(
+    ##         x=per_fact,
+    ##         y=time_err,
+    ##         color=.id
+    ##     )
+    ## ) +
+    ##     geom_boxplot(outlier.shape=NA, aes(color=.id)) +
+    ##     geom_jitter(aes(alpha=xwt_signif, color=.id)) +
+    ##     scale_x_discrete(
+    ##         name='Time Scale (hours)',
+    ##         labels=as_labeller(period_facet_labeller)
+    ##     ) +
+    ##     scale_y_continuous(name='Timing Error (hours)') +
+    ##     theme_bw()
+
+    the_plot <-
+        ggplot(
+            plot_data,
+            aes(
+                x=.id,
+                y=time_err
+            )
+        ) +
+        facet_wrap(
+            ~per_fact,
+            nrow=1,
+            labeller=as_labeller(period_facet_labeller)
+        ) +
+        geom_boxplot(outlier.shape=NA) +
+        geom_label(
+            aes(
+                fill=xwt_signif,
+                label=as.character(period_clusters)
+            ),
+            colour="black", #"white",
+            label.padding = unit(0.08, "lines"),
+            fontface="bold",
+            position='jitter',
+            size=2.5
+        ) +
+        scale_x_discrete(
+            name='Statistic',
+            labels=as_labeller(stat_labeller)
+        ) +
+        scale_fill_distiller(palette=distiller_pal) +
+        scale_y_continuous(name='Timing Error (hours)') +
+        theme_bw()
+
+    invisible(the_plot)
+
 }
