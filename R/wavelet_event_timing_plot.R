@@ -1292,7 +1292,7 @@ event_cluster_timing_summary_by_period <- function(we_stats, wt_event, n_periods
             name='Statistic',
             labels=as_labeller(stat_labeller)
         ) +
-        scale_fill_distiller(palette=distiller_pal) +
+        scale_fill_distiller(name='XWT\nSignif', palette=distiller_pal) +
         scale_y_continuous(name='Timing Error (hours)') +
         theme_bw()
 
