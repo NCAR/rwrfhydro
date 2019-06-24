@@ -1213,27 +1213,45 @@ event_cluster_timing_by_period <- function(wt_event, n_periods=NULL, ncol=3) {
 }
 
 
-event_cluster_timing_summary_by_period <- function(we_stats, wt_event, n_periods=NULL,
-                                                   ncol=6, distiller_pal='Accent'
-                                                   )
-{
+event_cluster_timing_summary_by_period <- function(
+    we_stats,
+    wt_event,
+    n_periods=NULL,
+    ncol=6,
+    distiller_pal='Accent',
+    timing_stat=c('cluster_max', 'cluster_mean', 'mean_max')[1],
+    signif_threshold=NULL,
+    show_points=FALSE,
+    mean_max=FALSE,
+    base_size=11
+) {
 
     library(ggplot2)
     library(data.table)
 
     plot_data = list()
+
     for(mm in names(we_stats)) {
         names(we_stats[[mm]]$xwt$event_timing)
         plot_data[[mm]] =
             plyr::ldply(we_stats[[mm]]$xwt$event_timing[c("cluster_mean", "cluster_max")])
+        plot_data[[mm]]$version = mm
     }
     plot_data = data.table(plyr::ldply(plot_data))
-
+    
+    if(timing_stat != 'mean_max') plot_data = plot_data[.id == timing_stat]
+    
     periods <- unique(plot_data$period)
     period_facet_labeller = format(periods, digits=2, nsmall=1)
     names(period_facet_labeller) <- periods
 
-    stat_labeller <- c(cluster_mean='mean', cluster_max='max')
+    stat_labeller <- c(
+        cluster_mean='mean',
+        cluster_max='max',
+        `NWM v1.0`="V1.0",
+        `NWM v1.1`="V1.1",
+        `NWM v1.2`="V1.2"
+    )
 
     # The observed WT power by period can not be obtained from we_stats. Use wt_event.
     obs_tavg = wt_event$obs$wt$event_timing$time_avg
@@ -1246,56 +1264,148 @@ event_cluster_timing_summary_by_period <- function(we_stats, wt_event, n_periods
         plot_data = plot_data[period %in% rev(obs_tavg$period)[1:n_period_use],]
     }
 
-    ## ggplot(
-    ##     plot_data,
-    ##     aes(
-    ##         x=per_fact,
-    ##         y=time_err,
-    ##         color=.id
-    ##     )
-    ## ) +
-    ##     geom_boxplot(outlier.shape=NA, aes(color=.id)) +
-    ##     geom_jitter(aes(alpha=xwt_signif, color=.id)) +
-    ##     scale_x_discrete(
-    ##         name='Time Scale (hours)',
-    ##         labels=as_labeller(period_facet_labeller)
-    ##     ) +
-    ##     scale_y_continuous(name='Timing Error (hours)') +
-    ##     theme_bw()
+    if(!is.null(signif_threshold)) {
+        plot_data = plot_data[xwt_signif >= signif_threshold,]
+    }
+    
+    bps <- function(data) {
+        ## The_stats = values=boxplot.stats(data)$stats
+        ## These are ggplot/Tukey style
+        lower = quantile(data, 0.25)
+        middle = median(data)
+        upper = quantile(data, 0.75)
+        iqr = upper - lower
+        max_lim = upper + (1.5*iqr)
+        min_lim = lower - (1.5*iqr)
+        mindata <- data[data > min_lim]
+        ymin <- if(length(mindata)) min(mindata) else min(data)
+        maxdata <- data[data < max_lim]
+        ymax <- if(length(maxdata)) max(maxdata) else  max(data)
+        return(data.frame(ymin=ymin, lower=lower, middle=middle, upper=upper, ymax=ymax))
+    }
+    
+    plot_stats <-
+        plot_data[,
+                  .(
+                      ymin=bps(time_err)$ymin,
+                      lower=bps(time_err)$lower,
+                      middle=bps(time_err)$middle,
+                      upper=bps(time_err)$upper,
+                      ymax=bps(time_err)$ymax,
+                      count=.N,
+                      signif=mean(xwt_signif),
+                      per_fact = per_fact[1]
+                  ),
+                  by=c('version', '.id', 'period')]
 
-    the_plot <-
-        ggplot(
-            plot_data,
-            aes(
-                x=.id,
-                y=time_err
+    if(timing_stat == 'mean_max') {
+
+        the_plot =
+            ggplot() +
+            geom_boxplot(
+                data=plot_stats,
+                aes(
+                    x=version,
+                    color=.id,
+                    ymin=ymin, lower=lower, middle=middle, upper=upper, ymax=ymax
+                ),
+                outlier.shape=NA,
+                stat='identity'
             )
-        ) +
-        facet_wrap(
-            ~per_fact,
-            nrow=1,
+
+    } else {
+
+        if(show_points) {
+            the_plot =
+                ggplot() +
+                geom_boxplot(
+                    data=plot_stats,
+                    aes(
+                        x=version,
+                        ymin=ymin, lower=lower, middle=middle, upper=upper, ymax=ymax
+                    ),
+                    outlier.shape=NA,
+                    stat='identity'
+                )
+        } else {
+            the_plot =
+                ggplot() +
+                geom_boxplot(
+                    data=plot_stats,
+                    aes(
+                        x=version,
+                        ymin=ymin, lower=lower, middle=middle, upper=upper, ymax=ymax,
+                        fill=signif,
+                        color=count
+                    ),
+                    outlier.shape=NA,
+                    stat='identity'
+                )
+        }
+
+    }
+
+    if(show_points) {
+
+        if(timing_stat == 'mean_max') {
+
+            # THis plot is TMI, but that's just what it is.
+            the_plot =
+                the_plot +
+                geom_label(
+                    data=plot_data,
+                    aes(
+                        x=version,
+                        y=time_err,
+                        fill=xwt_signif,
+                        label=as.character(period_clusters),
+                        color=.id
+                    ),
+                    label.padding = unit(0.08, "lines"),
+                    fontface="bold",
+                    position='jitter',
+                    size=2.5
+                )
+
+        } else {
+
+            the_plot =
+                the_plot + 
+                geom_label(
+                    data=plot_data,
+                    aes(
+                        x=version,
+                        y=time_err,
+                        fill=xwt_signif,
+                        label=as.character(period_clusters)
+                    ),
+                    colour="black",
+                    label.padding = unit(0.08, "lines"),
+                    fontface="bold",
+                    position='jitter',
+                    size=2.5
+                )
+
+        }
+        
+    }
+
+    the_plot =
+        the_plot +
+        facet_grid(
+            ~ per_fact, # ~ version
+            ##nrow=1,
             labeller=as_labeller(period_facet_labeller)
         ) +
-        geom_boxplot(outlier.shape=NA) +
-        geom_label(
-            aes(
-                fill=xwt_signif,
-                label=as.character(period_clusters)
-            ),
-            colour="black", #"white",
-            label.padding = unit(0.08, "lines"),
-            fontface="bold",
-            position='jitter',
-            size=2.5
-        ) +
         scale_x_discrete(
-            name='Statistic',
+            name='Version',
             labels=as_labeller(stat_labeller)
         ) +
         scale_fill_distiller(name='XWT\nSignif', palette=distiller_pal) +
         scale_y_continuous(name='Timing Error (hours)') +
-        theme_bw()
+        theme_bw(base_size=base_size)
 
     invisible(the_plot)
 
 }
+
