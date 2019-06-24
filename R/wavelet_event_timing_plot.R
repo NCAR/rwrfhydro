@@ -1215,7 +1215,7 @@ event_cluster_timing_by_period <- function(wt_event, n_periods=NULL, ncol=3) {
                 name='Event Cluster Number',
                 na.translate=TRUE
             ) +
-            scale_x_continuous(name='Timing Error (hrs)') + 
+            scale_x_continuous(name='Timing Error (hours)') + 
             theme_bw()
         return(result)
     }
@@ -1231,6 +1231,7 @@ event_cluster_timing_summary_by_period <- function(
     n_periods=NULL,
     ncol=6,
     distiller_pal='Accent',
+    distiller_direction=1,
     timing_stat=c('cluster_max', 'cluster_mean', 'mean_max')[1],
     signif_threshold=NULL,
     show_points=FALSE,
@@ -1301,11 +1302,14 @@ event_cluster_timing_summary_by_period <- function(
                   .(
                       ymin=bps(time_err)$ymin,
                       lower=bps(time_err)$lower,
+                      mean=mean(time_err),
                       middle=bps(time_err)$middle,
                       upper=bps(time_err)$upper,
                       ymax=bps(time_err)$ymax,
+                      mean_xwt_power=mean(xwt_power_corr),
+                      mean_obs_power=mean(obs_power_corr),
                       count=.N,
-                      signif=mean(xwt_signif),
+                      avg_signif=mean(xwt_signif),
                       per_fact = per_fact[1]
                   ),
                   by=c('version', '.id', 'period')]
@@ -1319,11 +1323,18 @@ event_cluster_timing_summary_by_period <- function(
                 aes(
                     x=version,
                     color=.id,
+                    fill=avg_signif,
                     ymin=ymin, lower=lower, middle=middle, upper=upper, ymax=ymax
                 ),
                 outlier.shape=NA,
                 stat='identity'
-            )
+            ) +
+            scale_color_manual(
+                                 name='Statistic',
+                                 values=c(cluster_mean='grey70', cluster_max='black'),
+                                 labels=c(cluster_mean='Cluster mean', cluster_max='Cluster max')
+                                 )
+
 
     } else {
 
@@ -1347,8 +1358,8 @@ event_cluster_timing_summary_by_period <- function(
                     aes(
                         x=version,
                         ymin=ymin, lower=lower, middle=middle, upper=upper, ymax=ymax,
-                        fill=signif,
-                        color=count
+                        fill=avg_signif
+                        #color=count
                     ),
                     outlier.shape=NA,
                     stat='identity'
@@ -1413,11 +1424,14 @@ event_cluster_timing_summary_by_period <- function(
             name='Version',
             labels=as_labeller(stat_labeller)
         ) +
-        scale_fill_distiller(name='XWT\nSignif', palette=distiller_pal) +
+        scale_fill_distiller(name='Avg XWT\nSignif', palette=distiller_pal,
+                             direction=distiller_direction, limits=c(0,1)) +
         scale_y_continuous(name='Timing Error (hours)') +
         theme_bw(base_size=base_size)
 
-    invisible(the_plot)
+    out_plot_stats <- plot_stats
+    out_plot_stats$per_fact=NULL # remove redundant col
+    invisible(list(ggplot=the_plot, plot_stats=out_plot_stats))
 
 }
 
