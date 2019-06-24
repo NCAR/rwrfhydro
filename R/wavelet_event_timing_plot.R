@@ -1160,9 +1160,9 @@ event_cluster_timing_by_period <- function(wt_event, n_periods=NULL, ncol=3) {
         plyr::laply(values, inner_labeller)
     }
 
-    plot_data$period_clusters <- factor(label_clusters(plot_data$period_clusters))
-
+    plot_data$period_clusters <- factor(as.integer(label_clusters(plot_data$period_clusters)))
     clust_numbers <- sort(as.integer(setdiff(levels(plot_data$period_clusters), "None")))
+
     fill_colors <- c(NA, cluster_palette()(length(clust_numbers)))
     names(fill_colors) <- c('None', clust_numbers)
     
