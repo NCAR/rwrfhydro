@@ -27,7 +27,7 @@ get_data_plot_time_avg_power <- function(wt, event=FALSE) {
     } else {
         
         time_avg_power <- plyr::rename(time_avg_power, c('Power'='Avg Power'))
-        time_avg_power$`Avg over` <- 'time'
+        time_avg_power$`Avg over` <- 'all'
 
     }
 
@@ -397,12 +397,13 @@ plot_wavelet_events <- function(plot_data, do_plot=TRUE, base_size=9) {
     subset_t_avg <- subset(plot_data, x_var=='Avg Power' & y_var == 'Period')
 
     if(nrow(subset_t_avg) > 0) {
-        gg <-
-            gg +            
-            geom_path(
-                data=subset_t_avg,
-                aes(x=x, y=y, linetype=`Avg over`)
-            )
+      gg <-
+        gg +
+        geom_path(
+                  data=subset_t_avg,
+                  aes(x=x, y=y, linetype=`Avg over`)
+        ) +
+        scale_linetype_discrete(name="Time avg over")
 
         ## Event power
         ##geom_path(data=subset(plot_data, x_var=='Event Avg Power'),
@@ -438,7 +439,7 @@ plot_wavelet_events <- function(plot_data, do_plot=TRUE, base_size=9) {
             breaks=x_breaks,
             labels=x_labels
         ) +
-        
+
         theme_bw(base_size=base_size) +
         
         theme(
@@ -705,7 +706,8 @@ step1_figure <- function(wt_event) {
         guides(
             color = guide_legend(order = 1),
             fill = guide_colorbar(order = 2),
-            linetype = guide_legend(order=3)
+            linetype = guide_legend(order=3),
+            shape = FALSE
         ) +
         
         facet_grid(
@@ -755,10 +757,14 @@ step1_figure <- function(wt_event) {
             `axis-r-4`=list(
                 position=c('l', 'r'),
                 values=c(-1.1, -1.1)
-            ),
+            ) ,
             `strip-t-2`=list(
                 position=c('t', 'b'),
                 values=(c(0, 0) + 2)
+             ),
+          `axis-b-2`=list(
+                position=c('t', 'b'),
+                values=(c(0, 0) - 2)
             )
         )
     )
