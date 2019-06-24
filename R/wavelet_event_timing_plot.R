@@ -762,7 +762,7 @@ step1_figure <- function(wt_event) {
                 position=c('t', 'b'),
                 values=(c(0, 0) + 2)
              ),
-          `axis-b-2`=list(
+           `axis-b-2`=list(
                 position=c('t', 'b'),
                 values=(c(0, 0) - 2)
             )
@@ -810,7 +810,8 @@ step1_figure <- function(wt_event) {
 }
 
 
-step2_figure <- function(wt_event, n_phase_along_x=70, base_size=9) {
+step2_figure <- function(wt_event, n_phase_along_x=70, base_size=9,
+                         ylab_spacer=.035) {
     library(dplyr)
     library(ggplot2)
     library(relayer) ## git hash 8a1d49e1707d9fcc1aaa83476a3d9a15448a1065
@@ -862,7 +863,10 @@ step2_figure <- function(wt_event, n_phase_along_x=70, base_size=9) {
         streamflow_axis_len=streamflow_axis_len,
         streamflow_trans=scales::log2_trans
     )
-    
+
+    the_attributes = attributes(wt_data)
+
+    wt_data <- subset(wt_data, y_var == 'Streamflow (cms)')
     xwt_data <- subset(xwt_data, y_var == 'Period')
     xwt_phase_data <- subset(xwt_phase_data, y_var == 'Period')
     timing_data <- subset(timing_data, y_var == 'Period')
@@ -881,13 +885,13 @@ step2_figure <- function(wt_event, n_phase_along_x=70, base_size=9) {
     ## Add a new vertical facet for showing the "event cluster"
     new_y_levels <-
         c('Streamflow (cms)',
-          'Period',
+          # 'Period',
           'XwtPer',
           'TimePer',
           'Time')
     new_y_labels <-
         c('a.  Timeseries',
-          'b. Obs WT',
+          #'b. Obs WT',
           'c.  XWT',
           'd. Sampled Timing Errors',
           '')
@@ -899,6 +903,7 @@ step2_figure <- function(wt_event, n_phase_along_x=70, base_size=9) {
     
     ## Transform the factor levels on the original data.
     wt_data$y_var <- ordered(wt_data$y_var, levels=new_y_levels)
+    xwt_data$y_var <- ordered(xwt_data$y_var, levels=new_y_levels)
     
     ## Rename the period axis on the other fields.
     xwt_data$y_var <- ordered('XwtPer', levels=new_y_levels)
@@ -911,6 +916,7 @@ step2_figure <- function(wt_event, n_phase_along_x=70, base_size=9) {
 
     ## Merge the new and old data. Wait for the phase... 
     plot_data <- rbind(wt_data, timing_data)
+    #plot_data <- rbind(xwt_data, timing_data)
     plot_data$phase <- NA
     plot_data <- rbind(plot_data, xwt_data)
 
@@ -918,16 +924,16 @@ step2_figure <- function(wt_event, n_phase_along_x=70, base_size=9) {
     plot_data <- as.data.table(plot_data)
     y_labs <- plot_data[
          ,
-        .(y_center=min(y)+.5*(max(y)-min(y)), x_loc=.1*(max(x)-min(x))+max(x)),
+        .(y_center=min(y)+.5*(max(y)-min(y)), x_loc=ylab_spacer*(max(x)-min(x))+max(x)),
         by=y_var
     ]
-    relab <- c("Streamflow (cms)", rep('Period (hours)',3)); names(relab) <- y_labs$y_var
+    relab <- c("Streamflow (cms)", rep('Timescale (hours)',2)); names(relab) <- y_labs$y_var
     y_labs$lab <- relab[y_labs$y_var]
     
-    x_breaks <- as.numeric(attr(plot_data, 'x_breaks'))
-    x_labels <- attr(plot_data, 'x_labels')
-    y_breaks <- as.numeric(attr(plot_data, 'y_breaks'))
-    y_labels <- attr(plot_data, 'y_labels')
+    x_breaks <- as.numeric(the_attributes$x_breaks)
+    x_labels <- the_attributes$x_labels
+    y_breaks <- as.numeric(the_attributes$y_breaks)
+    y_labels <- the_attributes$y_labels
     
     xvals <- unique(subset(wt_data, y_var == 'Streamflow (cms)')$x)
     xlim <- range(xvals) + c(-1,1) * diff(range(xvals))/length(xvals) / 2
@@ -955,26 +961,26 @@ step2_figure <- function(wt_event, n_phase_along_x=70, base_size=9) {
         ) +
         
         ## WT 
-        geom_raster(
-            data=subset(plot_data, y_var == 'Period'),
-            aes(x=x, y=y, fill=Power),
-            interpolate=TRUE
-        )  +
+        ## geom_raster(
+        ##     data=subset(plot_data, y_var == 'Period'),
+        ##     aes(x=x, y=y, fill=Power),
+        ##     interpolate=TRUE
+        ## )  +
         
-        geom_contour(
-            data=subset(plot_data, y_var == "Period"),
-            aes(x=x, y=y, z=Significance, group=chunk),
-            bins=1,
-            color='black',
-            size=.5
-        ) +
+        ## geom_contour(
+        ##     data=subset(plot_data, y_var == "Period"),
+        ##     aes(x=x, y=y, z=Significance, group=chunk),
+        ##     bins=1,
+        ##     color='black',
+        ##     size=.5
+        ## ) +
         
-        geom_raster(
-            data=subset(plot_data, y_var == "Period"),
-            aes(x=x, y=y, alpha=COI),
-            interpolate=TRUE,
-            fill='white'
-        ) +
+        ## geom_raster(
+        ##     data=subset(plot_data, y_var == "Period"),
+        ##     aes(x=x, y=y, alpha=COI),
+        ##     interpolate=TRUE,
+        ##     fill='white'
+        ## ) +
         
         ## XWT
         geom_raster(
@@ -1057,21 +1063,23 @@ step2_figure <- function(wt_event, n_phase_along_x=70, base_size=9) {
         theme(
             legend.position="left",
             legend.title=element_text(size=rel(0.8)),
-            ##legend.key.height=unit(3, "line"),
+            ## legend.key.height=unit(3, "line"),
             axis.title.x = element_blank(),
-                                        #axis.title.y = element_blank(),
+            ## axis.title.y = element_blank(),
             axis.title.y = element_text(color='grey40'),
             panel.spacing = unit(.25, "lines"),
             strip.background = element_rect(fill = 'grey90')
         )
-    
 
     library(grid)
     p <- gg2
     g <- ggplot_gtable(ggplot_build(p))
-    
+    ## Deal with the unused bits.
+    # Check the layout...
+    #    daGrob <- ggplotGrob(gg2)
+    #    gtable::gtable_show_layout(daGrob)
+    #    daGrob
     g <- gtable::gtable_add_cols(g, grid::unit(.5,"line"), pos = -1)
-    
     ## This just removes fill and line around the g$layout$name's axis-t-* to
     ## repurpose it as a figure title.
     wh_strip <- which(grepl('strip-t', g$layout$name))
@@ -1083,20 +1091,18 @@ step2_figure <- function(wt_event, n_phase_along_x=70, base_size=9) {
         g$grobs[[ii]]$grobs[[1]]$children[[jj]]$gp$lwd <- 0
         kk <- kk+1
     }
-
     ## Reorder the guides. This is a random mess.
     wh_guide_box <- which(g$layout$name == 'guide-box')
     ## Adjust the height of the individual guides using the panels on the main plot.
     ##gtable::gtable_show_layout(g)
     ##gtable::gtable_show_layout(g$grobs[[wh_guide_box]])
     g$grobs[[wh_guide_box]]$heights[3:9] <- g$heights[8:14]
-    
     wh_guides <- which(grepl('guides', g$grobs[[wh_guide_box]]$layout$name))
     guide_layout <- g$grobs[[wh_guide_box]]$layout[wh_guides,]
     ## That order flummoxes me, but it works.
-    guide_layout <- guide_layout[c(4,1,3,2),]
-    colnames(guide_layout) <- 1:4
-    g$grobs[[wh_guide_box]]$layout[1:4,] <- guide_layout
+    guide_layout <- guide_layout[c(3,1,2),]
+    colnames(guide_layout) <- 1:3
+    g$grobs[[wh_guide_box]]$layout[1:3,] <- guide_layout
 
     return(g)
 }
