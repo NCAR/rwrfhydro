@@ -610,7 +610,7 @@ step1_figure <- function(wt_event) {
     
     ## Add a new vertical facet for showing the "event cluster"
     new_y_levels <- c('Streamflow (cms)', 'Period', 'c Period', 'd Period')
-    new_y_labels <- c('Streamflow (cms)', 'Period', 'Period',    'Period')
+    new_y_labels <- c('Streamflow (cms)', 'Timescale', 'Timescale',    'Timescale')
     y_labeller <- function(string) {
         labs <- new_y_labels
         names(labs) <- new_y_levels
@@ -654,8 +654,8 @@ step1_figure <- function(wt_event) {
         ]
     y_labs <- subset(y_labs, x_var == 'Avg Power' | y_var == 'Streamflow (cms)')
     relab <- c(
-        `c Period`="Period (hours)",
-        `Period`='Period (hours)',
+        `c Period`="Timescale (hours)",
+        `Period`='Timescale (hours)',
         `Streamflow (cms)`='Streamflow (cms)'
     )
     y_labs$lab <- relab[y_labs$y_var]
@@ -664,7 +664,7 @@ step1_figure <- function(wt_event) {
     new_y_levels <-
         c('Streamflow (cms)', 'Period', 'c Period',  'TimePer',           'Time', 'd Period')
     new_y_labels <-
-        c('a.  Timeseries',   'b.  Obs WT', 'c. Obs WT Events', 'd.  Timing Errors', '', 'd. Period Clusters')
+        c('a.  Timeseries',   'b.  Obs WT', 'c. Obs WT Events', 'd.  Timing Errors', '', 'd. Timescale Clusters')
     the_labeller <- function(string) {
         labs <- new_y_labels
         names(labs) <- new_y_levels
@@ -776,7 +776,7 @@ step1_figure <- function(wt_event) {
     g <- gtable::gtable_add_grob(grob, grobs=text_grob_1, t=t, l=l+1, clip='off')
 
     text_grob_4 <- grid.text(
-        'Period (hours)', x=0, y=.5, hjust=.5, vjust=-3.5, rot=-90,
+        'Timescale (hours)', x=0, y=.5, hjust=.5, vjust=-3.5, rot=-90,
         gp=gpar(col=text_color, fontsize=text_size)
     )
     t <- unique(grob$layout[grepl("panel-2-2",grob$layout$name), "t"])
@@ -787,14 +787,14 @@ step1_figure <- function(wt_event) {
     g <- gtable::gtable_add_cols(g, grid::unit(1,"line"), pos = -1)
     
     text_grob_2 <- grid.text(
-        'Period (hours)', x=0, y=.5, hjust=.5, vjust=.5, rot=-90,
+        'Timescale (hours)', x=0, y=.5, hjust=.5, vjust=.5, rot=-90,
         gp=gpar(col=text_color, fontsize=text_size)
     )
     t <- unique(grob$layout[grepl("panel-2-1",grob$layout$name), "t"])
     g <- gtable::gtable_add_grob(g, grobs=text_grob_2, t=t, l=ncol(g), clip='off')
 
     text_grob_3 <- grid.text(
-        'Period (hours)', x=0, y=.5, hjust=.5, vjust=.5, rot=-90,
+        'Timescale (hours)', x=0, y=.5, hjust=.5, vjust=.5, rot=-90,
         gp=gpar(col=text_color, fontsize=text_size)
     )
     t <- unique(grob$layout[grepl("panel-1-4",grob$layout$name), "t"])
@@ -1155,7 +1155,7 @@ event_cluster_timing_by_period <- function(wt_event, n_periods=NULL, ncol=3) {
     names(fill_colors) <- c('None', clust_numbers)
     
     periods <- unique(plot_data$period)
-    period_facet_labeller = paste0('Period = ', format(periods, digits=2, nsmall=1))
+    period_facet_labeller = paste0('Timescale = ', format(periods, digits=2, nsmall=1))
     names(period_facet_labeller) <- periods
 
     max_period_stats = wt_event$obs$wt$event_timing$time_avg[local_max == TRUE,]
