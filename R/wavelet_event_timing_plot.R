@@ -1263,7 +1263,8 @@ event_cluster_timing_summary_by_period <- function(
         cluster_max='max',
         `NWM v1.0`="V1.0",
         `NWM v1.1`="V1.1",
-        `NWM v1.2`="V1.2"
+        `NWM v1.2`="V1.2",
+        `NWM v2.0`="V2.0"
     )
 
     # The observed WT power by period can not be obtained from we_stats. Use wt_event.
