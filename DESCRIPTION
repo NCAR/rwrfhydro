@@ -32,7 +32,9 @@ Imports:
     httr (>= 0.6.1),
     devtools (>= 1.7.0),
     jsonlite (>= 0.9.14),
-    methods
+    methods,
+    pastecs,
+    caTools
 LazyData: true
 Suggests:
     testthat,

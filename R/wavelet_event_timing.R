@@ -198,7 +198,8 @@ WtEventTiming <- function(POSIXct, obs,
                           mod=NULL,
                           max.scale=256,
                           min_ts_length=max.scale * time_step_h,
-                          time_step_h=NULL) {
+                          time_step_h=NULL,
+                          obs_wps_tavg_smooth_scale=NULL) {
 
     ## TODO JLM: max.scale is unitless but min_ts_length is not? max.scale*time_step_h gives
     ## a unit for it.
@@ -314,11 +315,34 @@ WtEventTiming <- function(POSIXct, obs,
 
     ## Sort time_avg by period
     setkey(output[['obs']]$wt$event_timing$time_avg, period)
-    
+
     ## Calculate the local maxima of the time-avg corrected WPS so we can sample timing
     ## on just the most important periods.
     output[['obs']]$wt$event_timing$time_avg$local_max <- 
         pastecs::turnpoints(output[['obs']]$wt$event_timing$time_avg$power_corr)$peaks
+
+    ## Smooth the time_avg WPS?
+    if(!is.null(obs_wps_tavg_smooth_scale)) {
+        output[['obs']]$wt$event_timing$time_avg$power_corr_smooth <-
+            caTools::runmean(
+                         output[['obs']]$wt$event_timing$time_avg$power_corr,
+                         obs_wps_tavg_smooth_scale,
+                         endrule=c("keep"))
+
+        output[['obs']]$wt$event_timing$time_avg$local_max_smooth <-
+            pastecs::turnpoints(output[['obs']]$wt$event_timing$time_avg$power_corr_smooth)$peaks
+
+        attr(output[['obs']]$wt$event_timing$time_avg, 'obs_wps_tavg_smooth_scale') <-
+            obs_wps_tavg_smooth_scale
+
+        wh_smooth <- which(output[['obs']]$wt$event_timing$time_avg$local_max_smooth)
+        wh_orig <- which(output[['obs']]$wt$event_timing$time_avg$local_max)
+        wh_smooth_orig <- wh_smooth * NA
+        for(ii in 1:length(wh_smooth)) wh_smooth_orig[ii] = wh_orig[which.min(abs(wh_orig - wh_smooth[ii]))]
+        output[['obs']]$wt$event_timing$time_avg$local_max_nn_smooth <-
+            output[['obs']]$wt$event_timing$time_avg$local_max * FALSE
+        output[['obs']]$wt$event_timing$time_avg$local_max_nn_smooth[wh_smooth_orig] <- TRUE
+    }
 
     if(is.null(mod)) return(output)
 
