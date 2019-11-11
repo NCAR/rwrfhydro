@@ -160,7 +160,9 @@ WtEventMtx <- function(wt) {
 }
 
 
-WtTimeChunks <- function(input_data, obs_name, mod_name=NULL, max.scale=256) {
+WtTimeChunks <- function(
+    input_data, obs_name, mod_name=NULL, max.scale=256,
+    rm_chunks_warn=TRUE, rm_chunks_error=TRUE) {
 
     chunk_list <- list()
     the_chunks <- unique(input_data$chunk)
@@ -176,10 +178,12 @@ WtTimeChunks <- function(input_data, obs_name, mod_name=NULL, max.scale=256) {
               biwavelet::wt(obs_for_wt, max.scale=max.scale)
             chunk_list[[cc]]$chunk <- chunk_list[[cc]]$t * 0 + cc
           }, warning = function(w) {
-            # wt_wwwwww
+            print("Some wavelet transforms are returning warnings.")
+            if(!rm_chunks_warn) stop("rm_chunks_warn == FALSE")
             chunk_list[[cc]] <- NA
           }, error = function(e) {
-            # wt_eeeee
+            print("Some wavelet transforms are returning errors.")
+            if(!rm_chunks_error) stop("rm_chunks_error == FALSE")
             chunk_list[[cc]] <- NA
           })
         
@@ -192,10 +196,12 @@ WtTimeChunks <- function(input_data, obs_name, mod_name=NULL, max.scale=256) {
             biwavelet::xwt(obs_for_wt, mod_for_wt, max.scale=max.scale)
           chunk_list[[cc]]$chunk <- chunk_list[[cc]]$t * 0 + cc
         }, warning = function(w) {
-          # xwt_wwwwww
+          print("Some cross-wavelet transforms are returning warnings.")
+          if(!rm_chunks_warn) stop("rm_chunks_warn == FALSE")
           chunk_list[[cc]] <- NA
         }, error = function(e) {
-          # xwt_eeeeee
+          print("Some cross-wavelet transforms are returning errors.")
+          if(!rm_chunks_error) stop("rm_chunks_error == FALSE")
           chunk_list[[cc]] <- NA
         })
       }
@@ -234,17 +240,14 @@ WtEventTiming <- function(POSIXct, obs,
                           max.scale=256,
                           min_ts_length=max.scale * time_step_h,
                           time_step_h=NULL,
-                          obs_wps_tavg_smooth_scale=NULL) {
+                          obs_wps_tavg_smooth_scale=NULL,
+                          rm_chunks_warn=TRUE, rm_chunks_error=TRUE) {
 
     ## TODO JLM: max.scale is unitless but min_ts_length is not? max.scale*time_step_h gives
     ## a unit for it.
 
     ## use ... or other kw for passing to wt, xwt.
     ## TODO JLM: are max.scale wt and xwt necessarily the same?
-    ## JLM TODO: Gap handling.
-    ## JLM TODO: If there were discontinuities, would have a loop over the chunks.
-    ## JLM TODO: If we break up the timeseries, should probably return the chunks of raw data too.
-
     ## TODO JLM: option for reducing this object size if only stats are required.
     ##           most of the bloat is for plotting.
 
@@ -278,7 +281,6 @@ WtEventTiming <- function(POSIXct, obs,
     ## Label time chunks
     ## How do we know the timestep?
     if(is.null(time_step_h))
-        ## time_step_h <- as.numeric(median(diff(input_data$POSIXct)), units="hours")
         time_step_h <- median(diff(input_data$POSIXct)) # This is a timediff.
     ## Need to ensure that a passed value is a timediff.
     wh_gt_time_step <- which(diff(input_data$POSIXct) > time_step_h) + 1
@@ -315,7 +317,8 @@ WtEventTiming <- function(POSIXct, obs,
     ## ---------------------------------------------------------------------------
     ## Observed wavelet transforms.
     ## Observed timeseries is just one.
-    wt_obs <- WtTimeChunks(input_data, obs_name='obs', max.scale=max.scale)
+    wt_obs <- WtTimeChunks(input_data, obs_name='obs', max.scale=max.scale,
+                           rm_chunks_warn=rm_chunks_warn, rm_chunks_error=rm_chunks_error)
     class(wt_obs) <- c("wavelet_timing", class(wt_obs))
     n_period <- length(wt_obs$period)
 
@@ -325,14 +328,17 @@ WtEventTiming <- function(POSIXct, obs,
     wt_mod = list()
     mod_names <-  names(mod)
     for (name in mod_names) {
-        wt_mod[[name]] <- WtTimeChunks(input_data, name, max.scale=max.scale)
-        class(wt_mod[[name]]) <- c("wavelet_timing", class(wt_mod[[name]]))
+      wt_mod[[name]] <- WtTimeChunks(input_data, name, max.scale=max.scale,
+                                     rm_chunks_warn=rm_chunks_warn, rm_chunks_error=rm_chunks_error)
+      class(wt_mod[[name]]) <- c("wavelet_timing", class(wt_mod[[name]]))
     }
 
+    ## Cross-wavelet transforms for each modeled timeseries
     xwts = list()
     for (name in mod_names) {
       xwts[[name]] <-
-        WtTimeChunks(input_data, obs_name='obs', mod_name=name, max.scale=max.scale)
+        WtTimeChunks(input_data, obs_name='obs', mod_name=name, max.scale=max.scale,
+                     rm_chunks_warn=rm_chunks_warn, rm_chunks_error=rm_chunks_error)
       class(xwts[[name]]) <- c("wavelet_timing", class(xwts[[name]]))
     }
     
@@ -373,10 +379,15 @@ WtEventTiming <- function(POSIXct, obs,
       }
     }
 
-    ## maybe combine to output data frame here?
-    output[['obs']] = list(wt = wt_obs)
         
     ## -----------------------------------------------------------------------------
+    ## Operate on the output list.
+
+    ## -------------------------------------------------------
+    ## Observed stats
+    ## Put the obs in the output data 
+    output[['obs']] = list(wt = wt_obs)
+
     ## The masks
     output[['obs']]$wt$event_timing$mask <- WtEventMask(output[['obs']]$wt)
 
@@ -435,7 +446,7 @@ WtEventTiming <- function(POSIXct, obs,
 
     if(is.null(mod)) return(output)
 
-    # ------------------------
+    # -------------------------------------------------------
     # event timing for the modeled
     for (name in mod_names) {
         output[[name]] <- list(wt = wt_mod[[name]])
@@ -461,9 +472,6 @@ WtEventTiming <- function(POSIXct, obs,
     ## Gather the "bulk" phase/timing errors:
     ##    No sampling, take all observed significant/event timing errors from the obs-mod xwt.
     for (name in mod_names) {
-      # output[[name]]$xwt <-
-      #    WtTimeChunks(input_data, obs_name='obs', mod_name=name, max.scale=max.scale)
-      # class(output[[name]]$xwt) <- c("wavelet_timing", class(output[[name]]$xwt))
         output[[name]]$xwt <- xwts[[name]]
       
         ## Calculate the timing error matrix
