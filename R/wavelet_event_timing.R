@@ -176,7 +176,7 @@ WtTimeChunks <- function(input_data, obs_name, mod_name=NULL, max.scale=256) {
     }
 
     time_vars_1d <- c("coi", "t", "xaxis")
-    time_vars_2d <- c("wave", "power", "power.corr", "phase", "signif")
+    time_vars_2d <- c("wave", "power", "power.corr", "phase", "signif", "wave.corr")
     
     ## any shenanigans about time or xaxis and gaps, or leave it to POSIXct?
     output <- chunk_list[[1]]
