@@ -1,6 +1,6 @@
 # These are the non-zero dimension variables we have in the wavelet transforms
 wt_vars_1d <- c("coi", "t", "xaxis", "chunk")
-wt_vars_2d <- c("wave", "power", "power.corr", "phase", "signif")
+wt_vars_2d <- c("wave", "power", "power.corr", "phase", "signif", "wave.corr")
 
 
 ## This is a private function that requires having the source data locally.
