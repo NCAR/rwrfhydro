@@ -48,7 +48,6 @@ fdc.obsStr5min.fc(0.2)
 Other flowDurationCurves: \code{\link{CalcFdc}},
   \code{\link{PlotFdcCompare}}, \code{\link{PlotFdc}}
 }
-\concept{
-modelEval
-}
+\concept{flowDurationCurves}
+\concept{modelEval}
 \keyword{univar}

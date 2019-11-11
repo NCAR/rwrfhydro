@@ -4,8 +4,8 @@
 \alias{MkNudgingParams}
 \title{Create a parameter file for nudging.}
 \usage{
-MkNudgingParams(gageId, R, G, tau, qThresh = NULL, expCoeff = NULL, outFile,
-  overwrite = FALSE, rmBlankGages = TRUE)
+MkNudgingParams(gageId, R, G, tau, qThresh = NULL, expCoeff = NULL,
+  outFile, overwrite = FALSE, rmBlankGages = TRUE)
 }
 \arguments{
 \item{gageId}{Character vector of gage identifiers also used in the timeslice files.}
@@ -156,8 +156,7 @@ Other nudging: \code{\link{AddRouteLinkGage}},
   \code{\link{ChanObsToTimeSlice}},
   \code{\link{EditFrxstPts}}
 }
-\concept{
-dataMgmt nudging
-}
+\concept{dataMgmt nudging}
+\concept{nudging}
 \keyword{IO}
 \keyword{manip}

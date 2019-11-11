@@ -4,7 +4,8 @@
 \alias{VisualizeSpatial}
 \title{Visualize WRF Hydro domain spatial data.}
 \usage{
-VisualizeSpatial(input, varName = "Variable", plot = TRUE, plotDf = NULL)
+VisualizeSpatial(input, varName = "Variable", plot = TRUE,
+  plotDf = NULL)
 }
 \arguments{
 \item{input}{A 2D array of data matching domain file.}
@@ -47,7 +48,6 @@ Other domain: \code{\link{GetDomainCoordsProj}},
   \code{\link{VisualizeChanNtwk}},
   \code{\link{VisualizeDomain}}
 }
-\concept{
-plot
-}
+\concept{domain}
+\concept{plot}
 \keyword{hplot}

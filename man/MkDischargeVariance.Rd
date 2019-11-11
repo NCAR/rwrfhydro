@@ -37,7 +37,5 @@ prettyO <- subset(prettyOro, dateTime < as.POSIXct('2012-01-01'))
 oroPlot <- PlotPrettyData(prettyO)
 }
 }
-\concept{
-DART dataMgmt
-}
+\concept{DART dataMgmt}
 \keyword{manip}

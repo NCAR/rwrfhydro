@@ -4,8 +4,8 @@
 \alias{ConvertStack2NC}
 \title{Convert a raster stack to a NetCDF file.}
 \usage{
-ConvertStack2NC(inStack, outFile = NULL, varName = NULL, varUnit = NULL,
-  varLong = NULL, varNA = -1e+36, flipY = TRUE)
+ConvertStack2NC(inStack, outFile = NULL, varName = NULL,
+  varUnit = NULL, varLong = NULL, varNA = -1e+36, flipY = TRUE)
 }
 \arguments{
 \item{inStack}{The name of the raster stack to export.}
@@ -48,7 +48,6 @@ Other MODIS: \code{\link{CalcStatsRS}},
   \code{\link{GetMODIS}}, \code{\link{InsertRS}},
   \code{\link{SmoothStack}}
 }
-\concept{
-MODIS dataMgmt
-}
+\concept{MODIS}
+\concept{MODIS dataMgmt}
 \keyword{IO}

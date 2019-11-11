@@ -2,7 +2,6 @@
 % Please edit documentation in R/ncdf_get.R
 \name{GetNcdfFile}
 \alias{GetNcdfFile}
-\alias{GetNcdfFile}
 \title{Get variables from a ncdf file}
 \usage{
 GetNcdfFile(file, variables = NULL, exclude = FALSE, quiet = FALSE,
@@ -58,8 +57,4 @@ Other ncdf: \code{\link{MkFrcAdjFromLdasin}},
 Other ncdf: \code{\link{MkFrcAdjFromLdasin}},
   \code{\link{MkNcdf}}, \code{\link{ncdump}}
 }
-\concept{
-ncdf
-
-ncdf
-}
+\concept{ncdf}

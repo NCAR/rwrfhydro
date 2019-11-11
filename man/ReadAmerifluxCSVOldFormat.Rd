@@ -4,7 +4,8 @@
 \alias{ReadAmerifluxCSVOldFormat}
 \title{Read standard-format CSV data downloaded from Ameriflux}
 \usage{
-ReadAmerifluxCSVOldFormat(pathFluxData, timeZone = NULL, utcOffset = NULL)
+ReadAmerifluxCSVOldFormat(pathFluxData, timeZone = NULL,
+  utcOffset = NULL)
 }
 \arguments{
 \item{pathFluxData}{The full pathname to the flux time series CSV file as
@@ -48,7 +49,6 @@ Other obsDataReads: \code{\link{GetStage4Files}},
   \code{\link{ReadAmerifluxNCOldFormat}},
   \code{\link{ReadCoDwrGage}}, \code{\link{ReadUsgsGage}}
 }
-\concept{
-dataGet
-}
+\concept{dataGet}
+\concept{obsDataReads}
 \keyword{IO}

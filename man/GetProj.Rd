@@ -33,7 +33,6 @@ Other geospatial: \code{\link{ExportGeogrid}},
   \code{\link{GetPoly}}, \code{\link{GetRfc}},
   \code{\link{GetTimeZone}}, \code{\link{PolyToRaster}}
 }
-\concept{
-geospatial getData
-}
+\concept{geospatial}
+\concept{geospatial getData}
 \keyword{IO}

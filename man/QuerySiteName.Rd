@@ -5,8 +5,8 @@
 \title{Find the name (site id) for a given site (name)  in the local database.}
 \usage{
 QuerySiteName(site, path = ".",
-  retSiteId = tryCatch(is.na(as.numeric(site)), warning = function(w) TRUE,
-  error = function(e) TRUE),
+  retSiteId = tryCatch(is.na(as.numeric(site)), warning = function(w)
+  TRUE, error = function(e) TRUE),
   metaDBFileName = "usgsDataRetrieval.metaDatabase.RData")
 }
 \arguments{
@@ -43,7 +43,6 @@ Other streamObs: \code{\link{FindUsgsStns}},
   \code{\link{SaveHucData}}, \code{\link{[.prettyUsgs}},
   \code{\link{subset.prettyUsgs}}
 }
-\concept{
-dataMgmt usgsStreamObs
-}
+\concept{dataMgmt usgsStreamObs}
+\concept{streamObs}
 \keyword{database}

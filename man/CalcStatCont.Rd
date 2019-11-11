@@ -5,11 +5,11 @@
 \title{Calculate some verification measures for continuous variables.}
 \usage{
 CalcStatCont(DT, obsCol, modCol, groupBy = NULL, obsMissing = NULL,
-  modMissing = NULL, obsCondRange = c(-Inf, Inf), modCondRange = c(-Inf,
-  Inf), statList = c("numPaired", "meanObs", "meanMod", "pearsonCor", "RMSE",
-  "multiBias"), probs = NULL, plot.it = TRUE, title = "",
-  plot.list = c("scatterPlot", "qqPlot", "boxPlot", "bivarHist"),
-  bins_histogram = 30, bins_stat_bin2d = 30)
+  modMissing = NULL, obsCondRange = c(-Inf, Inf),
+  modCondRange = c(-Inf, Inf), statList = c("numPaired", "meanObs",
+  "meanMod", "pearsonCor", "RMSE", "multiBias"), probs = NULL,
+  plot.it = TRUE, title = "", plot.list = c("scatterPlot", "qqPlot",
+  "boxPlot", "bivarHist"), bins_histogram = 30, bins_stat_bin2d = 30)
 }
 \arguments{
 \item{DT}{A data.table or dataframe: containing two columns of observation
@@ -123,8 +123,7 @@ Other modelEvaluation: \code{\link{CalcModPerfMulti}},
   \code{\link{CalcNoahmpWatBudg}},
   \code{\link{CalcStatCategorical}}
 }
-\concept{
-modelEval
-}
+\concept{modelEval}
+\concept{modelEvaluation}
 \keyword{ts}
 \keyword{univar}

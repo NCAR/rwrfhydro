@@ -51,8 +51,7 @@ Other nudging: \code{\link{AddRouteLinkGage}},
   \code{\link{ChanObsToTimeSlice}},
   \code{\link{MkNudgingParams}}
 }
-\concept{
-nudging dataMgmt
-}
+\concept{nudging}
+\concept{nudging dataMgmt}
 \keyword{IO}
 \keyword{manip}

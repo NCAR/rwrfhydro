@@ -5,7 +5,8 @@
 \title{Get all the USGS streamgage information within a HUC8.}
 \usage{
 GetUsgsHucData(huc8, outPath = NULL,
-  metaDBFileName = "usgsDataRetrieval.metaDatabase.RData", update = FALSE)
+  metaDBFileName = "usgsDataRetrieval.metaDatabase.RData",
+  update = FALSE)
 }
 \arguments{
 \item{huc8}{Character The eight-digit HUC code.}
@@ -41,7 +42,6 @@ Other streamObs: \code{\link{FindUsgsStns}},
   \code{\link{[.prettyUsgs}},
   \code{\link{subset.prettyUsgs}}
 }
-\concept{
-dataGet usgsStreamObs
-}
+\concept{dataGet usgsStreamObs}
+\concept{streamObs}
 \keyword{IO}

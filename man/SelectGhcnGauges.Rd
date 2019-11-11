@@ -4,9 +4,9 @@
 \alias{SelectGhcnGauges}
 \title{Read the daily GHCN-D metadata and select gauges based on the user criteria.}
 \usage{
-SelectGhcnGauges(countryCode = NULL, networkCode = NULL, states = NULL,
-  domain = FALSE, minLat = NULL, maxLat = NULL, minLon = NULL,
-  maxLon = NULL, fileAdd = NULL)
+SelectGhcnGauges(countryCode = NULL, networkCode = NULL,
+  states = NULL, domain = FALSE, minLat = NULL, maxLat = NULL,
+  minLon = NULL, maxLon = NULL, fileAdd = NULL)
 }
 \arguments{
 \item{countryCode}{A vector of desired countries, e.g., 
@@ -90,7 +90,5 @@ selectedGauges<-SelectGhcnGauges(countryCode=countryCodeList,
 Other GHCN: \code{\link{CalcDailyGhcn}},
   \code{\link{GetGhcn2}}, \code{\link{GetGhcn}}
 }
-\concept{
-GHCN
-}
+\concept{GHCN}
 \keyword{IO}

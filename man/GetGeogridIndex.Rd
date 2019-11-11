@@ -50,7 +50,6 @@ Other geospatial: \code{\link{ExportGeogrid}},
   \code{\link{GetRfc}}, \code{\link{GetTimeZone}},
   \code{\link{PolyToRaster}}
 }
-\concept{
-dataGet geospatial
-}
+\concept{dataGet geospatial}
+\concept{geospatial}
 \keyword{IO}

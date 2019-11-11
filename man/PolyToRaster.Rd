@@ -121,7 +121,6 @@ Other geospatial: \code{\link{ExportGeogrid}},
   \code{\link{GetPoly}}, \code{\link{GetProj}},
   \code{\link{GetRfc}}, \code{\link{GetTimeZone}}
 }
-\concept{
-dataMgmt geospatial
-}
+\concept{dataMgmt geospatial}
+\concept{geospatial}
 \keyword{IO}

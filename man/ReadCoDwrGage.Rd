@@ -50,7 +50,6 @@ Other obsDataReads: \code{\link{GetStage4Files}},
   \code{\link{ReadAmerifluxNCOldFormat}},
   \code{\link{ReadUsgsGage}}
 }
-\concept{
-dataGet
-}
+\concept{dataGet}
+\concept{obsDataReads}
 \keyword{IO}

@@ -35,7 +35,5 @@ Other SNODAS: \code{\link{CalcSnodasCoords}},
   \code{\link{PutSnodasCoordsNcdf}},
   \code{\link{ReadSnodasDepthSweDate}}
 }
-\concept{
-SNODAS
-}
+\concept{SNODAS}
 \keyword{IO}

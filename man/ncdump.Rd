@@ -26,6 +26,4 @@ I just hacked print.ncdf4 just to make it look more like unix output.
 Other ncdf: \code{\link{GetNcdfFile}},
   \code{\link{MkFrcAdjFromLdasin}}, \code{\link{MkNcdf}}
 }
-\concept{
-ncdf
-}
+\concept{ncdf}
