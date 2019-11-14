@@ -63,7 +63,5 @@ for use with other rwrfhydro tools.
 \seealso{
 Other SNOTEL: \code{\link{snotelMeta}}
 }
-\concept{
-SNOTEL
-}
+\concept{SNOTEL}
 \keyword{IO}

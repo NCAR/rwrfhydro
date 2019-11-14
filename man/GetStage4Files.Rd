@@ -4,8 +4,8 @@
 \alias{GetStage4Files}
 \title{Download Stage IV and II data files}
 \usage{
-GetStage4Files(startDate, endDate, dataTyp, dataDir, keepDownloads = FALSE,
-  runParallel = FALSE)
+GetStage4Files(startDate, endDate, dataTyp, dataDir,
+  keepDownloads = FALSE, runParallel = FALSE)
 }
 \arguments{
 \item{startDate}{start date + hour in the form of YYYYMMDDHH}
@@ -51,7 +51,6 @@ Other obsDataReads: \code{\link{ReadAmerifluxCSVOldFormat}},
 \author{
 Yuqiong.Liu@noaa.gov (updated by aubreyd)
 }
-\concept{
-dataGet
-}
+\concept{dataGet}
+\concept{obsDataReads}
 \keyword{IO}

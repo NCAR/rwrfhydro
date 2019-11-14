@@ -93,7 +93,6 @@ Other domain: \code{\link{GetDomainCoordsProj}},
   \code{\link{VisualizeChanNtwk}},
   \code{\link{VisualizeSpatial}}
 }
-\concept{
-plot
-}
+\concept{domain}
+\concept{plot}
 \keyword{hplot}

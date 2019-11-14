@@ -35,7 +35,6 @@ or squares the result to return the variance (default).
 WriteDischargeObsSeq(prettyOro, '~/.', 'orodell', 'climTaperDefault')
 }
 }
-\concept{
-DART dataMgmt
-}
+\concept{DART dataMgmt}
+\concept{dartObs}
 \keyword{manip}

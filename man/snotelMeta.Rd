@@ -27,7 +27,6 @@ Metadata for the SNOTEL sites (as of June 2015) including lat/lon.
 \seealso{
 Other SNOTEL: \code{\link{GetSnotel}}
 }
-\concept{
-data
-}
+\concept{SNOTEL}
+\concept{data}
 \keyword{data}

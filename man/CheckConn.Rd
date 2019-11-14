@@ -59,7 +59,7 @@ write.table(comIdWhOutGt1, row.names=FALSE,
 load("/home/jamesmcc/WRF_Hydro/CONUS_IOC/DOMAIN/RouteLink_2015_07_31.reInd.Rdb")
 }  #dontrun
 }
-\concept{
-dataMgmt nudging
-}
+\concept{dataMgmt nudging}
+\concept{networkExpression nudging
+# @export}
 \keyword{manip}

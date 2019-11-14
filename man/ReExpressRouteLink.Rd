@@ -30,7 +30,6 @@ Other networkExpression nudging: \code{\link{GatherStreamInds}},
   \code{\link{VisualizeRouteLink}},
   \code{\link{VisualizeSubsetStream}}
 }
-\concept{
-dataMgmt nudging
-}
+\concept{dataMgmt nudging}
+\concept{networkExpression nudging}
 \keyword{manip}

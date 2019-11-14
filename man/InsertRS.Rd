@@ -70,7 +70,6 @@ Other MODIS: \code{\link{CalcStatsRS}},
   \code{\link{ConvertStack2NC}}, \code{\link{GapFillRS}},
   \code{\link{GetMODIS}}, \code{\link{SmoothStack}}
 }
-\concept{
-MODIS dataMgmt
-}
+\concept{MODIS}
+\concept{MODIS dataMgmt}
 \keyword{IO}

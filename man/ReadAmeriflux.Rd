@@ -35,7 +35,5 @@ amf.NR <- ReadAmeriflux('~/wrfhydroTestCases/Fourmile_Creek_testcase_v2.0/OBS/AM
 Other Ameriflux: \code{\link{amfMeta}},
   \code{\link{tzLookup}}
 }
-\concept{
-Ameriflux
-}
+\concept{Ameriflux}
 \keyword{IO}

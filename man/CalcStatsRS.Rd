@@ -40,7 +40,6 @@ Other MODIS: \code{\link{ConvertRS2Stack}},
   \code{\link{GetMODIS}}, \code{\link{InsertRS}},
   \code{\link{SmoothStack}}
 }
-\concept{
-MODIS dataAnalysis
-}
+\concept{MODIS}
+\concept{MODIS dataAnalysis}
 \keyword{univar}

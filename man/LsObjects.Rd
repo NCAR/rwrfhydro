@@ -4,8 +4,8 @@
 \alias{LsObjects}
 \title{List objects with more detailed metadata}
 \usage{
-LsObjects(pos = 1, pattern, order.by, decreasing = FALSE, head = FALSE,
-  n = 5)
+LsObjects(pos = 1, pattern, order.by, decreasing = FALSE,
+  head = FALSE, n = 5)
 }
 \arguments{
 \item{pos}{position}

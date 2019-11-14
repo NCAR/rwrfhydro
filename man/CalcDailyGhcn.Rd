@@ -51,7 +51,5 @@ report time using \code{GetGhcn2}.
 Other GHCN: \code{\link{GetGhcn2}}, \code{\link{GetGhcn}},
   \code{\link{SelectGhcnGauges}}
 }
-\concept{
-GHCN
-}
+\concept{GHCN}
 \keyword{manip}

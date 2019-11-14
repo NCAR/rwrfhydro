@@ -31,7 +31,6 @@ Online_Linkage: \link[http://www.iana.org/time-zones]{http://www.iana.org/time-z
 Other Ameriflux: \code{\link{ReadAmeriflux}},
   \code{\link{amfMeta}}
 }
-\concept{
-data
-}
+\concept{Ameriflux}
+\concept{data}
 \keyword{data}

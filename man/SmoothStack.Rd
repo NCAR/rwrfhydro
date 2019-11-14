@@ -6,8 +6,8 @@
 \usage{
 SmoothStack(inStack, w = NULL, t = NULL, lambda = 5000, nIter = 3,
   outputAs = "one", collapse = FALSE, outDirPath = "./",
-  removeOutlier = FALSE, outlierThreshold = NULL, mergeDoyFun = "max",
-  ...)
+  removeOutlier = FALSE, outlierThreshold = NULL,
+  mergeDoyFun = "max", ...)
 }
 \arguments{
 \item{inStack}{The name of the raster stack to smooth.}
@@ -90,7 +90,6 @@ Other MODIS: \code{\link{CalcStatsRS}},
   \code{\link{ConvertStack2NC}}, \code{\link{GapFillRS}},
   \code{\link{GetMODIS}}, \code{\link{InsertRS}}
 }
-\concept{
-MODIS dataAnalysis
-}
+\concept{MODIS}
+\concept{MODIS dataAnalysis}
 \keyword{smooth}

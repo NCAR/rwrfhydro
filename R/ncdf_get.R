@@ -22,87 +22,6 @@ GetNcdfFile <- function(file, variables=NULL,
                         exclude=FALSE,
                         quiet=FALSE,
                         flip2D=TRUE,
-                        collapse_degen=FALSE) {
-
-  if(!file.exists(file)) warning(paste0('The file ', file, 'does not exist.'), immediate. = TRUE)
-
-  if(!quiet) ncdump(file)
-
-  nc <- ncdf4::nc_open(file)
-
-  # Deal with variables asked for
-  varsInFile <- names(nc$var)
-  dimVarsInFile <- names(nc$dim)
-  whDimVarsVals <- plyr::laply(nc$dim, '[[', 'create_dimvar')
-  if(any(whDimVarsVals)) varsInFile <- c(dimVarsInFile[whDimVarsVals], varsInFile)
-
-  returnVars <-
-  if(!is.null(variables)) {
-    varsNotInFile <- setdiff(variables, varsInFile)
-    if(length(varsNotInFile))
-      warning(paste0('The following variables were not found in the file',
-                     paste(varsNotInFile, collapse=', ')))
-    if(!exclude) intersect(variables, varsInFile) else setdiff(varsInFile, variables)
-  } else varsInFile
-
-
-  varNDims <- unlist(lapply(nc$var, function(vv) vv$ndims))
-  if(length(whZeroDim <-  which(varNDims==0))) {
-    if(!quiet) cat("The following variables are ommitted because they have zero dimensions: ",
-                   names(whZeroDim),'\n')
-    returnVars <- setdiff(returnVars, names(whZeroDim))
-  }
-
-  doGetVar <- function(theVar) ncdf4::ncvar_get(nc, varid=theVar, collapse_degen=collapse_degen)
-  outList <- plyr::llply(NamedList(returnVars), doGetVar)
-
-  doGetVarAtt <- function(theVar) ncdf4::ncatt_get( nc, varid=theVar )
-  attList <- plyr::llply(NamedList(returnVars), doGetVarAtt)
-
-  natts <- nc$natts
-  if( natts  > 0 ) attList$global <- ncdf4::ncatt_get( nc, 0 )
-
-  ncdf4::nc_close(nc)
-
-  nDims <- plyr::laply(outList, function(ll) length(dim(ll)))
-
-  if(flip2D & any(nDims==2)){
-    wh2D <- which(nDims==2)
-    for(ww in wh2D) outList[[ww]] <- FlipUD(outList[[ww]])
-  }
-
-  if( !(all(nDims==nDims[1])) | !(all(nDims==1)) ) return(outList)
-
-  vecLen <- plyr::laply(outList[-10], length)
-  if( all(vecLen==vecLen[1]) ) outList <- as.data.frame(outList)
-
-  if( natts > 0 ) attributes(outList) <- c(attributes(outList), attList)
-
-  outList
-}
-
-##=========================================================================================================
-#' Emulate ncdump -h and -v.
-#'
-#' I just hacked print.ncdf4 just to make it look more like unix output.
-#'
-#' @param file Character, the file to inspect.
-#' @param variable Character, a variable to return.
-#' @param quiet Logical, suppress the 'meta' dump?
-#' @param collapse_degen If TRUE (the default), then degenerate (length==1) dimensions in the returned array are removed.
-#' @return A list or a dataframe (if all variables are 1D of the same length.)
-#' @examples
-#' \dontrun{
-#' conn <- GetNcdfFile('~/wrfHydroTestCases/Fourmile_Creek/CHANNEL_CONNECTIVITY.nc')
-#'  conn <- GetNcdfFile('~/wrfHydroTestCases/Fourmile_Creek/CHANNEL_CONNECTIVITY.nc', var='lambert_conformal_conic', exc=TRUE)
-#' }
-#' @concept ncdf
-#' @family ncdf
-#' @export
-GetNcdfFile <- function(file, variables=NULL,
-                        exclude=FALSE,
-                        quiet=FALSE,
-                        flip2D=TRUE,
                         collapse_degen=TRUE) {
 
   if(!file.exists(file)) warning(paste0('The file ', file, 'does not exist.'), immediate. = TRUE)
@@ -162,7 +81,8 @@ GetNcdfFile <- function(file, variables=NULL,
   outList
 }
 
-##=========================================================================================================
+
+##==================================================================================================
 #' Emulate ncdump -h and -v.
 #'
 #' I just hacked print.ncdf4 just to make it look more like unix output.
@@ -171,8 +91,8 @@ GetNcdfFile <- function(file, variables=NULL,
 #' @param variable Character, a variable to return.
 #' @param quiet Logical, suppress the 'meta' dump?
 #' @param collapse_degen If TRUE (the default), then degenerate (length==1) dimensions in the returned array are removed.
-#' @return If variable is not set, the meta object \code{ncdf4::nc_open(file)} is returned. If \code{variable}
-#' is set, its values are returned.
+#' @return If variable is not set, the meta object \code{ncdf4::nc_open(file)} is returned. If \code{variable} is set, its values are returned.
+#' @examples
 #' @concept ncdf
 #' @family ncdf
 #' @export
@@ -315,3 +235,49 @@ ncdump <-function(file, variable, quiet=FALSE, collapse_degen=TRUE) {
 }
 
 
+
+##==================================================================================================
+## Bring collected NWM data in netcdf into R as a data.table.
+##
+## @param
+## @param
+## @param
+## @return
+## Example:
+## >  devtools::load_all('~/WRF_Hydro/rwrfhydro/')
+## Loading rwrfhydro
+## To check rwrfhydro updates run: CheckForUpdates()
+## > measure_vars = c('elevation', 'inflow', 'outflow')
+## > data <- GetNcCollectedNwm('reservoir_short_range_201810.nc', measure.vars=measure_vars)
+## data.table 1.12.0  Latest news: r-datatable.com
+## > str(data)
+## Classes 'data.table' and 'data.frame':	575856 obs. of  6 variables:
+##  $ feature_id    : int  1233435 1233435 1233435 1233435 1233435 1233435 1233435 1233435 1233435 1233435 ...
+##  $ reference_time: POSIXct, format: "2018-10-01 00:00:00" "2018-10-01 00:00:00" ...
+##  $ lead_time     : POSIXct, format: "2018-10-01 01:00:00" "2018-10-01 02:00:00" ...
+##  $ elevation     : num  2554 2554 2554 2554 2554 ...
+##  $ inflow        : num  1.26 1.29 1.33 1.37 1.42 ...
+##  $ outflow       : num  1.26 1.29 1.33 1.37 1.42 ...
+##  - attr(*, ".internal.selfref")=<externalptr>
+##  - attr(*, "sorted")= chr "feature_id"
+## @concept ncdf
+## @family ncdf
+
+
+#' @export
+GetNcCollectedNwm <- function(
+    file,
+    measure.vars,
+    id.vars = c('reference_time', 'feature_id', 'lead_time', 'valid_time')
+){
+  data = GetNcdfFile(file, q=TRUE)
+  ref_time_meta <- ncdump(file, q=TRUE)
+  since_time <-
+    as.POSIXct(ref_time_meta$dim$reference_time$units,
+               format='hours since %Y-%m-%d %H:%M:%S',
+               tz='UTC')
+  df <- FlattenMtxList(data, mat_vars=measure_vars, id.vars=id.vars)
+  df$reference_time <- df$reference_time*(60*60) + since_time
+  df$lead_time <- df$lead_time*(60*60) + df$reference_time
+  return(df)
+}
