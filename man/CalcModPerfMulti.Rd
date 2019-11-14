@@ -124,8 +124,7 @@ Other modelEvaluation: \code{\link{CalcModPerf}},
   \code{\link{CalcStatCategorical}},
   \code{\link{CalcStatCont}}
 }
-\concept{
-modelEval
-}
+\concept{modelEval}
+\concept{modelEvaluation}
 \keyword{ts}
 \keyword{univar}

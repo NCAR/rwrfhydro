@@ -5,8 +5,9 @@
 \title{Get MODIS data and process to match geogrid}
 \usage{
 GetMODIS(extent, prodName, outDir, begin = NULL, end = NULL,
-  collection = NULL, buffer = 0.04, SDSstring = NULL, exclList = NULL,
-  resampList = NULL, quiet = FALSE, scriptPath = NULL)
+  collection = NULL, buffer = 0.04, SDSstring = NULL,
+  exclList = NULL, resampList = NULL, quiet = FALSE,
+  scriptPath = NULL)
 }
 \arguments{
 \item{extent}{The pathname to the geogrid file (i.e., geo_em.d01.nc)
@@ -137,7 +138,6 @@ Other MODIS: \code{\link{CalcStatsRS}},
   \code{\link{ConvertStack2NC}}, \code{\link{GapFillRS}},
   \code{\link{InsertRS}}, \code{\link{SmoothStack}}
 }
-\concept{
-MODIS dataGet
-}
+\concept{MODIS}
+\concept{MODIS dataGet}
 \keyword{IO}

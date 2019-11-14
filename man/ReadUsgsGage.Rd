@@ -53,7 +53,6 @@ Other obsDataReads: \code{\link{GetStage4Files}},
   \code{\link{ReadAmerifluxNCOldFormat}},
   \code{\link{ReadCoDwrGage}}
 }
-\concept{
-dataGet
-}
+\concept{dataGet}
+\concept{obsDataReads}
 \keyword{IO}

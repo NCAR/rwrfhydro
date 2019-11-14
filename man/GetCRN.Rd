@@ -5,8 +5,9 @@
 \title{Get the US Climate Reference Network data from the NCEP ftp server.}
 \usage{
 GetCRN(gageNames = NULL, siteIds = NULL, elements = NULL,
-  timestep = "hourly", domain = NULL, startDate = Sys.time() - 10 * 24 *
-  3600, endDate = Sys.time(), realTime = FALSE, parallel = FALSE)
+  timestep = "hourly", domain = NULL, startDate = Sys.time() - 10 *
+  24 * 3600, endDate = Sys.time(), realTime = FALSE,
+  parallel = FALSE)
 }
 \arguments{
 \item{gageNames}{Character vector of the gage names which is used in the file names (or any part of the file name)}
@@ -175,7 +176,5 @@ outputHourly <- GetCRN(gageNames = "CO", elements = c("SOIL_MOISTURE_5",
 timestep = "hourly")
 }
 }
-\concept{
-USCRN
-}
+\concept{USCRN}
 \keyword{IO}

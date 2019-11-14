@@ -56,6 +56,4 @@ summary(as.vector(theData[[1]]))
 Other ncdf: \code{\link{GetNcdfFile}},
   \code{\link{MkNcdf}}, \code{\link{ncdump}}
 }
-\concept{
-ncdf
-}
+\concept{ncdf}

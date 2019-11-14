@@ -22,7 +22,5 @@ Other SNODAS: \code{\link{GetSnodasDepthSweDate}},
   \code{\link{PutSnodasNcdf}},
   \code{\link{ReadSnodasDepthSweDate}}
 }
-\concept{
-SNODAS
-}
+\concept{SNODAS}
 \keyword{manip}

@@ -39,7 +39,5 @@ str.RIO <- GetCoDwrData(c("RIOSFKCO", "RIOWAGCO","RIODELCO"),
            paramCodes=c("GAGE_HT", "DISCHRG"), timeInt="hourly", 
            startDate="06/01/14", endDate="06/30/14")
 }
-\concept{
-Streamflow
-}
+\concept{Streamflow}
 \keyword{IO}

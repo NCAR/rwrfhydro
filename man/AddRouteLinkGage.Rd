@@ -75,8 +75,7 @@ gageIds <- g
 Other nudging: \code{\link{ChanObsToTimeSlice}},
   \code{\link{EditFrxstPts}}, \code{\link{MkNudgingParams}}
 }
-\concept{
-nudging dataMgmt
-}
+\concept{nudging}
+\concept{nudging dataMgmt}
 \keyword{IO}
 \keyword{manip}

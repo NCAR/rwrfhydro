@@ -81,8 +81,7 @@ Other networkExpression nudging: \code{\link{GatherStreamInds}},
   \code{\link{ReIndexRouteLink}},
   \code{\link{VisualizeSubsetStream}}
 }
-\concept{
-dataMgmt plot
-}
+\concept{dataMgmt plot}
+\concept{networkExpression nudging}
 \keyword{hplot}
 \keyword{manip}

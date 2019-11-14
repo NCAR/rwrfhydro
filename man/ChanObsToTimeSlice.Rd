@@ -36,8 +36,6 @@ Other nudging: \code{\link{AddRouteLinkGage}},
 \author{
 James McCreight
 }
-\concept{
-nudging
-}
+\concept{nudging}
 \keyword{IO}
 \keyword{manip}

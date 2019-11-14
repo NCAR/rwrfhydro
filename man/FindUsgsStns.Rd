@@ -4,8 +4,8 @@
 \alias{FindUsgsStns}
 \title{Discover USGS stations using huc8 code or lat/lon/radius.}
 \usage{
-FindUsgsStns(stnLon = NULL, stnLat = NULL, within = NULL, huc8 = NULL,
-  siteType = "ST", hasDataTypeCd = "iv")
+FindUsgsStns(stnLon = NULL, stnLat = NULL, within = NULL,
+  huc8 = NULL, siteType = "ST", hasDataTypeCd = "iv")
 }
 \arguments{
 \item{stnLon}{optional}
@@ -50,7 +50,6 @@ Other streamObs: \code{\link{GetSiteHuc}},
   \code{\link{[.prettyUsgs}},
   \code{\link{subset.prettyUsgs}}
 }
-\concept{
-dataGet usgsStreamObs
-}
+\concept{dataGet usgsStreamObs}
+\concept{streamObs}
 \keyword{IO}

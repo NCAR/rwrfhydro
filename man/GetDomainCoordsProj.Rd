@@ -57,7 +57,6 @@ Other domain: \code{\link{VisualizeChanNtwk}},
   \code{\link{VisualizeDomain}},
   \code{\link{VisualizeSpatial}}
 }
-\concept{
-plot
-}
+\concept{domain}
+\concept{plot}
 \keyword{hplot}
