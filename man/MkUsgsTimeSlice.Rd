@@ -4,8 +4,8 @@
 \alias{MkUsgsTimeSlice}
 \title{Make timeslices from USGS discharge data files gathered using dataRetrieval..}
 \usage{
-MkUsgsTimeSlice(realTimeFiles, outPath, nearestMin = 5, oldestTime = NULL,
-  qcFunction, varianceFunction)
+MkUsgsTimeSlice(realTimeFiles, outPath, nearestMin = 5,
+  oldestTime = NULL, qcFunction, varianceFunction)
 }
 \arguments{
 \item{realTimeFiles}{Character vector of active RData format files to be
@@ -100,6 +100,4 @@ ret1 <- MkUsgsTimeSlice( realTimeFiles[chunkDf$start[ii]:chunkDf$end[ii]],
 
 ## end dontrun }  
 }
-\concept{
-usgs
-}
+\concept{usgs}

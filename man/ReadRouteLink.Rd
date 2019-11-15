@@ -22,7 +22,6 @@ Other modelDataReads: \code{\link{CreateBasinMask}},
   \code{\link{ReadLdasoutAll}},
   \code{\link{ReadLdasoutWb}}, \code{\link{ReadRtout}}
 }
-\concept{
-dataGet
-}
+\concept{dataGet}
+\concept{modelDataReads}
 \keyword{IO}

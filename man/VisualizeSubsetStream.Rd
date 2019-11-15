@@ -4,8 +4,8 @@
 \alias{VisualizeSubsetStream}
 \title{Visualize upstream or downstream links determined from GatherStreamInds}
 \usage{
-VisualizeSubsetStream(indDist, ncFile, comIds = TRUE, downstreamReExp = "",
-  ...)
+VisualizeSubsetStream(indDist, ncFile, comIds = TRUE,
+  downstreamReExp = "", ...)
 }
 \arguments{
 \item{indDist}{List containing indies and accumulated distance from start, obtained from GatherStreamInds}
@@ -41,7 +41,6 @@ Other networkExpression nudging: \code{\link{GatherStreamInds}},
   \code{\link{ReIndexRouteLink}},
   \code{\link{VisualizeRouteLink}}
 }
-\concept{
-nudging plot
-}
+\concept{networkExpression nudging}
+\concept{nudging plot}
 \keyword{hplot}

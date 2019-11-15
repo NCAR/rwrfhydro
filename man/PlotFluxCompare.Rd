@@ -6,10 +6,10 @@
 \usage{
 PlotFluxCompare(strDf.obs, strCol.obs = "q_cms", strDf.mod1,
   strCol.mod1 = "q_cms", strDf.mod2 = NULL, strCol.mod2 = "q_cms",
-  stdate = NULL, enddate = NULL, logy = FALSE, labelObs = "Observed",
-  labelMod1 = "Model 1", labelMod2 = "Model 2",
-  title = "Observed and Modelled Fluxes", colorObs = "black",
-  colorMod1 = "green2", colorMod2 = "blue")
+  stdate = NULL, enddate = NULL, logy = FALSE,
+  labelObs = "Observed", labelMod1 = "Model 1",
+  labelMod2 = "Model 2", title = "Observed and Modelled Fluxes",
+  colorObs = "black", colorMod1 = "green2", colorMod2 = "blue")
 }
 \arguments{
 \item{strDf.obs}{The OBSERVED flux time series dataframe (e.g., output from

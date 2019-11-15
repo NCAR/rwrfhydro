@@ -39,7 +39,6 @@ Other streamObs: \code{\link{FindUsgsStns}},
   \code{\link{SaveHucData}}, \code{\link{[.prettyUsgs}},
   \code{\link{subset.prettyUsgs}}
 }
-\concept{
-plot usgsStreamObs
-}
+\concept{plot usgsStreamObs}
+\concept{streamObs}
 \keyword{hplot}

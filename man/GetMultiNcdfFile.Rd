@@ -32,7 +32,6 @@ Typically called by GetMultiNcdf.
 Other getMultiNcdf: \code{\link{GetFileStat}},
   \code{\link{GetMultiNcdfVariable}}
 }
-\concept{
-dataGet
-}
+\concept{dataGet}
+\concept{getMultiNcdf}
 \keyword{internal}

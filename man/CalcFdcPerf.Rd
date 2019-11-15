@@ -83,8 +83,7 @@ Output:
  0.9         0.08    0.16
 }
 }
-\concept{
-modelEval
-}
+\concept{modelEval}
+\concept{modelEvaluation flowDurationCurves}
 \keyword{ts}
 \keyword{univar}

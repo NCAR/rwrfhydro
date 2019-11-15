@@ -16,7 +16,6 @@ Polygon shapefile of world time zone classification.
 Online_Linkage: \link[http://efele.net/maps/tz/world/]{http://efele.net/maps/tz/world/} \cr
 }
 
-\concept{
-data
-}
+\concept{GetTimeZone}
+\concept{data}
 \keyword{data}

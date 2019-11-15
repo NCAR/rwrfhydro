@@ -5,10 +5,10 @@
 \title{Convert a set of MODIS images to a raster stack and, optionally, a NetCDF
 file.}
 \usage{
-ConvertRS2Stack(inPath, matchStr, begin = NULL, end = NULL, noData = NULL,
-  noDataQual = "exact", valScale = 1, valAdd = 0, outFile = NULL,
-  varName = NULL, varUnit = NULL, varLong = NULL, varNA = (-1e+36),
-  pos1 = 10, pos2 = 16, format = "\%Y\%j")
+ConvertRS2Stack(inPath, matchStr, begin = NULL, end = NULL,
+  noData = NULL, noDataQual = "exact", valScale = 1, valAdd = 0,
+  outFile = NULL, varName = NULL, varUnit = NULL, varLong = NULL,
+  varNA = (-1e+36), pos1 = 10, pos2 = 16, format = "\%Y\%j")
 }
 \arguments{
 \item{inPath}{The path to the directory that holds the already processed
@@ -118,7 +118,6 @@ Other MODIS: \code{\link{CalcStatsRS}},
   \code{\link{GetMODIS}}, \code{\link{InsertRS}},
   \code{\link{SmoothStack}}
 }
-\concept{
-MODIS dataMgmt
-}
+\concept{MODIS}
+\concept{MODIS dataMgmt}
 \keyword{IO}

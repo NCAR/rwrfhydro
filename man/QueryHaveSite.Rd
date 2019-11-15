@@ -44,7 +44,6 @@ Other streamObs: \code{\link{FindUsgsStns}},
   \code{\link{SaveHucData}}, \code{\link{[.prettyUsgs}},
   \code{\link{subset.prettyUsgs}}
 }
-\concept{
-dataMgmt usgsStreamObs
-}
+\concept{dataMgmt usgsStreamObs}
+\concept{streamObs}
 \keyword{database}

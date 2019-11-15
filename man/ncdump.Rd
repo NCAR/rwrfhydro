@@ -16,8 +16,7 @@ ncdump(file, variable, quiet = FALSE, collapse_degen = TRUE)
 \item{collapse_degen}{If TRUE (the default), then degenerate (length==1) dimensions in the returned array are removed.}
 }
 \value{
-If variable is not set, the meta object \code{ncdf4::nc_open(file)} is returned. If \code{variable}
-is set, its values are returned.
+If variable is not set, the meta object \code{ncdf4::nc_open(file)} is returned. If \code{variable} is set, its values are returned.
 }
 \description{
 I just hacked print.ncdf4 just to make it look more like unix output.
@@ -26,6 +25,4 @@ I just hacked print.ncdf4 just to make it look more like unix output.
 Other ncdf: \code{\link{GetNcdfFile}},
   \code{\link{MkFrcAdjFromLdasin}}, \code{\link{MkNcdf}}
 }
-\concept{
-ncdf
-}
+\concept{ncdf}

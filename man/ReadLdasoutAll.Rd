@@ -6,7 +6,8 @@
 variables.}
 \usage{
 ReadLdasoutAll(pathOutdir, pathDomfile, mskvar = "basn_msk", basid = 1,
-  aggfact = 10, pattern = glob2rx("*LDASOUT_DOMAIN*"), parallel = FALSE)
+  aggfact = 10, pattern = glob2rx("*LDASOUT_DOMAIN*"),
+  parallel = FALSE)
 }
 \arguments{
 \item{pathOutdir}{The full pathname to the output directory containing the LDASOUT
@@ -62,9 +63,8 @@ Other modelDataReads: \code{\link{CreateBasinMask}},
   \code{\link{ReadLdasoutWb}}, \code{\link{ReadRouteLink}},
   \code{\link{ReadRtout}}
 }
-\concept{
-dataGet
-}
+\concept{dataGet}
+\concept{modelDataReads}
 \keyword{IO}
 \keyword{ts}
 \keyword{univar}

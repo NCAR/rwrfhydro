@@ -69,7 +69,5 @@ obsPrcp<-GetGhcn2(selectedGauges$siteIds,element,startDate,endDate,parallel=FALS
 Other GHCN: \code{\link{CalcDailyGhcn}},
   \code{\link{GetGhcn}}, \code{\link{SelectGhcnGauges}}
 }
-\concept{
-GHCN
-}
+\concept{GHCN}
 \keyword{IO}

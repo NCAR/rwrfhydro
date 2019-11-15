@@ -4,7 +4,8 @@
 \alias{ReadAmerifluxNCOldFormat}
 \title{Read standard-format NetCDF data downloaded from Ameriflux}
 \usage{
-ReadAmerifluxNCOldFormat(pathFluxData, timeZone = NULL, utcOffset = NULL)
+ReadAmerifluxNCOldFormat(pathFluxData, timeZone = NULL,
+  utcOffset = NULL)
 }
 \arguments{
 \item{pathFluxData}{The full pathname to the flux time series NetCDF file as
@@ -48,7 +49,6 @@ Other obsDataReads: \code{\link{GetStage4Files}},
   \code{\link{ReadAmerifluxCSVOldFormat}},
   \code{\link{ReadCoDwrGage}}, \code{\link{ReadUsgsGage}}
 }
-\concept{
-dataGet
-}
+\concept{dataGet}
+\concept{obsDataReads}
 \keyword{IO}

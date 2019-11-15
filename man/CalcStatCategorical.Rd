@@ -108,8 +108,7 @@ Other modelEvaluation: \code{\link{CalcModPerfMulti}},
   \code{\link{CalcNoahmpWatBudg}},
   \code{\link{CalcStatCont}}
 }
-\concept{
-modelEval
-}
+\concept{modelEval}
+\concept{modelEvaluation}
 \keyword{ts}
 \keyword{univar}

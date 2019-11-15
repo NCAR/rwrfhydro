@@ -59,7 +59,6 @@ Other geospatial: \code{\link{GetGeogridIndex}},
   \code{\link{GetRfc}}, \code{\link{GetTimeZone}},
   \code{\link{PolyToRaster}}
 }
-\concept{
-dataMgmt geospatial
-}
+\concept{dataMgmt geospatial}
+\concept{geospatial}
 \keyword{IO}

@@ -66,9 +66,8 @@ Other modelDataReads: \code{\link{CreateBasinMask}},
   \code{\link{ReadLdasoutAll}},
   \code{\link{ReadLdasoutWb}}, \code{\link{ReadRouteLink}}
 }
-\concept{
-dataGet
-}
+\concept{dataGet}
+\concept{modelDataReads}
 \keyword{IO}
 \keyword{ts}
 \keyword{univar}

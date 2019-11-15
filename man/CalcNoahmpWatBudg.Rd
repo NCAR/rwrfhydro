@@ -100,7 +100,6 @@ Other modelEvaluation: \code{\link{CalcModPerfMulti}},
   \code{\link{CalcStatCategorical}},
   \code{\link{CalcStatCont}}
 }
-\concept{
-modelEval
-}
+\concept{modelEval}
+\concept{modelEvaluation}
 \keyword{manip}

@@ -80,7 +80,6 @@ PlotFdcCompare(obsStr5min.fc, "q_cms", modStrh.allrt.fc, "q_cms",
 Other flowDurationCurves: \code{\link{CalcFdcSpline}},
   \code{\link{CalcFdc}}, \code{\link{PlotFdc}}
 }
-\concept{
-modelEval plot
-}
+\concept{flowDurationCurves}
+\concept{modelEval plot}
 \keyword{hplot}

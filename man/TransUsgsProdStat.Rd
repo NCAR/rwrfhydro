@@ -20,8 +20,6 @@ if whichIn==FALSE : Character of the translation. if whichIn==TRUE  :
 \code{TransUsgsProdStat} Translate USGS product/stat codes to something
 readable (and vice versa) using a lookup table.
 }
-\concept{
-dataMgmt usgsStreamObs
-}
+\concept{dataMgmt usgsStreamObs}
 \keyword{database}
 \keyword{internal}
