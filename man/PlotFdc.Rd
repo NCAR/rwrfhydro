@@ -48,7 +48,6 @@ PlotFdc(obsStr5min.fc, fdcProb=0.2)
 Other flowDurationCurves: \code{\link{CalcFdcSpline}},
   \code{\link{CalcFdc}}, \code{\link{PlotFdcCompare}}
 }
-\concept{
-modelEval plot
-}
+\concept{flowDurationCurves}
+\concept{modelEval plot}
 \keyword{hplot}

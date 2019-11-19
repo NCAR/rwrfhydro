@@ -39,7 +39,6 @@ Other modelEvaluation: \code{\link{CalcModPerfMulti}},
   \code{\link{CalcStatCategorical}},
   \code{\link{CalcStatCont}}
 }
-\concept{
-dataMgmt
-}
+\concept{dataMgmt}
+\concept{modelEvaluation}
 \keyword{manip}

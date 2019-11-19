@@ -4,8 +4,8 @@
 \alias{TranslateStateCodes}
 \title{Translate standard state names, abbreviations, and codes.}
 \usage{
-TranslateStateCodes(inVector, returnVal = c("STATE", "STUSAB", "STATE_NAME",
-  "STATENS")[2])
+TranslateStateCodes(inVector, returnVal = c("STATE", "STUSAB",
+  "STATE_NAME", "STATENS")[2])
 }
 \arguments{
 \item{inVector}{integer or character, a vector of one of the types of to convert. Not case sensitive for strings.}

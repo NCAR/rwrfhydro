@@ -44,8 +44,7 @@ Other streamObs: \code{\link{FindUsgsStns}},
   \code{\link{QuerySiteProd}}, \code{\link{SaveHucData}},
   \code{\link{subset.prettyUsgs}}
 }
-\concept{
-dataMgmt usgsStreamObs
-}
+\concept{dataMgmt usgsStreamObs}
+\concept{streamObs}
 \keyword{internal}
 \keyword{manip}

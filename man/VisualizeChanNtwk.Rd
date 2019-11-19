@@ -99,7 +99,6 @@ Other domain: \code{\link{GetDomainCoordsProj}},
   \code{\link{VisualizeDomain}},
   \code{\link{VisualizeSpatial}}
 }
-\concept{
-plot DART
-}
+\concept{domain}
+\concept{plot DART}
 \keyword{hplot}

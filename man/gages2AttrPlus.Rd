@@ -45,7 +45,6 @@ Online_Linkage: \link[http://water.usgs.gov/lookup/getspatial?gagesII_Sept2011]{
 \seealso{
 Other gages2: \code{\link{gages2Attr}}
 }
-\concept{
-data
-}
+\concept{data}
+\concept{gages2}
 \keyword{data}

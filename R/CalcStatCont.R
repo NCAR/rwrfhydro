@@ -163,7 +163,7 @@ multiplot <- function(..., plotlist=NULL, cols=1, layout=NULL) {
 #' @export
 #' 
 CalcStatCont <- function(DT, obsCol, modCol, groupBy = NULL,
-                         obsMissing = NULL, modMissing = NULL,
+                         obsMissing  = NULL, modMissing = NULL,
                          obsCondRange = c(-Inf,Inf), modCondRange = c(-Inf,Inf),
                          statList= c("numPaired", "meanObs", "meanMod", 
                                      "pearsonCor", "RMSE", "multiBias"),
@@ -204,7 +204,7 @@ CalcStatCont <- function(DT, obsCol, modCol, groupBy = NULL,
   # add error to the DT to reduce the number of calculation
   if (any(c("ME", "MSE", "RMSE", "MAE", "MAD", "quantiles", 
             "E10", "E25", "E50", "E75", "E90", "IQR") %in% statList)) {
-    DT[ , `:=`(error  = mod - obs)]
+    DT[ , `:=`(error  = mod - obs)] 
   }
   
   # Define all the operations, since all the infinite and NA values have been removed above, no need to remove them individually in each function
@@ -242,6 +242,7 @@ CalcStatCont <- function(DT, obsCol, modCol, groupBy = NULL,
     IQR          =  stats::quantile(error, 0.75)- stats::quantile(error, 0.25),
     Kge          =  rwrfhydro::Kge(mod, obs, na.rm=TRUE, s.r=1, s.alpha=1, s.beta=1),
     Nse          =  rwrfhydro::Nse (mod, obs, nullModel=mean(obs)) ,
+    Nnse         =  1 / (2 -rwrfhydro::Nse (mod, obs, nullModel=mean(obs)) ),
     NseLog       =  rwrfhydro::NseLog (mod, obs, nullModel=mean(obs)), 
     BiasNorm     =  rwrfhydro::BiasNorm (mod, obs) ,
     Bias         =  rwrfhydro::Bias(mod, obs) ,

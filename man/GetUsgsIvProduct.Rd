@@ -33,8 +33,7 @@ Other streamObs: \code{\link{FindUsgsStns}},
   \code{\link{[.prettyUsgs}},
   \code{\link{subset.prettyUsgs}}
 }
-\concept{
-dataGet usgsStreamObs
-}
+\concept{dataGet usgsStreamObs}
+\concept{streamObs}
 \keyword{IO}
 \keyword{internal}

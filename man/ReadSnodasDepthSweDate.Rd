@@ -31,7 +31,5 @@ Other SNODAS: \code{\link{CalcSnodasCoords}},
   \code{\link{PutSnodasCoordsNcdf}},
   \code{\link{PutSnodasNcdf}}
 }
-\concept{
-SNODAS
-}
+\concept{SNODAS}
 \keyword{manip}

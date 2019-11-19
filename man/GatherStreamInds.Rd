@@ -43,7 +43,6 @@ Other networkExpression nudging: \code{\link{NtwKReExToNcdf}},
   \code{\link{VisualizeRouteLink}},
   \code{\link{VisualizeSubsetStream}}
 }
-\concept{
-nudging dataMgmt
-}
+\concept{networkExpression nudging}
+\concept{nudging dataMgmt}
 \keyword{manip}

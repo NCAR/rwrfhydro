@@ -38,7 +38,6 @@ Other geospatial: \code{\link{ExportGeogrid}},
   \code{\link{GetPoly}}, \code{\link{GetProj}},
   \code{\link{GetTimeZone}}, \code{\link{PolyToRaster}}
 }
-\concept{
-dataMgmt
-}
+\concept{dataMgmt}
+\concept{geospatial}
 \keyword{IO}

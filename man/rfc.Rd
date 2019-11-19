@@ -11,7 +11,6 @@ rfc
 \description{
 Polygon shapefile of River Forecast Center boundaries.
 }
-\concept{
-data
-}
+\concept{GetRfc}
+\concept{data}
 \keyword{data}

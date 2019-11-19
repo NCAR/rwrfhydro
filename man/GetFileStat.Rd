@@ -33,7 +33,6 @@ variable, and may apply a specified statistic.
 Other getMultiNcdf: \code{\link{GetMultiNcdfFile}},
   \code{\link{GetMultiNcdfVariable}}
 }
-\concept{
-dataGet
-}
+\concept{dataGet}
+\concept{getMultiNcdf}
 \keyword{internal}
