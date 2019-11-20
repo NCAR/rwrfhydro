@@ -43,7 +43,9 @@ get_data_plot_power <- function(wt, input_data, wt_field=NULL, event=FALSE) {
     ## The wt_field allows an arbitray field to be combined with the
     ## COI and significance of a different field.
 
-    input_obs <- subset(input_data, Streamflow == 'obs')
+    input_obs = subset(input_data, Streamflow == 'obs')
+    input_obs$chunk_renum = input_obs$chunk - min(input_obs$chunk) +1
+    input_obs = input_obs[ chunk_renum %in% unique(wt$chunk) ]
     
     if(is.null(wt_field)) {
         wps_matrix <- wt$power.corr
