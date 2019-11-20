@@ -1122,12 +1122,16 @@ event_cluster_timing_by_period <- function(wt_event, n_periods=NULL, ncol=3) {
 
     wh_period_rows = which(wt_event[[model_name]]$xwt$period %in% max_periods)
 
+    input_obs = subset(wt_event[['input_data']], Streamflow == 'obs')
+    input_obs$chunk_renum = input_obs$chunk - min(input_obs$chunk) +1
+    input_obs = input_obs[ chunk_renum %in% unique(wt_event$obs$wt$chunk) ]
+
     timing_err_full <- wt_event[[model_name]]$xwt$event_timing$mtx$timing_err[wh_period_rows,]
 
     if(length(dim(timing_err_full)) > 1) {
         dimnames(timing_err_full)[[1]] <- wt_event[[model_name]]$xwt$period[wh_period_rows]
         names(dimnames(timing_err_full))[1] <- "period"
-        dimnames(timing_err_full)[[2]] <- sort(unique(wt_event[['input_data']]$input_index))
+        dimnames(timing_err_full)[[2]] <- sort(unique(input_obs$input_index))
         names(dimnames(timing_err_full))[2] <- "time"
         plot_data0 <- data.table(reshape2::melt(timing_err_full, value.name='timing_err'))
     } else{
@@ -1276,7 +1280,7 @@ event_cluster_timing_summary_by_period <- function(
     plot_data$per_fact = factor(plot_data$period, levels=rev(obs_tavg$period))
 
     if(!is.null(n_periods)) {
-        n_period_use = min(n_periods, length(unique(plot_data$period)))
+       n_period_use = min(n_periods, length(unique(plot_data$period)))
         plot_data = plot_data[period %in% rev(obs_tavg$period)[1:n_period_use],]
     }
 
@@ -1299,7 +1303,7 @@ event_cluster_timing_summary_by_period <- function(
         ymax <- if(length(maxdata)) max(maxdata) else  max(data)
         return(data.frame(ymin=ymin, lower=lower, middle=middle, upper=upper, ymax=ymax))
     }
-    
+
     plot_stats <-
         plot_data[,
                   .(

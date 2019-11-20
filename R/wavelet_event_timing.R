@@ -172,6 +172,7 @@ WtTimeChunks <- function(
       
       if(is.null(mod_name)) {
         ## regular wavelet transform
+
         result = tryCatch(
           {
             chunk_list[[cc]] <-
@@ -188,9 +189,10 @@ WtTimeChunks <- function(
           })
         
       } else {
-        
+
         ## xwt
         mod_for_wt <- cbind(1:nrow(input_chunk), input_chunk[[mod_name]])
+
         result = tryCatch({
           chunk_list[[cc]] <-
             biwavelet::xwt(obs_for_wt, mod_for_wt, max.scale=max.scale)
@@ -204,6 +206,7 @@ WtTimeChunks <- function(
           if(!rm_chunks_error) stop("rm_chunks_error == FALSE")
           chunk_list[[cc]] <- NA
         })
+
       }
     }
 
