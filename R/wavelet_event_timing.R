@@ -1,3 +1,7 @@
+# These are the non-zero dimension variables we have in the wavelet transforms
+wt_vars_1d <- c("coi", "t", "xaxis", "chunk")
+wt_vars_2d <- c("wave", "power", "power.corr", "phase", "signif", "wave.corr")
+
 
 ## This is a private function that requires having the source data locally.
 WtMakeData <- function() {
@@ -37,7 +41,7 @@ WtGetEventData <- function(location=NA, event=NA, info=FALSE) {
                 five_years = list(start="2010-10-01 00:00:00", end="2016-11-30 23:00:00")
             )
          ),
-        
+
         taylor_river= list(
             site_no = "09107000",
             events = list(
@@ -46,7 +50,7 @@ WtGetEventData <- function(location=NA, event=NA, info=FALSE) {
                 five_years = list(start="2010-10-01 00:00:00", end="2016-11-30 23:00:00")
             )
         ),
-        
+
         pemigewasset_river= list(
             site_no = "01075000",
             events = list(
@@ -56,7 +60,7 @@ WtGetEventData <- function(location=NA, event=NA, info=FALSE) {
                 five_years  = list(start="2010-10-01 00:00:00", end="2016-11-30 23:00:00")
             )
         ),
-        
+
         bad_river= list(
             site_no = "06441500",
             events = list(
@@ -72,7 +76,7 @@ WtGetEventData <- function(location=NA, event=NA, info=FALSE) {
         print(subset_info)
         return(invisible(subset_info))
     }
-    
+
     if (is.na(location)) {
         cat('Locations: ', paste0(names(subset_info), coll=', '), '\n')
         location <- readline(prompt=paste0("Please select a location:"))
@@ -83,7 +87,7 @@ WtGetEventData <- function(location=NA, event=NA, info=FALSE) {
         )
         event <- readline(prompt=paste0("Please select an event for this location:"))
     }
-    
+
     output <-
         waveletTimingData[
             site_no == subset_info[[location]]$site_no &
@@ -99,11 +103,11 @@ WtEventMask <- function(wt) {
     n_time <- length(wt$t)
 
     ## COI 0/1 mask: 0 means in the COI, 1 means not in the COI.
-    coi_mask <- wt$signif * 0 # signif is a matrix of the correct dimension. 
+    coi_mask <- wt$signif * 0 # signif is a matrix of the correct dimension.
     mode(coi_mask) <-  'logical' # save some space with a boolean that promotes
     mask <- list(coi = coi_mask)
     for (tt in 1:n_time) mask$coi[which(wt$period < wt$coi[tt]), tt] <- TRUE
-    
+
     ## Signif mask
     signif_mask <- wt$signif * 0
     mode(signif_mask) <- 'logical'
@@ -111,10 +115,10 @@ WtEventMask <- function(wt) {
     mask$signif[wt$signif >= 1] <- TRUE
     ## JLM TODO: is the signif mask the same for power and power.corr?
     ## Apparently so.
-    
+
     ## Event mask
     mask$event <- mask$coi * mask$signif
-    
+
     return(mask)
 }
 
@@ -151,42 +155,82 @@ WtEventMtx <- function(wt) {
         if (!all(as.logical(event_mtx$period_clusters[period, ]) == as.logical(mask_vec)))
             stop('Problem with event cluster identification.')
     }
-    
+
     return(event_mtx)
 }
 
 
-WtTimeChunks <- function(input_data, obs_name, mod_name=NULL, max.scale=256) {
+WtTimeChunks <- function(
+    input_data, obs_name, mod_name=NULL, max.scale=256,
+    rm_chunks_warn=TRUE, rm_chunks_error=TRUE) {
 
     chunk_list <- list()
     the_chunks <- unique(input_data$chunk)
     for(cc in 1:length(the_chunks)) {
-        input_chunk <- subset(input_data, chunk == the_chunks[cc])
-        obs_for_wt <- cbind(1:nrow(input_chunk), input_chunk[[obs_name]])
-        if(is.null(mod_name)) {
-            ## regular wavelet transform
-            chunk_list[[cc]] <- biwavelet::wt(obs_for_wt, max.scale=max.scale)
-        } else {
-            ## xwt
-            print('wtcwtc1')
-            mod_for_wt <- cbind(1:nrow(input_chunk), input_chunk[[mod_name]])
-            chunk_list[[cc]] <- biwavelet::xwt(obs_for_wt, mod_for_wt, max.scale=max.scale)
-            print('wtcwtc2')
-        }
+      input_chunk <- subset(input_data, chunk == the_chunks[cc])
+      obs_for_wt <- cbind(1:nrow(input_chunk), input_chunk[[obs_name]])
+      
+      if(is.null(mod_name)) {
+        ## regular wavelet transform
+
+        result = tryCatch(
+          {
+            chunk_list[[cc]] <-
+              biwavelet::wt(obs_for_wt, max.scale=max.scale)
+            chunk_list[[cc]]$chunk <- chunk_list[[cc]]$t * 0 + cc
+          }, warning = function(w) {
+            print("Some wavelet transforms are returning warnings.")
+            if(!rm_chunks_warn) stop("rm_chunks_warn == FALSE")
+            chunk_list[[cc]] <- NA
+          }, error = function(e) {
+            print("Some wavelet transforms are returning errors.")
+            if(!rm_chunks_error) stop("rm_chunks_error == FALSE")
+            chunk_list[[cc]] <- NA
+          })
+        
+      } else {
+
+        ## xwt
+        mod_for_wt <- cbind(1:nrow(input_chunk), input_chunk[[mod_name]])
+
+        result = tryCatch({
+          chunk_list[[cc]] <-
+            biwavelet::xwt(obs_for_wt, mod_for_wt, max.scale=max.scale)
+          chunk_list[[cc]]$chunk <- chunk_list[[cc]]$t * 0 + cc
+        }, warning = function(w) {
+          print("Some cross-wavelet transforms are returning warnings.")
+          if(!rm_chunks_warn) stop("rm_chunks_warn == FALSE")
+          chunk_list[[cc]] <- NA
+        }, error = function(e) {
+          print("Some cross-wavelet transforms are returning errors.")
+          if(!rm_chunks_error) stop("rm_chunks_error == FALSE")
+          chunk_list[[cc]] <- NA
+        })
+
+      }
     }
 
-    time_vars_1d <- c("coi", "t", "xaxis")
-    time_vars_2d <- c("wave", "power", "power.corr", "phase", "signif")
-    
     ## any shenanigans about time or xaxis and gaps, or leave it to POSIXct?
-    output <- chunk_list[[1]]
-    if(length(chunk_list) > 1) {
-        for(cc in 2:length(chunk_list)) {
-            for(var in time_vars_1d)
-                output[[var]] <- c(output[[var]], chunk_list[[cc]][[var]])
+    first_ind <- 1
+    while(class(chunk_list[[first_ind]]) != 'biwavelet'){
+      first_ind <- first_ind + 1
+    }
+    output <- chunk_list[[first_ind]]
 
-            for(var in time_vars_2d)
-                output[[var]] <- cbind(output[[var]], chunk_list[[cc]][[var]])
+    if(length(chunk_list) > first_ind) {
+      for(cc in (first_ind+1):length(chunk_list)) {
+
+        if(class(chunk_list[[cc]]) != "biwavelet") {
+          print(cc)
+          next
+        }
+
+        for(var in wt_vars_1d)
+          output[[var]] <- c(output[[var]], chunk_list[[cc]][[var]])
+
+        for(var in wt_vars_2d)
+          output[[var]] <- cbind(output[[var]], chunk_list[[cc]][[var]])
+
         }
     }
 
@@ -199,32 +243,29 @@ WtEventTiming <- function(POSIXct, obs,
                           max.scale=256,
                           min_ts_length=max.scale * time_step_h,
                           time_step_h=NULL,
-                          obs_wps_tavg_smooth_scale=NULL) {
+                          obs_wps_tavg_smooth_scale=NULL,
+                          rm_chunks_warn=TRUE, rm_chunks_error=TRUE) {
 
     ## TODO JLM: max.scale is unitless but min_ts_length is not? max.scale*time_step_h gives
     ## a unit for it.
-    
+
     ## use ... or other kw for passing to wt, xwt.
     ## TODO JLM: are max.scale wt and xwt necessarily the same?
-    ## JLM TODO: Gap handling. 
-    ## JLM TODO: If there were discontinuities, would have a loop over the chunks.
-    ## JLM TODO: If we break up the timeseries, should probably return the chunks of raw data too.
-
     ## TODO JLM: option for reducing this object size if only stats are required.
     ##           most of the bloat is for plotting.
-    
+
     n_time <- length(POSIXct)
     output <- list()
-    
+
     ## ---------------------------------------------------------------------------
     ## Input data
-    ## Save of a data frame, this facilitates plotting. Could make this optional. 
-    input_data <- 
+    ## Save of a data frame, this facilitates plotting. Could make this optional.
+    input_data <-
         as.data.table(
             data.frame(
                 POSIXct=POSIXct,
                 Time=as.numeric(POSIXct),
-                input_index=1:length(POSIXct), 
+                input_index=1:length(POSIXct),
                 obs=obs
             )
         )
@@ -243,14 +284,13 @@ WtEventTiming <- function(POSIXct, obs,
     ## Label time chunks
     ## How do we know the timestep?
     if(is.null(time_step_h))
-        ## time_step_h <- as.numeric(median(diff(input_data$POSIXct)), units="hours")
         time_step_h <- median(diff(input_data$POSIXct)) # This is a timediff.
     ## Need to ensure that a passed value is a timediff.
     wh_gt_time_step <- which(diff(input_data$POSIXct) > time_step_h) + 1
     input_data$chunk <- 0
     input_data$chunk[wh_gt_time_step] <- 1
     input_data$chunk <- cumsum(input_data$chunk) + 1
-                             
+
     ## Filter out chunks less than some size
     chunk_len = input_data[, .(len_h = difftime(max(POSIXct),  min(POSIXct), units='hours')),
                              by='chunk']
@@ -266,7 +306,7 @@ WtEventTiming <- function(POSIXct, obs,
         print(chunk_len)
         return(NULL)
     }
-    
+
     ## Melt just for the output list
     output[['input_data']] <- melt(
         input_data,
@@ -280,20 +320,83 @@ WtEventTiming <- function(POSIXct, obs,
     ## ---------------------------------------------------------------------------
     ## Observed wavelet transforms.
     ## Observed timeseries is just one.
-    wt_obs <- WtTimeChunks(input_data, obs_name='obs', max.scale=max.scale)
-
+    wt_obs <- WtTimeChunks(input_data, obs_name='obs', max.scale=max.scale,
+                           rm_chunks_warn=rm_chunks_warn, rm_chunks_error=rm_chunks_error)
     class(wt_obs) <- c("wavelet_timing", class(wt_obs))
-    
     n_period <- length(wt_obs$period)
 
+    ## ---------------------------------------------------------------------------
+    ## Modeled wavelet transforms
+    ## For the modeled timeseries, we loop over the named list of modeled timeseries.
+    wt_mod = list()
+    mod_names <-  names(mod)
+    for (name in mod_names) {
+      wt_mod[[name]] <- WtTimeChunks(input_data, name, max.scale=max.scale,
+                                     rm_chunks_warn=rm_chunks_warn, rm_chunks_error=rm_chunks_error)
+      class(wt_mod[[name]]) <- c("wavelet_timing", class(wt_mod[[name]]))
+    }
+
+    ## Cross-wavelet transforms for each modeled timeseries
+    xwts = list()
+    for (name in mod_names) {
+      xwts[[name]] <-
+        WtTimeChunks(input_data, obs_name='obs', mod_name=name, max.scale=max.scale,
+                     rm_chunks_warn=rm_chunks_warn, rm_chunks_error=rm_chunks_error)
+      class(xwts[[name]]) <- c("wavelet_timing", class(xwts[[name]]))
+    }
+    
+    # Reduce the modeled and observed to the same sets of chunks
+    get_unique_chunks = function(ll) unique(ll$chunk)
+
+    obs_chunks = get_unique_chunks(wt_obs)
+
+    # for the modeled and xwt, only keep chunks which are in all models/xwts
+    get_model_intersect_chunks = function(the_wts) {
+      chunk_list = plyr::llply(the_wts, get_unique_chunks)
+      return(list(union= Reduce(union, chunk_list),
+                  intersection=Reduce(intersect, chunk_list)))
+    }
+
+    model_chunks = get_model_intersect_chunks(wt_mod)
+    xwt_chunks = get_model_intersect_chunks(xwts)
+    
+    combined_intersect = intersect(
+      intersect(obs_chunks, model_chunks$intersection), xwt_chunks$intersection)
+    combined_union = union(
+      union(obs_chunks, model_chunks$union), xwt_chunks$union)
+
+    keep_chunks = function(wt, chunk_nums_vec) {
+      wh_chunk = which(wt$chunk %in% chunk_nums_vec)
+      for(var in wt_vars_1d) wt[[var]] <- wt[[var]][wh_chunk]
+      for(var in wt_vars_2d) wt[[var]] <- wt[[var]][,wh_chunk]
+      return(wt)
+    }
+
+    if(length(combined_intersect) != length(combined_union)) {
+      # observed
+      wt_obs <- keep_chunks(wt_obs, combined_intersect)
+      # modeled
+      for (name in mod_names) {
+        wt_mod[[name]] <- keep_chunks(wt_mod[[name]], combined_intersect)
+        xwts[[name]] <- keep_chunks(xwts[[name]], combined_intersect)
+      }
+    }
+
+        
+    ## -----------------------------------------------------------------------------
+    ## Operate on the output list.
+
+    ## -------------------------------------------------------
+    ## Observed stats
+    ## Put the obs in the output data 
     output[['obs']] = list(wt = wt_obs)
 
-    ## The masks 
+    ## The masks
     output[['obs']]$wt$event_timing$mask <- WtEventMask(output[['obs']]$wt)
 
     ## The event matrices
     output[['obs']]$wt$event_timing$event_mtx<- WtEventMtx(output[['obs']]$wt)
-    
+
     ## Gather the "bulk" (all the) information needed for sampling phase/timing errors:
     ## No phase needed for the obs wt.
     wh_event_mask <- which(output[['obs']]$wt$event_timing$mask$event == 1, arr.ind=TRUE)
@@ -303,12 +406,12 @@ WtEventTiming <- function(POSIXct, obs,
 
     output[['obs']]$wt$event_timing$all$time <-
         output[['input_data']][Streamflow == 'obs']$input_index[wh_event_mask[,2]]
-    
+
     output[['obs']]$wt$event_timing$all$period_clusters <-
         output[['obs']]$wt$event_timing$event_mtx$period_clusters[wh_event_mask]
     ## sort all by period and time
     setkey(output[['obs']]$wt$event_timing$all, period, time)
-    
+
     ## Calculate the time-averaged corrected wavelet power spectrum on the obs:
     output[['obs']]$wt$event_timing$time_avg <-
         output[['obs']]$wt$event_timing$all[,.(power_corr=mean(power_corr)),.(period)]
@@ -318,7 +421,7 @@ WtEventTiming <- function(POSIXct, obs,
 
     ## Calculate the local maxima of the time-avg corrected WPS so we can sample timing
     ## on just the most important periods.
-    output[['obs']]$wt$event_timing$time_avg$local_max <- 
+    output[['obs']]$wt$event_timing$time_avg$local_max <-
         pastecs::turnpoints(output[['obs']]$wt$event_timing$time_avg$power_corr)$peaks
 
     ## Smooth the time_avg WPS?
@@ -346,23 +449,15 @@ WtEventTiming <- function(POSIXct, obs,
 
     if(is.null(mod)) return(output)
 
-    ## ---------------------------------------------------------------------------
-    ## Modeled.
-    ## For the modeled timeseries, we loop over the named list of modeled timeseries.
-    wt_mod = list()
-    mod_names <-  names(mod)
-    for (name in mod_names) {
-        wt_mod[[name]] <- WtTimeChunks(input_data, name, max.scale=max.scale)
-        class(wt_mod[[name]]) <- c("wavelet_timing", class(wt_mod[[name]]))
-    }
-
+    # -------------------------------------------------------
+    # event timing for the modeled
     for (name in mod_names) {
         output[[name]] <- list(wt = wt_mod[[name]])
         output[[name]]$wt$event_timing$mask <- WtEventMask(output[[name]]$wt)
     }
 
     ## Do the modeled TS need event_mtx? I dont think so.
-    
+
     ## The intersection stats.
     for (name in mod_names) {
         area_intersect <-
@@ -375,17 +470,13 @@ WtEventTiming <- function(POSIXct, obs,
     }
     ## TODO JLM: rename these?
     ## obs_event_frac is like a hit rate, 1 - mod_event_frac is like a FAR.
-    
+
     ## The timing stats.
     ## Gather the "bulk" phase/timing errors:
     ##    No sampling, take all observed significant/event timing errors from the obs-mod xwt.
-    print('fafafafa')
     for (name in mod_names) {
-        output[[name]]$xwt <-
-            WtTimeChunks(input_data, obs_name='obs', mod_name=name, max.scale=max.scale)
-        print('fafafafa')
-        class(output[[name]]$xwt) <- c("wavelet_timing", class(output[[name]]$xwt))
-
+        output[[name]]$xwt <- xwts[[name]]
+      
         ## Calculate the timing error matrix
         output[[name]]$xwt$event_timing$mtx$timing_err <- output[[name]]$xwt$phase * NA
         for(rr in 1:nrow(output[[name]]$xwt$phase)) {
@@ -394,8 +485,7 @@ WtEventTiming <- function(POSIXct, obs,
                 output[[name]]$xwt$phase[rr,] / (2*pi)
         }
 
-        
-        ## The masks 
+        ## The masks
         output[[name]]$xwt$event_timing$mask <- WtEventMask(output[[name]]$xwt)
 
         ## The event matrices
@@ -424,16 +514,16 @@ WtEventTiming <- function(POSIXct, obs,
         output[[name]]$xwt$event_timing$all$timing_err <-
             output[[name]]$xwt$event_timing$all$period *
             output[[name]]$xwt$event_timing$all$phase / (2*pi)
-                        
+
         ## The period clusters are FOR THE OBSERVATIONS, not the modeled
         output[[name]]$xwt$event_timing$all$period_clusters <-
             output[['obs']]$wt$event_timing$event_mtx$period_clusters[wh_event_mask]
 
         # Is this observed event significant in the XWT?
-        output[[name]]$xwt$event_timing$all$xwt_signif <- 
+        output[[name]]$xwt$event_timing$all$xwt_signif <-
             output[['obs']]$wt$event_timing$mask$event[wh_event_mask] == 1 &
             output[[name]]$xwt$event_timing$mask$event[wh_event_mask] == 1
-        
+
         setkey(output[[name]]$xwt$event_timing$all, period, time)
     }
 
@@ -482,9 +572,9 @@ we_hydro_stats <- function(wt_event) {
                  ),
                 .(period)
             ]
-        
+
         setkey(output[[name]]$xwt$event_timing$time_avg, period)
-        
+
     }
 
     ## -------------------------------------------------------
@@ -517,7 +607,7 @@ we_hydro_stats <- function(wt_event) {
 
         setkey(output[[name]]$xwt$event_timing$cluster_mean, period)
     }
-    
+
     ## -------------------------------------------------------
     ## Cluster-MAX timing errors on maxima of time-averaged obs wt power.
     for (name in mod_names) {
@@ -548,7 +638,7 @@ we_hydro_stats <- function(wt_event) {
 
         setkey(output[[name]]$xwt$event_timing$cluster_max, period)
     }
-    
+
     return(output)
-    
+
 }
