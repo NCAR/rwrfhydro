@@ -179,11 +179,11 @@ WtTimeChunks <- function(
               biwavelet::wt(obs_for_wt, max.scale=max.scale)
             chunk_list[[cc]]$chunk <- chunk_list[[cc]]$t * 0 + cc
           }, warning = function(w) {
-            print("Some wavelet transforms are returning warnings.")
+            warning("Some wavelet transforms are returning warnings.")
             if(!rm_chunks_warn) stop("rm_chunks_warn == FALSE")
             chunk_list[[cc]] <- NA
           }, error = function(e) {
-            print("Some wavelet transforms are returning errors.")
+            warning("Some wavelet transforms are returning errors.")
             if(!rm_chunks_error) stop("rm_chunks_error == FALSE")
             chunk_list[[cc]] <- NA
           })
@@ -198,11 +198,11 @@ WtTimeChunks <- function(
             biwavelet::xwt(obs_for_wt, mod_for_wt, max.scale=max.scale)
           chunk_list[[cc]]$chunk <- chunk_list[[cc]]$t * 0 + cc
         }, warning = function(w) {
-          print("Some cross-wavelet transforms are returning warnings.")
+          warning("Some cross-wavelet transforms are returning warnings.")
           if(!rm_chunks_warn) stop("rm_chunks_warn == FALSE")
           chunk_list[[cc]] <- NA
         }, error = function(e) {
-          print("Some cross-wavelet transforms are returning errors.")
+          warning("Some cross-wavelet transforms are returning errors.")
           if(!rm_chunks_error) stop("rm_chunks_error == FALSE")
           chunk_list[[cc]] <- NA
         })
@@ -221,7 +221,7 @@ WtTimeChunks <- function(
       for(cc in (first_ind+1):length(chunk_list)) {
 
         if(class(chunk_list[[cc]]) != "biwavelet") {
-          print(cc)
+          # print(cc)
           next
         }
 

@@ -820,6 +820,8 @@ step2_figure <- function(wt_event, n_phase_along_x=70, base_size=9,
     
     ## Currently this is only configured to handle a single modeled timeseries.
     model_name <- setdiff(names(wt_event), c("input_data", "obs"))
+    if(length(model_name) > 1)
+      stop('Currently this is only configured to handle a single modeled timeseries.')
     
     wt_power <- get_data_plot_power(wt_event$obs$wt, wt_event$input_data)
     xwt_power <- get_data_plot_power(wt_event[[model_name]]$xwt, wt_event$input_data)
