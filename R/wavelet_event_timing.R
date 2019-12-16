@@ -289,8 +289,9 @@ WtEventTiming <- function(POSIXct, obs,
     wh_gt_time_step <- which(diff(input_data$POSIXct) > time_step_h) + 1
     input_data$chunk <- 0
     input_data$chunk[wh_gt_time_step] <- 1
-    input_data$chunk <- cumsum(input_data$chunk) + 1
-
+    input_data$chunk <- cumsum(input_data$chunk)
+    input_data$chunk <- input_data$chunk - min(input_data$chunk) + 1
+    
     ## Filter out chunks less than some size
     chunk_len = input_data[, .(len_h = difftime(max(POSIXct),  min(POSIXct), units='hours')),
                              by='chunk']
@@ -298,6 +299,12 @@ WtEventTiming <- function(POSIXct, obs,
     if(length(rm_chunks))
         input_data <- input_data[ !(chunk %in% rm_chunks) ]
 
+    # renumber chunks ?
+    unique_chunks = unique(input_data$chunk)
+    rename_chunks = 1:length(unique_chunks)
+    names(rename_chunks) = unique_chunks
+    input_data$chunk = rename_chunks[as.character(input_data$chunk)]
+    
     if(nrow(input_data) == 0) {
         msg <- paste0("All contiguous chunks in the input data were shorter ",
                       "than min_ts_length. Returning.")
@@ -381,7 +388,6 @@ WtEventTiming <- function(POSIXct, obs,
         xwts[[name]] <- keep_chunks(xwts[[name]], combined_intersect)
       }
     }
-
         
     ## -----------------------------------------------------------------------------
     ## Operate on the output list.

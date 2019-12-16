@@ -1,14 +1,14 @@
 
-get_data_plot_time_avg_power <- function(wt, event=FALSE) {
+get_data_plot_time_avg_power = function(wt, event=FALSE) {
     ## Return the data to plot the time-averaged wavelet spectrum.
     ## Default excludes the COI.
     if(event) {
-        power <- wt$power.corr * ifelse(wt$event_timing$mask$event, 1, NA)
+        power = wt$power.corr * ifelse(wt$event_timing$mask$event, 1, NA)
     } else {
-        power <- wt$power.corr * ifelse(wt$event_timing$mask$coi, 1, NA)
+        power = wt$power.corr * ifelse(wt$event_timing$mask$coi, 1, NA)
     }
     
-    time_avg_power <- data.frame(
+    time_avg_power = data.frame(
         period=wt$period,
         Period=length(wt$period):1,
         Power=rowMeans(power, na.rm=TRUE)
@@ -16,28 +16,28 @@ get_data_plot_time_avg_power <- function(wt, event=FALSE) {
 
     if(event) {
         
-        event_cluster_count <-
+        event_cluster_count =
             wt$event_timing$all[, .(event_count= uniqueN(period_clusters)), by = period]
-        time_avg_power <- merge(time_avg_power, event_cluster_count, by='period', all.x=TRUE)
-        time_avg_power$event_count[which(is.na(time_avg_power$event_count))] <- 0
-        time_avg_power$Power[which(is.nan(time_avg_power$Power))] <- 0
-        time_avg_power <- plyr::rename(time_avg_power, c('Power'='Avg Power'))
-        time_avg_power$`Avg over` <- 'events'
+        time_avg_power = merge(time_avg_power, event_cluster_count, by='period', all.x=TRUE)
+        time_avg_power$event_count[which(is.na(time_avg_power$event_count))] = 0
+        time_avg_power$Power[which(is.nan(time_avg_power$Power))] = 0
+        time_avg_power = plyr::rename(time_avg_power, c('Power'='Avg Power'))
+        time_avg_power$`Avg over` = 'events'
         
     } else {
         
-        time_avg_power <- plyr::rename(time_avg_power, c('Power'='Avg Power'))
-        time_avg_power$`Avg over` <- 'all'
+        time_avg_power = plyr::rename(time_avg_power, c('Power'='Avg Power'))
+        time_avg_power$`Avg over` = 'all'
 
     }
 
-    time_avg_power$avg_power_values <- time_avg_power$`Avg Power`
+    time_avg_power$avg_power_values = time_avg_power$`Avg Power`
     
     return(time_avg_power)    
 }
 
 
-get_data_plot_power <- function(wt, input_data, wt_field=NULL, event=FALSE) {
+get_data_plot_power = function(wt, input_data, wt_field=NULL, event=FALSE) {
     ## Return the data to plot the wavelet power spectrum
 
     ## The wt_field allows an arbitray field to be combined with the
@@ -48,43 +48,43 @@ get_data_plot_power <- function(wt, input_data, wt_field=NULL, event=FALSE) {
     input_obs = input_obs[ chunk_renum %in% unique(wt$chunk) ]
     
     if(is.null(wt_field)) {
-        wps_matrix <- wt$power.corr
+        wps_matrix = wt$power.corr
     } else {
-        wps_matrix <- wt_field
+        wps_matrix = wt_field
     }
-    rownames(wps_matrix) <- length(wt$period):1
-    colnames(wps_matrix) <- input_obs$POSIXct
-    wps <- setNames(reshape2::melt(wps_matrix), c('Period', 'Time', 'Power'))
-    plot_df <- wps
+    rownames(wps_matrix) = length(wt$period):1
+    colnames(wps_matrix) = input_obs$POSIXct
+    wps = setNames(reshape2::melt(wps_matrix), c('Period', 'Time', 'Power'))
+    plot_df = wps
     
-    chunk_matrix <- wps_matrix
-    for(pp in 1:length(wt$period)) chunk_matrix[pp,] <- input_obs$chunk
-    chunk <- setNames(reshape2::melt(chunk_matrix), c('Period', 'Time', 'chunk'))
-    plot_df$chunk <- chunk$chunk
-    chunk <- NULL
+    chunk_matrix = wps_matrix
+    for(pp in 1:length(wt$period)) chunk_matrix[pp,] = input_obs$chunk
+    chunk = setNames(reshape2::melt(chunk_matrix), c('Period', 'Time', 'chunk'))
+    plot_df$chunk = chunk$chunk
+    chunk = NULL
     
-    coi_matrix <- wt$event_timing$mask$coi
-    rownames(coi_matrix) <- 1:length(wt$period)
-    colnames(coi_matrix) <- input_obs$POSIXct
-    coi <- setNames(reshape2::melt(coi_matrix), c('Period', 'Time', 'COI'))
-    plot_df$COI <- coi$COI
-    coi <- NULL
+    coi_matrix = wt$event_timing$mask$coi
+    rownames(coi_matrix) = 1:length(wt$period)
+    colnames(coi_matrix) = input_obs$POSIXct
+    coi = setNames(reshape2::melt(coi_matrix), c('Period', 'Time', 'COI'))
+    plot_df$COI = coi$COI
+    coi = NULL
     
-    signif_matrix <- wt$event_timing$mask$signif * 1
-    rownames(signif_matrix) <- 1:length(wt$period)
-    colnames(signif_matrix) <- input_obs$POSIXct
-    signif <- setNames(reshape2::melt(signif_matrix), c('Period', 'Time', 'Significance'))
-    plot_df$Significance <- signif$Significance
-    signif <- NULL
+    signif_matrix = wt$event_timing$mask$signif * 1
+    rownames(signif_matrix) = 1:length(wt$period)
+    colnames(signif_matrix) = input_obs$POSIXct
+    signif = setNames(reshape2::melt(signif_matrix), c('Period', 'Time', 'Significance'))
+    plot_df$Significance = signif$Significance
+    signif = NULL
 
-    period_df <- data.frame(Period=length(wt$period):1, period=wt$period)
-    plot_df <- merge(plot_df, period_df, by='Period')
+    period_df = data.frame(Period=length(wt$period):1, period=wt$period)
+    plot_df = merge(plot_df, period_df, by='Period')
 
     return(plot_df)
 }
 
 
-merge_data_plot <- function(
+merge_data_plot = function(
                             ...,
                             time_axis_len=1,
                             time_trans=NULL,
@@ -107,103 +107,103 @@ merge_data_plot <- function(
                             streamflow_label_format=NULL
                             ) {
         
-    raw_data <- list(...)
+    raw_data = list(...)
     
-    x_levels <- c('Time', 'Avg Power', 'Event Avg Power')
-    y_levels <- c('Period', 'Streamflow (cms)')
+    x_levels = c('Time', 'Avg Power', 'Event Avg Power')
+    y_levels = c('Period', 'Streamflow (cms)')
     
-    plot_list <- list()
+    plot_list = list()
     for(item in 1:length(raw_data)) {
-        plot_list[[item]] <- raw_data[[item]]
+        plot_list[[item]] = raw_data[[item]]
         
         for(dim in c('x', 'y')) {
-            dim_levels <- list(x=x_levels, y=y_levels)[[dim]]
+            dim_levels = list(x=x_levels, y=y_levels)[[dim]]
             for(var_name in intersect(dim_levels, names(plot_list[[item]]) )) {
-                plot_list[[item]][[dim]] <- plot_list[[item]][[var_name]]
-                plot_list[[item]][[var_name]] <- NULL
-                plot_list[[item]][[paste0(dim,'_var')]] <- factor(var_name, levels=dim_levels)
+                plot_list[[item]][[dim]] = plot_list[[item]][[var_name]]
+                plot_list[[item]][[var_name]] = NULL
+                plot_list[[item]][[paste0(dim,'_var')]] = factor(var_name, levels=dim_levels)
             }
         }    
     }
     
     ## Now homogenize with empty cols/vars to perform a rbind.
-    all_var_names <- unlist(plyr::llply(plot_list, function(list) names(list)))
+    all_var_names = unlist(plyr::llply(plot_list, function(list) names(list)))
     for(item in 1:length(raw_data)) {
         for(absent_var in setdiff(all_var_names, names(plot_list[[item]]))){
-            plot_list[[item]][[absent_var]] <- NA
+            plot_list[[item]][[absent_var]] = NA
         }
     }
 
-    plot_data <- plyr::ldply(plot_list)
+    plot_data = plyr::ldply(plot_list)
 
     ## -------------------------------------------------------
     ## What dimensions do we have?
-    wh_time <- which(plot_data$x_var == 'Time')
-    wh_avg_power <- which(plot_data$x_var == 'Avg Power')
-    wh_period <- which(plot_data$y_var == 'Period')
-    wh_streamflow <- which(plot_data$y_var == 'Streamflow (cms)')
+    wh_time = which(plot_data$x_var == 'Time')
+    wh_avg_power = which(plot_data$x_var == 'Avg Power')
+    wh_period = which(plot_data$y_var == 'Period')
+    wh_streamflow = which(plot_data$y_var == 'Streamflow (cms)')
     
     ## -------------------------------------------------------
     ## Axis Breaks and Labels
 
     ## x - time
     if(length(wh_time)) {
-        use_time <- if('POSIXct' %in% names(plot_data)) "POSIXct" else "x"
+        use_time = if('POSIXct' %in% names(plot_data)) "POSIXct" else "x"
         if(is.null(time_breaks))
-            time_breaks <- scales::pretty_breaks()(subset(plot_data, x_var == 'Time')[[use_time]])
+            time_breaks = scales::pretty_breaks()(subset(plot_data, x_var == 'Time')[[use_time]])
                 
         if(is.null(time_label_format)) {
-            time_labels <- time_breaks
+            time_labels = time_breaks
             if(use_time == 'x')
-                time_labels <- as.POSIXct(time_breaks, tz='UTC', origin=rwrfhydro::PosixOrigin())
-            time_labels <- scales::date_format('%d %b\n%Y')(time_labels)
+                time_labels = as.POSIXct(time_breaks, tz='UTC', origin=rwrfhydro::PosixOrigin())
+            time_labels = scales::date_format('%d %b\n%Y')(time_labels)
         } else {
-            time_labels <- time_label_format(time_breaks)
+            time_labels = time_label_format(time_breaks)
         }
     }
 
     ## x - avg_power
     if(length(wh_avg_power)) {
         if(is.null(avg_power_breaks))
-            avg_power_breaks <-
+            avg_power_breaks =
                 scales::pretty_breaks()(subset(plot_data, x_var == 'Avg Power')$avg_power_values)
-        avg_power_labels <- avg_power_breaks
+        avg_power_labels = avg_power_breaks
         if(!is.null(avg_power_label_format))
-            avg_power_labels <- avg_power_label_format(avg_power_breaks)
+            avg_power_labels = avg_power_label_format(avg_power_breaks)
     }
 
     ## y - period
     if(length(wh_period)) {
         if(is.null(period_breaks))
-            period_breaks <-
+            period_breaks =
                 scales::pretty_breaks()(subset(plot_data, y_var == 'Period')$y)
 
         ## The breaks probably need rounded, or the nearest neighbor in the set needs found.
-        period_labels <- as.character(period_breaks * NA)
-        plot_period <- subset(plot_data, y_var == 'Period' & !is.na(period))
+        period_labels = as.character(period_breaks * NA)
+        plot_period = subset(plot_data, y_var == 'Period' & !is.na(period))
         for(bb in 1:length(period_breaks))
-            period_labels[bb] <-
+            period_labels[bb] =
                 plot_period$period[which(plot_period$y == period_breaks[bb])[1]]
 
         ## Do NOT allow transform of period?
         if(is.null(period_label_format)) {
-            period_labels <- scales::number_format()(as.numeric(period_labels))
+            period_labels = scales::number_format()(as.numeric(period_labels))
         } else {
-            period_labels <- period_label_format(as.numeric(period_labels))
+            period_labels = period_label_format(as.numeric(period_labels))
         }
     }
     
     ## y - streamflow
     if(length(wh_streamflow)) {
         if(is.null(streamflow_breaks))
-            streamflow_breaks <-
+            streamflow_breaks =
                 scales::pretty_breaks()(subset(
                                          plot_data,
                                          y_var == 'Streamflow (cms)'
                                      )$streamflow_values)
-        streamflow_labels <- streamflow_breaks
+        streamflow_labels = streamflow_breaks
         if(!is.null(streamflow_label_format))
-            streamflow_labels <- streamflow_label_format(streamflow_breaks)
+            streamflow_labels = streamflow_label_format(streamflow_breaks)
     }
 
     
@@ -212,20 +212,20 @@ merge_data_plot <- function(
     
     ## Transform Avg Power axis:
     if(!is.null(avg_power_trans)) {
-        plot_data$x[wh_avg_power] <- avg_power_trans()$trans(plot_data$x[wh_avg_power])
-        avg_power_breaks <- avg_power_trans()$trans(avg_power_breaks)
+        plot_data$x[wh_avg_power] = avg_power_trans()$trans(plot_data$x[wh_avg_power])
+        avg_power_breaks = avg_power_trans()$trans(avg_power_breaks)
     }
 
     ## Transform Period axis:
     if(!is.null(period_trans)) {
-        plot_data$y[wh_period] <- period_trans()$trans(plot_data$y[wh_period])
-        period_breaks <- period_trans()$trans(period_breaks)
+        plot_data$y[wh_period] = period_trans()$trans(plot_data$y[wh_period])
+        period_breaks = period_trans()$trans(period_breaks)
     }
 
     ## Transform streamflow axis:
     if(!is.null(streamflow_trans)) {
-        plot_data$y[wh_streamflow] <- streamflow_trans()$trans(plot_data$y[wh_streamflow])
-        streamflow_breaks <- streamflow_trans()$trans(streamflow_breaks)
+        plot_data$y[wh_streamflow] = streamflow_trans()$trans(plot_data$y[wh_streamflow])
+        streamflow_breaks = streamflow_trans()$trans(streamflow_breaks)
     }
     
     ## -------------------------------------------------------
@@ -233,24 +233,24 @@ merge_data_plot <- function(
     ## x-axis: Time vs Avg Power
     if(length(wh_time) & length(wh_avg_power)) {
 
-        time_range <- diff(range(plot_data$x[wh_time], na.rm=TRUE))
-        avg_power_range <- diff(range(plot_data$x[wh_avg_power], na.rm=TRUE))
+        time_range = diff(range(plot_data$x[wh_time], na.rm=TRUE))
+        avg_power_range = diff(range(plot_data$x[wh_avg_power], na.rm=TRUE))
 
         # scales::trans_new()$domain[1] is the lower-bound on transformed values.
         if(!is.null(avg_power_trans))
-            avg_power_range <-
+            avg_power_range =
                 diff(range( pmax(plot_data$x[wh_avg_power], avg_power_trans()$domain[1]) ))
         
         ## Leave the time range alone, scale the avg_power_range to be above the time range.
-        xform_avg_power_absc <- function(data) {
+        xform_avg_power_absc = function(data) {
             max(plot_data$x[wh_time])*2 +
                 data *
                 time_range/avg_power_range * avg_power_axis_len/time_axis_len
         }
 
-        plot_data$x[wh_avg_power] <- xform_avg_power_absc(plot_data$x[wh_avg_power])
+        plot_data$x[wh_avg_power] = xform_avg_power_absc(plot_data$x[wh_avg_power])
 
-        avg_power_breaks <- xform_avg_power_absc(avg_power_breaks)
+        avg_power_breaks = xform_avg_power_absc(avg_power_breaks)
     }
 
 
@@ -258,73 +258,73 @@ merge_data_plot <- function(
     ## y-axis: Period vs Streamflow, Relative sizes in plot
     if(length(wh_period) & length(wh_streamflow)) {
 
-        period_range <- diff(range(plot_data$y[wh_period], na.rm=TRUE))
-        streamflow_range <- diff(range(plot_data$y[wh_streamflow], na.rm=TRUE))
+        period_range = diff(range(plot_data$y[wh_period], na.rm=TRUE))
+        streamflow_range = diff(range(plot_data$y[wh_streamflow], na.rm=TRUE))
 
         if(!is.null(period_trans))
-            period_range <-
+            period_range =
                 diff(range( pmax(plot_data$y[wh_period], period_trans()$domain[1]) ))
 
         if(!is.null(streamflow_trans)) {
-            streamflow_range <-
+            streamflow_range =
                 diff(range( pmax(plot_data$y[wh_streamflow], streamflow_trans()$domain[1]) ))
-            # streamflow_range <- streamflow_trans()$inverse(streamflow_range)
+            # streamflow_range = streamflow_trans()$inverse(streamflow_range)
         }
 
         ## Leave the streamflow_range alone, scale the period_range to be above the time range.
-        xform_period_axis <- function(data) {
+        xform_period_axis = function(data) {
             max(plot_data$y[wh_streamflow])*3 + # This multiplier needs to be >2
                 data *
                 (streamflow_range/period_range) * (period_axis_len/streamflow_axis_len)
         }
 
-        plot_data$y[wh_period] <- xform_period_axis(plot_data$y[wh_period])
+        plot_data$y[wh_period] = xform_period_axis(plot_data$y[wh_period])
 
-        period_breaks <- xform_period_axis(period_breaks)
+        period_breaks = xform_period_axis(period_breaks)
 
     }
 
-    x_breaks <- as.numeric(c())
-    x_labels <- as.character(c())
+    x_breaks = as.numeric(c())
+    x_labels = as.character(c())
     if(length(wh_time)) {
-        x_breaks <- c(x_labels, time_breaks)
-        x_labels <- c(x_labels, time_labels)
+        x_breaks = c(x_labels, time_breaks)
+        x_labels = c(x_labels, time_labels)
     }
     if(length(wh_avg_power)) {
-        x_breaks <- c(x_breaks, avg_power_breaks)
-        x_labels <- c(x_labels, avg_power_labels)
+        x_breaks = c(x_breaks, avg_power_breaks)
+        x_labels = c(x_labels, avg_power_labels)
     }
-    attr(plot_data, 'x_breaks') <- x_breaks
-    attr(plot_data, 'x_labels') <- x_labels
+    attr(plot_data, 'x_breaks') = x_breaks
+    attr(plot_data, 'x_labels') = x_labels
 
-    y_breaks <- as.numeric(c())
-    y_labels <- as.character(c())
+    y_breaks = as.numeric(c())
+    y_labels = as.character(c())
     if(length(wh_streamflow)) {
-        y_breaks <- c(y_labels, streamflow_breaks)
-        y_labels <- c(y_labels, streamflow_labels)
+        y_breaks = c(y_labels, streamflow_breaks)
+        y_labels = c(y_labels, streamflow_labels)
     }
     if(length(wh_period)) {
-        y_breaks <- c(y_breaks, period_breaks)
-        y_labels <- c(y_labels, period_labels)
+        y_breaks = c(y_breaks, period_breaks)
+        y_labels = c(y_labels, period_labels)
     }
-    attr(plot_data, 'y_breaks') <- y_breaks
-    attr(plot_data, 'y_labels') <- y_labels
+    attr(plot_data, 'y_breaks') = y_breaks
+    attr(plot_data, 'y_labels') = y_labels
 
     
     return(plot_data)
 }
 
 
-plot_wavelet_events <- function(plot_data, do_plot=TRUE, base_size=9) {
+plot_wavelet_events = function(plot_data, do_plot=TRUE, base_size=9) {
     library(ggplot2)
-    gg <- ggplot()
+    gg = ggplot()
 
     ##-------------------------------------------------------
     ## Wavelet spectrum plots
-    subset_power <- subset(plot_data, x_var == 'Time' & y_var == 'Period' & is.na(period_clusters))
+    subset_power = subset(plot_data, x_var == 'Time' & y_var == 'Period' & is.na(period_clusters))
 
     if(nrow(subset_power) > 0) {
-        gg <-
+        gg =
             gg +
             
             geom_raster(
@@ -364,12 +364,12 @@ plot_wavelet_events <- function(plot_data, do_plot=TRUE, base_size=9) {
     ## Input timeseries
     n_timeseries = length(unique(plot_data$Streamflow))
     if(n_timeseries > 1) {
-        subset_input <- subset(plot_data, x_var=='Time' & y_var=='Streamflow (cms)')
+        subset_input = subset(plot_data, x_var=='Time' & y_var=='Streamflow (cms)')
         streamflow_colors =
             RColorBrewer::brewer.pal('Paired', n=3)[c(2, setdiff(1:n_timeseries,2))]
         names(streamflow_colors) = c('obs', setdiff(unique(subset_input$Streamflow), 'obs'))
     } else {
-        subset_input <- subset(plot_data,
+        subset_input = subset(plot_data,
                                x_var=='Time' &
                                y_var=='Streamflow (cms)' &
                                Streamflow=='obs')
@@ -379,7 +379,7 @@ plot_wavelet_events <- function(plot_data, do_plot=TRUE, base_size=9) {
     }
     
     if(nrow(subset_input) > 0) {
-        gg <-
+        gg =
             gg +
             
             geom_line(
@@ -396,10 +396,10 @@ plot_wavelet_events <- function(plot_data, do_plot=TRUE, base_size=9) {
     ## -------------------------------------------------------
     ## Time-averaged power plots
     ## Avg power
-    subset_t_avg <- subset(plot_data, x_var=='Avg Power' & y_var == 'Period')
+    subset_t_avg = subset(plot_data, x_var=='Avg Power' & y_var == 'Period')
 
     if(nrow(subset_t_avg) > 0) {
-      gg <-
+      gg =
         gg +
         geom_path(
                   data=subset_t_avg,
@@ -417,14 +417,14 @@ plot_wavelet_events <- function(plot_data, do_plot=TRUE, base_size=9) {
 
     ## -------------------------------------------------------
     ## Plot layout/style
-    ##my_breaks <- function(x) { if (max(x) < 6000) seq(0, 5000, 1000) else seq(0, 15000, 5000) }
+    ##my_breaks = function(x) { if (max(x) < 6000) seq(0, 5000, 1000) else seq(0, 15000, 5000) }
 
-    x_breaks <- as.numeric(attr(plot_data, 'x_breaks'))
-    x_labels <- attr(plot_data, 'x_labels')
-    y_breaks <- as.numeric(attr(plot_data, 'y_breaks'))
-    y_labels <- attr(plot_data, 'y_labels')
+    x_breaks = as.numeric(attr(plot_data, 'x_breaks'))
+    x_labels = attr(plot_data, 'x_labels')
+    y_breaks = as.numeric(attr(plot_data, 'y_breaks'))
+    y_labels = attr(plot_data, 'y_labels')
     
-    gg <-
+    gg =
         gg +
         
         facet_grid(y_var ~ x_var, scales='free', space='free', switch='y') +
@@ -443,7 +443,7 @@ plot_wavelet_events <- function(plot_data, do_plot=TRUE, base_size=9) {
         ) +
 
         theme_bw(base_size=base_size) +
-        
+          
         theme(
             legend.position="left",
             ##legend.key.height=unit(3, "line"),
@@ -466,19 +466,19 @@ plot_wavelet_events <- function(plot_data, do_plot=TRUE, base_size=9) {
         suppressMessages(library(grid))
         suppressMessages(library(gtable))
 
-        grob <- ggplotGrob(gg)
+        grob = ggplotGrob(gg)
 
         ## remove lower right panel
-        idx <- which(grob$layout$name %in% c("panel-2-2"))
-        for (i in idx) grob$grobs[[i]] <- nullGrob()
+        idx = which(grob$layout$name %in% c("panel-2-2"))
+        for (i in idx) grob$grobs[[i]] = nullGrob()
 
         ## move x-axis on right panels up one panel
-        idx <- which(grob$layout$name %in% c("axis-b-2"))
-        grob$layout[idx, c("t", "b")] <- grob$layout[idx, c("t", "b")] - c(2, 1)
+        idx = which(grob$layout$name %in% c("axis-b-2"))
+        grob$layout[idx, c("t", "b")] = grob$layout[idx, c("t", "b")] - c(2, 1)
 
         ## move the y-axis on the lower right panel left one panel
-        idx <- which(grob$layout$name %in% c("axis-r-2"))
-        grob$layout[idx, c("l", "r")] <- grob$layout[idx, c("l", "r")] - c(1.1, 1.1)
+        idx = which(grob$layout$name %in% c("axis-r-2"))
+        grob$layout[idx, c("l", "r")] = grob$layout[idx, c("l", "r")] - c(1.1, 1.1)
         
         #grid.newpage()
         grid.draw(grob)
@@ -494,7 +494,7 @@ plot_wavelet_events <- function(plot_data, do_plot=TRUE, base_size=9) {
 }
 
 
-facet_grob_adj <- function(gg,
+facet_grob_adj = function(gg,
                            del=NULL,
                            adj=NULL) {
     ## Del is a vector of grob$layout$names to delete.
@@ -505,23 +505,23 @@ facet_grob_adj <- function(gg,
     suppressMessages(library(gtable))
 
     if(!('grob' %in% class(gg))) {
-        grob <- ggplotGrob(gg)
+        grob = ggplotGrob(gg)
     } else {
-        grob <- gg
+        grob = gg
     }
     
     if(!is.null(del)) {
         for(to_del in del) {
-            idx <- which(grob$layout$name %in% to_del)
-            for (i in idx) grob$grobs[[i]] <- nullGrob()
+            idx = which(grob$layout$name %in% to_del)
+            for (i in idx) grob$grobs[[i]] = nullGrob()
         }
     }
 
     if(!is.null(adj)) {
         for(the_name in names(adj)) {
             to_adj = adj[[the_name]]
-            idx <- which(grob$layout$name %in% the_name)
-            grob$layout[idx, to_adj$position] <-
+            idx = which(grob$layout$name %in% the_name)
+            grob$layout[idx, to_adj$position] =
                 grob$layout[idx, to_adj$position] + to_adj$values
         }
     }
@@ -530,26 +530,26 @@ facet_grob_adj <- function(gg,
 }
 
 
-cluster_palette <- function(brewer_pal="Accent") {
-  pal6 <- RColorBrewer::brewer.pal(name=brewer_pal, n=6)
+cluster_palette = function(brewer_pal="Accent") {
+  pal6 = RColorBrewer::brewer.pal(name=brewer_pal, n=6)
   return(colorRampPalette(pal6, space='Lab'))
 }
 
-step1_figure <- function(wt_event) {
+step1_figure = function(wt_event) {
 
     library(dplyr)
     library(ggplot2)
     library(relayer) ## git hash 8a1d49e1707d9fcc1aaa83476a3d9a15448a1065
 
-    obs_power <- get_data_plot_power(wt_event$obs$wt, wt_event$input_data)
-    obs_t_avg_power <- get_data_plot_time_avg_power(wt_event$obs$wt)
-    obs_event_t_avg_power <- get_data_plot_time_avg_power(wt_event$obs$wt, event=TRUE)
+    obs_power = get_data_plot_power(wt_event$obs$wt, wt_event$input_data)
+    obs_t_avg_power = get_data_plot_time_avg_power(wt_event$obs$wt)
+    obs_event_t_avg_power = get_data_plot_time_avg_power(wt_event$obs$wt, event=TRUE)
     ## Should include the ar1 spectrum
 
     ## Data to plot the maxima on the time-avg spectra with this dataframe
-    event_t_avg_max_data <- wt_event$obs$wt$event_timing$time_avg[local_max == TRUE,]
+    event_t_avg_max_data = wt_event$obs$wt$event_timing$time_avg[local_max == TRUE,]
     setnames(event_t_avg_max_data, 'power_corr', 'Avg Power')
-    event_t_avg_max_data <- merge(
+    event_t_avg_max_data = merge(
         event_t_avg_max_data,
         obs_event_t_avg_power[, c('period', 'Period', 'Avg over')],
         by=c('period'),
@@ -559,10 +559,10 @@ step1_figure <- function(wt_event) {
     # =============================================================================
     ## Plot the cluster numbers
 
-    max_periods <- wt_event$obs$wt$event_timing$time_avg[local_max == TRUE]$period
-    max_period_clusters <- wt_event$obs$wt$event_timing$all[ period %in% max_periods ]
+    max_periods = wt_event$obs$wt$event_timing$time_avg[local_max == TRUE]$period
+    max_period_clusters = wt_event$obs$wt$event_timing$all[ period %in% max_periods ]
 
-    event_t_avg_max_period_clusters <- merge(
+    event_t_avg_max_period_clusters = merge(
         max_period_clusters,
         wt_event$input_data[ Streamflow == 'obs', c('Time', 'input_index', 'POSIXct')],
         by.x='time',
@@ -570,8 +570,8 @@ step1_figure <- function(wt_event) {
         all.x=TRUE, all.y=FALSE
     )
 
-    event_t_avg_max_period_clusters$time <- NULL
-    event_t_avg_max_period_clusters <- merge(
+    event_t_avg_max_period_clusters$time = NULL
+    event_t_avg_max_period_clusters = merge(
         event_t_avg_max_period_clusters,
         obs_power[, c('period', 'Time', 'Period')],
         by=c('period', 'Time'),
@@ -579,20 +579,20 @@ step1_figure <- function(wt_event) {
     )
     ## Have to include the y-limits or it will be squashed and have to sample
     ## all the raster coordinates to build the raster.
-    minmax <- as.data.table(obs_power)[
+    minmax = as.data.table(obs_power)[
         period == min(period)  | period == max(period) | Time == min(Time)
     ]
     
     ## hmmmm.... is it guaranteed that the min(Time) is all in the COI?
-    minmax <- minmax[, period_clusters := as.integer(-1) ]
-    event_t_avg_max_period_clusters <- merge(
+    minmax = minmax[, period_clusters := as.integer(-1) ]
+    event_t_avg_max_period_clusters = merge(
         event_t_avg_max_period_clusters,
         minmax[, c('period', 'Time', 'period_clusters', 'Period')],
         by=c('period', 'Time', 'period_clusters', 'Period'),
         all.x=TRUE, all.y=TRUE
     )
 
-    plot_data <-
+    plot_data =
         merge_data_plot(
             subset(wt_event$input_data, Streamflow=='obs'),
             obs_power,
@@ -612,73 +612,73 @@ step1_figure <- function(wt_event) {
         )
     
     ## Add a new vertical facet for showing the "event cluster"
-    new_y_levels <- c('Streamflow (cms)', 'Period', 'c Period', 'd Period')
-    new_y_labels <- c('Streamflow (cms)', 'Timescale', 'Timescale',    'Timescale')
-    y_labeller <- function(string) {
-        labs <- new_y_labels
-        names(labs) <- new_y_levels
+    new_y_levels = c('Streamflow (cms)', 'Period', 'c Period', 'd Period')
+    new_y_labels = c('Streamflow (cms)', 'Timescale', 'Timescale',    'Timescale')
+    y_labeller = function(string) {
+        labs = new_y_labels
+        names(labs) = new_y_levels
         labs[string]
     }
     
     ## Copy the data (same fill values, different mask) for the new
     ## plot, showing the event cluster.
-    wt_copy <- subset(plot_data, x_var == 'Time' & y_var == 'Period')
-    wt_copy$y_var <- ordered("c Period", levels=new_y_levels)
-    wt_copy$Power[which(wt_copy$COI == FALSE | wt_copy$Significance == 0)] <- NA
+    wt_copy = subset(plot_data, x_var == 'Time' & y_var == 'Period')
+    wt_copy$y_var = ordered("c Period", levels=new_y_levels)
+    wt_copy$Power[which(wt_copy$COI == FALSE | wt_copy$Significance == 0)] = NA
 
     ## Transform the factor levels on the original data.
-    plot_data$y_var <- ordered(plot_data$y_var, levels=new_y_levels)
+    plot_data$y_var = ordered(plot_data$y_var, levels=new_y_levels)
     
-    plot_data$y_var[which(!is.na(plot_data$period_clusters))] <-
+    plot_data$y_var[which(!is.na(plot_data$period_clusters))] =
         ordered("d Period", levels=new_y_levels)    
-    plot_data$period_clusters[which(plot_data$period_clusters < 0)] <- NA
+    plot_data$period_clusters[which(plot_data$period_clusters < 0)] = NA
     
     ## Put the event spectrum on the new axis.
-    wh_events <- which(plot_data$`Avg over` == 'events')
-    plot_data$y_var[wh_events]<- ordered(new_y_levels[3], levels=new_y_levels)
+    wh_events = which(plot_data$`Avg over` == 'events')
+    plot_data$y_var[wh_events]= ordered(new_y_levels[3], levels=new_y_levels)
 
     ## Merge the new and old data.
-    pd <- rbind(plot_data, wt_copy)
+    pd = rbind(plot_data, wt_copy)
     
     ## Get the standard plot
-    gg <- plot_wavelet_events(pd, do_plot=FALSE)
+    gg = plot_wavelet_events(pd, do_plot=FALSE)
     
     ## Extend the standard plot.    
     
     ## Use annotations for units labels on the y-axes.
-    plot_data <- as.data.table(plot_data)
+    plot_data = as.data.table(plot_data)
     
-    y_labs <-
+    y_labs =
         plot_data[,
             .(y_center=min(y, na.rm=TRUE)+.5*(max(y, na.rm=TRUE)-min(y, na.rm=TRUE)),
               x_loc=.1*(max(x, na.rm=TRUE)-min(x, na.rm=TRUE))+max(x, na.rm=TRUE)
              ),
             by=c('y_var', 'x_var')
         ]
-    y_labs <- subset(y_labs, x_var == 'Avg Power' | y_var == 'Streamflow (cms)')
-    relab <- c(
+    y_labs = subset(y_labs, x_var == 'Avg Power' | y_var == 'Streamflow (cms)')
+    relab = c(
         `c Period`="Timescale (hours)",
         `Period`='Timescale (hours)',
         `Streamflow (cms)`='Streamflow (cms)'
     )
-    y_labs$lab <- relab[y_labs$y_var]
+    y_labs$lab = relab[y_labs$y_var]
     
     ## Use the facet titles/labels to enumerate the steps in the process.
-    new_y_levels <-
+    new_y_levels =
         c('Streamflow (cms)', 'Period', 'c Period',  'TimePer',           'Time', 'd Period')
-    new_y_labels <-
+    new_y_labels =
         c('a.  Timeseries',   'b.  Obs WT', 'c. Obs WT Events', 'd.  Timing Errors', '', 'd. Timescale Clusters')
-    the_labeller <- function(string) {
-        labs <- new_y_labels
-        names(labs) <- new_y_levels
+    the_labeller = function(string) {
+        labs = new_y_labels
+        names(labs) = new_y_levels
         labs[string]
     }
 
-    clust_numbers <- sort(as.integer(setdiff(plot_data$period_clusters, "None")))
-    clust_fill_colors <- c(NA, cluster_palette()(length(clust_numbers)))
-    names(clust_fill_colors) <- c('None', clust_numbers)
+    clust_numbers = sort(as.integer(setdiff(plot_data$period_clusters, "None")))
+    clust_fill_colors = c(NA, cluster_palette()(length(clust_numbers)))
+    names(clust_fill_colors) = c('None', clust_numbers)
     
-    gg2 <-
+    gg2 =
         gg +
         
         geom_raster(
@@ -744,11 +744,11 @@ step1_figure <- function(wt_event) {
     ## return(gg2)
     
     ## Deal with the unused bits.
-    ## daGrob <- ggplotGrob(gg2)
+    ## daGrob = ggplotGrob(gg2)
     ## gtable::gtable_show_layout(daGrob)
     ## daGrob
 
-    grob <- facet_grob_adj(
+    grob = facet_grob_adj(
         gg2,
         del=c("panel-2-4", "panel-1-3"),
         adj=list(
@@ -774,65 +774,65 @@ step1_figure <- function(wt_event) {
     text_color = 'grey30'
     text_size = 11
     
-    text_grob_1 <- grid.text(
+    text_grob_1 = grid.text(
         'Streamflow (cms)', x=-1.25, y=.6, hjust=.50, vjust=-3.5, rot=-90,
         gp=gpar(col=text_color, fontsize=text_size)
     )
     ## size = rel(0.8), colour = "grey30"
-    t <- unique(grob$layout[grepl("panel-1-1",grob$layout$name), "t"])
-    l <- unique(grob$layout[grepl("panel-1-1",grob$layout$name), "l"])
-    g <- gtable::gtable_add_grob(grob, grobs=text_grob_1, t=t, l=l+1, clip='off')
+    t = unique(grob$layout[grepl("panel-1-1",grob$layout$name), "t"])
+    l = unique(grob$layout[grepl("panel-1-1",grob$layout$name), "l"])
+    g = gtable::gtable_add_grob(grob, grobs=text_grob_1, t=t, l=l+1, clip='off')
 
-    text_grob_4 <- grid.text(
+    text_grob_4 = grid.text(
         'Timescale (hours)', x=0, y=.5, hjust=.5, vjust=-3.5, rot=-90,
         gp=gpar(col=text_color, fontsize=text_size)
     )
-    t <- unique(grob$layout[grepl("panel-2-2",grob$layout$name), "t"])
-    l <- unique(grob$layout[grepl("panel-2-2",grob$layout$name), "l"])
-    g <- gtable::gtable_add_grob(g, grobs=text_grob_4, t=t, l=l+1, clip='off')
+    t = unique(grob$layout[grepl("panel-2-2",grob$layout$name), "t"])
+    l = unique(grob$layout[grepl("panel-2-2",grob$layout$name), "l"])
+    g = gtable::gtable_add_grob(g, grobs=text_grob_4, t=t, l=l+1, clip='off')
     
     # Insert a new column for labels
-    g <- gtable::gtable_add_cols(g, grid::unit(1,"line"), pos = -1)
+    g = gtable::gtable_add_cols(g, grid::unit(1,"line"), pos = -1)
     
-    text_grob_2 <- grid.text(
+    text_grob_2 = grid.text(
         'Timescale (hours)', x=0, y=.5, hjust=.5, vjust=.5, rot=-90,
         gp=gpar(col=text_color, fontsize=text_size)
     )
-    t <- unique(grob$layout[grepl("panel-2-1",grob$layout$name), "t"])
-    g <- gtable::gtable_add_grob(g, grobs=text_grob_2, t=t, l=ncol(g), clip='off')
+    t = unique(grob$layout[grepl("panel-2-1",grob$layout$name), "t"])
+    g = gtable::gtable_add_grob(g, grobs=text_grob_2, t=t, l=ncol(g), clip='off')
 
-    text_grob_3 <- grid.text(
+    text_grob_3 = grid.text(
         'Timescale (hours)', x=0, y=.5, hjust=.5, vjust=.5, rot=-90,
         gp=gpar(col=text_color, fontsize=text_size)
     )
-    t <- unique(grob$layout[grepl("panel-1-4",grob$layout$name), "t"])
-    g <- gtable::gtable_add_grob(g, grobs=text_grob_3, t=t, l=ncol(g), clip='off')
+    t = unique(grob$layout[grepl("panel-1-4",grob$layout$name), "t"])
+    g = gtable::gtable_add_grob(g, grobs=text_grob_3, t=t, l=ncol(g), clip='off')
 
     return(g)
 }
 
 
-step2_figure <- function(wt_event, n_phase_along_x=70, base_size=9,
+step2_figure = function(wt_event, n_phase_along_x=70, base_size=9,
                          ylab_spacer=.035) {
     library(dplyr)
     library(ggplot2)
     library(relayer) ## git hash 8a1d49e1707d9fcc1aaa83476a3d9a15448a1065
     
     ## Currently this is only configured to handle a single modeled timeseries.
-    model_name <- setdiff(names(wt_event), c("input_data", "obs"))
+    model_name = setdiff(names(wt_event), c("input_data", "obs"))
     if(length(model_name) > 1)
       stop('Currently this is only configured to handle a single modeled timeseries.')
     
-    wt_power <- get_data_plot_power(wt_event$obs$wt, wt_event$input_data)
-    xwt_power <- get_data_plot_power(wt_event[[model_name]]$xwt, wt_event$input_data)
+    wt_power = get_data_plot_power(wt_event$obs$wt, wt_event$input_data)
+    xwt_power = get_data_plot_power(wt_event[[model_name]]$xwt, wt_event$input_data)
     ## Sub phase for power... 
-    xwt_phase <- get_data_plot_power(
+    xwt_phase = get_data_plot_power(
         wt_event[[model_name]]$xwt,
         wt_event$input_data,
         wt_field=wt_event[[model_name]]$xwt$phase
     )
     ## Timing is associate with the obs COI/signif
-    xwt_timing <- get_data_plot_power(
+    xwt_timing = get_data_plot_power(
         wt_event$obs$wt,
         wt_event$input_data,
         wt_field=wt_event[[model_name]]$xwt$event_timing$mtx$timing_err
@@ -842,26 +842,26 @@ step2_figure <- function(wt_event, n_phase_along_x=70, base_size=9,
     ## axis. So do them individually with the input, remove the input, rename the y-axis, and
     ## combine.
     streamflow_axis_len = .5
-    wt_data <-  merge_data_plot(
+    wt_data =  merge_data_plot(
         wt_event$input_data,
         wt_power,
         streamflow_axis_len=streamflow_axis_len,
         streamflow_breaks=c(.1,1,10,100,1000),
         streamflow_trans=scales::log2_trans
     )
-    xwt_data <- merge_data_plot(
+    xwt_data = merge_data_plot(
         wt_event$input_data,
         xwt_power,
         streamflow_axis_len=streamflow_axis_len,
         streamflow_trans=scales::log2_trans
     )
-    xwt_phase_data <- merge_data_plot(
+    xwt_phase_data = merge_data_plot(
         wt_event$input_data,
         xwt_phase,
         streamflow_axis_len=streamflow_axis_len,
         streamflow_trans=scales::log2_trans
     )
-    timing_data <- merge_data_plot(
+    timing_data = merge_data_plot(
         wt_event$input_data,
         xwt_timing,
         streamflow_axis_len=streamflow_axis_len,
@@ -870,82 +870,82 @@ step2_figure <- function(wt_event, n_phase_along_x=70, base_size=9,
 
     the_attributes = attributes(wt_data)
 
-    wt_data <- subset(wt_data, y_var == 'Streamflow (cms)')
-    xwt_data <- subset(xwt_data, y_var == 'Period')
-    xwt_phase_data <- subset(xwt_phase_data, y_var == 'Period')
-    timing_data <- subset(timing_data, y_var == 'Period')
+    wt_data = subset(wt_data, y_var == 'Streamflow (cms)')
+    xwt_data = subset(xwt_data, y_var == 'Period')
+    xwt_phase_data = subset(xwt_phase_data, y_var == 'Period')
+    timing_data = subset(timing_data, y_var == 'Period')
     
-    xwt_data$phase <- xwt_phase_data$Power
+    xwt_data$phase = xwt_phase_data$Power
     ## Subsample the xwt_phase_data for plotting 
     ## This one is gridded, easy selection to even indices.
-    periods_rm <- sort(unique(xwt_phase_data$y))[c(TRUE, TRUE, FALSE)]
+    periods_rm = sort(unique(xwt_phase_data$y))[c(TRUE, TRUE, FALSE)]
     ## This one is not necessarily gridded.  Convert to hours.
-    times <- sort(unique(xwt_phase_data$x))/3600
-    mod_by <-  length(times) %/% n_phase_along_x
-    times_rm <- times[(times %% mod_by) != 0]*3600
-    wh_rm_ends <- which(xwt_data$x %in% times_rm | xwt_data$y %in% periods_rm)
-    xwt_data$phase[wh_rm_ends] <- NA
+    times = sort(unique(xwt_phase_data$x))/3600
+    mod_by =  length(times) %/% n_phase_along_x
+    times_rm = times[(times %% mod_by) != 0]*3600
+    wh_rm_ends = which(xwt_data$x %in% times_rm | xwt_data$y %in% periods_rm)
+    xwt_data$phase[wh_rm_ends] = NA
     
     ## Add a new vertical facet for showing the "event cluster"
-    new_y_levels <-
+    new_y_levels =
         c('Streamflow (cms)',
           # 'Period',
           'XwtPer',
           'TimePer',
           'Time')
-    new_y_labels <-
+    new_y_labels =
         c('a.  Timeseries',
           #'b. Obs WT',
-          'c.  XWT',
-          'd. Sampled Timing Errors',
+          'b.  XWT',
+          'c. Sampled Timing Errors',
           '')
-    the_labeller <- function(string) {
-        labs <- new_y_labels
-        names(labs) <- new_y_levels
+    the_labeller = function(string) {
+        labs = new_y_labels
+        names(labs) = new_y_levels
         labs[string]
     }
     
     ## Transform the factor levels on the original data.
-    wt_data$y_var <- ordered(wt_data$y_var, levels=new_y_levels)
-    xwt_data$y_var <- ordered(xwt_data$y_var, levels=new_y_levels)
+    wt_data$y_var = ordered(wt_data$y_var, levels=new_y_levels)
+    xwt_data$y_var = ordered(xwt_data$y_var, levels=new_y_levels)
     
     ## Rename the period axis on the other fields.
-    xwt_data$y_var <- ordered('XwtPer', levels=new_y_levels)
-    timing_data$y_var <- ordered("TimePer", levels=new_y_levels)
+    xwt_data$y_var = ordered('XwtPer', levels=new_y_levels)
+    timing_data$y_var = ordered("TimePer", levels=new_y_levels)
     
     ## JLM subjective shit
-    timing_data$Power[which(timing_data$COI == FALSE)] <- NA
-    timing_data$Power[which(timing_data$Significance == 0)] <- NA
-    ##timing_data$Power[which(timing_data$COI == TRUE | timing_data$Significance == 0)] <- NA
+    timing_data$Power[which(timing_data$COI == FALSE)] = NA
+    timing_data$Power[which(timing_data$Significance == 0)] = NA
+    ##timing_data$Power[which(timing_data$COI == TRUE | timing_data$Significance == 0)] = NA
 
     ## Merge the new and old data. Wait for the phase... 
-    plot_data <- rbind(wt_data, timing_data)
-    #plot_data <- rbind(xwt_data, timing_data)
-    plot_data$phase <- NA
-    plot_data <- rbind(plot_data, xwt_data)
+    plot_data = rbind(wt_data, timing_data)
+    #plot_data = rbind(xwt_data, timing_data)
+    plot_data$phase = NA
+    plot_data = rbind(plot_data, xwt_data)
 
     ## Annotated the y-axes and set the limits (due to the annotation non-clip)
-    plot_data <- as.data.table(plot_data)
-    y_labs <- plot_data[
+    plot_data = as.data.table(plot_data)
+    y_labs = plot_data[
          ,
         .(y_center=min(y)+.5*(max(y)-min(y)), x_loc=ylab_spacer*(max(x)-min(x))+max(x)),
         by=y_var
     ]
-    relab <- c("Streamflow (cms)", rep('Timescale (hours)',2)); names(relab) <- y_labs$y_var
-    y_labs$lab <- relab[y_labs$y_var]
+    relab = c("Streamflow (cms)", rep('Timescale (hours)',2)); names(relab) = y_labs$y_var
+    y_labs$lab = relab[y_labs$y_var]
     
-    x_breaks <- as.numeric(the_attributes$x_breaks)
-    x_labels <- the_attributes$x_labels
-    y_breaks <- as.numeric(the_attributes$y_breaks)
-    y_labels <- the_attributes$y_labels
+    x_breaks = as.numeric(the_attributes$x_breaks)
+    x_labels = the_attributes$x_labels
+    y_breaks = as.numeric(the_attributes$y_breaks)
+    y_labels = the_attributes$y_labels
     
-    xvals <- unique(subset(wt_data, y_var == 'Streamflow (cms)')$x)
-    xlim <- range(xvals) + c(-1,1) * diff(range(xvals))/length(xvals) / 2
+    xvals = unique(subset(wt_data, y_var == 'Streamflow (cms)')$x)
+    xlim = range(xvals) + c(-1,1) * diff(range(xvals))/length(xvals) / 2
 
     ## Could have used the standard plot, but it was a bit clearer to redo the whole thing.
     ## If the two start diverging in a bad way, then may consider using it again.
 
-    gg2 <-
+    gg2 =
         ggplot() +
         
         ## This describes how the plot is arranged.
@@ -1076,51 +1076,51 @@ step2_figure <- function(wt_event, n_phase_along_x=70, base_size=9,
         )
 
     library(grid)
-    p <- gg2
-    g <- ggplot_gtable(ggplot_build(p))
+    p = gg2
+    g = ggplot_gtable(ggplot_build(p))
     ## Deal with the unused bits.
     # Check the layout...
-    #    daGrob <- ggplotGrob(gg2)
+    #    daGrob = ggplotGrob(gg2)
     #    gtable::gtable_show_layout(daGrob)
     #    daGrob
-    g <- gtable::gtable_add_cols(g, grid::unit(.5,"line"), pos = -1)
+    g = gtable::gtable_add_cols(g, grid::unit(.5,"line"), pos = -1)
     ## This just removes fill and line around the g$layout$name's axis-t-* to
     ## repurpose it as a figure title.
-    wh_strip <- which(grepl('strip-t', g$layout$name))
-    fills <- c("transparent")
-    kk <- 1
+    wh_strip = which(grepl('strip-t', g$layout$name))
+    fills = c("transparent")
+    kk = 1
     for (ii in wh_strip) {
-        jj <- which(grepl('rect', g$grobs[[ii]]$grobs[[1]]$childrenOrder))
-        g$grobs[[ii]]$grobs[[1]]$children[[jj]]$gp$fill <- fills[kk]
-        g$grobs[[ii]]$grobs[[1]]$children[[jj]]$gp$lwd <- 0
-        kk <- kk+1
+        jj = which(grepl('rect', g$grobs[[ii]]$grobs[[1]]$childrenOrder))
+        g$grobs[[ii]]$grobs[[1]]$children[[jj]]$gp$fill = fills[kk]
+        g$grobs[[ii]]$grobs[[1]]$children[[jj]]$gp$lwd = 0
+        kk = kk+1
     }
     ## Reorder the guides. This is a random mess.
-    wh_guide_box <- which(g$layout$name == 'guide-box')
+    wh_guide_box = which(g$layout$name == 'guide-box')
     ## Adjust the height of the individual guides using the panels on the main plot.
     ##gtable::gtable_show_layout(g)
     ##gtable::gtable_show_layout(g$grobs[[wh_guide_box]])
-    g$grobs[[wh_guide_box]]$heights[3:9] <- g$heights[8:14]
-    wh_guides <- which(grepl('guides', g$grobs[[wh_guide_box]]$layout$name))
-    guide_layout <- g$grobs[[wh_guide_box]]$layout[wh_guides,]
+    g$grobs[[wh_guide_box]]$heights[3:9] = g$heights[8:14]
+    wh_guides = which(grepl('guides', g$grobs[[wh_guide_box]]$layout$name))
+    guide_layout = g$grobs[[wh_guide_box]]$layout[wh_guides,]
     ## That order flummoxes me, but it works.
-    guide_layout <- guide_layout[c(3,1,2),]
-    colnames(guide_layout) <- 1:3
-    g$grobs[[wh_guide_box]]$layout[1:3,] <- guide_layout
+    guide_layout = guide_layout[c(3,1,2),]
+    colnames(guide_layout) = 1:3
+    g$grobs[[wh_guide_box]]$layout[1:3,] = guide_layout
 
     return(g)
 }
 
 
-event_cluster_timing_by_period <- function(wt_event, n_periods=NULL, ncol=3) {
+event_cluster_timing_by_period = function(wt_event, n_periods=NULL, ncol=3) {
 
     library(ggplot2)
     
     ## Currently this is only configured to handle a single modeled timeseries.
-    model_name <- setdiff(names(wt_event), c("input_data", "obs"))
+    model_name = setdiff(names(wt_event), c("input_data", "obs"))
 
-    wh_max_periods <- wt_event$obs$wt$event_timing$time_avg$local_max
-    max_periods <- wt_event$obs$wt$event_timing$time_avg$period[wh_max_periods]
+    wh_max_periods = wt_event$obs$wt$event_timing$time_avg$local_max
+    max_periods = wt_event$obs$wt$event_timing$time_avg$period[wh_max_periods]
 
     wh_period_rows = which(wt_event[[model_name]]$xwt$period %in% max_periods)
 
@@ -1128,16 +1128,16 @@ event_cluster_timing_by_period <- function(wt_event, n_periods=NULL, ncol=3) {
     input_obs$chunk_renum = input_obs$chunk - min(input_obs$chunk) +1
     input_obs = input_obs[ chunk_renum %in% unique(wt_event$obs$wt$chunk) ]
 
-    timing_err_full <- wt_event[[model_name]]$xwt$event_timing$mtx$timing_err[wh_period_rows,]
+    timing_err_full = wt_event[[model_name]]$xwt$event_timing$mtx$timing_err[wh_period_rows,]
 
     if(length(dim(timing_err_full)) > 1) {
-        dimnames(timing_err_full)[[1]] <- wt_event[[model_name]]$xwt$period[wh_period_rows]
-        names(dimnames(timing_err_full))[1] <- "period"
-        dimnames(timing_err_full)[[2]] <- sort(unique(input_obs$input_index))
-        names(dimnames(timing_err_full))[2] <- "time"
-        plot_data0 <- data.table(reshape2::melt(timing_err_full, value.name='timing_err'))
+        dimnames(timing_err_full)[[1]] = wt_event[[model_name]]$xwt$period[wh_period_rows]
+        names(dimnames(timing_err_full))[1] = "period"
+        dimnames(timing_err_full)[[2]] = sort(unique(input_obs$input_index))
+        names(dimnames(timing_err_full))[2] = "time"
+        plot_data0 = data.table(reshape2::melt(timing_err_full, value.name='timing_err'))
     } else{
-        plot_data0 <- data.table(
+        plot_data0 = data.table(
             timing_err=timing_err_full,
             time=wt_event[[model_name]]$xwt$t,
             period=max_periods
@@ -1145,17 +1145,17 @@ event_cluster_timing_by_period <- function(wt_event, n_periods=NULL, ncol=3) {
     }
 
     # Time here is input_index
-    event_timing_all <- wt_event[[model_name]]$xwt$event_timing$all[period %in% max_periods]
-    event_timing_all$timing_err <- NULL
+    event_timing_all = wt_event[[model_name]]$xwt$event_timing$all[period %in% max_periods]
+    event_timing_all$timing_err = NULL
 
     ## data table merge on the numeric causes a failure because of float noise...
     event_timing_all$per_str = as.character(event_timing_all$period)
-    event_timing_all$period <- NULL
+    event_timing_all$period = NULL
     plot_data0$per_str = as.character(plot_data0$period)
 
     ## Join in the obs signf and the wxt significance
-    ## we_stats <- we_hydro_stats(wt_event)
-    plot_data <- merge(
+    ## we_stats = we_hydro_stats(wt_event)
+    plot_data = merge(
         plot_data0,
         event_timing_all,
         by=c('time', 'per_str'),
@@ -1163,23 +1163,23 @@ event_cluster_timing_by_period <- function(wt_event, n_periods=NULL, ncol=3) {
         all.y=FALSE
     )
     
-    label_clusters <- function(values) {
-        inner_labeller <- function(value) if(is.na(value)) 'None' else as.character(value)
+    label_clusters = function(values) {
+        inner_labeller = function(value) if(is.na(value)) 'None' else as.character(value)
         plyr::laply(values, inner_labeller)
     }
 
-    plot_data$period_clusters <- factor(as.integer(label_clusters(plot_data$period_clusters)))
-    clust_numbers <- sort(as.integer(setdiff(levels(plot_data$period_clusters), "None")))
+    plot_data$period_clusters = factor(as.integer(label_clusters(plot_data$period_clusters)))
+    clust_numbers = sort(as.integer(setdiff(levels(plot_data$period_clusters), "None")))
 
-    fill_colors <- c(NA, cluster_palette()(length(clust_numbers)))
-    names(fill_colors) <- c('None', clust_numbers)
+    fill_colors = c(NA, cluster_palette()(length(clust_numbers)))
+    names(fill_colors) = c('None', clust_numbers)
     
-    periods <- unique(plot_data$period)
+    periods = unique(plot_data$period)
     period_facet_labeller = paste0('Timescale = ', format(periods, digits=2, nsmall=1))
-    names(period_facet_labeller) <- periods
+    names(period_facet_labeller) = periods
 
     max_period_stats = wt_event$obs$wt$event_timing$time_avg[local_max == TRUE,]
-    max_period_stats$per_str <- as.character(max_period_stats$period)
+    max_period_stats$per_str = as.character(max_period_stats$period)
     setkey(max_period_stats, power_corr, physical=TRUE)
 
     if(!is.null(n_periods)) {
@@ -1192,8 +1192,8 @@ event_cluster_timing_by_period <- function(wt_event, n_periods=NULL, ncol=3) {
         levels = rev(max_period_stats$per_str)
     )
 
-    we_hist_plot <- function(data) {    
-        result <-
+    we_hist_plot = function(data) {    
+        result =
             ggplot(data) +
             geom_histogram(
                 aes(
@@ -1233,7 +1233,7 @@ event_cluster_timing_by_period <- function(wt_event, n_periods=NULL, ncol=3) {
 }
 
 
-event_cluster_timing_summary_by_period <- function(
+event_cluster_timing_summary_by_period = function(
     we_stats,
     wt_event,
     n_periods=NULL,
@@ -1243,8 +1243,10 @@ event_cluster_timing_summary_by_period <- function(
     timing_stat=c('cluster_max', 'cluster_mean', 'mean_max')[1],
     signif_threshold=NULL,
     show_points=FALSE,
+    show_outliers=TRUE,
     mean_max=FALSE,
-    base_size=11
+    base_size=11,
+    box_fill = 'grey80'
 ) {
 
     library(ggplot2)
@@ -1262,11 +1264,11 @@ event_cluster_timing_summary_by_period <- function(
     
     if(timing_stat != 'mean_max') plot_data = plot_data[.id == timing_stat]
     
-    periods <- unique(plot_data$period)
+    periods = unique(plot_data$period)
     period_facet_labeller = format(periods, digits=2, nsmall=1)
-    names(period_facet_labeller) <- periods
+    names(period_facet_labeller) = periods
 
-    stat_labeller <- c(
+    stat_labeller = c(
         cluster_mean='mean',
         cluster_max='max',
         `NWM v1.0`="V1.0",
@@ -1290,7 +1292,7 @@ event_cluster_timing_summary_by_period <- function(
         plot_data = plot_data[xwt_signif >= signif_threshold,]
     }
     
-    bps <- function(data) {
+    bps = function(data) {
         ## The_stats = values=boxplot.stats(data)$stats
         ## These are ggplot/Tukey style
         lower = quantile(data, 0.25)
@@ -1299,14 +1301,15 @@ event_cluster_timing_summary_by_period <- function(
         iqr = upper - lower
         max_lim = upper + (1.5*iqr)
         min_lim = lower - (1.5*iqr)
-        mindata <- data[data > min_lim]
-        ymin <- if(length(mindata)) min(mindata) else min(data)
-        maxdata <- data[data < max_lim]
-        ymax <- if(length(maxdata)) max(maxdata) else  max(data)
+        mindata = data[data > min_lim]
+        ymin = if(length(mindata)) min(mindata) else min(data)
+        maxdata = data[data < max_lim]
+        ymax = if(length(maxdata)) max(maxdata) else  max(data)
         return(data.frame(ymin=ymin, lower=lower, middle=middle, upper=upper, ymax=ymax))
     }
 
-    plot_stats <-
+    the_keys = c('version', '.id', 'period')
+    plot_stats =
         plot_data[,
                   .(
                       ymin=bps(time_err)$ymin,
@@ -1321,7 +1324,13 @@ event_cluster_timing_summary_by_period <- function(
                       avg_signif=mean(xwt_signif),
                       per_fact = per_fact[1]
                   ),
-                  by=c('version', '.id', 'period')]
+                  by=the_keys]
+
+    if(show_outliers){
+      setkeyv(plot_data, c(the_keys, 'per_fact'))
+      setkeyv(plot_stats, c(the_keys, 'per_fact'))
+      outliers = merge(plot_data, plot_stats)[  time_err <= ymin | time_err >= ymax, by=the_keys]
+    }
 
     if(timing_stat == 'mean_max') {
 
@@ -1329,25 +1338,27 @@ event_cluster_timing_summary_by_period <- function(
             ggplot() +
             geom_boxplot(
                 data=plot_stats,
-                aes(
-                    x=version,
-                    color=.id,
-                    fill=avg_signif,
-                    ymin=ymin, lower=lower, middle=middle, upper=upper, ymax=ymax
-                ),
-                outlier.shape=NA,
-                stat='identity'
-            ) +
-            scale_color_manual(
-                                 name='Statistic',
-                                 values=c(cluster_mean='grey70', cluster_max='black'),
-                                 labels=c(cluster_mean='Cluster mean', cluster_max='Cluster max')
-                                 )
+                aes(x=.id,
+                    color=avg_signif,
+                    #fill=avg_signif,
+                    ymin=ymin, lower=lower, middle=middle, upper=upper, ymax=ymax),
+                fill=box_fill,
+                stat='identity') 
+            ## scale_color_manual(
+            ##                      name='Statistic',
+            ##                      values=c(cluster_mean='grey70', cluster_max='black'),
+            ##                      labels=c(cluster_mean='Cluster mean', cluster_max='Cluster max')
+            ##                      )
 
+        if(show_outliers){
+          the_plot =
+            the_plot +
+            geom_point(data=outliers, aes(x=.id, y=time_err), show.legend=FALSE)
+        }
 
     } else {
 
-        if(show_points) {
+      if(show_points) {
             the_plot =
                 ggplot() +
                 geom_boxplot(
@@ -1356,7 +1367,6 @@ event_cluster_timing_summary_by_period <- function(
                         x=version,
                         ymin=ymin, lower=lower, middle=middle, upper=upper, ymax=ymax
                     ),
-                    outlier.shape=NA,
                     stat='identity'
                 )
         } else {
@@ -1367,12 +1377,18 @@ event_cluster_timing_summary_by_period <- function(
                     aes(
                         x=version,
                         ymin=ymin, lower=lower, middle=middle, upper=upper, ymax=ymax,
-                        fill=avg_signif
-                        #color=count
+                        #fill=avg_signif,
+                        color=avg_signif
                     ),
-                    outlier.shape=NA,
+                    fill=box_fill,
                     stat='identity'
                 )
+          }
+
+        if(show_outliers){
+          the_plot =
+            the_plot +
+            geom_point(data=outliers, aes(x=version, y=time_err), show.legend=FALSE)
         }
 
     }
@@ -1387,17 +1403,16 @@ event_cluster_timing_summary_by_period <- function(
                 geom_label(
                     data=plot_data,
                     aes(
-                        x=version,
+                        x=.id,
                         y=time_err,
                         fill=xwt_signif,
                         label=as.character(period_clusters),
-                        color=.id
-                    ),
+                     ),
+                    color='black', #.id
                     label.padding = unit(0.08, "lines"),
                     fontface="bold",
                     position='jitter',
-                    size=2.5
-                )
+                    size=2.5) 
 
         } else {
 
@@ -1416,7 +1431,7 @@ event_cluster_timing_summary_by_period <- function(
                     fontface="bold",
                     position='jitter',
                     size=2.5
-                )
+                ) 
 
         }
         
@@ -1428,17 +1443,34 @@ event_cluster_timing_summary_by_period <- function(
             ~ per_fact, # ~ version
             ##nrow=1,
             labeller=as_labeller(period_facet_labeller)
-        ) +
-        scale_x_discrete(
-            name='Version',
-            labels=as_labeller(stat_labeller)
-        ) +
-        scale_fill_distiller(name='Avg XWT\nSignif', palette=distiller_pal,
-                             direction=distiller_direction, limits=c(0,1)) +
+        )
+
+    if(timing_stat == 'mean_max') {
+      the_plot =
+        the_plot +
+        scale_x_discrete(name='Statistic',
+                         labels=as_labeller(stat_labeller))
+    } else {
+      the_plot =
+        the_plot +
+        scale_x_discrete(name='Version',
+                         labels=as_labeller(stat_labeller))
+    }
+
+    the_plot =
+      the_plot +
+        #scale_fill_distiller(name='Avg XWT\nSignif', palette=distiller_pal,
+        #                     direction=distiller_direction, limits=c(0,1)) +
+        scale_color_distiller(name='Avg XWT\nSignif', palette=distiller_pal,
+                              direction=distiller_direction, limits=c(0,1)) +
+        #guides(colour = "none") + 
         scale_y_continuous(name='Timing Error (hours)') +
         theme_bw(base_size=base_size)
 
-    out_plot_stats <- plot_stats
+
+
+    
+    out_plot_stats = plot_stats
     out_plot_stats$per_fact=NULL # remove redundant col
     invisible(list(ggplot=the_plot, plot_stats=out_plot_stats))
 
