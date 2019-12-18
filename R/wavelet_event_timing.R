@@ -153,7 +153,7 @@ WtEventMtx <- function(wt) {
 
         ## check
         if (!all(as.logical(event_mtx$period_clusters[period, ]) == as.logical(mask_vec)))
-            stop('Problem with event cluster identification.')
+          stop('Problem with event cluster identification.')
     }
 
     return(event_mtx)
@@ -169,43 +169,58 @@ WtTimeChunks <- function(
     for(cc in 1:length(the_chunks)) {
       input_chunk <- subset(input_data, chunk == the_chunks[cc])
       obs_for_wt <- cbind(1:nrow(input_chunk), input_chunk[[obs_name]])
-      
+
       if(is.null(mod_name)) {
         ## regular wavelet transform
-
         result = tryCatch(
           {
-            chunk_list[[cc]] <-
-              biwavelet::wt(obs_for_wt, max.scale=max.scale)
-            chunk_list[[cc]]$chunk <- chunk_list[[cc]]$t * 0 + cc
-          }, warning = function(w) {
-            warning("Some wavelet transforms are returning warnings.")
-            if(!rm_chunks_warn) stop("rm_chunks_warn == FALSE")
-            chunk_list[[cc]] <- NA
-          }, error = function(e) {
-            warning("Some wavelet transforms are returning errors.")
-            if(!rm_chunks_error) stop("rm_chunks_error == FALSE")
-            chunk_list[[cc]] <- NA
+            ## DONT RETURN THE RETURN
+            biwavelet::wt(obs_for_wt, max.scale=max.scale)
+          }, warning = function(warn) {
+            warning("Some wavelet transforms are returning warnings:", warn)
+            if(!rm_chunks_warn) {
+             warning("rm_chunks_warn == FALSE")
+             return(biwavelet::wt(obs_for_wt, max.scale=max.scale))
+            } else return(NA)
+          }, error = function(err) {
+            warning("Some wavelet transforms are returning errors:", err)
+            if(!rm_chunks_error) {
+              print("rm_chunks_error == FALSE")
+              return(biwavelet::wt(obs_for_wt, max.scale=max.scale))
+            } else return(NA)
           })
-        
+
+        if(!is.na(result)) {
+          chunk_list[[cc]] <- result
+          chunk_list[[cc]]$chunk <- chunk_list[[cc]]$t * 0 + cc
+        }
+
       } else {
 
         ## xwt
         mod_for_wt <- cbind(1:nrow(input_chunk), input_chunk[[mod_name]])
 
         result = tryCatch({
-          chunk_list[[cc]] <-
-            biwavelet::xwt(obs_for_wt, mod_for_wt, max.scale=max.scale)
-          chunk_list[[cc]]$chunk <- chunk_list[[cc]]$t * 0 + cc
-        }, warning = function(w) {
-          warning("Some cross-wavelet transforms are returning warnings.")
-          if(!rm_chunks_warn) stop("rm_chunks_warn == FALSE")
-          chunk_list[[cc]] <- NA
-        }, error = function(e) {
-          warning("Some cross-wavelet transforms are returning errors.")
-          if(!rm_chunks_error) stop("rm_chunks_error == FALSE")
-          chunk_list[[cc]] <- NA
+          ## DONT RETURN THE RETURN
+          biwavelet::xwt(obs_for_wt, mod_for_wt, max.scale=max.scale)
+        }, warning = function(warn) {
+          warning("Some cross-wavelet transforms are returning warnings: ", warn)
+          if(!rm_chunks_warn) {
+           warning("rm_chunks_warn == FALSE")
+           return(biwavelet::xwt(obs_for_wt, mod_for_wt, max.scale=max.scale))
+          } else return(NA)
+        }, error = function(err) {
+          warning("Some cross-wavelet transforms are returning errors:", err)
+          if(!rm_chunks_error) {
+            warning("rm_chunks_error == FALSE")
+            return(biwavelet::xwt(obs_for_wt, mod_for_wt, max.scale=max.scale))
+          } else return(NA)
         })
+
+        if(!is.na(result)) {
+          chunk_list[[cc]] <- result
+          chunk_list[[cc]]$chunk <- chunk_list[[cc]]$t * 0 + cc
+        }
 
       }
     }
