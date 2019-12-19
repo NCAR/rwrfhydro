@@ -34,7 +34,8 @@ Imports:
     jsonlite (>= 0.9.14),
     methods,
     pastecs,
-    caTools
+    caTools,
+    biwavelet (>= 0.20.19)
 LazyData: true
 Suggests:
     testthat,
