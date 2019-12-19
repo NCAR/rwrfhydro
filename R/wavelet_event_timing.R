@@ -152,7 +152,7 @@ WtEventMtx <- function(wt) {
         }
 
         ## check
-        if (!all(as.logical(event_mtx$period_clusters[period, ]) == as.logical(mask_vec)))
+        if (!all(as.logical(event_mtx$period_clusters[period, ]) == as.logical(mask_vec), na.rm=TRUE))
           stop('Problem with event cluster identification.')
     }
 
@@ -190,10 +190,10 @@ WtTimeChunks <- function(
             } else return(NA)
           })
 
-        if(!is.na(result)) {
-          chunk_list[[cc]] <- result
-          chunk_list[[cc]]$chunk <- chunk_list[[cc]]$t * 0 + cc
-        }
+        chunk_list[[cc]] <- result
+        #if(!is.na(result)) {
+        chunk_list[[cc]]$chunk <- chunk_list[[cc]]$t * 0 + cc
+        #}
 
       } else {
 
@@ -217,10 +217,10 @@ WtTimeChunks <- function(
           } else return(NA)
         })
 
-        if(!is.na(result)) {
-          chunk_list[[cc]] <- result
-          chunk_list[[cc]]$chunk <- chunk_list[[cc]]$t * 0 + cc
-        }
+        chunk_list[[cc]] <- result
+        #if(!is.na(result)) {
+        chunk_list[[cc]]$chunk <- chunk_list[[cc]]$t * 0 + cc
+        #}
 
       }
     }

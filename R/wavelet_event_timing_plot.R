@@ -1302,9 +1302,10 @@ event_cluster_timing_summary_by_period = function(
         max_lim = upper + (1.5*iqr)
         min_lim = lower - (1.5*iqr)
         mindata = data[data > min_lim]
-        ymin = if(length(mindata)) min(mindata) else min(data)
+        ymin = if(length(mindata) & any(mindata < lower)) min(mindata) else min(data)
         maxdata = data[data < max_lim]
-        ymax = if(length(maxdata)) max(maxdata) else  max(data)
+        ymax = if(length(maxdata) && any(maxdata > upper)) max(maxdata) else max(data)
+        if(ymax < upper) afafafaf
         return(data.frame(ymin=ymin, lower=lower, middle=middle, upper=upper, ymax=ymax))
     }
 
@@ -1329,7 +1330,7 @@ event_cluster_timing_summary_by_period = function(
     if(show_outliers){
       setkeyv(plot_data, c(the_keys, 'per_fact'))
       setkeyv(plot_stats, c(the_keys, 'per_fact'))
-      outliers = merge(plot_data, plot_stats)[  time_err <= ymin | time_err >= ymax, by=the_keys]
+      outliers = merge(plot_data, plot_stats)[time_err < ymin | time_err > ymax] #, .() ,by=the_keys]
     }
 
     if(timing_stat == 'mean_max') {
