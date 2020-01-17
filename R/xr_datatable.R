@@ -22,7 +22,7 @@ xr_datatable <- function(file) {
       if(py_to_r(dim_values$dtype) == 'timedelta64[ns]'){
         dim_values = py_to_r(dim_values$values$astype('int')) / time_res  # ns
       } else dim_values = py_to_r(dim_values$values)
-      dimnames(array_values)[[ii]] = dim_values
+      dimnames(array_values)[[ii]] = as.list(dim_values)
       names(dimnames(array_values))[ii] = array_dims[ii]
     }
     return(invisible(as.data.table(reshape2::melt(array_values, value.name=array$name))))
