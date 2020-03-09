@@ -535,6 +535,8 @@ cluster_palette = function(brewer_pal="Accent") {
   return(colorRampPalette(pal6, space='Lab'))
 }
 
+
+##' @export
 step1_figure = function(wt_event) {
 
     library(dplyr)
@@ -812,6 +814,7 @@ step1_figure = function(wt_event) {
 }
 
 
+##' @export
 step2_figure = function(wt_event, n_phase_along_x=70, base_size=9,
                          ylab_spacer=.035) {
     library(dplyr)
@@ -889,13 +892,13 @@ step2_figure = function(wt_event, n_phase_along_x=70, base_size=9,
     ## Add a new vertical facet for showing the "event cluster"
     new_y_levels =
         c('Streamflow (cms)',
-          # 'Period',
+          ## 'Period',
           'XwtPer',
           'TimePer',
           'Time')
     new_y_labels =
         c('a.  Timeseries',
-          #'b. Obs WT',
+          ##  'b. Obs WT',
           'b.  XWT',
           'c. Sampled Timing Errors',
           '')
@@ -1112,6 +1115,7 @@ step2_figure = function(wt_event, n_phase_along_x=70, base_size=9,
 }
 
 
+##' @export
 event_cluster_timing_by_period = function(wt_event, n_periods=NULL, ncol=3) {
 
     library(ggplot2)
@@ -1233,6 +1237,7 @@ event_cluster_timing_by_period = function(wt_event, n_periods=NULL, ncol=3) {
 }
 
 
+##' @export
 event_cluster_timing_summary_by_period = function(
     we_stats,
     wt_event,
