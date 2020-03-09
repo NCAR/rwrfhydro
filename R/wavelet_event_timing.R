@@ -28,6 +28,7 @@ WtMakeData <- function() {
 }
 
 
+##' @export
 WtGetEventData <- function(location=NA, event=NA, info=FALSE) {
     ## Start date is included (>=), end is included (<=).
     subset_info= list(
@@ -253,6 +254,7 @@ WtTimeChunks <- function(
 }
 
 
+##' @export
 WtEventTiming <- function(POSIXct, obs,
                           mod=NULL,
                           max.scale=256,
@@ -553,6 +555,7 @@ WtEventTiming <- function(POSIXct, obs,
 }
 
 
+##' @export
 we_hydro_stats <- function(wt_event) {
 
     output <- list()
