@@ -1,3 +1,11 @@
+
+## Example
+## some_nc_file =
+##   '/projects/jamesmcc@xsede.org/jtti_domains_keep_cp_scratch/domains/01350000/RouteLink.nc'
+## ds = rwrfhydro::xr_datatable(some_nc_file)
+## link = ds('link')
+## link_sub = ds('link', dim_sel_dict = list('feature_id'=0:2))
+
 #' @export
 xr_datatable <- function(file) {
   library(data.table)
@@ -6,9 +14,10 @@ xr_datatable <- function(file) {
   pathlib = import('pathlib', convert=TRUE)
   py = import_builtins(convert=TRUE)
   dataset = xr$open_dataset(file)
-  data_array_to_table <- function(var_name = NULL, timedelta_res = 'h') {
+  data_array_to_table <- function(var_name = NULL, timedelta_res = 'h', dim_sel_dict = NULL) {
     if(is.null(var_name)) {print(dataset) ; return(invisible(NULL))}
     array = dataset[var_name]
+    if(!is.null(dim_sel_dict)){array = array[dim_sel_dict]}
     if(!py$isinstance(array, xr$DataArray)){
       stop('The passed array is not an xarray.DataArray.')}
     # array = gof_gage_ds$value
