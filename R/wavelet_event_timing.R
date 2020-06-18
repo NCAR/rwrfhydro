@@ -396,7 +396,8 @@ WtEventTiming <- function(POSIXct, obs,
       return(wt)
     }
 
-    if(length(combined_intersect) != length(combined_union)) {
+    if(!is.null(combined_intersect) &
+       length(combined_intersect) != length(combined_union)) {
       # observed
       wt_obs <- keep_chunks(wt_obs, combined_intersect)
       # modeled
