@@ -433,8 +433,26 @@ WtEventTiming <- function(POSIXct, obs,
 
     output[['obs']]$wt$event_timing$all$period_clusters <-
         output[['obs']]$wt$event_timing$event_mtx$period_clusters[wh_event_mask]
+
+    ## grab the observed streamflow corresponding to all events at all periods
+    ## to calculate streamflow stats on various events
+    output[['obs']]$wt$event_timing$all$streamflow <-
+        output[['input_data']][Streamflow == 'obs']$streamflow_values[
+            output[['obs']]$wt$event_timing$all$time]
+
     ## sort all by period and time
     setkey(output[['obs']]$wt$event_timing$all, period, time)
+
+    ## calculate streamflow stats on period
+    output[['obs']]$wt$event_timing$event_streamflow =
+        output[['obs']]$wt$event_timing$all[,
+                                            .(volume=sum(streamflow),
+                                              n_hours=.N,
+                                              mean_time_index=mean(time),
+                                              min=min(streamflow),
+                                              max=max(streamflow)),
+                                            by=c('period', 'period_clusters')]
+    setkey(output[['obs']]$wt$event_timing$event_streamflow, period)
 
     ## Calculate the time-averaged corrected wavelet power spectrum on the obs:
     output[['obs']]$wt$event_timing$time_avg <-
