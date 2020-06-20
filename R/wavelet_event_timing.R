@@ -434,25 +434,51 @@ WtEventTiming <- function(POSIXct, obs,
     output[['obs']]$wt$event_timing$all$period_clusters <-
         output[['obs']]$wt$event_timing$event_mtx$period_clusters[wh_event_mask]
 
-    ## grab the observed streamflow corresponding to all events at all periods
-    ## to calculate streamflow stats on various events
-    output[['obs']]$wt$event_timing$all$streamflow <-
-        output[['input_data']][Streamflow == 'obs']$streamflow_values[
-            output[['obs']]$wt$event_timing$all$time]
+    ## Helper to return the streamflow stats for a discrete event time
+    get_event_streamflow_stats = function(time_ind, period) {
+        start_ind = round(time_ind - (period/2))
+        end_ind = round(time_ind + (period/2))
+        event_inds = start_ind:end_ind
+        streamflow =
+            output[['input_data']][
+                Streamflow == 'obs']$streamflow_values[event_inds]
+        return(
+            list(
+                streamflow_mean = mean(streamflow),
+                streamflow_max=max(streamflow),
+                streamflow_min=min(streamflow),
+                streamflow_nhours=length(streamflow) ) )
+    }
+
+    ## Get streamflow stats on events
+    ## This is slow especially if the stats are not returned from the function.
+    streamflow_stats = output[['obs']]$wt$event_timing$all[
+       , as.list(get_event_streamflow_stats(time=time, period=period)),
+       by=c('time', 'period') ]
+    output[['obs']]$wt$event_timing$all = merge(
+        streamflow_stats, output[['obs']]$wt$event_timing$all,
+        by=c('time', 'period'))
 
     ## sort all by period and time
     setkey(output[['obs']]$wt$event_timing$all, period, time)
 
-    ## calculate streamflow stats on period
-    output[['obs']]$wt$event_timing$event_streamflow =
-        output[['obs']]$wt$event_timing$all[,
-                                            .(volume=sum(streamflow),
-                                              n_hours=.N,
-                                              mean_time_index=mean(time),
-                                              min=min(streamflow),
-                                              max=max(streamflow)),
-                                            by=c('period', 'period_clusters')]
-    setkey(output[['obs']]$wt$event_timing$event_streamflow, period)
+    ## streamflow cluster stats
+    output[['obs']]$wt$event_timing$streamflow_cluster_stats <-
+        output[['obs']]$wt$event_timing$all[
+                ,
+                .(power_corr=mean(power_corr),
+                  time=mean(time),
+                  mean_mean=mean(streamflow_mean),
+                  mean_max=mean(streamflow_max),
+                  mean_min=mean(streamflow_min),
+                  mean_nhours=mean(streamflow_nhours),
+                  max_mean=streamflow_mean[which.max(power_corr)],
+                  max_max=streamflow_max[which.max(power_corr)],
+                  max_min=streamflow_min[which.max(power_corr)],
+                  max_nhours=streamflow_nhours[which.max(power_corr)]
+                  ),
+                by=c("period_clusters", "period")
+            ]
 
     ## Calculate the time-averaged corrected wavelet power spectrum on the obs:
     output[['obs']]$wt$event_timing$time_avg <-
@@ -594,6 +620,11 @@ we_hydro_stats <- function(wt_event) {
     ## Extract the periods of interest from the obs wt analysis.
     wh_peak <- wt_event[['obs']]$wt$event_timing$time_avg$local_max
     peak_periods <- wt_event[['obs']]$wt$event_timing$time_avg$period[wh_peak]
+
+    ## -------------------------------------------------------
+    ## Extract the periods of interest from the obs wt analysis.
+    output[['obs']]$wt$event_timing$streamflow_cluster_stats <-
+       wt_event$obs$wt$event_timing$streamflow_cluster_stats[ period %in% peak_periods ]
 
     ## -------------------------------------------------------
     ## Mean timing errors by period.
