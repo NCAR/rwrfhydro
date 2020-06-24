@@ -1251,7 +1251,8 @@ event_cluster_timing_summary_by_period = function(
     show_outliers=TRUE,
     mean_max=FALSE,
     base_size=11,
-    box_fill = 'grey80'
+    box_fill = 'grey80',
+    x_labeller=NULL
 ) {
 
     library(ggplot2)
@@ -1273,14 +1274,16 @@ event_cluster_timing_summary_by_period = function(
     period_facet_labeller = format(periods, digits=2, nsmall=1)
     names(period_facet_labeller) = periods
 
-    stat_labeller = c(
+    if(is.null(x_labeller)) {
+        stat_labeller = c(
         cluster_mean='mean',
         cluster_max='max',
         `NWM v1.0`="V1.0",
         `NWM v1.1`="V1.1",
         `NWM v1.2`="V1.2",
-        `NWM v2.0`="V2.0"
-    )
+        `NWM v2.0`="V2.0" )
+    } else {
+        stat_labeller = x_labeller }
 
     # The observed WT power by period can not be obtained from we_stats. Use wt_event.
     obs_tavg = wt_event$obs$wt$event_timing$time_avg
@@ -1363,6 +1366,7 @@ event_cluster_timing_summary_by_period = function(
         }
 
     } else {
+
 
       if(show_points) {
             the_plot =
