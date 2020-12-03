@@ -81,6 +81,81 @@ ReadGwOut <- function(pathOutfile) {
 }
 
 
+#' Read WRF-Hydro V5 standard-format groundwater output NetCDF file.
+#'
+#' \code{ReadGwOutNetCDF} reads in WRF-Hydro groundwater output NetCDF file.
+#'
+#' \code{ReadGwOutNetCDF} reads a standard-format WRF-Hydro groundwater output NetCDF file
+#' (*.GWOUT_DOMAIN*) and creates a dataframe with consistent
+#' date and data columns for use with other rwrfhydro tools.
+#'
+#' @param pathOutfile The full pathname to the WRF-Hydro groundwater text file
+#' @param basid The basin ID to use (DEFAULT=1)
+#' @param parallel Logical for running in parallel mode (must have a parallel
+#' backend installed and registered (e.g., doMC or doParallel) (DEFAULT=FALSE)
+#' @return A dataframe containing the groundwater data.
+#'
+#' @examples
+#' ## Take a groundwater outflow NetCDF file for an hourly model run of Fourmile Creek
+#' ## and return a dataframe.
+#' \dontrun{
+#' modGWout1h.mod1.fc <- ReadGwOutNetCDF("../OUTPUT/*GWOUT_DOMAIN*")
+#' }
+#' @keywords IO
+#' @concept dataGet
+#' @family modelDataReads
+#' @export
+ReadGwOutNetCDF <- function(pathOutdir, basid=1, parallel=FALSE) {
+  # Get files
+  gwoutFilesList <- list( gwout = list.files(path=pathOutdir, 
+                                             pattern=glob2rx('*.GWOUT_DOMAIN*'), 
+                                             full.names=TRUE))
+  if (length(gwoutFilesList)==0) stop("No matching files in specified directory.")
+  
+  GetFileStat <- function(theFile, variable="outflow", basid=1, parallel=FALSE, ...) {
+    ncid <- ncdf4::nc_open(theFile)
+    ## get the time.
+    if('times' %in% tolower(names(ncid$var))) { ## noah/noahMP style variable Times
+      varNames <- names(ncid$var)
+      timeChr <- varNames[which(tolower(names(ncid$var))=='times')]
+      time <-ncdf4::ncvar_get(ncid, timeChr)
+      time <- as.POSIXct(sub('_',' ',time), tz='UTC') ## wrf hydro times are UTC 
+    }
+    
+    possibleTimeNames <- c('Restart_Time','time_coverage_end')
+    whTimeName <- which(possibleTimeNames %in% names(ncdf4::ncatt_get( ncid, 0 )))
+    if(length(whTimeName)) {
+      time <- ncdf4::ncatt_get( ncid, 0 )[possibleTimeNames[whTimeName]]
+      time <- as.POSIXct(sub('_',' ',time), tz='UTC') ## wrf hydro is UTC
+    } 
+    
+    possibleTimeNames <- c('model_output_valid_time')
+    whTimeName <- which(possibleTimeNames %in% names(ncdf4::ncatt_get( ncid, 0)))
+    if(length(whTimeName)) {
+      time <- ncdf4::ncatt_get( ncid, 0)[possibleTimeNames[whTimeName]]
+      time <- as.POSIXct(sub('_',' ',time), tz='UTC')
+    }
+    if(is.function(time)) warning('Time dimension not found in file, therefore the file name is returned in POSIXct')
+    
+    outDf <- data.frame(ncdf4::ncvar_get(ncid, variable)[basid])
+    ncdf4::nc_close(ncid)
+    names(outDf) <- c("q_cms")
+    
+    if (!is.function(time)) {
+      outDf$POSIXct <- time
+    } else {
+      tmpDate <- as.POSIXct(unlist(strsplit(basename(theFile), split="[.]"))[1],
+                            format="%Y%m%d%H%M", tz="UTC")
+      outDf$POSIXct <- tmpDate
+    }
+    outDf
+  }
+  
+  outDf <- plyr::ldply(gwoutFilesList[[1]], GetFileStat, variable="outflow", basid, parallel=FALSE)
+  outDf
+}
+
+
 #' Read WRF-Hydro (w/NoahMP) LDASOUT data files and generate basin-wide mean water 
 #' budget variables.
 #'
