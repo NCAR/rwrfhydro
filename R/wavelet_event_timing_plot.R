@@ -332,12 +332,13 @@ plot_wavelet_events = function(plot_data, do_plot=TRUE, base_size=9) {
                 aes(x=x, y=y, fill=Power),
                 interpolate=FALSE
             )  +
-            
-            geom_contour(
+
+            stat_contour(
                 data=subset_power,
                 aes(x=x, y=y, z=Significance, group=chunk),
                 bins=1,
-                color='black',
+                color='grey40',
+                breaks=.5,
                 size=.5
             ) +
             
@@ -815,8 +816,11 @@ step1_figure = function(wt_event) {
 
 
 ##' @export
-step2_figure = function(wt_event, n_phase_along_x=70, base_size=9,
-                         ylab_spacer=.035) {
+step2_figure = function(
+                        wt_event,
+                        n_phase_along_x=70,
+                        base_size=9,
+                        ylab_spacer=.035) {
     library(dplyr)
     library(ggplot2)
     library(relayer) ## git hash 8a1d49e1707d9fcc1aaa83476a3d9a15448a1065
@@ -898,7 +902,6 @@ step2_figure = function(wt_event, n_phase_along_x=70, base_size=9,
           'Time')
     new_y_labels =
         c('a.  Timeseries',
-          ##  'b. Obs WT',
           'b.  XWT',
           'c. Sampled Timing Errors',
           '')
@@ -916,15 +919,21 @@ step2_figure = function(wt_event, n_phase_along_x=70, base_size=9,
     xwt_data$y_var = ordered('XwtPer', levels=new_y_levels)
     timing_data$y_var = ordered("TimePer", levels=new_y_levels)
     
-    ## JLM subjective shit
+    ## JLM subjectiveness
     timing_data$Power[which(timing_data$COI == FALSE)] = NA
     timing_data$Power[which(timing_data$Significance == 0)] = NA
-    ##timing_data$Power[which(timing_data$COI == TRUE | timing_data$Significance == 0)] = NA
+    timing_data$XwtEvent =
+        as.logical(timing_data$Significance *
+                   xwt_data$Significance *
+                   xwt_data$COI)
+    ##timing_data$Power[which(timing_data$COI == TRUE
+    ##     | timing_data$Significance == 0)] = NA
 
     ## Merge the new and old data. Wait for the phase... 
+    wt_data$XwtEvent = NA
     plot_data = rbind(wt_data, timing_data)
-    #plot_data = rbind(xwt_data, timing_data)
     plot_data$phase = NA
+    xwt_data$XwtEvent = NA    
     plot_data = rbind(plot_data, xwt_data)
 
     ## Annotated the y-axes and set the limits (due to the annotation non-clip)
@@ -948,6 +957,10 @@ step2_figure = function(wt_event, n_phase_along_x=70, base_size=9,
     ## Could have used the standard plot, but it was a bit clearer to redo the whole thing.
     ## If the two start diverging in a bad way, then may consider using it again.
 
+    q_levels =
+        unique(subset(plot_data, y_var == "Streamflow (cms)")$Streamflow)
+    q_breaks = c('obs', c(sort(setdiff(q_levels, 'obs'))))
+    
     gg2 =
         ggplot() +
         
@@ -973,15 +986,7 @@ step2_figure = function(wt_event, n_phase_along_x=70, base_size=9,
         ##     aes(x=x, y=y, fill=Power),
         ##     interpolate=TRUE
         ## )  +
-        
-        ## geom_contour(
-        ##     data=subset(plot_data, y_var == "Period"),
-        ##     aes(x=x, y=y, z=Significance, group=chunk),
-        ##     bins=1,
-        ##     color='black',
-        ##     size=.5
-        ## ) +
-        
+
         ## geom_raster(
         ##     data=subset(plot_data, y_var == "Period"),
         ##     aes(x=x, y=y, alpha=COI),
@@ -995,22 +1000,49 @@ step2_figure = function(wt_event, n_phase_along_x=70, base_size=9,
             aes(x=x, y=y, fill_xwt=Power),
             interpolate=FALSE
         ) %>% rename_geom_aes(new_aes = c("fill" = "fill_xwt")) +
-        
+
+        stat_contour(
+            data=subset(plot_data, y_var == "XwtPer"),
+            aes(x=x, y=y, z=Significance,
+                group=chunk, linetype='significant'),
+            bins=1,
+            color='grey40',
+            breaks=.5,
+            size=.5
+        )  +
+
         geom_text(
             data=subset(plot_data, y_var == 'XwtPer' & !is.na(phase)),
             aes(x=x, y=y, angle=(180/pi)*phase),
             label='>',
             size=2.5
         ) +
-        
-        # Timing
+        geom_raster(
+            data=subset(plot_data, y_var == "XwtPer"),
+            aes(x=x, y=y, alpha=COI),
+            interpolate=FALSE,
+            fill='white'
+        ) +
+    
+    ## Timing
+    
         geom_raster(
             data=subset(plot_data, y_var == 'TimePer'),
             aes(x=x, y=y, fill_timing=Power),
             interpolate=FALSE
             #na.rm=FALSE
         )  %>% rename_geom_aes(new_aes = c("fill" = "fill_timing")) +
-        
+
+        stat_contour(
+            data=subset(plot_data, y_var == "TimePer"),
+            aes(x=x, y=y, z=as.numeric(XwtEvent),
+                group=chunk, linetype='events'),
+            bins=1,
+            color='grey40',
+            breaks=.5,
+            size=.5
+        )  +
+    
         geom_text(
             data=y_labs,
             aes(x=x_loc, y=y_center, label=lab),
@@ -1039,16 +1071,24 @@ step2_figure = function(wt_event, n_phase_along_x=70, base_size=9,
         scale_color_brewer(
             palette='Paired', #'Set2'
             guide=guide_legend(order=100),
+            breaks=q_breaks
         ) +
-        
+
+       scale_linetype_manual(
+            name='XWT',
+            values=c('significant'=1, 'events'=2),
+            breaks=c('significant', 'events'),
+            guide=guide_legend(order=75)
+        ) +
+
         scale_alpha_manual(values=c('TRUE'=0, 'FALSE'=.6), guide=FALSE) +
         
-        scale_fill_distiller(
-            aesthetics='fill',
-            name="WT Power",
-            guide=guide_colorbar(order=75),
-            palette = "Spectral"
-        ) +
+        ## scale_fill_distiller(
+        ##     aesthetics='fill',
+        ##     name="WT Power",
+        ##     guide=guide_colorbar(order=75),
+        ##     palette = "Spectral"
+        ## ) +
         
         scale_fill_distiller(
             name="XWT Power",
@@ -1064,7 +1104,7 @@ step2_figure = function(wt_event, n_phase_along_x=70, base_size=9,
             palette = "Spectral",
             na.value="transparent"
         ) +
-        
+    
         theme_bw(base_size=base_size) +
         
         theme(
@@ -1103,13 +1143,17 @@ step2_figure = function(wt_event, n_phase_along_x=70, base_size=9,
     ## Adjust the height of the individual guides using the panels on the main plot.
     ##gtable::gtable_show_layout(g)
     ##gtable::gtable_show_layout(g$grobs[[wh_guide_box]])
-    g$grobs[[wh_guide_box]]$heights[3:9] = g$heights[8:14]
+    ##g$grobs[[wh_guide_box]]$heights [3:11] = g$heights[8:16]
+    g$grobs[[wh_guide_box]]$heights =
+        g$grobs[[wh_guide_box]]$heights[c(1,2,9,4,3,6,5,8,7,10,11)]
+                                     ## 1,2,3,4,5,6,7,8,9,0
     wh_guides = which(grepl('guides', g$grobs[[wh_guide_box]]$layout$name))
     guide_layout = g$grobs[[wh_guide_box]]$layout[wh_guides,]
     ## That order flummoxes me, but it works.
-    guide_layout = guide_layout[c(3,1,2),]
-    colnames(guide_layout) = 1:3
-    g$grobs[[wh_guide_box]]$layout[1:3,] = guide_layout
+
+    guide_layout = guide_layout[c(4,1,2,3),]
+    colnames(guide_layout) = 1:4
+    g$grobs[[wh_guide_box]]$layout[1:4,] = guide_layout
 
     return(g)
 }
