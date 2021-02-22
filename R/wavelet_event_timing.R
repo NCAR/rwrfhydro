@@ -440,8 +440,8 @@ WtEventTiming <- function(POSIXct, obs,
         end_ind = round(time_ind + (period/2))
         event_inds = start_ind:end_ind
         streamflow =
-            output[['input_data']][
-                Streamflow == 'obs']$streamflow_values[event_inds]
+           output[['input_data']][
+               Streamflow == 'obs' & input_index %in% event_inds]$streamflow_values
         return(
             list(
                 streamflow_mean = mean(streamflow),

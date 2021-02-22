@@ -151,7 +151,7 @@ merge_data_plot = function(
         use_time = if('POSIXct' %in% names(plot_data)) "POSIXct" else "x"
         if(is.null(time_breaks))
             time_breaks = scales::pretty_breaks()(subset(plot_data, x_var == 'Time')[[use_time]])
-                
+
         if(is.null(time_label_format)) {
             time_labels = time_breaks
             if(use_time == 'x')
@@ -538,7 +538,7 @@ cluster_palette = function(brewer_pal="Accent") {
 
 
 ##' @export
-step1_figure = function(wt_event) {
+step1_figure = function(wt_event, cluster_maxima=FALSE) {
 
     library(dplyr)
     library(ggplot2)
@@ -680,7 +680,8 @@ step1_figure = function(wt_event) {
     clust_numbers = sort(as.integer(setdiff(plot_data$period_clusters, "None")))
     clust_fill_colors = c(NA, cluster_palette()(length(clust_numbers)))
     names(clust_fill_colors) = c('None', clust_numbers)
-    
+    shape_color = 'grey80'
+
     gg2 =
         gg +
         
@@ -698,23 +699,60 @@ step1_figure = function(wt_event) {
         
         geom_point(
             data=subset(plot_data, local_max == TRUE),
-            aes(x=x, y=y, shape="Maxima"),
-            color='grey70'
+            aes(x=x, y=y, shape="Time Avg\nEvent Power"),
+            color=shape_color
         ) +
         
         geom_raster(
            data=subset(plot_data, y_var == new_y_levels[6]), # & !is.na(period_clusters)),
            aes(x=x, y=y, fill_cluster=factor(period_clusters)),
            interpolate=FALSE, na.rm=FALSE
-        ) %>% rename_geom_aes(new_aes = c("fill" = "fill_cluster")) +
+        ) %>% rename_geom_aes(new_aes = c("fill" = "fill_cluster"))
+
+    if(cluster_maxima) {
+        we_stats = we_hydro_stats(wt_event)
+        max_stats = we_stats[[1]]$xwt$event_timing$cluster_max
+        max_stats$x_var = factor('Time', levels=levels(plot_data$x_var))
+        max_stats$y_var = ordered('d Period', levels=new_y_levels)
+        max_stats$x = min(plot_data$x, na.rm=TRUE) + 3600*(max_stats$time)
+
+        print(max_stats$x)
+        print(min(plot_data$x, na.rm=TRUE))
+        print((max_stats$time))
+        print(3600*(max_stats$time))
         
-        guides(
-            color = guide_legend(order = 1),
-            fill = guide_colorbar(order = 2),
-            linetype = guide_legend(order=3),
-            shape = FALSE
-        ) +
+        period_y_cols = c('y', 'period')
+        period_y_map = unique(plot_data[ y_var =='d Period', ..period_y_cols ])
+        max_stats = merge(max_stats, period_y_map, by='period')
         
+        gg2 = gg2 +
+            geom_point(
+                data=max_stats,
+                aes(x=x, y=y, shape='Cluster'),
+                color=shape_color,
+                size=2) +
+            scale_shape_manual(
+                values=c('Time Avg\nEvent Power'=19, 'Cluster'=8),
+                name='Maxima')
+    }
+
+    if(cluster_maxima) {
+        gg2 = gg2 +
+            guides(
+                color = guide_legend(order = 1),
+                fill = guide_colorbar(order = 2),
+                linetype = guide_legend(order=3),
+                shape = guide_legend(order=4))
+    } else {
+        gg2 = gg2 +
+            guides(
+                color = guide_legend(order = 1),
+                fill = guide_colorbar(order = 2),
+                linetype = guide_legend(order=3),
+                shape = FALSE)
+    }
+
+    gg2 = gg2 +
         facet_grid(
             y_var ~ x_var,
             labeller = labeller(y_var=y_labeller),
@@ -741,11 +779,9 @@ step1_figure = function(wt_event) {
             na.translate=FALSE,
             na.value="transparent"
         ) +
-        
+
         theme(legend.title=element_text(size=rel(0.8)))
 
-    ## return(gg2)
-    
     ## Deal with the unused bits.
     ## daGrob = ggplotGrob(gg2)
     ## gtable::gtable_show_layout(daGrob)
@@ -766,8 +802,8 @@ step1_figure = function(wt_event) {
             `strip-t-2`=list(
                 position=c('t', 'b'),
                 values=(c(0, 0) + 2)
-             ),
-           `axis-b-2`=list(
+            ),
+            `axis-b-2`=list(
                 position=c('t', 'b'),
                 values=(c(0, 0) - 2)
             )
@@ -779,8 +815,7 @@ step1_figure = function(wt_event) {
     
     text_grob_1 = grid.text(
         'Streamflow (cms)', x=-1.25, y=.6, hjust=.50, vjust=-3.5, rot=-90,
-        gp=gpar(col=text_color, fontsize=text_size)
-    )
+        gp=gpar(col=text_color, fontsize=text_size))
     ## size = rel(0.8), colour = "grey30"
     t = unique(grob$layout[grepl("panel-1-1",grob$layout$name), "t"])
     l = unique(grob$layout[grepl("panel-1-1",grob$layout$name), "l"])
@@ -788,26 +823,23 @@ step1_figure = function(wt_event) {
 
     text_grob_4 = grid.text(
         'Timescale (hours)', x=0, y=.5, hjust=.5, vjust=-3.5, rot=-90,
-        gp=gpar(col=text_color, fontsize=text_size)
-    )
+        gp=gpar(col=text_color, fontsize=text_size) )
     t = unique(grob$layout[grepl("panel-2-2",grob$layout$name), "t"])
     l = unique(grob$layout[grepl("panel-2-2",grob$layout$name), "l"])
     g = gtable::gtable_add_grob(g, grobs=text_grob_4, t=t, l=l+1, clip='off')
-    
-    # Insert a new column for labels
+
+    ## Insert a new column for labels
     g = gtable::gtable_add_cols(g, grid::unit(1,"line"), pos = -1)
-    
+
     text_grob_2 = grid.text(
         'Timescale (hours)', x=0, y=.5, hjust=.5, vjust=.5, rot=-90,
-        gp=gpar(col=text_color, fontsize=text_size)
-    )
+        gp=gpar(col=text_color, fontsize=text_size))
     t = unique(grob$layout[grepl("panel-2-1",grob$layout$name), "t"])
     g = gtable::gtable_add_grob(g, grobs=text_grob_2, t=t, l=ncol(g), clip='off')
 
     text_grob_3 = grid.text(
         'Timescale (hours)', x=0, y=.5, hjust=.5, vjust=.5, rot=-90,
-        gp=gpar(col=text_color, fontsize=text_size)
-    )
+        gp=gpar(col=text_color, fontsize=text_size))
     t = unique(grob$layout[grepl("panel-1-4",grob$layout$name), "t"])
     g = gtable::gtable_add_grob(g, grobs=text_grob_3, t=t, l=ncol(g), clip='off')
 
@@ -820,7 +852,8 @@ step2_figure = function(
                         wt_event,
                         n_phase_along_x=70,
                         base_size=9,
-                        ylab_spacer=.035) {
+                        ylab_spacer=.035,
+                        cluster_maxima=FALSE) {
     library(dplyr)
     library(ggplot2)
     library(relayer) ## git hash 8a1d49e1707d9fcc1aaa83476a3d9a15448a1065
@@ -960,6 +993,8 @@ step2_figure = function(
     q_levels =
         unique(subset(plot_data, y_var == "Streamflow (cms)")$Streamflow)
     q_breaks = c('obs', c(sort(setdiff(q_levels, 'obs'))))
+    plot_data$Streamflow =
+        factor(plot_data$Streamflow, levels=rev(q_breaks))
     
     gg2 =
         ggplot() +
@@ -1009,7 +1044,7 @@ step2_figure = function(
             color='grey40',
             breaks=.5,
             size=.5
-        )  +
+        ) +
 
         geom_text(
             data=subset(plot_data, y_var == 'XwtPer' & !is.na(phase)),
@@ -1041,7 +1076,37 @@ step2_figure = function(
             color='grey40',
             breaks=.5,
             size=.5
-        )  +
+        )  
+
+    if(cluster_maxima) {
+        we_stats = we_hydro_stats(wt_event)
+        max_stats = we_stats[[1]]$xwt$event_timing$cluster_max
+        max_stats$x_var = factor('Time', levels=levels(plot_data$x_var))
+        max_stats$y_var = ordered('TimePer', levels=new_y_levels)
+        max_stats$x = min(plot_data$x, na.rm=TRUE) + 3600*(max_stats$time)
+
+        print(max_stats$x)
+        print(min(plot_data$x, na.rm=TRUE))
+        print((max_stats$time))
+        print(3600*(max_stats$time))
+
+        period_y_cols = c('y', 'period')
+        period_y_map = unique(plot_data[ y_var =='TimePer', ..period_y_cols ])
+        max_stats = merge(max_stats, period_y_map, by='period')
+
+        shape_color = 'grey80'
+        gg2 = gg2 +
+            geom_point(
+                data=max_stats,
+                aes(x=x, y=y, shape='Cluster'),
+                color=shape_color,
+                size=2) +
+            scale_shape_manual(
+                values=c('Time Avg\nEvent Power'=19, 'Cluster'=8),
+                name='Maxima')
+    }
+
+    gg2 = gg2 +
     
         geom_text(
             data=y_labs,
@@ -1067,11 +1132,12 @@ step2_figure = function(
             breaks=x_breaks,
             labels=x_labels
         ) +
-    
+
         scale_color_brewer(
-            palette='Paired', #'Set2'
+             palette='Paired', #'Set2'
             guide=guide_legend(order=100),
-            breaks=q_breaks
+            breaks=q_breaks,
+            #direction=-1
         ) +
 
        scale_linetype_manual(
@@ -1144,9 +1210,17 @@ step2_figure = function(
     ##gtable::gtable_show_layout(g)
     ##gtable::gtable_show_layout(g$grobs[[wh_guide_box]])
     ##g$grobs[[wh_guide_box]]$heights [3:11] = g$heights[8:16]
-    g$grobs[[wh_guide_box]]$heights =
-        g$grobs[[wh_guide_box]]$heights[c(1,2,9,4,3,6,5,8,7,10,11)]
-                                     ## 1,2,3,4,5,6,7,8,9,0
+
+    if(!cluster_maxima) {
+        g$grobs[[wh_guide_box]]$heights =
+            g$grobs[[wh_guide_box]]$heights[c(1,2,9,4,3,6,5,8,7,10,11)]
+        ## 1,2,3,4,5,6,7,8,9,10,11
+    } else {
+        g$grobs[[wh_guide_box]]$heights =
+            g$grobs[[wh_guide_box]]$heights[c(1,2,9,4,3,6,5,8,7,10,11,12,13)]
+        ## 1,2,3,4,5,6,7,8,9,10,11,12,13
+    }
+
     wh_guides = which(grepl('guides', g$grobs[[wh_guide_box]]$layout$name))
     guide_layout = g$grobs[[wh_guide_box]]$layout[wh_guides,]
     ## That order flummoxes me, but it works.
@@ -1154,7 +1228,6 @@ step2_figure = function(
     guide_layout = guide_layout[c(4,1,2,3),]
     colnames(guide_layout) = 1:4
     g$grobs[[wh_guide_box]]$layout[1:4,] = guide_layout
-
     return(g)
 }
 
@@ -1260,8 +1333,9 @@ event_cluster_timing_by_period = function(wt_event, n_periods=NULL, ncol=3) {
                 ncol=ncol
             ) +
             scale_alpha_manual(
-                name='XWT Significant',
-                values=c(`TRUE`=1, `FALSE`=.2),
+                name='Modeled Events',
+                values=c(`TRUE`=1, `FALSE`=.35),
+                labels=c('TRUE'='Hits', 'FALSE'='Misses'),
                 breaks=c(TRUE, FALSE),
                 na.translate=TRUE,
                 na.value=.2
@@ -1295,7 +1369,7 @@ event_cluster_timing_summary_by_period = function(
     show_outliers=TRUE,
     mean_max=FALSE,
     base_size=11,
-    box_fill = 'grey80',
+    box_fill = NA,
     x_labeller=NULL
 ) {
 
@@ -1304,8 +1378,8 @@ event_cluster_timing_summary_by_period = function(
 
     plot_data = list()
 
+    we_stats['obs'] = NULL
     for(mm in names(we_stats)) {
-        names(we_stats[[mm]]$xwt$event_timing)
         plot_data[[mm]] =
             plyr::ldply(we_stats[[mm]]$xwt$event_timing[c("cluster_mean", "cluster_max")])
         plot_data[[mm]]$version = mm
@@ -1392,7 +1466,7 @@ event_cluster_timing_summary_by_period = function(
             geom_boxplot(
                 data=plot_stats,
                 aes(x=.id,
-                    color=avg_signif,
+                    color=avg_signif*100,
                     #fill=avg_signif,
                     ymin=ymin, lower=lower, middle=middle, upper=upper, ymax=ymax),
                 fill=box_fill,
@@ -1432,7 +1506,7 @@ event_cluster_timing_summary_by_period = function(
                         x=version,
                         ymin=ymin, lower=lower, middle=middle, upper=upper, ymax=ymax,
                         #fill=avg_signif,
-                        color=avg_signif
+                        color=avg_signif*100
                     ),
                     fill=box_fill,
                     stat='identity'
@@ -1499,6 +1573,7 @@ event_cluster_timing_summary_by_period = function(
             labeller=as_labeller(period_facet_labeller)
         )
 
+
     if(timing_stat == 'mean_max') {
       the_plot =
         the_plot +
@@ -1515,15 +1590,12 @@ event_cluster_timing_summary_by_period = function(
       the_plot +
         #scale_fill_distiller(name='Avg XWT\nSignif', palette=distiller_pal,
         #                     direction=distiller_direction, limits=c(0,1)) +
-        scale_color_distiller(name='Avg XWT\nSignif', palette=distiller_pal,
-                              direction=distiller_direction, limits=c(0,1)) +
+        scale_color_distiller(name='% Hits', palette=distiller_pal,
+                              direction=distiller_direction, limits=c(0,100)) +
         #guides(colour = "none") + 
         scale_y_continuous(name='Timing Error (hours)') +
         theme_bw(base_size=base_size)
 
-
-
-    
     out_plot_stats = plot_stats
     out_plot_stats$per_fact=NULL # remove redundant col
     invisible(list(ggplot=the_plot, plot_stats=out_plot_stats))
