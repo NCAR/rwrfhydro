@@ -1,7 +1,7 @@
 Package: rwrfhydro
 Type: Package
 Title: R tools for the WRF Hydro Model
-Version: 1.0.0.9100
+Version: 1.0.1
 Date: 2015-05-01
 Authors@R: c(
     person("James", "McCreight", email = "jamesmcc@ucar.edu", role = c("aut","cre")),
