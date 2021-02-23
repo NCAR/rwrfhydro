@@ -237,7 +237,6 @@ WtTimeChunks <- function(
       for(cc in (first_ind+1):length(chunk_list)) {
 
         if(class(chunk_list[[cc]]) != "biwavelet") {
-          # print(cc)
           next
         }
 
@@ -327,7 +326,6 @@ WtEventTiming <- function(POSIXct, obs,
                       "than min_ts_length. Returning.")
         cat(msg,'\n')
         cat(paste0("min_ts_length: ", min_ts_length), '\n')
-        print(chunk_len)
         return(NULL)
     }
 
