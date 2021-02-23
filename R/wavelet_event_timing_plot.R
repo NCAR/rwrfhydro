@@ -543,6 +543,7 @@ step1_figure = function(wt_event, cluster_maxima=FALSE) {
     library(dplyr)
     library(ggplot2)
     library(relayer) ## git hash 8a1d49e1707d9fcc1aaa83476a3d9a15448a1065
+    library(ggplotify)
 
     obs_power = get_data_plot_power(wt_event$obs$wt, wt_event$input_data)
     obs_t_avg_power = get_data_plot_time_avg_power(wt_event$obs$wt)
@@ -642,15 +643,15 @@ step1_figure = function(wt_event, cluster_maxima=FALSE) {
 
     ## Merge the new and old data.
     pd = rbind(plot_data, wt_copy)
-    
+
     ## Get the standard plot
     gg = plot_wavelet_events(pd, do_plot=FALSE)
-    
+
     ## Extend the standard plot.    
     
     ## Use annotations for units labels on the y-axes.
     plot_data = as.data.table(plot_data)
-    
+
     y_labs =
         plot_data[,
             .(y_center=min(y, na.rm=TRUE)+.5*(max(y, na.rm=TRUE)-min(y, na.rm=TRUE)),
@@ -716,11 +717,6 @@ step1_figure = function(wt_event, cluster_maxima=FALSE) {
         max_stats$y_var = ordered('d Period', levels=new_y_levels)
         max_stats$x = min(plot_data$x, na.rm=TRUE) + 3600*(max_stats$time)
 
-        print(max_stats$x)
-        print(min(plot_data$x, na.rm=TRUE))
-        print((max_stats$time))
-        print(3600*(max_stats$time))
-        
         period_y_cols = c('y', 'period')
         period_y_map = unique(plot_data[ y_var =='d Period', ..period_y_cols ])
         max_stats = merge(max_stats, period_y_map, by='period')
@@ -812,7 +808,7 @@ step1_figure = function(wt_event, cluster_maxima=FALSE) {
 
     text_color = 'grey30'
     text_size = 11
-    
+
     text_grob_1 = grid.text(
         'Streamflow (cms)', x=-1.25, y=.6, hjust=.50, vjust=-3.5, rot=-90,
         gp=gpar(col=text_color, fontsize=text_size))
@@ -843,7 +839,7 @@ step1_figure = function(wt_event, cluster_maxima=FALSE) {
     t = unique(grob$layout[grepl("panel-1-4",grob$layout$name), "t"])
     g = gtable::gtable_add_grob(g, grobs=text_grob_3, t=t, l=ncol(g), clip='off')
 
-    return(g)
+    return(as.ggplot(g))
 }
 
 
@@ -857,7 +853,8 @@ step2_figure = function(
     library(dplyr)
     library(ggplot2)
     library(relayer) ## git hash 8a1d49e1707d9fcc1aaa83476a3d9a15448a1065
-    
+    library(ggplotify)
+
     ## Currently this is only configured to handle a single modeled timeseries.
     model_name = setdiff(names(wt_event), c("input_data", "obs"))
     if(length(model_name) > 1)
@@ -1085,11 +1082,6 @@ step2_figure = function(
         max_stats$y_var = ordered('TimePer', levels=new_y_levels)
         max_stats$x = min(plot_data$x, na.rm=TRUE) + 3600*(max_stats$time)
 
-        print(max_stats$x)
-        print(min(plot_data$x, na.rm=TRUE))
-        print((max_stats$time))
-        print(3600*(max_stats$time))
-
         period_y_cols = c('y', 'period')
         period_y_map = unique(plot_data[ y_var =='TimePer', ..period_y_cols ])
         max_stats = merge(max_stats, period_y_map, by='period')
@@ -1228,7 +1220,7 @@ step2_figure = function(
     guide_layout = guide_layout[c(4,1,2,3),]
     colnames(guide_layout) = 1:4
     g$grobs[[wh_guide_box]]$layout[1:4,] = guide_layout
-    return(g)
+    return(as.ggplot(g))
 }
 
 
