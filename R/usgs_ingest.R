@@ -765,8 +765,8 @@ LoadMetaDB <- function(path='.',
 #' @concept dataMgmt usgsStreamObs
 TransUsgsProdStat <- function(names, whichIn=FALSE) {
   ## Elsewhere these rely on a single set of parentheses around the units.
-  prodStatLookup <- c( X_00060_00011    ='Discharge (cfs)',   ##instantaneous is 00011 but not worth saying IMO
-                       X_00060_00011_cd ='Discharge code',
+  prodStatLookup <- c( X_00060_00000    ='Discharge (cfs)',   ##instantaneous is 00011 but not worth saying IMO
+                       X_00060_00000_cd ='Discharge code',    ## https://owi.usgs.gov/R/dataRetrieval.html#11
                        X_00065_00011    ='Stage (ft)',
                        X_00065_00011_cd ='Stage code' )
   code2Name <- any(names %in% names(prodStatLookup))
